@@ -26,7 +26,7 @@ public class Connection extends Thread
 		listener = l;
 		quit = false;
 		msgState = 0;
-		setName("Firebus Connection Thread");
+		setName("Firebus Connection");
 		start();
 	}
 	
@@ -97,7 +97,12 @@ public class Connection extends Thread
 	{
 		try
 		{
-			os.write(msg.getEncodedMessage());
+			byte[] bytes = msg.getEncodedMessage();
+			os.write(0x7E);
+			os.write(bytes.length & 0x00FF);
+			os.write((bytes.length >> 8) & 0x00FF);
+			os.write(bytes);
+			os.write(msg.getCRC());
 			os.flush();
 		}
 		catch(Exception e)

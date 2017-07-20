@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class ConnectionManager extends Thread
@@ -30,7 +31,7 @@ public class ConnectionManager extends Thread
 		port = p;
 		quit = false;
 		node = n;
-		setName("Firebus Node " + n.getNodeId() + " Connection Manager Thread");
+		setName("Firebus Node " + n.getNodeId() + " Connection Manager");
 		start();		
 	}
 
@@ -41,9 +42,12 @@ public class ConnectionManager extends Thread
 			try 
 			{
 				server = new ServerSocket(port);
-				Socket socket = server.accept();
-				Connection connection = new Connection(socket, node);
-				connections.add(connection);
+				while(!quit)
+				{
+					Socket socket = server.accept();
+					Connection connection = new Connection(socket, node);
+					connections.add(connection);
+				}
 			} 
 			catch (IOException e) 
 			{
@@ -95,9 +99,16 @@ public class ConnectionManager extends Thread
 		connections.remove(c);
 	}
 
-	public InetAddress getAddress()
+	public InetAddress getLocalAddress()
 	{
-		return server.getInetAddress();
+		try
+		{
+			return InetAddress.getLocalHost();
+		} 
+		catch (UnknownHostException e)
+		{
+			return null;
+		}
 	}
 	
 	public int getPort()

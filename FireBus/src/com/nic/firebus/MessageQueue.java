@@ -18,7 +18,7 @@ public class MessageQueue
 	public void addMessage(Message m)
 	{
 		long ct = System.currentTimeMillis();
-		while(processedTime.get(0) > ct - 60000)
+		while(processedTime.size() > 0  &&  processedTime.get(0) > ct - 60000)
 		{
 			processedID.remove(0);
 			processedTime.remove(0);
@@ -42,7 +42,7 @@ public class MessageQueue
 		return messages.get(0);
 	}
 	
-	public void deleteNexInboundMessage()
+	public void deleteNextMessage()
 	{
 		messages.remove(0);
 	}

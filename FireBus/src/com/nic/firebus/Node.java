@@ -39,7 +39,7 @@ public class Node extends Thread implements ConnectionListener
 		connectionManager = new ConnectionManager(port, this);
 		directory = new Directory();
 		serviceProviders = new HashMap<String, ServiceProvider>();		
-		setName("Firebus Node " + nodeId + " Thread");
+		setName("Firebus Node " + nodeId);
 		start();
 	}
 	
@@ -53,7 +53,9 @@ public class Node extends Thread implements ConnectionListener
 		Address address = new Address(a, p);
 		try
 		{
-			connectionManager.createConnection(address);
+			Connection c = connectionManager.createConnection(address);
+			Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_QUERYNODE, null, null);
+			c.sendMessage(msg);
 		} 
 		catch (IOException e)
 		{
@@ -79,24 +81,43 @@ public class Node extends Thread implements ConnectionListener
 		Message msg = inboundQueue.getNextMessage();
 		msg.decode();
 		
-		NodeInformation orig = directory.getOrCreateNode(msg.getOriginator());
-		if(msg.getRepeater() != 0)
+		if(msg.getOriginator() != nodeId)
 		{
-			NodeInformation rpt = directory.getOrCreateNode(msg.getRepeater());
-			rpt.setConnection(msg.getConnection());
-			orig.addRepeater(msg.getRepeater());
+			NodeInformation orig = directory.getOrCreateNode(msg.getOriginator());
+			if(msg.getRepeater() != 0)
+			{
+				NodeInformation rpt = directory.getOrCreateNode(msg.getRepeater());
+				rpt.setConnection(msg.getConnection());
+				orig.addRepeater(msg.getRepeater());
+			}
+			else
+			{
+				orig.setConnection(msg.getConnection());
+			}
+			
+			if(msg.getDestination() == 0  ||  msg.getDestination() == nodeId)
+			{
+				switch(msg.getType())
+				{
+					case Message.MSGTYPE_ADVERTISE:
+						processInboundAdvertisement(msg);
+						break;
+					case Message.MSGTYPE_QUERYNODE:
+						advertiseTo(msg.getOriginator());
+						break;
+				}
+			}
+			
+			if(msg.getDestination() == 0  ||  msg.getDestination() != nodeId)
+			{
+				outboundQueue.addMessage(msg.repeat(nodeId));
+			}
 		}
-		else
-		{
-			orig.setConnection(msg.getConnection());
-		}
-		
-		if(msg.getType() == Message.MSGTYPE_ADVERTISE)
-		{
-			processInboundAdvertisement(msg);
-		}
+
+		inboundQueue.deleteNextMessage();
 	}
 	
+
 	protected void processInboundAdvertisement(Message msg)
 	{
 		BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(msg.getPayload())));
@@ -110,9 +131,11 @@ public class Node extends Thread implements ConnectionListener
 				NodeInformation ni = directory.getOrCreateNode(id);
 				if(parts[1].equals("a"))
 				{
-					String address = parts[2];
-					int port = Integer.parseInt(parts[3]);
-					ni.setInetAddress(new Address(InetAddress.getByName(address), port));
+					try
+					{
+						ni.setInetAddress(new Address(InetAddress.getByName(parts[2]), Integer.parseInt(parts[3])));
+					}
+					catch(Exception e)	{	}
 				}
 				else if(parts[1].equals("s"))
 				{
@@ -130,7 +153,7 @@ public class Node extends Thread implements ConnectionListener
 		} 
 	}
 	
-	
+
 	protected void processNextOutboundMessage()
 	{
 		Message msg = outboundQueue.getNextMessage();
@@ -163,6 +186,7 @@ public class Node extends Thread implements ConnectionListener
 			c.sendMessage(msg);
 		}
 		
+		outboundQueue.deleteNextMessage();
 	}
 	
 	
@@ -172,12 +196,17 @@ public class Node extends Thread implements ConnectionListener
 		advertise();
 	}
 	
-	public void advertise()
+	protected void advertise()
+	{
+		advertiseTo(0);
+	}
+	
+	protected void advertiseTo(int dest)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append(nodeId);
 		sb.append(",a,");
-		sb.append(connectionManager.getAddress());
+		sb.append(connectionManager.getLocalAddress().toString());
 		sb.append(",");
 		sb.append(connectionManager.getPort());
 		sb.append("\r\n");
@@ -191,11 +220,10 @@ public class Node extends Thread implements ConnectionListener
 			sb.append(serviceName);
 			sb.append("\r\n");
 		}
-		Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_ADVERTISE, null, sb.toString().getBytes());
+		Message msg = new Message(dest, nodeId, 0, Message.MSGTYPE_ADVERTISE, null, sb.toString().getBytes());
 		outboundQueue.addMessage(msg);
 	}
-	
-	
+		
 	
 	public void run()
 	{

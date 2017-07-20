@@ -15,16 +15,17 @@ public class Message
 	protected int destination;
 	protected String subject;
 	protected byte[] payload;
-	
-	public static int MSGTYPE_ADVERTISE = 0;
-	public static int MSGTYPE_QUERYNODE = 1;
-	public static int MSGTYPE_FINDSERVICE = 2;
-	public static int MSGTYPE_FINDPUBLISHER = 3;
-	public static int MSGTYPE_FINDSUBSCRIBER = 4;
-	public static int MSGTYPE_REQUESTSERVICE = 5;
-	public static int MSGTYPE_SERVICERESPONSE = 6;
-	public static int MSGTYPE_PUBLISH = 7;
-	public static int MSGTYPE_RECALL = 8;
+
+
+	public static final int MSGTYPE_ADVERTISE = 0;
+	public static final int MSGTYPE_QUERYNODE = 1;
+	public static final int MSGTYPE_FINDSERVICE = 2;
+	public static final int MSGTYPE_FINDPUBLISHER = 3;
+	public static final int MSGTYPE_FINDSUBSCRIBER = 4;
+	public static final int MSGTYPE_REQUESTSERVICE = 5;
+	public static final int MSGTYPE_SERVICERESPONSE = 6;
+	public static final int MSGTYPE_PUBLISH = 7;
+	public static final int MSGTYPE_RECALL = 8;
 	
 	protected static int nextId = 0;
 	
@@ -49,6 +50,25 @@ public class Message
 		encoded = false;
 	}
 	
+	private Message(int i, int d, int o, int r, int t, String s, byte[] p)
+	{
+		id = i;
+		destination = d;
+		originator = o;
+		repeater = r;
+		type = t;
+		subject = s;
+		payload = p;
+		decoded = true;
+		encoded = false;		
+	}
+	
+	public Message repeat(int r)
+	{
+		Message msg = new Message(id, destination, originator, r, type, subject, payload);
+		return msg;
+	}
+	
 	public void decode()
 	{
 		ByteBuffer bb = ByteBuffer.wrap(encodedMessage);
@@ -60,6 +80,7 @@ public class Message
 		int subjectLen = bb.getInt();
 		subject = new String(encodedMessage, bb.position(), subjectLen);
 		bb.position(bb.position() + subjectLen);
+		payload = new byte[bb.remaining()];
 		System.arraycopy(encodedMessage, bb.position(), payload, 0, bb.remaining());
 		decoded = true;
 	}
@@ -144,5 +165,33 @@ public class Message
 		if(!encoded)
 			encode();
 		return encodedMessage;
+	}
+	
+	public int getCRC()
+	{
+		int crc = 0;
+		byte[] b = getEncodedMessage();
+		for(int i = 0; i < b.length; i++)
+		{
+			crc = (crc ^ b[i]) & 0x00FF;
+		}
+		return crc;
+	}
+	
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(destination);
+		sb.append("\r\n");
+		sb.append(originator);
+		sb.append("\r\n");
+		sb.append(repeater);
+		sb.append("\r\n");
+		sb.append(type);
+		sb.append("\r\n");
+		sb.append(subject);
+		sb.append("\r\n");
+		sb.append(new String(payload));
+		return sb.toString();
 	}
 }
