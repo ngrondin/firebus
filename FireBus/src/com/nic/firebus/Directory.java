@@ -6,10 +6,12 @@ import java.util.Iterator;
 public class Directory 
 {
 	protected HashMap<Integer, NodeInformation> nodes;
+	//protected ArrayList<Address> unresolvedAddresses;
 
 	public Directory()
 	{
 		nodes = new HashMap<Integer, NodeInformation>();
+		//unresolvedAddresses = new ArrayList<Address>();
 	}
 	
 	public NodeInformation getNode(int id)
@@ -37,9 +39,26 @@ public class Directory
 		}
 		return null;
 	}
-	
+
+	/*
+	public ArrayList<Address> getUnresolvedAddresses()
+	{
+		return unresolvedAddresses;
+	}
+*/
 	public void addNode(NodeInformation n)
 	{
 		nodes.put(n.getNodeId(), n);
 	}
+	/*
+	public void addUnresolvedAddress(Address a)
+	{
+		unresolvedAddresses.add(a);
+	}
+	
+	public void dropUnresolvedAddress(Address a)
+	{
+		unresolvedAddresses.remove(a);
+	}
+	*/
 }

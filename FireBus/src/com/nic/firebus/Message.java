@@ -8,6 +8,7 @@ public class Message
 	protected byte[] encodedMessage;
 	protected boolean decoded;
 	protected boolean encoded;
+	protected int id;
 	protected int type;
 	protected int originator;
 	protected int repeater;
@@ -15,12 +16,17 @@ public class Message
 	protected String subject;
 	protected byte[] payload;
 	
-	public static int MSGTYPE_QUERY = 0;
-	public static int MSGTYPE_ADVERTISE = 1;
-	public static int MSGTYPE_REQUEST = 2;
-	public static int MSGTYPE_RESPONSE = 3;
-	public static int MSGTYPE_PUBLISH = 4;
-	public static int MSGTYPE_RECALL = 5;
+	public static int MSGTYPE_ADVERTISE = 0;
+	public static int MSGTYPE_QUERYNODE = 1;
+	public static int MSGTYPE_FINDSERVICE = 2;
+	public static int MSGTYPE_FINDPUBLISHER = 3;
+	public static int MSGTYPE_FINDSUBSCRIBER = 4;
+	public static int MSGTYPE_REQUESTSERVICE = 5;
+	public static int MSGTYPE_SERVICERESPONSE = 6;
+	public static int MSGTYPE_PUBLISH = 7;
+	public static int MSGTYPE_RECALL = 8;
+	
+	protected static int nextId = 0;
 	
 	public Message(byte[] b, Connection c)
 	{
@@ -30,12 +36,13 @@ public class Message
 		encoded = true;
 	}
 	
-	public Message(int t, int o, int r, int d, String s, byte[] p)
+	public Message(int d, int o, int r, int t, String s, byte[] p)
 	{
-		type = t;
+		id = nextId++;
+		destination = d;
 		originator = o;
 		repeater = r;
-		destination = d;
+		type = t;
 		subject = s;
 		payload = p;
 		decoded = true;
@@ -45,10 +52,11 @@ public class Message
 	public void decode()
 	{
 		ByteBuffer bb = ByteBuffer.wrap(encodedMessage);
-		type = bb.getInt();
+		id = bb.getInt();
+		destination = bb.getInt();
 		originator = bb.getInt();
 		repeater = bb.getInt();
-		destination = bb.getInt();
+		type = bb.getInt();
 		int subjectLen = bb.getInt();
 		subject = new String(encodedMessage, bb.position(), subjectLen);
 		bb.position(bb.position() + subjectLen);
@@ -58,16 +66,17 @@ public class Message
 	
 	public void encode()
 	{
-		int len = 20;
+		int len = 24;
 		if(subject != null)
 			len += subject.length();
 		if(payload != null)
 			len += payload.length;
 		ByteBuffer bb = ByteBuffer.allocate(len);
-		bb.putInt(type);
+		bb.putInt(id);
+		bb.putInt(destination);
 		bb.putInt(originator);
 		bb.putInt(repeater);
-		bb.putInt(destination);
+		bb.putInt(type);
 		if(subject != null)
 		{
 			bb.putInt(subject.length());
@@ -83,6 +92,16 @@ public class Message
 		}
 		encodedMessage = bb.array();
 		encoded = true;
+	}
+	
+	public int getid()
+	{
+		return id;
+	}
+	
+	public long getUniversalId()
+	{
+		return ((((long)originator) << 32) + id);
 	}
 
 	public int getType()

@@ -1,6 +1,5 @@
 package com.nic.firebus;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -8,8 +7,7 @@ public class NodeInformation
 {
 	protected ArrayList<ServiceInformation> services;
 	protected int nodeId;
-	protected InetAddress address;
-	protected int port;
+	protected Address address;
 	protected Connection connection;
 	protected ArrayList<Integer> repeaters;
 	
@@ -25,10 +23,9 @@ public class NodeInformation
 		connection = c;
 	}
 	
-	public void setInetAddress(InetAddress a, int p)
+	public void setInetAddress(Address a)
 	{
 		address = a;
-		port = p;
 	}
 	
 	public void addRepeater(int id)
@@ -47,16 +44,11 @@ public class NodeInformation
 		return nodeId;
 	}
 	
-	public InetAddress getAddress()
+	public Address getAddress()
 	{
 		return address;
 	}
-	
-	public int getPort()
-	{
-		return port;
-	}
-	
+		
 	public Connection getConnection()
 	{
 		return connection;

@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Random;
 
 public class Node extends Thread implements ConnectionListener
 {
@@ -20,13 +21,44 @@ public class Node extends Thread implements ConnectionListener
 	
 	public Node()
 	{
-		nodeId = 0;
+		initialise(null, 1991);
+	}
+	
+	public Node(int p)
+	{
+		initialise(null, p);
+	}
+	
+	protected void initialise(String cf, int port)
+	{
+		Random rnd = new Random();
+		nodeId = rnd.nextInt();
 		quit = false;
 		inboundQueue = new MessageQueue();
 		outboundQueue = new MessageQueue();
-		connectionManager = new ConnectionManager(1991, this);
+		connectionManager = new ConnectionManager(port, this);
 		directory = new Directory();
-		serviceProviders = new HashMap<String, ServiceProvider>();
+		serviceProviders = new HashMap<String, ServiceProvider>();		
+		setName("Firebus Node " + nodeId + " Thread");
+		start();
+	}
+	
+	public int getNodeId()
+	{
+		return nodeId;
+	}
+	
+	public void addKnownNodeAddress(InetAddress a, int p)
+	{
+		Address address = new Address(a, p);
+		try
+		{
+			connectionManager.createConnection(address);
+		} 
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public void messageReceived(Message m, Connection c) 
@@ -61,11 +93,11 @@ public class Node extends Thread implements ConnectionListener
 		
 		if(msg.getType() == Message.MSGTYPE_ADVERTISE)
 		{
-			processAdvertisement(msg);
+			processInboundAdvertisement(msg);
 		}
 	}
 	
-	protected void processAdvertisement(Message msg)
+	protected void processInboundAdvertisement(Message msg)
 	{
 		BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(msg.getPayload())));
 		String line;
@@ -80,7 +112,7 @@ public class Node extends Thread implements ConnectionListener
 				{
 					String address = parts[2];
 					int port = Integer.parseInt(parts[3]);
-					ni.setInetAddress(InetAddress.getByName(address), port);
+					ni.setInetAddress(new Address(InetAddress.getByName(address), port));
 				}
 				else if(parts[1].equals("s"))
 				{
@@ -98,55 +130,41 @@ public class Node extends Thread implements ConnectionListener
 		} 
 	}
 	
-	protected Connection obtainConnectionForNode(NodeInformation ni)
-	{
-		Connection c = ni.getConnection();
-		if(c == null)
-		{
-			InetAddress a = ni.getAddress();
-			int p = ni.getPort();
-			if(a != null)
-			{
-				try 
-				{
-					c = connectionManager.createConnection(a, p);
-					ni.setConnection(c);
-				} 
-				catch (IOException e) 
-				{
-				}
-			}
-		}
-		return c;
-	}
 	
 	protected void processNextOutboundMessage()
 	{
 		Message msg = outboundQueue.getNextMessage();
 		
+		Connection c = null;
 		int dest = msg.getDestination();
-		NodeInformation ni = directory.getOrCreateNode(dest);
-		Connection c = obtainConnectionForNode(ni);
-		if(c == null)
+		
+		if(dest != 0)
 		{
-			int rpt = ni.getRandomRepeater();
-			if(rpt != 0)
+			NodeInformation ni = directory.getOrCreateNode(dest);
+			c = connectionManager.obtainConnectionForNode(ni);
+			if(c == null)
 			{
-				ni = directory.getNode(rpt);
-				c = obtainConnectionForNode(ni);
-			}
+				int rpt = ni.getRandomRepeater();
+				if(rpt != 0)
+				{
+					ni = directory.getNode(rpt);
+					c = connectionManager.obtainConnectionForNode(ni);
+				}
+			}		
 		}
+
 		if(c == null)
 		{
-			//TODO: Send to other nodes for repitition
+			connectionManager.broadcastToAllConnections(msg);
 		}
-		if(c != null)
+		else
 		{
 			msg.encode();
 			c.sendMessage(msg);
 		}
 		
 	}
+	
 	
 	public void registerServiceProvider(String serviceName, ServiceProvider serviceProvider)
 	{
@@ -173,9 +191,11 @@ public class Node extends Thread implements ConnectionListener
 			sb.append(serviceName);
 			sb.append("\r\n");
 		}
-		Message msg = new Message(Message.MSGTYPE_ADVERTISE, nodeId, 0, 0, null, sb.toString().getBytes());
+		Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_ADVERTISE, null, sb.toString().getBytes());
 		outboundQueue.addMessage(msg);
 	}
+	
+	
 	
 	public void run()
 	{

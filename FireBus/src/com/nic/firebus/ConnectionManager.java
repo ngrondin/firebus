@@ -14,13 +14,24 @@ public class ConnectionManager extends Thread
 	protected Node node;
 	protected ArrayList<Connection> connections;
 	
+	public ConnectionManager(Node n)
+	{
+		initialise(n, 1991);
+	}
+	
 	public ConnectionManager(int p, Node n)
+	{
+		initialise(n, p);
+	}
+	
+	protected void initialise(Node n, int p)
 	{
 		connections = new ArrayList<Connection>();
 		port = p;
 		quit = false;
 		node = n;
-		start();
+		setName("Firebus Node " + n.getNodeId() + " Connection Manager Thread");
+		start();		
 	}
 
 	public void run()
@@ -41,12 +52,41 @@ public class ConnectionManager extends Thread
 		}
 	}
 	
-	public Connection createConnection(InetAddress a, int p) throws IOException
+	public Connection createConnection(Address a) throws IOException
 	{
-		Socket socket = new Socket(a, p);
+		Socket socket = new Socket(a.getInetAddress(), a.getPort());
 		Connection c = new Connection(socket, node);
 		connections.add(c);
 		return c;
+	}
+	
+	public Connection obtainConnectionForNode(NodeInformation ni)
+	{
+		Connection c = ni.getConnection();
+		if(c == null)
+		{
+			Address a = ni.getAddress();
+			if(a != null)
+			{
+				try 
+				{
+					c = createConnection(a);
+					ni.setConnection(c);
+				} 
+				catch (IOException e) 
+				{
+				}
+			}
+		}
+		return c;
+	}
+	
+	public void broadcastToAllConnections(Message msg)
+	{
+		for(int i = 0; i < connections.size(); i++)
+		{
+			connections.get(i).sendMessage(msg);
+		}
 	}
 	
 	public void dropConnection(Connection c)

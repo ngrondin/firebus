@@ -26,6 +26,7 @@ public class Connection extends Thread
 		listener = l;
 		quit = false;
 		msgState = 0;
+		setName("Firebus Connection Thread");
 		start();
 	}
 	
