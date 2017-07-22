@@ -13,15 +13,15 @@ public class Message
 	protected int originator;
 	protected int repeater;
 	protected int destination;
+	protected int correlation;
 	protected String subject;
 	protected byte[] payload;
 
 
 	public static final int MSGTYPE_ADVERTISE = 0;
 	public static final int MSGTYPE_QUERYNODE = 1;
-	public static final int MSGTYPE_FINDSERVICE = 2;
-	public static final int MSGTYPE_FINDPUBLISHER = 3;
-	public static final int MSGTYPE_FINDSUBSCRIBER = 4;
+	public static final int MSGTYPE_FIND = 2;
+	public static final int MSGTYPE_REQUESTCONTRACT = 4;
 	public static final int MSGTYPE_REQUESTSERVICE = 5;
 	public static final int MSGTYPE_SERVICERESPONSE = 6;
 	public static final int MSGTYPE_PUBLISH = 7;
@@ -37,26 +37,28 @@ public class Message
 		encoded = true;
 	}
 	
-	public Message(int d, int o, int r, int t, String s, byte[] p)
+	public Message(int d, int o, int r, int t, int c, String s, byte[] p)
 	{
 		id = nextId++;
 		destination = d;
 		originator = o;
 		repeater = r;
 		type = t;
+		correlation = c;
 		subject = s;
 		payload = p;
 		decoded = true;
 		encoded = false;
 	}
 	
-	private Message(int i, int d, int o, int r, int t, String s, byte[] p)
+	private Message(int i, int d, int o, int r, int t, int c, String s, byte[] p)
 	{
 		id = i;
 		destination = d;
 		originator = o;
 		repeater = r;
 		type = t;
+		correlation = c;
 		subject = s;
 		payload = p;
 		decoded = true;
@@ -65,7 +67,7 @@ public class Message
 	
 	public Message repeat(int r)
 	{
-		Message msg = new Message(id, destination, originator, r, type, subject, payload);
+		Message msg = new Message(id, destination, originator, r, type, correlation, subject, payload);
 		return msg;
 	}
 	
@@ -77,6 +79,7 @@ public class Message
 		originator = bb.getInt();
 		repeater = bb.getInt();
 		type = bb.getInt();
+		correlation = bb.getInt();
 		int subjectLen = bb.getInt();
 		subject = new String(encodedMessage, bb.position(), subjectLen);
 		bb.position(bb.position() + subjectLen);
@@ -87,7 +90,7 @@ public class Message
 	
 	public void encode()
 	{
-		int len = 24;
+		int len = 28;
 		if(subject != null)
 			len += subject.length();
 		if(payload != null)
@@ -98,6 +101,7 @@ public class Message
 		bb.putInt(originator);
 		bb.putInt(repeater);
 		bb.putInt(type);
+		bb.putInt(correlation);
 		if(subject != null)
 		{
 			bb.putInt(subject.length());
@@ -145,6 +149,11 @@ public class Message
 		return destination;
 	}
 	
+	public int getCorrelation()
+	{
+		return correlation;
+	}
+	
 	public String getSubject()
 	{
 		return subject;
@@ -177,20 +186,40 @@ public class Message
 		}
 		return crc;
 	}
-	
+	/*
+	public void setCorrelation(int c)
+	{
+		correlation = c;
+	}
+	*/
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append(destination);
+		sb.append("Destination: " + destination + "\r\n");
+		sb.append("Originator : " + originator + "\r\n");
+		sb.append("Repeater   : " + repeater + "\r\n");
+		sb.append("Type       : ");
+		if(type == Message.MSGTYPE_ADVERTISE)
+			sb.append("Advertise");
+		else if(type == Message.MSGTYPE_FIND)
+			sb.append("Find");
+		else if(type == Message.MSGTYPE_FIND)
+			sb.append("Find");
+		else if(type == Message.MSGTYPE_QUERYNODE)
+			sb.append("Query Node");
+		else if(type == Message.MSGTYPE_PUBLISH)
+			sb.append("Publish");
+		else if(type == Message.MSGTYPE_REQUESTSERVICE)
+			sb.append("Request Service");
+		else if(type == Message.MSGTYPE_SERVICERESPONSE)
+			sb.append("Service Response");
+		else if(type == Message.MSGTYPE_REQUESTCONTRACT)
+			sb.append("Request Contract");
+		else if(type == Message.MSGTYPE_RECALL)
+			sb.append("Recall");
 		sb.append("\r\n");
-		sb.append(originator);
-		sb.append("\r\n");
-		sb.append(repeater);
-		sb.append("\r\n");
-		sb.append(type);
-		sb.append("\r\n");
-		sb.append(subject);
-		sb.append("\r\n");
+		sb.append("Correlaton : " + correlation + "\r\n");
+		sb.append("Subject    : " + subject + "\r\n");
 		sb.append(new String(payload));
 		return sb.toString();
 	}

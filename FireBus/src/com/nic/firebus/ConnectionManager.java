@@ -58,7 +58,7 @@ public class ConnectionManager extends Thread
 	
 	public Connection createConnection(Address a) throws IOException
 	{
-		Socket socket = new Socket(a.getInetAddress(), a.getPort());
+		Socket socket = new Socket(a.getAddress(), a.getPort());
 		Connection c = new Connection(socket, node);
 		connections.add(c);
 		return c;
@@ -115,4 +115,17 @@ public class ConnectionManager extends Thread
 	{
 		return server.getLocalPort();
 	}
+	
+	public String getAddressAdvertisementString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(node.getNodeId());
+		sb.append(",a,");
+		sb.append(getLocalAddress().toString());
+		sb.append(",");
+		sb.append(getPort());
+		sb.append("\r\n");
+		return sb.toString();
+	}
+
 }

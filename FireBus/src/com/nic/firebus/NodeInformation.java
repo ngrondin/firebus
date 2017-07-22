@@ -69,5 +69,18 @@ public class NodeInformation
 				return services.get(i);
 		return null;
 	}
+	
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("Id        : " + nodeId + "\r\n");
+		sb.append("Address   : " + address + "\r\n");
+		for(int i = 0; i < repeaters.size(); i++)
+			sb.append("Repeater  : " + repeaters.get(i) + "\r\n");
+		for(int i = 0; i < services.size(); i++)
+			sb.append("Service   : " + services.get(i) + "\r\n");
+		sb.append("Connection: " + connection + "\r\n");
+		return sb.toString();
+	}
 
 }

@@ -1,14 +1,13 @@
 package com.nic.firebus;
 
-import java.net.InetAddress;
 
 public class Address
 {
-	protected InetAddress address;
+	protected String address;
 	protected int port;
 	protected Connection connection;
 	
-	public Address(InetAddress a, int p)
+	public Address(String a, int p)
 	{
 		address = a;
 		port = p;
@@ -19,7 +18,7 @@ public class Address
 		connection = c;
 	}
 	
-	public InetAddress getInetAddress()
+	public String getAddress()
 	{
 		return address;
 	}
@@ -27,6 +26,11 @@ public class Address
 	public int getPort()
 	{
 		return port;
+	}
+	
+	public String toString()
+	{
+		return address + ":" + port;
 	}
 
 }

@@ -41,11 +41,12 @@ public class MessageQueue
 	{
 		return messages.get(0);
 	}
-	
+		
 	public void deleteNextMessage()
 	{
 		messages.remove(0);
 	}
+
 	
 	
 }

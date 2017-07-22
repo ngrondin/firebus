@@ -1,23 +1,18 @@
 package com.nic.firebus;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Random;
 
-public class Node extends Thread implements ConnectionListener
+public class Node extends Thread implements ConnectionListener, FunctionListener
 {
 	protected int nodeId;
 	protected boolean quit;
 	protected MessageQueue inboundQueue;
 	protected MessageQueue outboundQueue;
 	protected ConnectionManager connectionManager;
+	protected FunctionManager functionManager;
 	protected Directory directory;
-	protected HashMap<String, ServiceProvider> serviceProviders;
+	protected CorrelationManager correlationManager;
 	
 	public Node()
 	{
@@ -37,8 +32,9 @@ public class Node extends Thread implements ConnectionListener
 		inboundQueue = new MessageQueue();
 		outboundQueue = new MessageQueue();
 		connectionManager = new ConnectionManager(port, this);
+		functionManager = new FunctionManager(this);
 		directory = new Directory();
-		serviceProviders = new HashMap<String, ServiceProvider>();		
+		correlationManager = new CorrelationManager();
 		setName("Firebus Node " + nodeId);
 		start();
 	}
@@ -48,13 +44,13 @@ public class Node extends Thread implements ConnectionListener
 		return nodeId;
 	}
 	
-	public void addKnownNodeAddress(InetAddress a, int p)
+	public void addKnownNodeAddress(String a, int p)
 	{
 		Address address = new Address(a, p);
 		try
 		{
 			Connection c = connectionManager.createConnection(address);
-			Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_QUERYNODE, null, null);
+			Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_QUERYNODE, 0, null, null);
 			c.sendMessage(msg);
 		} 
 		catch (IOException e)
@@ -75,7 +71,16 @@ public class Node extends Thread implements ConnectionListener
 			ni.setConnection(null);
 		connectionManager.dropConnection(c);
 	}
-	
+
+	public void functionCallback(int correlation, byte[] payload) 
+	{
+		Message originalMsg = correlationManager.getMessage(correlation);
+		correlationManager.removeCorrelation(correlation);
+		Message msg = new Message(originalMsg.getOriginator(), nodeId, 0, Message.MSGTYPE_SERVICERESPONSE, correlation, originalMsg.getSubject(), payload);
+		outboundQueue.addMessage(msg);
+	}
+
+
 	protected void processNextInboundMessage()
 	{
 		Message msg = inboundQueue.getNextMessage();
@@ -100,10 +105,20 @@ public class Node extends Thread implements ConnectionListener
 				switch(msg.getType())
 				{
 					case Message.MSGTYPE_ADVERTISE:
-						processInboundAdvertisement(msg);
+						directory.processAdvertisementMessage(msg.getPayload());
 						break;
 					case Message.MSGTYPE_QUERYNODE:
-						advertiseTo(msg.getOriginator());
+						advertiseTo(msg.getOriginator(), null);
+						break;
+					case Message.MSGTYPE_FIND:
+						advertiseTo(msg.getOriginator(), msg.getSubject());
+						break;
+					case Message.MSGTYPE_REQUESTSERVICE:
+						correlationManager.addMessage(msg.getCorrelation(), msg);
+						functionManager.requestService(msg.getSubject(), msg.getPayload(), msg.getCorrelation());
+						break;
+					case Message.MSGTYPE_SERVICERESPONSE:
+						correlationManager.addMessage(msg.getCorrelation(), msg);
 						break;
 				}
 			}
@@ -116,43 +131,6 @@ public class Node extends Thread implements ConnectionListener
 
 		inboundQueue.deleteNextMessage();
 	}
-	
-
-	protected void processInboundAdvertisement(Message msg)
-	{
-		BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(msg.getPayload())));
-		String line;
-		try 
-		{
-			while((line = br.readLine()) != null)
-			{
-				String[] parts = line.split(",");
-				int id = Integer.parseInt(parts[0]);
-				NodeInformation ni = directory.getOrCreateNode(id);
-				if(parts[1].equals("a"))
-				{
-					try
-					{
-						ni.setInetAddress(new Address(InetAddress.getByName(parts[2]), Integer.parseInt(parts[3])));
-					}
-					catch(Exception e)	{	}
-				}
-				else if(parts[1].equals("s"))
-				{
-					String serviceName = parts[2];
-					ServiceInformation si = ni.getService(serviceName);
-					if(si == null)
-						si = new ServiceInformation(serviceName);
-					ni.addService(si);
-				}
-			}
-		} 
-		catch (Exception e) 
-		{
-			e.printStackTrace();
-		} 
-	}
-	
 
 	protected void processNextOutboundMessage()
 	{
@@ -189,42 +167,36 @@ public class Node extends Thread implements ConnectionListener
 		outboundQueue.deleteNextMessage();
 	}
 	
+	protected void advertiseTo(int dest, String functionName)
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(connectionManager.getAddressAdvertisementString());
+		sb.append(functionManager.getFunctionAdvertisementString(functionName));
+		Message msg = new Message(dest, nodeId, 0, Message.MSGTYPE_ADVERTISE, 0, null, sb.toString().getBytes());
+		outboundQueue.addMessage(msg);
+	}
 	
 	public void registerServiceProvider(String serviceName, ServiceProvider serviceProvider)
 	{
-		serviceProviders.put(serviceName, serviceProvider);
-		advertise();
-	}
-	
-	protected void advertise()
-	{
-		advertiseTo(0);
-	}
-	
-	protected void advertiseTo(int dest)
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append(nodeId);
-		sb.append(",a,");
-		sb.append(connectionManager.getLocalAddress().toString());
-		sb.append(",");
-		sb.append(connectionManager.getPort());
-		sb.append("\r\n");
-
-		Iterator<String> it = serviceProviders.keySet().iterator();
-		while(it.hasNext())
-		{
-			String serviceName = it.next();
-			sb.append(nodeId);
-			sb.append(",s,");
-			sb.append(serviceName);
-			sb.append("\r\n");
-		}
-		Message msg = new Message(dest, nodeId, 0, Message.MSGTYPE_ADVERTISE, null, sb.toString().getBytes());
-		outboundQueue.addMessage(msg);
+		functionManager.addFunction(serviceName, serviceProvider);
+		advertiseTo(0, serviceName);
 	}
 		
-	
+	public byte[] requestService(String serviceName, byte[] payload)
+	{
+		NodeInformation ni = directory.findServiceProvider(serviceName);
+		int correlation = correlationManager.getNextCorrelation();
+		Message msg = new Message(ni.getNodeId(), nodeId, 0, Message.MSGTYPE_REQUESTSERVICE, correlation, serviceName, payload);
+		outboundQueue.addMessage(msg);
+		
+		while(!correlationManager.hasMessage(correlation))
+			try {sleep(10);} catch (Exception e) {}
+
+		byte[] returnPayload = correlationManager.getMessage(correlation).getPayload();
+		correlationManager.removeCorrelation(correlation);
+		return returnPayload;
+	}		
+
 	public void run()
 	{
 		while(!quit)
