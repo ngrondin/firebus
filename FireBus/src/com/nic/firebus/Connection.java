@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class Connection extends Thread 
 {
@@ -17,6 +18,8 @@ public class Connection extends Thread
 	protected int msgPos;
 	protected int msgCRC;
 	protected byte[] msg;
+	//protected Address address;
+	protected NodeInformation nodeInformation;
 	
 	public Connection(Socket s, ConnectionListener l) throws IOException
 	{
@@ -30,17 +33,62 @@ public class Connection extends Thread
 		start();
 	}
 	
+	public Connection(Address a, ConnectionListener l) throws UnknownHostException, IOException
+	{
+		socket = new Socket(a.getAddress(), a.getPort());
+		is = socket.getInputStream();
+		os = socket.getOutputStream();
+		//setAddress(a);
+		listener = l;
+		quit = false;
+		msgState = 0;
+		setName("Firebus Connection");
+		start();
+	}
 	
+	/*
+	public void setAddress(Address a)
+	{
+		if((address != null && a == null) || (address == null && a != null) || (address != null && a != null && a != address))
+		{
+			Address oldAddress = address;
+			address = a;
+			if(oldAddress != null)
+				oldAddress.setConnection(null);
+			if(address != null)
+				address.setConnection(this);
+		}
+	}
+	
+	public void setNodeInformation(NodeInformation ni)
+	{
+		if((nodeInformation != null && ni == null) || (nodeInformation == null && ni != null) || (nodeInformation != null && ni != null && ni != nodeInformation))
+		{
+			NodeInformation oldNI = nodeInformation;
+			nodeInformation = ni;
+			if(oldNI != null)
+				oldNI.setConnection(null);
+			if(nodeInformation != null)
+				nodeInformation.setConnection(this);
+		}
+	}
+	*/
 	public String getRemoteAddress()
 	{
 		return socket.getInetAddress().getHostAddress();
 	}
+	
 	/*
-	public String getLocalAddress()
+	public Address getAddress()
 	{
-		return socket.getLocalAddress().getHostAddress();
+		return address;
 	}
 	*/
+	public NodeInformation getNodeInformation()
+	{
+		return nodeInformation;
+	}
+
 	public void run()
 	{
 		while(!quit)
@@ -113,6 +161,12 @@ public class Connection extends Thread
 	
 	public void close()
 	{
+		
+		/*if(nodeInformation != null)
+			nodeInformation.setConnection(null);
+		if(address != null)
+			address.setConnection(null);
+		*/
 		quit = true;
 		try 
 		{

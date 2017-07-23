@@ -58,8 +58,7 @@ public class ConnectionManager extends Thread
 	
 	public Connection createConnection(Address a) throws IOException
 	{
-		Socket socket = new Socket(a.getAddress(), a.getPort());
-		Connection c = new Connection(socket, node);
+		Connection c = new Connection(a, node);
 		connections.add(c);
 		return c;
 	}
@@ -69,13 +68,14 @@ public class ConnectionManager extends Thread
 		Connection c = ni.getConnection();
 		if(c == null)
 		{
-			Address a = ni.getAddress();
-			if(a != null)
+			for(int i = 0; i < ni.getAddressCount(); i++)
 			{
+				Address a = ni.getAddress(i);
 				try 
 				{
 					c = createConnection(a);
 					ni.setConnection(c);
+					break;
 				} 
 				catch (IOException e) 
 				{
@@ -93,7 +93,7 @@ public class ConnectionManager extends Thread
 		}
 	}
 	
-	public void dropConnection(Connection c)
+	public void removeConnection(Connection c)
 	{
 		c.close();
 		connections.remove(c);
@@ -121,7 +121,7 @@ public class ConnectionManager extends Thread
 		StringBuilder sb = new StringBuilder();
 		sb.append(node.getNodeId());
 		sb.append(",a,");
-		sb.append(getLocalAddress().toString());
+		sb.append(getLocalAddress().getHostAddress());
 		sb.append(",");
 		sb.append(getPort());
 		sb.append("\r\n");

@@ -1,12 +1,13 @@
 package com.nic.firebus;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Node extends Thread implements ConnectionListener, FunctionListener
 {
 	protected int nodeId;
 	protected boolean quit;
+	protected long lastAddressResolution;
 	protected MessageQueue inboundQueue;
 	protected MessageQueue outboundQueue;
 	protected ConnectionManager connectionManager;
@@ -47,15 +48,14 @@ public class Node extends Thread implements ConnectionListener, FunctionListener
 	public void addKnownNodeAddress(String a, int p)
 	{
 		Address address = new Address(a, p);
-		try
+		NodeInformation ni = directory.getNodeByAddress(address);
+		if(ni == null)
 		{
-			Connection c = connectionManager.createConnection(address);
-			Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_QUERYNODE, 0, null, null);
-			c.sendMessage(msg);
-		} 
-		catch (IOException e)
-		{
-			e.printStackTrace();
+			ni = new NodeInformation(address);
+			directory.addNode(ni);
+			Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_DISCOVER, 0, null, null);
+			msg.setRepeatsLeft(0);
+			outboundQueue.addMessage(msg);
 		}
 	}
 
@@ -66,10 +66,7 @@ public class Node extends Thread implements ConnectionListener, FunctionListener
 
 	public void connectionClosed(Connection c) 
 	{
-		NodeInformation ni = directory.getNodeByConnection(c);
-		if(ni != null)
-			ni.setConnection(null);
-		connectionManager.dropConnection(c);
+		connectionManager.removeConnection(c);
 	}
 
 	public void functionCallback(int correlation, byte[] payload) 
@@ -80,6 +77,16 @@ public class Node extends Thread implements ConnectionListener, FunctionListener
 		outboundQueue.addMessage(msg);
 	}
 
+	protected void resolveAddresses()
+	{
+		ArrayList<NodeInformation> nodes = directory.getUnresolvedAndUnconnected();
+		for(int i = 0; i < nodes.size(); i++)
+		{
+			NodeInformation ni = nodes.get(i);
+			Connection connection = connectionManager.obtainConnectionForNode(ni);
+			ni.setConnection(connection);
+		}
+	}
 
 	protected void processNextInboundMessage()
 	{
@@ -88,16 +95,24 @@ public class Node extends Thread implements ConnectionListener, FunctionListener
 		
 		if(msg.getOriginator() != nodeId)
 		{
-			NodeInformation orig = directory.getOrCreateNode(msg.getOriginator());
-			if(msg.getRepeater() != 0)
+			int originatorId = msg.getOriginator();
+			int repeaterId = msg.getRepeater();
+			int connectedNodeId = repeaterId == 0 ? originatorId : repeaterId;
+			NodeInformation connectedNode = directory.getNodeByConnection(msg.getConnection());
+			if(connectedNode == null)
 			{
-				NodeInformation rpt = directory.getOrCreateNode(msg.getRepeater());
-				rpt.setConnection(msg.getConnection());
-				orig.addRepeater(msg.getRepeater());
+				connectedNode = directory.getOrCreateNodeById(connectedNodeId);
+				connectedNode.setConnection(msg.getConnection());
 			}
-			else
+			else if(connectedNode.getNodeId() == 0)
 			{
-				orig.setConnection(msg.getConnection());
+				connectedNode.setNodeId(connectedNodeId);
+			}
+
+			if(repeaterId != 0)
+			{
+				NodeInformation originatorNode = directory.getOrCreateNodeById(originatorId);
+				originatorNode.addRepeater(repeaterId);
 			}
 			
 			if(msg.getDestination() == 0  ||  msg.getDestination() == nodeId)
@@ -107,11 +122,12 @@ public class Node extends Thread implements ConnectionListener, FunctionListener
 					case Message.MSGTYPE_ADVERTISE:
 						directory.processAdvertisementMessage(msg.getPayload());
 						break;
-					case Message.MSGTYPE_QUERYNODE:
+					case Message.MSGTYPE_DISCOVER:
 						advertiseTo(msg.getOriginator(), null);
 						break;
 					case Message.MSGTYPE_FIND:
-						advertiseTo(msg.getOriginator(), msg.getSubject());
+						if(functionManager.find(msg.getSubject()) != null)
+							advertiseTo(msg.getOriginator(), msg.getSubject());
 						break;
 					case Message.MSGTYPE_REQUESTSERVICE:
 						correlationManager.addMessage(msg.getCorrelation(), msg);
@@ -125,8 +141,11 @@ public class Node extends Thread implements ConnectionListener, FunctionListener
 			
 			if(msg.getDestination() == 0  ||  msg.getDestination() != nodeId)
 			{
-				outboundQueue.addMessage(msg.repeat(nodeId));
+				if(msg.getRepeatCount() > 0)
+					outboundQueue.addMessage(msg.repeat(nodeId));
 			}
+			
+			System.out.println("****Inbound****************\r\n" + msg);
 		}
 
 		inboundQueue.deleteNextMessage();
@@ -141,14 +160,14 @@ public class Node extends Thread implements ConnectionListener, FunctionListener
 		
 		if(dest != 0)
 		{
-			NodeInformation ni = directory.getOrCreateNode(dest);
+			NodeInformation ni = directory.getOrCreateNodeById(dest);
 			c = connectionManager.obtainConnectionForNode(ni);
 			if(c == null)
 			{
 				int rpt = ni.getRandomRepeater();
 				if(rpt != 0)
 				{
-					ni = directory.getNode(rpt);
+					ni = directory.getNodeById(rpt);
 					c = connectionManager.obtainConnectionForNode(ni);
 				}
 			}		
@@ -164,6 +183,7 @@ public class Node extends Thread implements ConnectionListener, FunctionListener
 			c.sendMessage(msg);
 		}
 		
+		System.out.println("****Oubound**************\r\n" + msg);
 		outboundQueue.deleteNextMessage();
 	}
 	
@@ -185,6 +205,14 @@ public class Node extends Thread implements ConnectionListener, FunctionListener
 	public byte[] requestService(String serviceName, byte[] payload)
 	{
 		NodeInformation ni = directory.findServiceProvider(serviceName);
+		if(ni == null)
+		{
+			Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_FIND, 0, serviceName, null);
+			outboundQueue.addMessage(msg);
+			while((ni = directory.findServiceProvider(serviceName)) == null)
+				try {sleep(10);} catch (Exception e) {}
+		}
+		
 		int correlation = correlationManager.getNextCorrelation();
 		Message msg = new Message(ni.getNodeId(), nodeId, 0, Message.MSGTYPE_REQUESTSERVICE, correlation, serviceName, payload);
 		outboundQueue.addMessage(msg);
@@ -201,8 +229,13 @@ public class Node extends Thread implements ConnectionListener, FunctionListener
 	{
 		while(!quit)
 		{
+			//long currentTime = System.currentTimeMillis();
 			try
 			{
+				if(directory.getUnresolvedAndUnconnectedCount() > 0)
+				{
+					resolveAddresses();
+				}
 				if(inboundQueue.getMessageCount() > 0)
 				{
 					processNextInboundMessage();
