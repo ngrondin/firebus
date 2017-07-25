@@ -15,6 +15,7 @@ public class Node extends Thread
 	protected ConnectionManager connectionManager;
 	protected FunctionManager functionManager;
 	protected Directory directory;
+	protected DiscoveryManager discoveryManager;
 	protected CorrelationManager correlationManager;
 	protected ArrayList<Address> knownAddresses;
 	
@@ -71,6 +72,7 @@ public class Node extends Thread
 		connectionManager = new ConnectionManager(port, nodeConnectionListener);
 		functionManager = new FunctionManager(nodeFunctionListener);
 		directory = new Directory();
+		discoveryManager = new DiscoveryManager();
 		correlationManager = new CorrelationManager();
 		knownAddresses = new ArrayList<Address>();
 		setName("Firebus Node " + nodeId);
@@ -277,6 +279,7 @@ public class Node extends Thread
 			//long currentTime = System.currentTimeMillis();
 			try
 			{
+				discoveryManager.sendDiscoveryRequest();
 				resolveKnownAddresses();
 				if(inboundQueue.getMessageCount() > 0)
 				{
