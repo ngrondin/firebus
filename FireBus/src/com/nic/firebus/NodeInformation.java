@@ -5,27 +5,62 @@ import java.util.Random;
 
 public class NodeInformation 
 {
-	protected ArrayList<ServiceInformation> services;
 	protected int nodeId;
-	protected Address address;
 	protected Connection connection;
+	protected ArrayList<Address> addresses;
 	protected ArrayList<Integer> repeaters;
+	protected ArrayList<ServiceInformation> services;
+	protected long lastSentDiscovery;
+	protected long lastAdvertised;
+	
 	
 	public NodeInformation(int ni)
 	{
 		nodeId = ni;
+		initialise();
+	}
+	/*
+	public NodeInformation(Address a)
+	{
+		initialise();
+		addAddress(a);
+	}
+	*/
+	protected void initialise()
+	{
 		services = new ArrayList<ServiceInformation>();
 		repeaters = new ArrayList<Integer>();
+		addresses = new ArrayList<Address>();
 	}
-	
+	/*
+	public void setNodeId(int i)
+	{
+		nodeId = i;
+	}
+	*/
 	public void setConnection(Connection c)
 	{
 		connection = c;
 	}
 	
-	public void setInetAddress(Address a)
+	public void setLastDiscoverySentTime(long t)
 	{
-		address = a;
+		lastSentDiscovery = t;
+	}
+	
+	public void setLastAdvertisedTime(long t)
+	{
+		lastAdvertised = t;
+	}
+	
+	public void addAddress(Address a)
+	{
+		boolean alreadyHasAddress = false;
+		for(int i = 0; i < addresses.size(); i++)
+			if(addresses.get(i).equals(a))
+				alreadyHasAddress = true;
+		if(!alreadyHasAddress)
+			addresses.add(a);
 	}
 	
 	public void addRepeater(int id)
@@ -34,9 +69,14 @@ public class NodeInformation
 			repeaters.add(id);
 	}
 	
-	public void addService(ServiceInformation si)
+	public void addServiceInformation(ServiceInformation si)
 	{
-		services.add(si);
+		boolean alreadyHasAddress = false;
+		for(int i = 0; i < services.size(); i++)
+			if(services.get(i).getServiceName().equals(si.getServiceName()))
+				alreadyHasAddress = true;
+		if(!alreadyHasAddress)
+			services.add(si);
 	}
 	
 	public int getNodeId()
@@ -44,14 +84,37 @@ public class NodeInformation
 		return nodeId;
 	}
 	
-	public Address getAddress()
+	public int getAddressCount()
 	{
-		return address;
+		return addresses.size();
+	}
+	
+	public Address getAddress(int i)
+	{
+		return addresses.get(i);
 	}
 		
+	public boolean containsAddress(Address a)
+	{
+		for(int i = 0; i < addresses.size(); i++)
+			if(addresses.get(i).equals(a))
+				return true;
+		return false;
+	}
+	
 	public Connection getConnection()
 	{
 		return connection;
+	}
+	
+	public long getLastDiscoverySentTime()
+	{
+		return lastSentDiscovery;
+	}
+	
+	public long getLastAdvertisedTime()
+	{
+		return lastAdvertised;
 	}
 	
 	public int getRandomRepeater()
@@ -62,12 +125,26 @@ public class NodeInformation
 		return 0;
 	}
 	
-	public ServiceInformation getService(String sn)
+	public ServiceInformation getServiceInformation(String sn)
 	{
 		for(int i = 0; i < services.size(); i++)
 			if(services.get(i).getServiceName().equals(sn))
 				return services.get(i);
 		return null;
+	}
+	
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("Id        : " + nodeId + "\r\n");
+		for(int i = 0; i < addresses.size(); i++)
+			sb.append("Address   : " + addresses.get(i) + "\r\n");
+		for(int i = 0; i < repeaters.size(); i++)
+			sb.append("Repeater  : " + repeaters.get(i) + "\r\n");
+		for(int i = 0; i < services.size(); i++)
+			sb.append("Service   : " + services.get(i) + "\r\n");
+		sb.append("Connection: " + connection + "\r\n");
+		return sb.toString();
 	}
 
 }

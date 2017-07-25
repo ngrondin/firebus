@@ -14,4 +14,8 @@ public class ServiceInformation
 		return serviceName;
 	}
 	
+	public String toString()
+	{
+		return serviceName;
+	}
 }
