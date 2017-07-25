@@ -12,26 +12,26 @@ public class ConnectionManager extends Thread
 	protected int port;
 	protected boolean quit;
 	protected ServerSocket server;
-	protected Node node;
+	protected ConnectionListener connectionListener;
 	protected ArrayList<Connection> connections;
 	
-	public ConnectionManager(Node n)
+	public ConnectionManager(ConnectionListener cl)
 	{
-		initialise(n, 1991);
+		initialise(cl, 1991);
 	}
 	
-	public ConnectionManager(int p, Node n)
+	public ConnectionManager(int p, ConnectionListener cl)
 	{
-		initialise(n, p);
+		initialise(cl, p);
 	}
 	
-	protected void initialise(Node n, int p)
+	protected void initialise(ConnectionListener cl, int p)
 	{
 		connections = new ArrayList<Connection>();
 		port = p;
 		quit = false;
-		node = n;
-		setName("Firebus Node " + n.getNodeId() + " Connection Manager");
+		connectionListener = cl;
+		setName("Firebus Node Connection Manager");
 		start();		
 	}
 
@@ -45,7 +45,7 @@ public class ConnectionManager extends Thread
 				while(!quit)
 				{
 					Socket socket = server.accept();
-					Connection connection = new Connection(socket, node);
+					Connection connection = new Connection(socket, connectionListener);
 					connections.add(connection);
 				}
 			} 
@@ -58,7 +58,7 @@ public class ConnectionManager extends Thread
 	
 	public Connection createConnection(Address a) throws IOException
 	{
-		Connection c = new Connection(a, node);
+		Connection c = new Connection(a, connectionListener);
 		connections.add(c);
 		return c;
 	}
@@ -116,10 +116,10 @@ public class ConnectionManager extends Thread
 		return server.getLocalPort();
 	}
 	
-	public String getAddressAdvertisementString()
+	public String getAddressAdvertisementString(int nodeId)
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append(node.getNodeId());
+		sb.append(nodeId);
 		sb.append(",a,");
 		sb.append(getLocalAddress().getHostAddress());
 		sb.append(",");

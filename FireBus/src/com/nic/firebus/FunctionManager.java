@@ -5,12 +5,12 @@ import java.util.Iterator;
 
 public class FunctionManager 
 {
-	protected Node node;
+	protected FunctionListener functionListener;;
 	protected HashMap<String, BusFunction> functions;
 	
-	public FunctionManager(Node n)
+	public FunctionManager(FunctionListener fl)
 	{
-		node = n;
+		functionListener = fl;
 		functions = new HashMap<String, BusFunction>();
 	}
 	
@@ -24,7 +24,7 @@ public class FunctionManager
 		return functions.get(n);
 	}
 	
-	public String getFunctionAdvertisementString(String n)
+	public String getFunctionAdvertisementString(int nodeId, String n)
 	{
 		StringBuilder sb = new StringBuilder();
 		Iterator<String> it = functions.keySet().iterator();
@@ -36,7 +36,7 @@ public class FunctionManager
 				BusFunction f = functions.get(functionName);
 				if(f != null)
 				{
-					sb.append(node.getNodeId());
+					sb.append(nodeId);
 					if(f instanceof ServiceProvider)
 						sb.append(",s,");
 					if(f instanceof Publisher)
@@ -55,7 +55,7 @@ public class FunctionManager
 	{
 		BusFunction f = functions.get(functionName);
 		if(f instanceof ServiceProvider)
-			new FunctionWorker(f, payload, node, correlation);
+			new FunctionWorker(f, payload, functionListener, correlation);
 	}
 	
 	public void consume(String name, byte[] payload)
@@ -65,4 +65,15 @@ public class FunctionManager
 			new FunctionWorker(f, payload);
 	}
 
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		Iterator<String> it = functions.keySet().iterator();
+		while(it.hasNext())
+		{
+			String fn = it.next();
+			sb.append(fn + "  " + functions.get(fn) + "\r\n");
+		}
+		return sb.toString();
+	}
 }

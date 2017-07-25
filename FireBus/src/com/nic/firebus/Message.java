@@ -8,10 +8,13 @@ public class Message
 	protected byte[] encodedMessage;
 	protected boolean decoded;
 	protected boolean encoded;
-	protected int id;
-	protected int originator;
-	protected int destination;
-	protected int repeater;
+	protected int messageId;
+	protected int originatorId;
+	//protected NodeInformation originator;
+	protected int destinationId;
+	//protected NodeInformation destination;
+	protected int repeaterId;
+	//protected NodeInformation repeater;
 	protected int repeatCount;
 	protected int repeatsLeft;
 	protected int type;
@@ -39,13 +42,13 @@ public class Message
 		decoded = false;
 		encoded = true;
 	}
-	
+
 	public Message(int d, int o, int r, int t, int c, String s, byte[] p)
 	{
-		id = nextId++;
-		destination = d;
-		originator = o;
-		repeater = r;
+		messageId = nextId++;
+		destinationId = d;
+		originatorId = o;
+		repeaterId = r;
 		repeatCount = 0;
 		repeatsLeft = 10;
 		type = t;
@@ -58,10 +61,10 @@ public class Message
 	
 	private Message(int i, int d, int o, int r, int rc, int rl, int t, int c, String s, byte[] p)
 	{
-		id = i;
-		destination = d;
-		originator = o;
-		repeater = r;
+		messageId = i;
+		destinationId = d;
+		originatorId = o;
+		repeaterId = r;
 		repeatCount = rc;
 		repeatsLeft = rl;
 		type = t;
@@ -74,17 +77,81 @@ public class Message
 	
 	public Message repeat(int r)
 	{
-		Message msg = new Message(id, destination, originator, r, repeatCount + 1, repeatsLeft - 1, type, correlation, subject, payload);
+		Message msg = new Message(messageId, destinationId, originatorId, r, repeatCount + 1, repeatsLeft - 1, type, correlation, subject, payload);
 		return msg;
 	}
+	/*
+	public Message(NodeInformation d, NodeInformation o, NodeInformation r, int t, int c, String s, byte[] p)
+	{
+		messageId = nextId++;
+		if(d != null)
+		{
+			destination = d;
+			destinationId = d.getNodeId();
+		}
+		if(o != null)
+		{
+			originator = o;
+			originatorId = o.getNodeId();
+		}
+		if(r != null)
+		{
+			repeater = r;
+			repeaterId = r.getNodeId();
+		}
+		repeatCount = 0;
+		repeatsLeft = 10;
+		type = t;
+		correlation = c;
+		subject = s;
+		payload = p;
+		decoded = true;
+		encoded = false;
+	}
+	
+	private Message(int i, NodeInformation d, NodeInformation o, NodeInformation r, int rc, int rl, int t, int c, String s, byte[] p)
+	{
+		messageId = i;
+		if(d != null)
+		{
+			destination = d;
+			destinationId = d.getNodeId();
+		}
+		if(o != null)
+		{
+			originator = o;
+			originatorId = o.getNodeId();
+		}
+		if(r != null)
+		{
+			repeater = r;
+			repeaterId = r.getNodeId();
+		}
+		repeatCount = rc;
+		repeatsLeft = rl;
+		type = t;
+		correlation = c;
+		subject = s;
+		payload = p;
+		decoded = true;
+		encoded = false;		
+	}
+	
+	public Message repeat(NodeInformation r)
+	{
+		Message msg = new Message(messageId, destination, originator, r, repeatCount + 1, repeatsLeft - 1, type, correlation, subject, payload);
+		return msg;
+	}
+	*/
+	
 	
 	public void decode()
 	{
 		ByteBuffer bb = ByteBuffer.wrap(encodedMessage);
-		id = bb.getInt();
-		destination = bb.getInt();
-		originator = bb.getInt();
-		repeater = bb.getInt();
+		messageId = bb.getInt();
+		destinationId = bb.getInt();
+		originatorId = bb.getInt();
+		repeaterId = bb.getInt();
 		repeatCount = bb.get();
 		repeatsLeft = bb.get();
 		type = bb.get();
@@ -105,10 +172,10 @@ public class Message
 		if(payload != null)
 			len += payload.length;
 		ByteBuffer bb = ByteBuffer.allocate(len);
-		bb.putInt(id);
-		bb.putInt(destination);
-		bb.putInt(originator);
-		bb.putInt(repeater);
+		bb.putInt(messageId);
+		bb.putInt(destinationId);
+		bb.putInt(originatorId);
+		bb.putInt(repeaterId);
 		bb.put((byte)repeatCount);
 		bb.put((byte)repeatsLeft);
 		bb.put((byte)type);
@@ -135,14 +202,39 @@ public class Message
 		repeatsLeft = rl;
 	}
 	
+	/*
+	public void setDestination(NodeInformation d)
+	{
+		destination = d;
+		destinationId = d.getNodeId();
+	}
+	
+	public void setOriginator(NodeInformation o)
+	{
+		originator = o;
+		originatorId = o.getNodeId();
+	}
+	
+	public void setRepeater(NodeInformation r)
+	{
+		repeater = r;
+		repeaterId = r.getNodeId();
+	}
+	*/
+	
+	public void setConnection(Connection c)
+	{
+		connection = c;
+	}
+	
 	public int getid()
 	{
-		return id;
+		return messageId;
 	}
 	
 	public long getUniversalId()
 	{
-		return ((((long)originator) << 32) + id);
+		return ((((long)originatorId) << 32) + messageId);
 	}
 
 	public int getType()
@@ -150,19 +242,35 @@ public class Message
 		return type;
 	}
 	
-	public int getOriginator()
+	/*
+	public NodeInformation getOriginator()
 	{
 		return originator;
 	}
-	
-	public int getRepeater()
+	*/
+	public int getOriginatorId()
+	{
+		return originatorId;
+	}
+	/*
+	public NodeInformation getRepeater()
 	{
 		return repeater;
 	}
-	
-	public int getDestination()
+	*/
+	public int getRepeaterId()
+	{
+		return repeaterId;
+	}
+	/*
+	public NodeInformation getDestination()
 	{
 		return destination;
+	}
+	*/
+	public int getDestinationId()
+	{
+		return destinationId;
 	}
 	
 	public int getCorrelation()
@@ -216,10 +324,10 @@ public class Message
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("Message Id   : " + id + "\r\n");
-		sb.append("Destination  : " + destination + "\r\n");
-		sb.append("Originator   : " + originator + "\r\n");
-		sb.append("Repeater     : " + repeater + "\r\n");
+		sb.append("Message Id   : " + messageId + "\r\n");
+		sb.append("Destination  : " + destinationId + "\r\n");
+		sb.append("Originator   : " + originatorId + "\r\n");
+		sb.append("Repeater     : " + repeaterId + "\r\n");
 		sb.append("Repeat Count : " + repeatCount + "\r\n");
 		sb.append("Repeats Left : " + repeatsLeft + "\r\n");
 		sb.append("Type         : ");

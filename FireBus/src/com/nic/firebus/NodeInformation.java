@@ -6,70 +6,61 @@ import java.util.Random;
 public class NodeInformation 
 {
 	protected int nodeId;
-	//protected Address address;
 	protected Connection connection;
 	protected ArrayList<Address> addresses;
 	protected ArrayList<Integer> repeaters;
 	protected ArrayList<ServiceInformation> services;
+	protected long lastSentDiscovery;
+	protected long lastAdvertised;
+	
 	
 	public NodeInformation(int ni)
 	{
 		nodeId = ni;
 		initialise();
 	}
-	
+	/*
 	public NodeInformation(Address a)
 	{
 		initialise();
 		addAddress(a);
 	}
-	
+	*/
 	protected void initialise()
 	{
 		services = new ArrayList<ServiceInformation>();
 		repeaters = new ArrayList<Integer>();
 		addresses = new ArrayList<Address>();
 	}
-	
+	/*
 	public void setNodeId(int i)
 	{
 		nodeId = i;
 	}
-	
+	*/
 	public void setConnection(Connection c)
 	{
 		connection = c;
-		/*
-		if((connection == null  && c != null) || (connection != null && c == null) || (connection != null && c != null && connection != c))
-		{
-			Connection oldConn = connection;
-			connection = c;
-			if(oldConn != null)
-				oldConn.setNodeInformation(null);
-			if(connection != null)
-				connection.setNodeInformation(this);
-			if(connection != null && connection.getAddress() != null)
-				setAddress(connection.getAddress());
-		}
-		*/
+	}
+	
+	public void setLastDiscoverySentTime(long t)
+	{
+		lastSentDiscovery = t;
+	}
+	
+	public void setLastAdvertisedTime(long t)
+	{
+		lastAdvertised = t;
 	}
 	
 	public void addAddress(Address a)
 	{
-		addresses.add(a);
-		/*
-		if((address != null && a == null) || (address == null && a != null) || (address != null && a != null && a != address))
-		{
-			Address oldAddress = address;
-			address = a;
-			if(oldAddress != null)
-				oldAddress.setNodeInformation(null);
-			if(address != null)
-				address.setNodeInformation(this);
-			if(address != null && address.getConnection() != null)
-				setConnection(address.getConnection());
-		}
-		*/
+		boolean alreadyHasAddress = false;
+		for(int i = 0; i < addresses.size(); i++)
+			if(addresses.get(i).equals(a))
+				alreadyHasAddress = true;
+		if(!alreadyHasAddress)
+			addresses.add(a);
 	}
 	
 	public void addRepeater(int id)
@@ -80,7 +71,12 @@ public class NodeInformation
 	
 	public void addServiceInformation(ServiceInformation si)
 	{
-		services.add(si);
+		boolean alreadyHasAddress = false;
+		for(int i = 0; i < services.size(); i++)
+			if(services.get(i).getServiceName().equals(si.getServiceName()))
+				alreadyHasAddress = true;
+		if(!alreadyHasAddress)
+			services.add(si);
 	}
 	
 	public int getNodeId()
@@ -109,6 +105,16 @@ public class NodeInformation
 	public Connection getConnection()
 	{
 		return connection;
+	}
+	
+	public long getLastDiscoverySentTime()
+	{
+		return lastSentDiscovery;
+	}
+	
+	public long getLastAdvertisedTime()
+	{
+		return lastAdvertised;
 	}
 	
 	public int getRandomRepeater()

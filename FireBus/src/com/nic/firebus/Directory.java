@@ -41,7 +41,7 @@ public class Directory
 		return null;
 	}
 	
-	
+	/*
 	public NodeInformation getOrCreateNodeById(int id)
 	{
 		NodeInformation ni = getNodeById(id);
@@ -50,7 +50,8 @@ public class Directory
 		addNode(ni);
 		return ni;
 	}
-	
+	*/
+	/*
 	public NodeInformation getOrCreateNodeByAddress(Address a)
 	{
 		NodeInformation ni = getNodeByAddress(a);
@@ -59,7 +60,7 @@ public class Directory
 		addNode(ni);
 		return ni;
 	}
-	
+	*/
 	
 	/*
 	public NodeInformation getNodeByConnection(Connection c)
@@ -92,7 +93,14 @@ public class Directory
 			addNode(a.getNodeInformation());
 	}
 	*/
-
+	/*
+	public void resolveMessageNodes(Message msg)
+	{
+		msg.setDestination(getOrCreateNodeById(msg.getDestinationId()));
+		msg.setRepeater(getNodeById(msg.getRepeaterId()));
+		msg.setOriginator(getNodeById(msg.getOriginatorId()));
+	}
+*/
 	public void processAdvertisementMessage(byte[] payload)
 	{
 		BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(payload)));
@@ -106,6 +114,7 @@ public class Directory
 				NodeInformation ni = getNodeById(id);
 				if(ni != null)
 				{
+					ni.setLastAdvertisedTime(System.currentTimeMillis());
 					if(parts[1].equals("a"))
 					{
 						ni.addAddress(new Address(parts[2], Integer.parseInt(parts[3])));
@@ -137,23 +146,23 @@ public class Directory
 		}
 		return null;
 	}
-	
-	public ArrayList<NodeInformation> getUnresolvedAndUnconnected()
+	/*
+	public ArrayList<NodeInformation> getNodesToDiscover()
 	{
+		long currentTime = System.currentTimeMillis();
 		ArrayList<NodeInformation> ua = new ArrayList<NodeInformation>();
 		for(int i = 0; i < nodes.size(); i++)
-			if(nodes.get(i).getNodeId() == 0  &&  nodes.get(i).getConnection() == null)
+		{
+			NodeInformation ni = nodes.get(i);
+			if(ni.getNodeId() == 0  &&  ni.getLastDiscoverySentTime() < (currentTime - 10000))
 				ua.add(nodes.get(i));
+		}
 		return ua;		
 	}
-	
-	public int getUnresolvedAndUnconnectedCount()
+	*/
+	public void cleanUp()
 	{
-		int c = 0;
-		for(int i = 0; i < nodes.size(); i++)
-			if(nodes.get(i).getNodeId() == 0  &&  nodes.get(i).getConnection() == null)
-				c++;
-		return c;
+		
 	}
 	
 	public String toString()
@@ -167,7 +176,7 @@ public class Directory
 		{
 			for(int i = 0; i < nodes.size(); i++)
 			{
-				sb.append("---------------------\r\n");
+				sb.append("---------Directory Entry--\r\n");
 				sb.append(nodes.get(i).toString() + "\r\n\r\n");
 			}
 		}
