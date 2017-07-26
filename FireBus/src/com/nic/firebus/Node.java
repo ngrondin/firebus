@@ -4,21 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Node extends Thread
+public class Node
 {
-	//protected NodeInformation selfInformation;
-	protected int nodeId;
-	protected boolean quit;
-	protected long lastAddressResolution;
-	protected MessageQueue inboundQueue;
-	protected MessageQueue outboundQueue;
-	protected ConnectionManager connectionManager;
-	protected FunctionManager functionManager;
-	protected Directory directory;
-	protected DiscoveryManager discoveryManager;
-	protected CorrelationManager correlationManager;
-	protected ArrayList<Address> knownAddresses;
-	
 	protected class NodeConnectionListener implements ConnectionListener
 	{
 		public void connectionCreated(Connection c) 
@@ -32,6 +19,8 @@ public class Node extends Thread
 
 		public void connectionClosed(Connection c) 
 		{
+			NodeInformation ni = directory.getNodeByConnection(c);
+			ni.setConnection(null);
 			connectionManager.removeConnection(c);
 		}
 	}
@@ -47,36 +36,87 @@ public class Node extends Thread
 		}
 	}
 	
+	protected class NodeDiscoveryListener implements DiscoveryListener
+	{
+		public void nodeDiscovered(int id, String address, int port)
+		{
+			Address a = new Address(address, port);
+			NodeInformation ni = directory.getNodeById(id);
+			if(ni == null)
+			{
+				ni = new NodeInformation(id);
+				directory.addNode(ni);
+			}
+			if(!ni.containsAddress(a))
+			{
+				ni.addAddress(a);
+			}
+		}
+	}
+	
+	protected class NodeControlLoop extends Thread
+	{
+		public void run()
+		{
+			while(!quit)
+			{
+				controlLoop();
+			}
+		}
+	}
+	
+	protected int nodeId;
+	protected boolean quit;
+	protected long lastAddressResolution;
+	protected MessageQueue inboundQueue;
+	protected MessageQueue outboundQueue;
+	protected ConnectionManager connectionManager;
+	protected FunctionManager functionManager;
+	protected Directory directory;
+	protected DiscoveryManager discoveryManager;
+	protected CorrelationManager correlationManager;
 	protected NodeConnectionListener nodeConnectionListener;
 	protected NodeFunctionListener nodeFunctionListener;
+	protected NodeDiscoveryListener nodeDiscoveryListener;
+	protected ArrayList<Address> knownAddresses;
+	protected NodeControlLoop nodeControlLoop;
 	
 	public Node()
 	{
-		initialise(null, 1991);
+		initialise(0);
 	}
 	
 	public Node(int p)
 	{
-		initialise(null, p);
+		initialise(p);
 	}
 	
-	protected void initialise(String cf, int port)
+	protected void initialise(int port)
 	{
-		Random rnd = new Random();
-		nodeId = rnd.nextInt();
-		quit = false;
-		inboundQueue = new MessageQueue();
-		outboundQueue = new MessageQueue();
-		nodeConnectionListener = new NodeConnectionListener();
-		nodeFunctionListener = new NodeFunctionListener();
-		connectionManager = new ConnectionManager(port, nodeConnectionListener);
-		functionManager = new FunctionManager(nodeFunctionListener);
-		directory = new Directory();
-		discoveryManager = new DiscoveryManager();
-		correlationManager = new CorrelationManager();
-		knownAddresses = new ArrayList<Address>();
-		setName("Firebus Node " + nodeId);
-		start();
+		try
+		{
+			Random rnd = new Random();
+			nodeId = rnd.nextInt();
+			quit = false;
+			nodeConnectionListener = new NodeConnectionListener();
+			nodeFunctionListener = new NodeFunctionListener();
+			nodeDiscoveryListener = new NodeDiscoveryListener();
+			inboundQueue = new MessageQueue();
+			outboundQueue = new MessageQueue();
+			connectionManager = new ConnectionManager(port, nodeConnectionListener);
+			functionManager = new FunctionManager(nodeFunctionListener);
+			directory = new Directory();
+			discoveryManager = new DiscoveryManager(nodeDiscoveryListener, nodeId, connectionManager.getAddress());
+			correlationManager = new CorrelationManager();
+			knownAddresses = new ArrayList<Address>();
+			nodeControlLoop = new NodeControlLoop();
+			nodeControlLoop.setName("Firebus Node " + nodeId);
+			nodeControlLoop.start();			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	public int getNodeId()
@@ -90,14 +130,35 @@ public class Node extends Thread
 		knownAddresses.add(address);
 	}
 
+	protected void controlLoop()
+	{
+		try
+		{
+			discoveryManager.sendDiscoveryRequest();
+			resolveKnownAddresses();
+			if(inboundQueue.getMessageCount() > 0)
+			{
+				processNextInboundMessage();
+			}
+			else if(outboundQueue.getMessageCount() > 0)
+			{
+				processNextOutboundMessage();
+			}
+			else
+			{
+				Thread.sleep(10);
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
 	protected void resolveKnownAddresses()
 	{
-		//ArrayList<NodeInformation> nodes = directory.getNodesToDiscover();
 		for(int i = 0; i < knownAddresses.size(); i++)
 		{
-			//NodeInformation nodeToResolve = nodes.get(i);
-			//nodeToResolve.setLastDiscoverySentTime(System.currentTimeMillis());
-			//Connection connection = connectionManager.obtainConnectionForNode(ni);
 			try 
 			{
 				Connection connection = connectionManager.createConnection(knownAddresses.get(i));
@@ -113,6 +174,15 @@ public class Node extends Thread
 		}
 	}
 
+	protected void maintainConnectionCount()
+	{
+		int connCount = connectionManager.getConnectionCount();
+		if(connCount < 3)
+		{
+			
+		}
+	}
+	
 	protected void processNextInboundMessage()
 	{
 		Message msg = inboundQueue.getNextMessage();
@@ -162,7 +232,7 @@ public class Node extends Thread
 				switch(msg.getType())
 				{
 					case Message.MSGTYPE_ADVERTISE:
-						directory.processAdvertisementMessage(msg.getPayload());
+						directory.processAdvertisementMessage(new String(msg.getPayload()));
 						break;
 					case Message.MSGTYPE_DISCOVER:
 						advertiseTo(msg.getOriginatorId(), null);
@@ -178,6 +248,8 @@ public class Node extends Thread
 					case Message.MSGTYPE_SERVICERESPONSE:
 						correlationManager.addMessage(msg.getCorrelation(), msg);
 						break;
+					case Message.MSGTYPE_PUBLISH:
+						functionManager.consume(msg.getSubject(), msg.getPayload());
 				}
 			}
 			
@@ -187,7 +259,7 @@ public class Node extends Thread
 					outboundQueue.addMessage(msg.repeat(nodeId));
 			}
 			
-			System.out.println("****Inbound****************\r\n" + msg);
+			//System.out.println("****Inbound****************\r\n" + msg);
 		}
 
 		inboundQueue.deleteNextMessage();
@@ -230,16 +302,21 @@ public class Node extends Thread
 			c.sendMessage(msg);
 		}
 		
-		System.out.println("****Oubound**************\r\n" + msg);
+		//System.out.println("****Oubound**************\r\n" + msg);
 		outboundQueue.deleteNextMessage();
 	}
 	
-	protected void advertiseTo(int destinationNodeId, String functionName)
+	protected String getAdvertisementString(String functionName)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append(connectionManager.getAddressAdvertisementString(nodeId));
 		sb.append(functionManager.getFunctionAdvertisementString(nodeId, functionName));
-		Message msg = new Message(destinationNodeId, nodeId, 0, Message.MSGTYPE_ADVERTISE, 0, null, sb.toString().getBytes());
+		return sb.toString();
+	}
+	
+	protected void advertiseTo(int destinationNodeId, String functionName)
+	{
+		Message msg = new Message(destinationNodeId, nodeId, 0, Message.MSGTYPE_ADVERTISE, 0, null, getAdvertisementString(functionName).getBytes());
 		outboundQueue.addMessage(msg);
 	}
 	
@@ -247,6 +324,11 @@ public class Node extends Thread
 	{
 		functionManager.addFunction(serviceName, serviceProvider);
 		advertiseTo(0, serviceName);
+	}
+	
+	public void registerConsumer(String dataName, Consumer consumer)
+	{
+		functionManager.addFunction(dataName, consumer);
 	}
 		
 	public byte[] requestService(String serviceName, byte[] payload)
@@ -257,7 +339,7 @@ public class Node extends Thread
 			Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_FIND, 0, serviceName, null);
 			outboundQueue.addMessage(msg);
 			while((ni = directory.findServiceProvider(serviceName)) == null)
-				try {sleep(10);} catch (Exception e) {}
+				try {Thread.sleep(10);} catch (Exception e) {}
 		}
 		
 		int correlation = correlationManager.getNextCorrelation();
@@ -265,42 +347,19 @@ public class Node extends Thread
 		outboundQueue.addMessage(msg);
 		
 		while(!correlationManager.hasMessage(correlation))
-			try {sleep(10);} catch (Exception e) {}
+			try {Thread.sleep(10);} catch (Exception e) {}
 
 		byte[] returnPayload = correlationManager.getMessage(correlation).getPayload();
 		correlationManager.removeCorrelation(correlation);
 		return returnPayload;
 	}		
 
-	public void run()
+	public void publish(String dataname, byte[] payload)
 	{
-		while(!quit)
-		{
-			//long currentTime = System.currentTimeMillis();
-			try
-			{
-				discoveryManager.sendDiscoveryRequest();
-				resolveKnownAddresses();
-				if(inboundQueue.getMessageCount() > 0)
-				{
-					processNextInboundMessage();
-				}
-				else if(outboundQueue.getMessageCount() > 0)
-				{
-					processNextOutboundMessage();
-				}
-				else
-				{
-					sleep(10);
-				}
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-		}
+		Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_PUBLISH, 0, dataname, payload);
+		outboundQueue.addMessage(msg);
 	}
-	
+
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();

@@ -1,5 +1,7 @@
 package com.nic.firebus;
 
-public class DiscoveryListener {
-
+public interface DiscoveryListener
+{
+	public void nodeDiscovered(int id, String address, int port);
+	
 }

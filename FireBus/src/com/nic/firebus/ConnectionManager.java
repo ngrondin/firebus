@@ -15,23 +15,45 @@ public class ConnectionManager extends Thread
 	protected ConnectionListener connectionListener;
 	protected ArrayList<Connection> connections;
 	
-	public ConnectionManager(ConnectionListener cl)
+	public ConnectionManager(ConnectionListener cl) throws IOException
 	{
-		initialise(cl, 1991);
+		initialise(cl, 0);
 	}
 	
-	public ConnectionManager(int p, ConnectionListener cl)
+	public ConnectionManager(int p, ConnectionListener cl) throws IOException
 	{
 		initialise(cl, p);
 	}
 	
-	protected void initialise(ConnectionListener cl, int p)
+	protected void initialise(ConnectionListener cl, int p) throws IOException 
 	{
 		connections = new ArrayList<Connection>();
 		port = p;
 		quit = false;
 		connectionListener = cl;
 		setName("Firebus Node Connection Manager");
+		if(p == 0)
+		{
+			port = 1990;
+			boolean successfulBind = false;
+			while(!successfulBind)
+			{
+				try
+				{
+					server = new ServerSocket(port);
+					successfulBind = true;
+				}
+				catch(Exception e)	
+				{	
+					port++;
+				}			
+			}
+		}
+		else
+		{
+			server = new ServerSocket(port);
+		}
+
 		start();		
 	}
 
@@ -41,7 +63,6 @@ public class ConnectionManager extends Thread
 		{
 			try 
 			{
-				server = new ServerSocket(port);
 				while(!quit)
 				{
 					Socket socket = server.accept();
@@ -99,11 +120,11 @@ public class ConnectionManager extends Thread
 		connections.remove(c);
 	}
 
-	public InetAddress getLocalAddress()
+	public Address getAddress()
 	{
 		try
 		{
-			return InetAddress.getLocalHost();
+			return new Address(InetAddress.getLocalHost().getHostAddress(), port);
 		} 
 		catch (UnknownHostException e)
 		{
@@ -116,12 +137,17 @@ public class ConnectionManager extends Thread
 		return server.getLocalPort();
 	}
 	
+	public int getConnectionCount()
+	{
+		return connections.size();
+	}
+	
 	public String getAddressAdvertisementString(int nodeId)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append(nodeId);
 		sb.append(",a,");
-		sb.append(getLocalAddress().getHostAddress());
+		sb.append(getAddress().getIPAddress());
 		sb.append(",");
 		sb.append(getPort());
 		sb.append("\r\n");

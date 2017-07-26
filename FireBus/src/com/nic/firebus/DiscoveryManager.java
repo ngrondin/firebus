@@ -9,44 +9,71 @@ import java.net.MulticastSocket;
 public class DiscoveryManager extends Thread
 {
 	protected boolean quit;
+	protected int nodeId;
+	protected Address address;
 	protected long lastRequestSent;
+	protected DiscoveryListener discoveryListener;
+	protected MulticastSocket socket;
+	protected InetAddress multicastGroup;
 	
-	public DiscoveryManager()
+	public DiscoveryManager(DiscoveryListener dl, int id, Address a)
 	{
+		discoveryListener = dl;
+		nodeId = id;
+		address = a;
 		quit = false;
+		try
+		{
+			socket = new MulticastSocket(1900);
+			multicastGroup = InetAddress.getByName("239.255.255.255");
+			socket.joinGroup(multicastGroup);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+
 		start();
 	}
 	
 	public void run()
 	{
-		try
+		byte[] buf = new byte[256];
+		DatagramPacket packet = new DatagramPacket(buf, buf.length);
+		sendAdvertisement();
+		sendDiscoveryRequest();
+		while(!quit)
 		{
-			MulticastSocket socket = new MulticastSocket(4446);
-			InetAddress group = InetAddress.getByName("239.255.255.255");
-			socket.joinGroup(group);
-			
-			while(!quit)
+			try 
 			{
-				try 
-				{
-					byte[] buf = new byte[256];
-					DatagramPacket packet = new DatagramPacket(buf, buf.length);
-				    socket.receive(packet);
+			    socket.receive(packet);
+			    String received = new String(packet.getData()).trim();
 
-				    String received = new String(packet.getData());
-				    System.out.println(received);
-				}
-				catch (IOException e) 
-				{
-					e.printStackTrace();
-				}
+			    if(received.startsWith("Firebus discovery request from"))
+			    {
+			    	String[] parts = received.split(" ");
+			    	int id = Integer.parseInt(parts[4]);
+			    	if(id != nodeId)
+			    		sendAdvertisement();
+			    }
+			    if(received.startsWith("Firebus anouncement from"))
+			    {
+			    	String[] parts = received.split(" ");
+			    	int id = Integer.parseInt(parts[3]);
+			    	String ad = parts[4];
+			    	int port = Integer.parseInt(parts[5]);
+			    	if(id != nodeId)
+			    	{
+			    		discoveryListener.nodeDiscovered(id, ad, port);
+			    	}
+			    }
 			}
-			socket.close();
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
 		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
+		socket.close();
 	}
 	
 	public void sendDiscoveryRequest()
@@ -56,14 +83,8 @@ public class DiscoveryManager extends Thread
 		{
 			try 
 			{
-				String val = "This is a test";
-				byte[] buf = val.getBytes();
-							
-				InetAddress group = InetAddress.getByName("239.255.255.255");
-				DatagramSocket socket = new DatagramSocket();
-				DatagramPacket packet = new DatagramPacket(buf, buf.length, group, 4446);
-				socket.send(packet);
-				socket.close();
+				String val = "Firebus discovery request from " + nodeId;
+				multicastSend(val);
 	        }
 	        catch (IOException e) 
 			{
@@ -72,5 +93,26 @@ public class DiscoveryManager extends Thread
 			
 			lastRequestSent = currentTime;
 		}
+	}
+	
+	public void sendAdvertisement()
+	{
+		try 
+		{
+			String val = "Firebus anouncement from " + nodeId + " " + address.getIPAddress() + " " + address.getPort();
+			multicastSend(val);
+		}
+        catch (IOException e) 
+		{
+            e.printStackTrace();
+        }
+		
+	}	
+	
+	protected void multicastSend(String value) throws IOException
+	{
+		byte[] buf = value.getBytes();
+		DatagramPacket packet = new DatagramPacket(buf, buf.length, multicastGroup, 1900);
+		socket.send(packet);
 	}
 }

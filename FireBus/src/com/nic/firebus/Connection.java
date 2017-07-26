@@ -35,7 +35,7 @@ public class Connection extends Thread
 	
 	public Connection(Address a, ConnectionListener l) throws UnknownHostException, IOException
 	{
-		socket = new Socket(a.getAddress(), a.getPort());
+		socket = new Socket(a.getIPAddress(), a.getPort());
 		is = socket.getInputStream();
 		os = socket.getOutputStream();
 		//setAddress(a);
