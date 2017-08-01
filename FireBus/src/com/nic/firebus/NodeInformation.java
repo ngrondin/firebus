@@ -11,33 +11,23 @@ public class NodeInformation
 	protected ArrayList<Integer> repeaters;
 	protected ArrayList<ServiceInformation> services;
 	protected long lastSentDiscovery;
-	protected long lastAdvertised;
-	
+	protected long lastUpdated;
+	protected boolean isConnectable;
 	
 	public NodeInformation(int ni)
 	{
 		nodeId = ni;
 		initialise();
 	}
-	/*
-	public NodeInformation(Address a)
-	{
-		initialise();
-		addAddress(a);
-	}
-	*/
+
 	protected void initialise()
 	{
 		services = new ArrayList<ServiceInformation>();
 		repeaters = new ArrayList<Integer>();
 		addresses = new ArrayList<Address>();
+		isConnectable = true;
 	}
-	/*
-	public void setNodeId(int i)
-	{
-		nodeId = i;
-	}
-	*/
+
 	public void setConnection(Connection c)
 	{
 		connection = c;
@@ -48,9 +38,14 @@ public class NodeInformation
 		lastSentDiscovery = t;
 	}
 	
-	public void setLastAdvertisedTime(long t)
+	public void setLastUpdatedTime(long t)
 	{
-		lastAdvertised = t;
+		lastUpdated = t;
+	}
+	
+	public void setConnectable(boolean c)
+	{
+		isConnectable = false;
 	}
 	
 	public void addAddress(Address a)
@@ -114,7 +109,7 @@ public class NodeInformation
 	
 	public long getLastAdvertisedTime()
 	{
-		return lastAdvertised;
+		return lastUpdated;
 	}
 	
 	public int getRandomRepeater()
@@ -131,6 +126,14 @@ public class NodeInformation
 			if(services.get(i).getServiceName().equals(sn))
 				return services.get(i);
 		return null;
+	}
+	
+	public boolean isConnectable()
+	{
+		if(connection != null  ||  (isConnectable == true  &&  addresses.size() > 0))
+			return true;
+		else
+			return false;
 	}
 	
 	public String toString()

@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class Directory 
 {
@@ -47,7 +46,12 @@ public class Directory
 			nodes.add(n);
 	}
 	
-	public void processAdvertisementMessage(String ad)
+	public int getNodeCount()
+	{
+		return nodes.size();
+	}
+	
+	public void processStateMessage(String ad)
 	{
 		BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(ad.getBytes())));
 		String line;
@@ -63,18 +67,22 @@ public class Directory
 					ni = new NodeInformation(id);
 					addNode(ni);
 				}
-				ni.setLastAdvertisedTime(System.currentTimeMillis());
+				ni.setLastUpdatedTime(System.currentTimeMillis());
 				if(parts[1].equals("a"))
 				{
 					ni.addAddress(new Address(parts[2], Integer.parseInt(parts[3])));
 				}
-				else if(parts[1].equals("s"))
+				else if(parts[1].equals("f"))
 				{
-					String serviceName = parts[2];
-					ServiceInformation si = ni.getServiceInformation(serviceName);
-					if(si == null)
-						si = new ServiceInformation(serviceName);
-					ni.addServiceInformation(si);
+					String functionType = parts[2];
+					if(functionType.equals("s"))
+					{
+						String serviceName = parts[3];
+						ServiceInformation si = ni.getServiceInformation(serviceName);
+						if(si == null)
+							si = new ServiceInformation(serviceName);
+						ni.addServiceInformation(si);
+					}
 				}
 			}
 		} 
@@ -95,11 +103,30 @@ public class Directory
 		return null;
 	}
 
-	public NodeInformation getRandomUnconnectedNode()
+	public ArrayList<NodeInformation> getUnconnectedButConnectableNodes()
 	{
-		Random rnd = new Random();
-		NodeInformation ni = null;
-		return null;
+		ArrayList<NodeInformation> list = new ArrayList<NodeInformation>();
+		for(int i = 0; i < nodes.size(); i++)
+			if(nodes.get(i).getConnection() == null  &&  nodes.get(i).isConnectable())
+				list.add(nodes.get(i));
+		return list;
+	}
+	
+	public String getDirectoryStateString(int nodeId)
+	{
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < nodes.size(); i++)
+		{
+			NodeInformation ni = nodes.get(i);
+			Connection c = ni.getConnection();
+			sb.append(nodeId + ",d," + ni.getNodeId() + "," + (c != null? c.getId() : "") + "\r\n");
+			for(int j = 0; j < ni.getAddressCount(); j++)
+			{
+				Address a = ni.getAddress(j);
+				sb.append(nodeId + ",d," + ni.getNodeId() + "a" + a.getIPAddress() + "," + a.getPort() + "\r\n");
+			}
+		}
+		return sb.toString();
 	}
 	
 	public String toString()
@@ -113,8 +140,10 @@ public class Directory
 		{
 			for(int i = 0; i < nodes.size(); i++)
 			{
+				if(i > 0)
+					sb.append("\r\n");
 				sb.append("---------Directory Entry--\r\n");
-				sb.append(nodes.get(i).toString() + "\r\n\r\n");
+				sb.append(nodes.get(i).toString());
 			}
 		}
 		return sb.toString();

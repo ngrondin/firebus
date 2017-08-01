@@ -7,11 +7,13 @@ public class FunctionManager
 {
 	protected FunctionListener functionListener;;
 	protected HashMap<String, BusFunction> functions;
+	protected int verbose;
 	
 	public FunctionManager(FunctionListener fl)
 	{
 		functionListener = fl;
 		functions = new HashMap<String, BusFunction>();
+		verbose = 2;
 	}
 	
 	public void addFunction(String n, BusFunction f)
@@ -24,28 +26,30 @@ public class FunctionManager
 		return functions.get(n);
 	}
 	
-	public String getFunctionAdvertisementString(int nodeId, String n)
+	public boolean hasFunction(String n)
+	{
+		return functions.containsKey(n);
+	}
+	
+	public String getFunctionStateString(int nodeId)
 	{
 		StringBuilder sb = new StringBuilder();
 		Iterator<String> it = functions.keySet().iterator();
 		while(it.hasNext())
 		{
 			String functionName = it.next();
-			if(functionName.equals(n)  ||  n == null)
+			BusFunction f = functions.get(functionName);
+			if(f != null)
 			{
-				BusFunction f = functions.get(functionName);
-				if(f != null)
-				{
-					sb.append(nodeId);
-					if(f instanceof ServiceProvider)
-						sb.append(",s,");
-					if(f instanceof Publisher)
-						sb.append(",p,");
-					if(f instanceof Consumer)
-						sb.append(",c,");
-					sb.append(functionName);
-					sb.append("\r\n");
-				}
+				sb.append(nodeId + ",f,");
+				if(f instanceof ServiceProvider)
+					sb.append("s,");
+				if(f instanceof Publisher)
+					sb.append("p,");
+				if(f instanceof Consumer)
+					sb.append("c,");
+				sb.append(functionName);
+				sb.append("\r\n");
 			}
 		}
 		return sb.toString();
@@ -53,6 +57,8 @@ public class FunctionManager
 	
 	public void requestService(String functionName, byte[] payload, int correlation)
 	{
+		if(verbose == 2)
+			System.out.println("Starting Service");
 		BusFunction f = functions.get(functionName);
 		if(f instanceof ServiceProvider)
 			new FunctionWorker(f, payload, functionListener, correlation);

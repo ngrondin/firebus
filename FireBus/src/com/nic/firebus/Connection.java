@@ -162,11 +162,6 @@ public class Connection extends Thread
 	public void close()
 	{
 		
-		/*if(nodeInformation != null)
-			nodeInformation.setConnection(null);
-		if(address != null)
-			address.setConnection(null);
-		*/
 		quit = true;
 		try 
 		{
@@ -176,5 +171,10 @@ public class Connection extends Thread
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	public String toString()
+	{
+		return "" + this.getId();
 	}
 }

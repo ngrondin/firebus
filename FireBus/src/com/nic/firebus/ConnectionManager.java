@@ -11,6 +11,7 @@ public class ConnectionManager extends Thread
 {
 	protected int port;
 	protected boolean quit;
+	protected int verbose;
 	protected ServerSocket server;
 	protected ConnectionListener connectionListener;
 	protected ArrayList<Connection> connections;
@@ -30,8 +31,9 @@ public class ConnectionManager extends Thread
 		connections = new ArrayList<Connection>();
 		port = p;
 		quit = false;
+		verbose = 2;
 		connectionListener = cl;
-		setName("Firebus Node Connection Manager");
+		setName("Firebus Connection Manager");
 		if(p == 0)
 		{
 			port = 1990;
@@ -66,6 +68,9 @@ public class ConnectionManager extends Thread
 				while(!quit)
 				{
 					Socket socket = server.accept();
+					if(verbose == 2)
+						System.out.println("Accepted New Connection");
+
 					Connection connection = new Connection(socket, connectionListener);
 					connections.add(connection);
 				}
@@ -79,6 +84,9 @@ public class ConnectionManager extends Thread
 	
 	public Connection createConnection(Address a) throws IOException
 	{
+		if(verbose == 2)
+			System.out.println("Creating New Connection");
+
 		Connection c = new Connection(a, connectionListener);
 		connections.add(c);
 		return c;
@@ -86,6 +94,9 @@ public class ConnectionManager extends Thread
 	
 	public Connection obtainConnectionForNode(NodeInformation ni)
 	{
+		if(verbose == 2)
+			System.out.println("Obtaining Connection for Node");
+
 		Connection c = ni.getConnection();
 		if(c == null)
 		{
@@ -100,6 +111,12 @@ public class ConnectionManager extends Thread
 				} 
 				catch (IOException e) 
 				{
+					ni.setConnectable(false);
+					if(verbose == 2)
+					{
+						System.out.println(e.getMessage());
+						System.out.println("Setting Connection as not connectable");
+					}
 				}
 			}
 		}
@@ -142,7 +159,7 @@ public class ConnectionManager extends Thread
 		return connections.size();
 	}
 	
-	public String getAddressAdvertisementString(int nodeId)
+	public String getAddressStateString(int nodeId)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append(nodeId);
@@ -154,4 +171,13 @@ public class ConnectionManager extends Thread
 		return sb.toString();
 	}
 
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < connections.size(); i++)
+		{
+			sb.append(connections.get(i) + "\r\n");
+		}
+		return sb.toString();
+	}
 }

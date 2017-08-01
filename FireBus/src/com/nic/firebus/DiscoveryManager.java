@@ -2,7 +2,6 @@ package com.nic.firebus;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
@@ -33,19 +32,19 @@ public class DiscoveryManager extends Thread
 			e.printStackTrace();
 		}
 
+		setName("Firebus Discovery Manager");
 		start();
 	}
 	
 	public void run()
 	{
-		byte[] buf = new byte[256];
-		DatagramPacket packet = new DatagramPacket(buf, buf.length);
-		sendAdvertisement();
 		sendDiscoveryRequest();
 		while(!quit)
 		{
 			try 
 			{
+				byte[] buf = new byte[256];
+				DatagramPacket packet = new DatagramPacket(buf, buf.length);
 			    socket.receive(packet);
 			    String received = new String(packet.getData()).trim();
 
@@ -65,6 +64,7 @@ public class DiscoveryManager extends Thread
 			    	if(id != nodeId)
 			    	{
 			    		discoveryListener.nodeDiscovered(id, ad, port);
+					    //System.out.println(received);
 			    	}
 			    }
 			}

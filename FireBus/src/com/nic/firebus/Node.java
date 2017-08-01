@@ -14,13 +14,18 @@ public class Node
 
 		public void messageReceived(Message m, Connection c) 
 		{
+			if(verbose == 2)
+				System.out.println("Received Message");
 			inboundQueue.addMessage(m);
 		}
 
 		public void connectionClosed(Connection c) 
 		{
+			if(verbose == 2)
+				System.out.println("Connection Closed");
 			NodeInformation ni = directory.getNodeByConnection(c);
-			ni.setConnection(null);
+			if(ni != null)
+				ni.setConnection(null);
 			connectionManager.removeConnection(c);
 		}
 	}
@@ -29,6 +34,8 @@ public class Node
 	{
 		public void functionCallback(int correlation, byte[] payload) 
 		{
+			if(verbose == 2)
+				System.out.println("Function Returned");
 			Message originalMsg = correlationManager.getMessage(correlation);
 			correlationManager.removeCorrelation(correlation);
 			Message msg = new Message(originalMsg.getOriginatorId(), nodeId, 0, Message.MSGTYPE_SERVICERESPONSE, correlation, originalMsg.getSubject(), payload);
@@ -40,6 +47,8 @@ public class Node
 	{
 		public void nodeDiscovered(int id, String address, int port)
 		{
+			if(verbose == 2)
+				System.out.println("Node Discovered");
 			Address a = new Address(address, port);
 			NodeInformation ni = directory.getNodeById(id);
 			if(ni == null)
@@ -67,6 +76,7 @@ public class Node
 	
 	protected int nodeId;
 	protected boolean quit;
+	protected int verbose;
 	protected long lastAddressResolution;
 	protected MessageQueue inboundQueue;
 	protected MessageQueue outboundQueue;
@@ -97,6 +107,7 @@ public class Node
 		{
 			Random rnd = new Random();
 			nodeId = rnd.nextInt();
+			verbose = 2;
 			quit = false;
 			nodeConnectionListener = new NodeConnectionListener();
 			nodeFunctionListener = new NodeFunctionListener();
@@ -134,8 +145,9 @@ public class Node
 	{
 		try
 		{
-			discoveryManager.sendDiscoveryRequest();
+			//discoveryManager.sendDiscoveryRequest();
 			resolveKnownAddresses();
+			maintainConnectionCount();
 			if(inboundQueue.getMessageCount() > 0)
 			{
 				processNextInboundMessage();
@@ -162,10 +174,13 @@ public class Node
 			try 
 			{
 				Connection connection = connectionManager.createConnection(knownAddresses.get(i));
-				Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_DISCOVER, 0, null, null);
-				msg.setRepeatsLeft(0);
-				msg.setConnection(connection);
-				outboundQueue.addMessage(msg);
+				if(connection != null)
+				{
+					Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_CONNECT, 0, null, getNodeStateString().getBytes());
+					msg.setRepeatsLeft(0);
+					msg.setConnection(connection);
+					outboundQueue.addMessage(msg);
+				}
 			} 
 			catch (IOException e) 
 			{
@@ -176,15 +191,26 @@ public class Node
 
 	protected void maintainConnectionCount()
 	{
-		int connCount = connectionManager.getConnectionCount();
-		if(connCount < 3)
+		ArrayList<NodeInformation> list = directory.getUnconnectedButConnectableNodes();
+		for(int i = 0; i < list.size(); i++)
 		{
-			
+			NodeInformation ni = list.get(i);
+			Connection c = connectionManager.obtainConnectionForNode(ni);
+			if(c != null)
+			{
+				ni.setConnection(c);
+				Message msg = new Message(ni.getNodeId(), nodeId, 0, Message.MSGTYPE_CONNECT, 0, null, getNodeStateString().getBytes());
+				msg.setConnection(c);
+				msg.setRepeatsLeft(0);
+				outboundQueue.addMessage(msg);
+			}
 		}
 	}
 	
 	protected void processNextInboundMessage()
 	{
+		if(verbose == 2)
+			System.out.println("Processing Inbound Message");
 		Message msg = inboundQueue.getNextMessage();
 		msg.decode();
 		
@@ -211,6 +237,7 @@ public class Node
 				{
 					if(connectedNode.getConnection() != msg.getConnection())
 					{
+						System.out.println("duplicate connection");
 						//TODO: There are 2 different connections, do something to fix
 					}
 				}
@@ -231,15 +258,19 @@ public class Node
 			{
 				switch(msg.getType())
 				{
-					case Message.MSGTYPE_ADVERTISE:
-						directory.processAdvertisementMessage(new String(msg.getPayload()));
+					case Message.MSGTYPE_CONNECT:
+						directory.processStateMessage(new String(msg.getPayload()));
+						advertiseTo(msg.getOriginatorId());
 						break;
-					case Message.MSGTYPE_DISCOVER:
-						advertiseTo(msg.getOriginatorId(), null);
+					case Message.MSGTYPE_NODESTATE:
+						directory.processStateMessage(new String(msg.getPayload()));
 						break;
-					case Message.MSGTYPE_FIND:
-						if(functionManager.find(msg.getSubject()) != null)
-							advertiseTo(msg.getOriginatorId(), msg.getSubject());
+					case Message.MSGTYPE_QUERYNODE:
+						advertiseTo(msg.getOriginatorId());
+						break;
+					case Message.MSGTYPE_FINDSERVICE:
+						if(functionManager.hasFunction(msg.getSubject()))
+							advertiseTo(msg.getOriginatorId());
 						break;
 					case Message.MSGTYPE_REQUESTSERVICE:
 						correlationManager.addMessage(msg.getCorrelation(), msg);
@@ -263,12 +294,17 @@ public class Node
 		}
 
 		inboundQueue.deleteNextMessage();
+		if(verbose == 2)
+			System.out.println("Finished Processing Inbound Message");
+
 	}
 
 	protected void processNextOutboundMessage()
 	{
+		if(verbose == 2)
+			System.out.println("Processing Outbound Message");
+
 		Message msg = outboundQueue.getNextMessage();
-		
 		Connection c = msg.getConnection();
 		if(c == null)
 		{
@@ -304,26 +340,30 @@ public class Node
 		
 		//System.out.println("****Oubound**************\r\n" + msg);
 		outboundQueue.deleteNextMessage();
+		if(verbose == 2)
+			System.out.println("Finished Processing Outbound Message");
+
 	}
 	
-	protected String getAdvertisementString(String functionName)
+	protected String getNodeStateString()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append(connectionManager.getAddressAdvertisementString(nodeId));
-		sb.append(functionManager.getFunctionAdvertisementString(nodeId, functionName));
+		sb.append(connectionManager.getAddressStateString(nodeId));
+		sb.append(functionManager.getFunctionStateString(nodeId));
+		sb.append(directory.getDirectoryStateString(nodeId));
 		return sb.toString();
 	}
 	
-	protected void advertiseTo(int destinationNodeId, String functionName)
+	protected void advertiseTo(int destinationNodeId)
 	{
-		Message msg = new Message(destinationNodeId, nodeId, 0, Message.MSGTYPE_ADVERTISE, 0, null, getAdvertisementString(functionName).getBytes());
+		Message msg = new Message(destinationNodeId, nodeId, 0, Message.MSGTYPE_NODESTATE, 0, null, getNodeStateString().getBytes());
 		outboundQueue.addMessage(msg);
 	}
 	
 	public void registerServiceProvider(String serviceName, ServiceProvider serviceProvider)
 	{
 		functionManager.addFunction(serviceName, serviceProvider);
-		advertiseTo(0, serviceName);
+		advertiseTo(0);
 	}
 	
 	public void registerConsumer(String dataName, Consumer consumer)
@@ -333,10 +373,13 @@ public class Node
 		
 	public byte[] requestService(String serviceName, byte[] payload)
 	{
+		if(verbose == 2)
+			System.out.println("Requesting Service");
+
 		NodeInformation ni = directory.findServiceProvider(serviceName);
 		if(ni == null)
 		{
-			Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_FIND, 0, serviceName, null);
+			Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_FINDSERVICE, 0, serviceName, null);
 			outboundQueue.addMessage(msg);
 			while((ni = directory.findServiceProvider(serviceName)) == null)
 				try {Thread.sleep(10);} catch (Exception e) {}
@@ -351,6 +394,10 @@ public class Node
 
 		byte[] returnPayload = correlationManager.getMessage(correlation).getPayload();
 		correlationManager.removeCorrelation(correlation);
+		
+		if(verbose == 2)
+			System.out.println("Returning Service Response");
+
 		return returnPayload;
 	}		
 
@@ -366,8 +413,11 @@ public class Node
 		sb.append("Node Id :" + nodeId + "\r\n");
 		sb.append("-------Functions----------\r\n");
 		sb.append(functionManager);
+		sb.append("-------Connections--------\r\n");
+		sb.append(connectionManager);
 		sb.append("-------Directory----------\r\n");
 		sb.append(directory);
+		sb.append("\r\n");
 		return sb.toString();
 	}
 

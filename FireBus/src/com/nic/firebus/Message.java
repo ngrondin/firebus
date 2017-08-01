@@ -10,11 +10,8 @@ public class Message
 	protected boolean encoded;
 	protected int messageId;
 	protected int originatorId;
-	//protected NodeInformation originator;
 	protected int destinationId;
-	//protected NodeInformation destination;
 	protected int repeaterId;
-	//protected NodeInformation repeater;
 	protected int repeatCount;
 	protected int repeatsLeft;
 	protected int type;
@@ -23,15 +20,16 @@ public class Message
 	protected byte[] payload;
 
 
-	public static final int MSGTYPE_ADVERTISE = 0;
-	public static final int MSGTYPE_DISCOVER = 1;
-	public static final int MSGTYPE_FIND = 2;
+	public static final int MSGTYPE_CONNECT = 0;
+	public static final int MSGTYPE_NODESTATE = 1;
+	public static final int MSGTYPE_QUERYNODE = 2;
+	public static final int MSGTYPE_FINDSERVICE = 3;
 	public static final int MSGTYPE_REQUESTCONTRACT = 4;
 	public static final int MSGTYPE_REQUESTSERVICE = 5;
 	public static final int MSGTYPE_SERVICERESPONSE = 6;
-	public static final int MSGTYPE_CONTRACTRESPONSE = 6;
-	public static final int MSGTYPE_PUBLISH = 7;
-	public static final int MSGTYPE_RECALL = 8;
+	public static final int MSGTYPE_CONTRACTRESPONSE = 7;
+	public static final int MSGTYPE_PUBLISH = 8;
+	public static final int MSGTYPE_RECALL = 9;
 	
 	protected static int nextId = 0;
 	
@@ -80,70 +78,6 @@ public class Message
 		Message msg = new Message(messageId, destinationId, originatorId, r, repeatCount + 1, repeatsLeft - 1, type, correlation, subject, payload);
 		return msg;
 	}
-	/*
-	public Message(NodeInformation d, NodeInformation o, NodeInformation r, int t, int c, String s, byte[] p)
-	{
-		messageId = nextId++;
-		if(d != null)
-		{
-			destination = d;
-			destinationId = d.getNodeId();
-		}
-		if(o != null)
-		{
-			originator = o;
-			originatorId = o.getNodeId();
-		}
-		if(r != null)
-		{
-			repeater = r;
-			repeaterId = r.getNodeId();
-		}
-		repeatCount = 0;
-		repeatsLeft = 10;
-		type = t;
-		correlation = c;
-		subject = s;
-		payload = p;
-		decoded = true;
-		encoded = false;
-	}
-	
-	private Message(int i, NodeInformation d, NodeInformation o, NodeInformation r, int rc, int rl, int t, int c, String s, byte[] p)
-	{
-		messageId = i;
-		if(d != null)
-		{
-			destination = d;
-			destinationId = d.getNodeId();
-		}
-		if(o != null)
-		{
-			originator = o;
-			originatorId = o.getNodeId();
-		}
-		if(r != null)
-		{
-			repeater = r;
-			repeaterId = r.getNodeId();
-		}
-		repeatCount = rc;
-		repeatsLeft = rl;
-		type = t;
-		correlation = c;
-		subject = s;
-		payload = p;
-		decoded = true;
-		encoded = false;		
-	}
-	
-	public Message repeat(NodeInformation r)
-	{
-		Message msg = new Message(messageId, destination, originator, r, repeatCount + 1, repeatsLeft - 1, type, correlation, subject, payload);
-		return msg;
-	}
-	*/
-	
 	
 	public void decode()
 	{
@@ -202,25 +136,6 @@ public class Message
 		repeatsLeft = rl;
 	}
 	
-	/*
-	public void setDestination(NodeInformation d)
-	{
-		destination = d;
-		destinationId = d.getNodeId();
-	}
-	
-	public void setOriginator(NodeInformation o)
-	{
-		originator = o;
-		originatorId = o.getNodeId();
-	}
-	
-	public void setRepeater(NodeInformation r)
-	{
-		repeater = r;
-		repeaterId = r.getNodeId();
-	}
-	*/
 	
 	public void setConnection(Connection c)
 	{
@@ -242,32 +157,17 @@ public class Message
 		return type;
 	}
 	
-	/*
-	public NodeInformation getOriginator()
-	{
-		return originator;
-	}
-	*/
+
 	public int getOriginatorId()
 	{
 		return originatorId;
 	}
-	/*
-	public NodeInformation getRepeater()
-	{
-		return repeater;
-	}
-	*/
+
 	public int getRepeaterId()
 	{
 		return repeaterId;
 	}
-	/*
-	public NodeInformation getDestination()
-	{
-		return destination;
-	}
-	*/
+
 	public int getDestinationId()
 	{
 		return destinationId;
@@ -331,13 +231,13 @@ public class Message
 		sb.append("Repeat Count : " + repeatCount + "\r\n");
 		sb.append("Repeats Left : " + repeatsLeft + "\r\n");
 		sb.append("Type         : ");
-		if(type == Message.MSGTYPE_ADVERTISE)
+		if(type == Message.MSGTYPE_NODESTATE)
 			sb.append("Advertise");
-		else if(type == Message.MSGTYPE_FIND)
+		else if(type == Message.MSGTYPE_CONNECT)
+			sb.append("Connect");
+		else if(type == Message.MSGTYPE_FINDSERVICE)
 			sb.append("Find");
-		else if(type == Message.MSGTYPE_FIND)
-			sb.append("Find");
-		else if(type == Message.MSGTYPE_DISCOVER)
+		else if(type == Message.MSGTYPE_QUERYNODE)
 			sb.append("Discover");
 		else if(type == Message.MSGTYPE_PUBLISH)
 			sb.append("Publish");
