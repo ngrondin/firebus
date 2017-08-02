@@ -41,16 +41,16 @@ public class Message
 		encoded = true;
 	}
 
-	public Message(int d, int o, int r, int t, int c, String s, byte[] p)
+	public Message(int d, int o, int t, String s, byte[] p)
 	{
 		messageId = nextId++;
 		destinationId = d;
 		originatorId = o;
-		repeaterId = r;
+		repeaterId = 0;
 		repeatCount = 0;
 		repeatsLeft = 10;
 		type = t;
-		correlation = c;
+		correlation = 0;
 		subject = s;
 		payload = p;
 		decoded = true;
@@ -140,6 +140,11 @@ public class Message
 	public void setConnection(Connection c)
 	{
 		connection = c;
+	}
+	
+	public void setCorrelation(int c)
+	{
+		correlation = c;
 	}
 	
 	public int getid()

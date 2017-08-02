@@ -32,13 +32,12 @@ public class Node
 	
 	protected class NodeFunctionListener implements FunctionListener
 	{
-		public void functionCallback(int correlation, byte[] payload) 
+		public void functionCallback(Message inboundMessage, byte[] payload) 
 		{
 			if(verbose == 2)
 				System.out.println("Function Returned");
-			Message originalMsg = correlationManager.getMessage(correlation);
-			correlationManager.removeCorrelation(correlation);
-			Message msg = new Message(originalMsg.getOriginatorId(), nodeId, 0, Message.MSGTYPE_SERVICERESPONSE, correlation, originalMsg.getSubject(), payload);
+			Message msg = new Message(inboundMessage.getOriginatorId(), nodeId, Message.MSGTYPE_SERVICERESPONSE, inboundMessage.getSubject(), payload);
+			msg.setCorrelation(inboundMessage.getCorrelation());
 			outboundQueue.addMessage(msg);
 		}
 	}
@@ -47,12 +46,13 @@ public class Node
 	{
 		public void nodeDiscovered(int id, String address, int port)
 		{
-			if(verbose == 2)
-				System.out.println("Node Discovered");
 			Address a = new Address(address, port);
 			NodeInformation ni = directory.getNodeById(id);
 			if(ni == null)
 			{
+				if(verbose == 2)
+					System.out.println("Node Discovered");
+
 				ni = new NodeInformation(id);
 				directory.addNode(ni);
 			}
@@ -118,10 +118,10 @@ public class Node
 			functionManager = new FunctionManager(nodeFunctionListener);
 			directory = new Directory();
 			discoveryManager = new DiscoveryManager(nodeDiscoveryListener, nodeId, connectionManager.getAddress());
-			correlationManager = new CorrelationManager();
+			correlationManager = new CorrelationManager(outboundQueue);
 			knownAddresses = new ArrayList<Address>();
 			nodeControlLoop = new NodeControlLoop();
-			nodeControlLoop.setName("Firebus Node " + nodeId);
+			nodeControlLoop.setName("Firebus Node");
 			nodeControlLoop.start();			
 		}
 		catch(Exception e)
@@ -176,7 +176,7 @@ public class Node
 				Connection connection = connectionManager.createConnection(knownAddresses.get(i));
 				if(connection != null)
 				{
-					Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_CONNECT, 0, null, getNodeStateString().getBytes());
+					Message msg = new Message(0, nodeId, Message.MSGTYPE_CONNECT, null, getNodeStateString().getBytes());
 					msg.setRepeatsLeft(0);
 					msg.setConnection(connection);
 					outboundQueue.addMessage(msg);
@@ -199,7 +199,7 @@ public class Node
 			if(c != null)
 			{
 				ni.setConnection(c);
-				Message msg = new Message(ni.getNodeId(), nodeId, 0, Message.MSGTYPE_CONNECT, 0, null, getNodeStateString().getBytes());
+				Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_CONNECT, null, getNodeStateString().getBytes());
 				msg.setConnection(c);
 				msg.setRepeatsLeft(0);
 				outboundQueue.addMessage(msg);
@@ -264,6 +264,8 @@ public class Node
 						break;
 					case Message.MSGTYPE_NODESTATE:
 						directory.processStateMessage(new String(msg.getPayload()));
+						if(msg.getCorrelation() != 0)
+							correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_QUERYNODE:
 						advertiseTo(msg.getOriginatorId());
@@ -273,14 +275,13 @@ public class Node
 							advertiseTo(msg.getOriginatorId());
 						break;
 					case Message.MSGTYPE_REQUESTSERVICE:
-						correlationManager.addMessage(msg.getCorrelation(), msg);
-						functionManager.requestService(msg.getSubject(), msg.getPayload(), msg.getCorrelation());
+						functionManager.requestService(msg);
 						break;
 					case Message.MSGTYPE_SERVICERESPONSE:
-						correlationManager.addMessage(msg.getCorrelation(), msg);
+						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_PUBLISH:
-						functionManager.consume(msg.getSubject(), msg.getPayload());
+						functionManager.consume(msg);
 				}
 			}
 			
@@ -356,7 +357,7 @@ public class Node
 	
 	protected void advertiseTo(int destinationNodeId)
 	{
-		Message msg = new Message(destinationNodeId, nodeId, 0, Message.MSGTYPE_NODESTATE, 0, null, getNodeStateString().getBytes());
+		Message msg = new Message(destinationNodeId, nodeId, Message.MSGTYPE_NODESTATE, null, getNodeStateString().getBytes());
 		outboundQueue.addMessage(msg);
 	}
 	
@@ -376,38 +377,46 @@ public class Node
 		if(verbose == 2)
 			System.out.println("Requesting Service");
 
-		NodeInformation ni = directory.findServiceProvider(serviceName);
-		if(ni == null)
+		long expiry = System.currentTimeMillis() + 500000;
+		Message respMsg = null;
+		NodeInformation ni = null;
+
+		while(respMsg == null  &&  System.currentTimeMillis() < expiry)
 		{
-			int waitCount = 0;
-			Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_FINDSERVICE, 0, serviceName, null);
-			outboundQueue.addMessage(msg);
-			while((ni = directory.findServiceProvider(serviceName)) == null  &&  waitCount < 200)
+			while((ni = directory.findServiceProvider(serviceName)) == null  &&  System.currentTimeMillis() < expiry)
 			{
-				try {Thread.sleep(10);} catch (Exception e) {}
-				waitCount++;
+				Message findMsg = new Message(0, nodeId, Message.MSGTYPE_FINDSERVICE, serviceName, null);
+				correlationManager.synchronousCall(findMsg, 200000);
+			}
+
+			Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_REQUESTSERVICE, serviceName, payload);
+			respMsg = correlationManager.synchronousCall(msg, 200000);
+			
+			if(respMsg == null)
+			{
+				if(verbose == 2)
+					System.out.println("Setting node as unresponsive");
+				ni.setUnresponsive();
 			}
 		}
-		
-		int correlation = correlationManager.getNextCorrelation();
-		Message msg = new Message(ni.getNodeId(), nodeId, 0, Message.MSGTYPE_REQUESTSERVICE, correlation, serviceName, payload);
-		outboundQueue.addMessage(msg);
-		
-		while(!correlationManager.hasMessage(correlation))
-			try {Thread.sleep(10);} catch (Exception e) {}
 
-		byte[] returnPayload = correlationManager.getMessage(correlation).getPayload();
-		correlationManager.removeCorrelation(correlation);
-		
-		if(verbose == 2)
-			System.out.println("Returning Service Response");
-
-		return returnPayload;
+		if(respMsg != null)
+		{
+			if(verbose == 2)
+				System.out.println("No Response Received from Service Request");
+			return respMsg.getPayload();
+		}
+		else
+		{
+			if(verbose == 2)
+				System.out.println("Returning Service Response");
+			return null;
+		}
 	}		
 
 	public void publish(String dataname, byte[] payload)
 	{
-		Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_PUBLISH, 0, dataname, payload);
+		Message msg = new Message(0, nodeId, Message.MSGTYPE_PUBLISH, dataname, payload);
 		outboundQueue.addMessage(msg);
 	}
 

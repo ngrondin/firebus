@@ -12,14 +12,18 @@ public class NodeInformation
 	protected ArrayList<ServiceInformation> services;
 	protected long lastSentDiscovery;
 	protected long lastUpdated;
-	protected int status;
+	protected boolean unconnectable;
+	protected boolean unresponsive;
+	//protected int status;
 	
+	
+	/*
 	public final static int STATUS_NEW = 0;
 	public final static int STATUS_CONNECTED = 1;
 	public final static int STATUS_DISCONNECTED = 2;
 	public final static int STATUS_DISAPPEARED = 3;
 	public final static int STATUS_UNREACHABLE = 4;
-
+	 */
 	
 	public NodeInformation(int ni)
 	{
@@ -32,16 +36,15 @@ public class NodeInformation
 		services = new ArrayList<ServiceInformation>();
 		repeaters = new ArrayList<Integer>();
 		addresses = new ArrayList<Address>();
-		status = STATUS_NEW;
+		unconnectable = false;
+		unresponsive = false;
 	}
 
 	public void setConnection(Connection c)
 	{
 		connection = c;
-		if(c != null  &&  c.isAlive())
-			status = STATUS_CONNECTED;
-		else
-			status = STATUS_DISCONNECTED;
+		if(c != null)
+			unconnectable = false;
 	}
 	
 	public void setLastDiscoverySentTime(long t)
@@ -54,12 +57,14 @@ public class NodeInformation
 		lastUpdated = t;
 	}
 	
-	public void setUnreachable()
+	public void setUnconnectable()
 	{
-		if(status == STATUS_NEW)
-			status = STATUS_UNREACHABLE;
-		else 
-			status = STATUS_DISAPPEARED;
+		unconnectable = true;
+	}
+	
+	public void setUnresponsive()
+	{
+		unresponsive = true;
 	}
 	
 	public void addAddress(Address a)
@@ -142,9 +147,14 @@ public class NodeInformation
 		return null;
 	}
 	
-	public int getStatus()
+	public boolean isUnconnectable()
 	{
-		return status;
+		return unconnectable;
+	}
+	
+	public boolean isUnresponsive()
+	{
+		return unresponsive;
 	}
 	
 	public String toString()

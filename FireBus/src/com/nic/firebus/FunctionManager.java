@@ -55,20 +55,22 @@ public class FunctionManager
 		return sb.toString();
 	}
 	
-	public void requestService(String functionName, byte[] payload, int correlation)
+	public void requestService(Message inboundMessage)
 	{
 		if(verbose == 2)
 			System.out.println("Starting Service");
+		String functionName = inboundMessage.getSubject();
 		BusFunction f = functions.get(functionName);
 		if(f instanceof ServiceProvider)
-			new FunctionWorker(f, payload, functionListener, correlation);
+			new FunctionWorker(f, inboundMessage, functionListener);
 	}
 	
-	public void consume(String name, byte[] payload)
+	public void consume(Message publishMessage)
 	{
-		BusFunction f = functions.get(name);
+		String consumerName = publishMessage.getSubject();
+		BusFunction f = functions.get(consumerName);
 		if(f instanceof Consumer)
-			new FunctionWorker(f, payload);
+			new FunctionWorker(f, publishMessage, null);
 	}
 
 	public String toString()

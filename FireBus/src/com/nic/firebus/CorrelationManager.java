@@ -1,18 +1,34 @@
 package com.nic.firebus;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class CorrelationManager 
 {
-	protected HashMap<Integer, Message> messages;
-	protected HashMap<Integer, ServiceRequestor> callbacks;
-	
-	protected static int nextCorrelation = 0;
-	
-	public CorrelationManager()
+	protected class CorrelationEntry
 	{
-		messages = new HashMap<Integer, Message>();
-		callbacks = new HashMap<Integer, ServiceRequestor>();
+		protected Message outboundMessage;
+		protected Message inboundMessage;
+		protected ServiceRequestor serviceRequestor;
+		protected long expiry;
+		
+		public CorrelationEntry(Message om, ServiceRequestor sr, int to)
+		{
+			outboundMessage = om;
+			serviceRequestor = sr;
+			expiry = System.currentTimeMillis() + to;
+		}
+	};
+	
+	protected HashMap<Integer, CorrelationEntry> entries;
+	protected MessageQueue outboundQueue;
+	
+	protected static int nextCorrelation = 1;
+	
+	public CorrelationManager(MessageQueue oq)
+	{
+		entries = new HashMap<Integer, CorrelationEntry>();
+		outboundQueue = oq;
 	}
 	
 	public int getNextCorrelation()
@@ -20,29 +36,74 @@ public class CorrelationManager
 		return nextCorrelation++;
 	}
 	
-	public void addMessage(int c, Message m)
+	public Message synchronousCall(Message outMsg, int timeout)
 	{
-		messages.put(c, m);
+		int c = getNextCorrelation();
+		outMsg.setCorrelation(c);
+		CorrelationEntry e = new CorrelationEntry(outMsg, null, timeout); 
+		entries.put(c, e);
+		outboundQueue.addMessage(outMsg);
+		int time = 0;
+		while(time < timeout  &&  e.inboundMessage == null)
+		{
+			try{Thread.sleep(10);} catch(Exception err){}
+			time += 10;
+		}
+		entries.remove(e);
+		return e.inboundMessage;
 	}
 	
-	public void addCallback(int c, ServiceRequestor sr)
+	public void asynchronousCall(Message outMsg, ServiceRequestor sr, int timeout)
 	{
-		callbacks.put(c, sr);
+		int c = getNextCorrelation();
+		outMsg.setCorrelation(c);
+		CorrelationEntry e = new CorrelationEntry(outMsg, sr, timeout); 
+		entries.put(c, e);
+		outboundQueue.addMessage(outMsg);
 	}
 	
-	public void removeCorrelation(int c)
+	public void receiveResponse(Message inMsg)
 	{
-		messages.remove(c);
-		callbacks.remove(c);
+		int c = inMsg.getCorrelation();
+		CorrelationEntry e = entries.get(c);
+		if(e != null)
+		{
+			e.inboundMessage = inMsg;
+			if(e.serviceRequestor != null)
+			{
+				final byte[] pl = inMsg.getPayload();
+				final ServiceRequestor sr = e.serviceRequestor;
+				Thread t = new Thread(new Runnable() {
+				    public void run() 
+				    {
+				    	sr.requestCallback(pl);
+				    }
+				});	
+				t.start();
+				entries.remove(e);
+			}
+		}
 	}
 	
-	public boolean hasMessage(int c)
+	public void houseKeeping()
 	{
-		return messages.containsKey(c);
-	}
-	
-	public Message getMessage(int c)
-	{
-		return messages.get(c);
+		long currTime = System.currentTimeMillis();
+		Iterator<Integer> it = entries.keySet().iterator();
+		while(it.hasNext())
+		{
+			CorrelationEntry e = entries.get(it.next());
+			if(e.serviceRequestor != null && currTime > e.expiry)
+			{
+				final ServiceRequestor sr = e.serviceRequestor;
+				Thread t = new Thread(new Runnable() {
+				    public void run() 
+				    {
+				    	sr.requestTimeout();
+				    }
+				});	
+				t.start();
+				entries.remove(e);				
+			}
+		}
 	}
 }

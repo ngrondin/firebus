@@ -2,5 +2,5 @@ package com.nic.firebus;
 
 public interface FunctionListener 
 {
-	public void functionCallback(int correlation, byte[] payload);
+	public void functionCallback(Message inboundMessage, byte[] payload);
 }

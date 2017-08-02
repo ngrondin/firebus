@@ -97,7 +97,7 @@ public class Directory
 		for(int i = 0; i < nodes.size(); i++)
 		{
 			NodeInformation ni = nodes.get(i);
-			if(ni.getServiceInformation(name) != null)
+			if(ni.getServiceInformation(name) != null  &&  !ni.isUnresponsive())
 				return ni;
 		}
 		return null;
@@ -107,7 +107,7 @@ public class Directory
 	{
 		ArrayList<NodeInformation> list = new ArrayList<NodeInformation>();
 		for(int i = 0; i < nodes.size(); i++)
-			if(nodes.get(i).getStatus() == NodeInformation.STATUS_NEW || nodes.get(i).getStatus() == NodeInformation.STATUS_DISCONNECTED)
+			if(nodes.get(i).getConnection() == null  &&  nodes.get(i).isUnconnectable() == false)
 				list.add(nodes.get(i));
 		return list;
 	}

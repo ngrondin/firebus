@@ -107,6 +107,8 @@ public class ConnectionManager extends Thread
 				{
 					c = createConnection(a);
 					ni.setConnection(c);
+					if(verbose == 2l)
+						System.out.println("Connection Created");
 					break;
 				} 
 				catch (IOException e) 
@@ -117,11 +119,17 @@ public class ConnectionManager extends Thread
 			}
 			if(c == null)
 			{
-				ni.setUnreachable();
+				ni.setUnconnectable();
 				if(verbose == 2)
-					System.out.println("Setting Node Information Status as " + ni.getStatus());
+					System.out.println("Setting Node Information as Unconnectable ");
 			}
 		}
+		else
+		{
+			if(verbose == 2l)
+				System.out.println("Connection retreived");
+		}
+		
 		return c;
 	}
 	
