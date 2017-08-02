@@ -191,7 +191,7 @@ public class Node
 
 	protected void maintainConnectionCount()
 	{
-		ArrayList<NodeInformation> list = directory.getUnconnectedButConnectableNodes();
+		ArrayList<NodeInformation> list = directory.getNodeToConnectTo();
 		for(int i = 0; i < list.size(); i++)
 		{
 			NodeInformation ni = list.get(i);
@@ -379,10 +379,14 @@ public class Node
 		NodeInformation ni = directory.findServiceProvider(serviceName);
 		if(ni == null)
 		{
+			int waitCount = 0;
 			Message msg = new Message(0, nodeId, 0, Message.MSGTYPE_FINDSERVICE, 0, serviceName, null);
 			outboundQueue.addMessage(msg);
-			while((ni = directory.findServiceProvider(serviceName)) == null)
+			while((ni = directory.findServiceProvider(serviceName)) == null  &&  waitCount < 200)
+			{
 				try {Thread.sleep(10);} catch (Exception e) {}
+				waitCount++;
+			}
 		}
 		
 		int correlation = correlationManager.getNextCorrelation();

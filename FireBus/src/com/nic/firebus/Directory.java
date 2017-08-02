@@ -103,11 +103,11 @@ public class Directory
 		return null;
 	}
 
-	public ArrayList<NodeInformation> getUnconnectedButConnectableNodes()
+	public ArrayList<NodeInformation> getNodeToConnectTo()
 	{
 		ArrayList<NodeInformation> list = new ArrayList<NodeInformation>();
 		for(int i = 0; i < nodes.size(); i++)
-			if(nodes.get(i).getConnection() == null  &&  nodes.get(i).isConnectable())
+			if(nodes.get(i).getStatus() == NodeInformation.STATUS_NEW || nodes.get(i).getStatus() == NodeInformation.STATUS_DISCONNECTED)
 				list.add(nodes.get(i));
 		return list;
 	}

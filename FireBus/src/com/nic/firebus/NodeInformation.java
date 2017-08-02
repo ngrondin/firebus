@@ -12,7 +12,14 @@ public class NodeInformation
 	protected ArrayList<ServiceInformation> services;
 	protected long lastSentDiscovery;
 	protected long lastUpdated;
-	protected boolean isConnectable;
+	protected int status;
+	
+	public final static int STATUS_NEW = 0;
+	public final static int STATUS_CONNECTED = 1;
+	public final static int STATUS_DISCONNECTED = 2;
+	public final static int STATUS_DISAPPEARED = 3;
+	public final static int STATUS_UNREACHABLE = 4;
+
 	
 	public NodeInformation(int ni)
 	{
@@ -25,12 +32,16 @@ public class NodeInformation
 		services = new ArrayList<ServiceInformation>();
 		repeaters = new ArrayList<Integer>();
 		addresses = new ArrayList<Address>();
-		isConnectable = true;
+		status = STATUS_NEW;
 	}
 
 	public void setConnection(Connection c)
 	{
 		connection = c;
+		if(c != null  &&  c.isAlive())
+			status = STATUS_CONNECTED;
+		else
+			status = STATUS_DISCONNECTED;
 	}
 	
 	public void setLastDiscoverySentTime(long t)
@@ -43,9 +54,12 @@ public class NodeInformation
 		lastUpdated = t;
 	}
 	
-	public void setConnectable(boolean c)
+	public void setUnreachable()
 	{
-		isConnectable = false;
+		if(status == STATUS_NEW)
+			status = STATUS_UNREACHABLE;
+		else 
+			status = STATUS_DISAPPEARED;
 	}
 	
 	public void addAddress(Address a)
@@ -128,12 +142,9 @@ public class NodeInformation
 		return null;
 	}
 	
-	public boolean isConnectable()
+	public int getStatus()
 	{
-		if(connection != null  ||  (isConnectable == true  &&  addresses.size() > 0))
-			return true;
-		else
-			return false;
+		return status;
 	}
 	
 	public String toString()

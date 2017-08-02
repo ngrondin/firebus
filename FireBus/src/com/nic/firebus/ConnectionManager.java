@@ -100,7 +100,7 @@ public class ConnectionManager extends Thread
 		Connection c = ni.getConnection();
 		if(c == null)
 		{
-			for(int i = 0; i < ni.getAddressCount(); i++)
+			for(int i = 0; i < ni.getAddressCount()  &&  c == null; i++)
 			{
 				Address a = ni.getAddress(i);
 				try 
@@ -111,13 +111,15 @@ public class ConnectionManager extends Thread
 				} 
 				catch (IOException e) 
 				{
-					ni.setConnectable(false);
 					if(verbose == 2)
-					{
 						System.out.println(e.getMessage());
-						System.out.println("Setting Connection as not connectable");
-					}
 				}
+			}
+			if(c == null)
+			{
+				ni.setUnreachable();
+				if(verbose == 2)
+					System.out.println("Setting Node Information Status as " + ni.getStatus());
 			}
 		}
 		return c;
