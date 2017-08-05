@@ -5,9 +5,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.logging.Logger;
 
 public class Connection extends Thread 
 {
+	private Logger logger = Logger.getLogger(Connection.class.getName());
 	protected Socket socket;
 	protected InputStream is;
 	protected OutputStream os;
@@ -46,44 +48,11 @@ public class Connection extends Thread
 		start();
 	}
 	
-	/*
-	public void setAddress(Address a)
-	{
-		if((address != null && a == null) || (address == null && a != null) || (address != null && a != null && a != address))
-		{
-			Address oldAddress = address;
-			address = a;
-			if(oldAddress != null)
-				oldAddress.setConnection(null);
-			if(address != null)
-				address.setConnection(this);
-		}
-	}
-	
-	public void setNodeInformation(NodeInformation ni)
-	{
-		if((nodeInformation != null && ni == null) || (nodeInformation == null && ni != null) || (nodeInformation != null && ni != null && ni != nodeInformation))
-		{
-			NodeInformation oldNI = nodeInformation;
-			nodeInformation = ni;
-			if(oldNI != null)
-				oldNI.setConnection(null);
-			if(nodeInformation != null)
-				nodeInformation.setConnection(this);
-		}
-	}
-	*/
 	public String getRemoteAddress()
 	{
 		return socket.getInetAddress().getHostAddress();
 	}
 	
-	/*
-	public Address getAddress()
-	{
-		return address;
-	}
-	*/
 	public NodeInformation getNodeInformation()
 	{
 		return nodeInformation;

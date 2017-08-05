@@ -1,6 +1,10 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import com.nic.firebus.Consumer;
 import com.nic.firebus.Node;
@@ -11,7 +15,13 @@ public class TestNode
 {
 	public static void main(String[] args)
 	{
+		Logger log = LogManager.getLogManager().getLogger("");
+		log.setLevel(Level.FINE);
+		for (Handler h : log.getHandlers()) 
+		    h.setLevel(Level.INFO);
+
 		Node n = new Node();
+		
 		if(args.length > 0)
 		{
 			if(args[0].equals("requestor"))
@@ -26,7 +36,8 @@ public class TestNode
 						{
 							String in = br.readLine();
 							byte[] ret = n.requestService(args[1], in.getBytes());
-							System.out.println(new String(ret));
+							if(ret != null)
+								System.out.println(new String(ret));
 						} 
 						catch (IOException e) {}
 					}

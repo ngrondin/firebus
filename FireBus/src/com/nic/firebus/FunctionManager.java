@@ -2,18 +2,18 @@ package com.nic.firebus;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 public class FunctionManager 
 {
+	private Logger logger = Logger.getLogger(FunctionManager.class.getName());
 	protected FunctionListener functionListener;;
 	protected HashMap<String, BusFunction> functions;
-	protected int verbose;
 	
 	public FunctionManager(FunctionListener fl)
 	{
 		functionListener = fl;
 		functions = new HashMap<String, BusFunction>();
-		verbose = 2;
 	}
 	
 	public void addFunction(String n, BusFunction f)
@@ -57,8 +57,7 @@ public class FunctionManager
 	
 	public void requestService(Message inboundMessage)
 	{
-		if(verbose == 2)
-			System.out.println("Starting Service");
+		logger.fine("Starting Service");
 		String functionName = inboundMessage.getSubject();
 		BusFunction f = functions.get(functionName);
 		if(f instanceof ServiceProvider)

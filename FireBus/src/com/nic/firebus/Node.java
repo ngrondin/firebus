@@ -3,9 +3,13 @@ package com.nic.firebus;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.Logger;
+
+import javax.crypto.Cipher;
 
 public class Node
 {
+	
 	protected class NodeConnectionListener implements ConnectionListener
 	{
 		public void connectionCreated(Connection c) 
@@ -14,15 +18,13 @@ public class Node
 
 		public void messageReceived(Message m, Connection c) 
 		{
-			if(verbose == 2)
-				System.out.println("Received Message");
+			logger.fine("Received Message");
 			inboundQueue.addMessage(m);
 		}
 
 		public void connectionClosed(Connection c) 
 		{
-			if(verbose == 2)
-				System.out.println("Connection Closed");
+			logger.info("Connection Closed");
 			NodeInformation ni = directory.getNodeByConnection(c);
 			if(ni != null)
 				ni.setConnection(null);
@@ -34,8 +36,7 @@ public class Node
 	{
 		public void functionCallback(Message inboundMessage, byte[] payload) 
 		{
-			if(verbose == 2)
-				System.out.println("Function Returned");
+			logger.fine("Function Returned");
 			Message msg = new Message(inboundMessage.getOriginatorId(), nodeId, Message.MSGTYPE_SERVICERESPONSE, inboundMessage.getSubject(), payload);
 			msg.setCorrelation(inboundMessage.getCorrelation());
 			outboundQueue.addMessage(msg);
@@ -50,13 +51,15 @@ public class Node
 			NodeInformation ni = directory.getNodeById(id);
 			if(ni == null)
 			{
-				if(verbose == 2)
-					System.out.println("Node Discovered");
-
+				NodeInformation nodeByAddress = directory.getNodeByAddress(a);
+				if(nodeByAddress != null)
+					directory.deleteNode(nodeByAddress);
 				ni = new NodeInformation(id);
+				ni.addAddress(a);
 				directory.addNode(ni);
+				logger.info("Node Discovered");
 			}
-			if(!ni.containsAddress(a))
+			else if(!ni.containsAddress(a))
 			{
 				ni.addAddress(a);
 			}
@@ -74,9 +77,9 @@ public class Node
 		}
 	}
 	
+	private Logger logger = Logger.getLogger(Node.class.getName());
 	protected int nodeId;
 	protected boolean quit;
-	protected int verbose;
 	protected long lastAddressResolution;
 	protected MessageQueue inboundQueue;
 	protected MessageQueue outboundQueue;
@@ -90,25 +93,33 @@ public class Node
 	protected NodeDiscoveryListener nodeDiscoveryListener;
 	protected ArrayList<Address> knownAddresses;
 	protected NodeControlLoop nodeControlLoop;
+	protected Cipher cipher;
 	
 	public Node()
 	{
-		initialise(0);
+		initialise(0, "firebus", "firebus");
 	}
 	
 	public Node(int p)
 	{
-		initialise(p);
+		initialise(p, "firebus", "firebus");
 	}
 	
-	protected void initialise(int port)
+	public Node(int p, String network, String password)
+	{
+		initialise(p, network, password);
+	}
+	
+	protected void initialise(int port, String network, String password)
 	{
 		try
 		{
 			Random rnd = new Random();
 			nodeId = rnd.nextInt();
-			verbose = 2;
 			quit = false;
+			cipher = Cipher.getInstance("AES/CFB8/NoPadding");
+			
+			
 			nodeConnectionListener = new NodeConnectionListener();
 			nodeFunctionListener = new NodeFunctionListener();
 			nodeDiscoveryListener = new NodeDiscoveryListener();
@@ -145,7 +156,6 @@ public class Node
 	{
 		try
 		{
-			//discoveryManager.sendDiscoveryRequest();
 			resolveKnownAddresses();
 			maintainConnectionCount();
 			if(inboundQueue.getMessageCount() > 0)
@@ -209,8 +219,7 @@ public class Node
 	
 	protected void processNextInboundMessage()
 	{
-		if(verbose == 2)
-			System.out.println("Processing Inbound Message");
+		logger.fine("Processing Inbound Message");
 		Message msg = inboundQueue.getNextMessage();
 		msg.decode();
 		
@@ -237,7 +246,7 @@ public class Node
 				{
 					if(connectedNode.getConnection() != msg.getConnection())
 					{
-						System.out.println("duplicate connection");
+						logger.fine("duplicate connection detected");
 						//TODO: There are 2 different connections, do something to fix
 					}
 				}
@@ -291,21 +300,19 @@ public class Node
 					outboundQueue.addMessage(msg.repeat(nodeId));
 			}
 			
-			//System.out.println("****Inbound****************\r\n" + msg);
+			//LOGGER.fine("****Inbound****************\r\n" + msg);
 		}
 
 		inboundQueue.deleteNextMessage();
-		if(verbose == 2)
-			System.out.println("Finished Processing Inbound Message");
+		logger.fine("Finished Processing Inbound Message");
 
 	}
 
 	protected void processNextOutboundMessage()
 	{
-		if(verbose == 2)
-			System.out.println("Processing Outbound Message");
-
+		logger.fine("Processing Outbound Message");
 		Message msg = outboundQueue.getNextMessage();
+		msg.encode();
 		Connection c = msg.getConnection();
 		if(c == null)
 		{
@@ -330,20 +337,13 @@ public class Node
 		}
 
 		if(c == null)
-		{
 			connectionManager.broadcastToAllConnections(msg);
-		}
 		else
-		{
-			msg.encode();
 			c.sendMessage(msg);
-		}
 		
-		//System.out.println("****Oubound**************\r\n" + msg);
+		//LOGGER.fine("****Oubound**************\r\n" + msg);
 		outboundQueue.deleteNextMessage();
-		if(verbose == 2)
-			System.out.println("Finished Processing Outbound Message");
-
+		logger.fine("Finished Processing Outbound Message");
 	}
 	
 	protected String getNodeStateString()
@@ -374,10 +374,9 @@ public class Node
 		
 	public byte[] requestService(String serviceName, byte[] payload)
 	{
-		if(verbose == 2)
-			System.out.println("Requesting Service");
+		logger.info("Requesting Service");
 
-		long expiry = System.currentTimeMillis() + 500000;
+		long expiry = System.currentTimeMillis() + 5000;
 		Message respMsg = null;
 		NodeInformation ni = null;
 
@@ -385,31 +384,33 @@ public class Node
 		{
 			while((ni = directory.findServiceProvider(serviceName)) == null  &&  System.currentTimeMillis() < expiry)
 			{
+				logger.fine("Sending Find Service Message");
 				Message findMsg = new Message(0, nodeId, Message.MSGTYPE_FINDSERVICE, serviceName, null);
-				correlationManager.synchronousCall(findMsg, 200000);
+				correlationManager.synchronousCall(findMsg, 2000);
 			}
-
-			Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_REQUESTSERVICE, serviceName, payload);
-			respMsg = correlationManager.synchronousCall(msg, 200000);
 			
-			if(respMsg == null)
+			if(ni != null)
 			{
-				if(verbose == 2)
-					System.out.println("Setting node as unresponsive");
-				ni.setUnresponsive();
+				logger.fine("Sending Request Message");
+				Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_REQUESTSERVICE, serviceName, payload);
+				respMsg = correlationManager.synchronousCall(msg, 2000);
+				
+				if(respMsg == null)
+				{
+					logger.fine("Setting node as unresponsive");
+					ni.setUnresponsive();
+				}
 			}
 		}
 
 		if(respMsg != null)
 		{
-			if(verbose == 2)
-				System.out.println("No Response Received from Service Request");
+			logger.info("Returning Service Response");
 			return respMsg.getPayload();
 		}
 		else
 		{
-			if(verbose == 2)
-				System.out.println("Returning Service Response");
+			logger.info("No Response Received from Service Request");
 			return null;
 		}
 	}		

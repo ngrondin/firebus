@@ -6,12 +6,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class ConnectionManager extends Thread
 {
+	private Logger logger = Logger.getLogger(ConnectionManager.class.getName());
 	protected int port;
 	protected boolean quit;
-	protected int verbose;
 	protected ServerSocket server;
 	protected ConnectionListener connectionListener;
 	protected ArrayList<Connection> connections;
@@ -31,7 +32,6 @@ public class ConnectionManager extends Thread
 		connections = new ArrayList<Connection>();
 		port = p;
 		quit = false;
-		verbose = 2;
 		connectionListener = cl;
 		setName("Firebus Connection Manager");
 		if(p == 0)
@@ -68,8 +68,7 @@ public class ConnectionManager extends Thread
 				while(!quit)
 				{
 					Socket socket = server.accept();
-					if(verbose == 2)
-						System.out.println("Accepted New Connection");
+					logger.info("Accepted New Connection");
 
 					Connection connection = new Connection(socket, connectionListener);
 					connections.add(connection);
@@ -84,19 +83,16 @@ public class ConnectionManager extends Thread
 	
 	public Connection createConnection(Address a) throws IOException
 	{
-		if(verbose == 2)
-			System.out.println("Creating New Connection");
-
+		logger.fine("Creating New Connection");
 		Connection c = new Connection(a, connectionListener);
 		connections.add(c);
+		logger.info("Created New Connection");
 		return c;
 	}
 	
 	public Connection obtainConnectionForNode(NodeInformation ni)
 	{
-		if(verbose == 2)
-			System.out.println("Obtaining Connection for Node");
-
+		logger.fine("Obtaining Connection for Node");
 		Connection c = ni.getConnection();
 		if(c == null)
 		{
@@ -107,27 +103,22 @@ public class ConnectionManager extends Thread
 				{
 					c = createConnection(a);
 					ni.setConnection(c);
-					if(verbose == 2l)
-						System.out.println("Connection Created");
 					break;
 				} 
 				catch (IOException e) 
 				{
-					if(verbose == 2)
-						System.out.println(e.getMessage());
+					logger.fine(e.getMessage());
 				}
 			}
 			if(c == null)
 			{
 				ni.setUnconnectable();
-				if(verbose == 2)
-					System.out.println("Setting Node Information as Unconnectable ");
+				logger.fine("Setting Node Information as Unconnectable ");
 			}
 		}
 		else
 		{
-			if(verbose == 2l)
-				System.out.println("Connection retreived");
+			logger.fine("Connection retreived");
 		}
 		
 		return c;

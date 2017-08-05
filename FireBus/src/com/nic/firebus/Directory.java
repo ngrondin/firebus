@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class Directory 
 {
+	private Logger logger = Logger.getLogger(Directory.class.getName());
 	protected ArrayList<NodeInformation> nodes;
 
 	public Directory()
@@ -42,8 +44,15 @@ public class Directory
 
 	public void addNode(NodeInformation n)
 	{
+		logger.fine("Adding Node to Directory");
 		if(!nodes.contains(n))
 			nodes.add(n);
+	}
+	
+	public void deleteNode(NodeInformation n)
+	{
+		logger.fine("Deleting Node to Directory");
+		nodes.remove(n);
 	}
 	
 	public int getNodeCount()
@@ -70,7 +79,11 @@ public class Directory
 				ni.setLastUpdatedTime(System.currentTimeMillis());
 				if(parts[1].equals("a"))
 				{
-					ni.addAddress(new Address(parts[2], Integer.parseInt(parts[3])));
+					Address a = new Address(parts[2], Integer.parseInt(parts[3]));
+					NodeInformation nodeByAddress = getNodeByAddress(a);
+					if(nodeByAddress != ni)
+						deleteNode(nodeByAddress);
+					ni.addAddress(a);
 				}
 				else if(parts[1].equals("f"))
 				{
@@ -107,8 +120,11 @@ public class Directory
 	{
 		ArrayList<NodeInformation> list = new ArrayList<NodeInformation>();
 		for(int i = 0; i < nodes.size(); i++)
-			if(nodes.get(i).getConnection() == null  &&  nodes.get(i).isUnconnectable() == false)
+		{
+			NodeInformation ni = nodes.get(i);
+			if(ni.getConnection() == null  &&  ni.isUnconnectable() == false)
 				list.add(nodes.get(i));
+		}
 		return list;
 	}
 	

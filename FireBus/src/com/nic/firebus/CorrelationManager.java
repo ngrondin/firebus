@@ -2,6 +2,7 @@ package com.nic.firebus;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 public class CorrelationManager 
 {
@@ -20,6 +21,7 @@ public class CorrelationManager
 		}
 	};
 	
+	private Logger logger = Logger.getLogger(CorrelationManager.class.getName());
 	protected HashMap<Integer, CorrelationEntry> entries;
 	protected MessageQueue outboundQueue;
 	
@@ -68,6 +70,7 @@ public class CorrelationManager
 		CorrelationEntry e = entries.get(c);
 		if(e != null)
 		{
+			logger.fine("Received Correlated Response");
 			e.inboundMessage = inMsg;
 			if(e.serviceRequestor != null)
 			{

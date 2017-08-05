@@ -5,29 +5,29 @@ import java.util.ArrayList;
 public class MessageQueue
 {
 	protected ArrayList<Message> messages;
-	protected ArrayList<Long> processedID;
+	protected ArrayList<Integer> processedHash;
 	protected ArrayList<Long> processedTime;
 	
 	public MessageQueue()
 	{
 		messages = new ArrayList<Message>();
-		processedID = new ArrayList<Long>();
+		processedHash = new ArrayList<Integer>();
 		processedTime = new ArrayList<Long>();
 	}
 	
 	public void addMessage(Message m)
 	{
 		long ct = System.currentTimeMillis();
-		while(processedTime.size() > 0  &&  processedTime.get(0) > ct - 60000)
+		while(processedTime.size() > 0  &&  processedTime.get(0) < ct - 60000)
 		{
-			processedID.remove(0);
+			processedHash.remove(0);
 			processedTime.remove(0);
 		}
 		
-		if(!processedID.contains(m.getUniversalId()))
+		if(!processedHash.contains(m.hashCode()))
 		{
 			messages.add(m);
-			processedID.add(m.getUniversalId());
+			processedHash.add(m.hashCode());
 			processedTime.add(ct);
 		}
 	}
