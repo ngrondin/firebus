@@ -1,21 +1,13 @@
 package com.nic.firebus;
 
-public class ServiceInformation 
+public class ServiceInformation extends FunctionInformation
 {
 	protected String serviceName;
 	
 	public ServiceInformation(String sn)
 	{
-		serviceName = sn;
+		super(sn);
 	}
 
-	public String getServiceName()
-	{
-		return serviceName;
-	}
-	
-	public String toString()
-	{
-		return serviceName;
-	}
+
 }

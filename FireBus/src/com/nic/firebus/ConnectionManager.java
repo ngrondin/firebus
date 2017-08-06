@@ -8,30 +8,33 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+
 public class ConnectionManager extends Thread
 {
 	private Logger logger = Logger.getLogger(ConnectionManager.class.getName());
 	protected int port;
 	protected boolean quit;
+	protected String key;
 	protected ServerSocket server;
 	protected ConnectionListener connectionListener;
 	protected ArrayList<Connection> connections;
 	
-	public ConnectionManager(ConnectionListener cl) throws IOException
+	public ConnectionManager(ConnectionListener cl, String k) throws IOException
 	{
-		initialise(cl, 0);
+		initialise(cl, 0, k);
 	}
 	
-	public ConnectionManager(int p, ConnectionListener cl) throws IOException
+	public ConnectionManager(int p, ConnectionListener cl, String k) throws IOException
 	{
-		initialise(cl, p);
+		initialise(cl, p, k);
 	}
 	
-	protected void initialise(ConnectionListener cl, int p) throws IOException 
+	protected void initialise(ConnectionListener cl, int p, String k) throws IOException 
 	{
 		connections = new ArrayList<Connection>();
 		port = p;
 		quit = false;
+		key = k;
 		connectionListener = cl;
 		setName("Firebus Connection Manager");
 		if(p == 0)
@@ -70,13 +73,14 @@ public class ConnectionManager extends Thread
 					Socket socket = server.accept();
 					logger.info("Accepted New Connection");
 
-					Connection connection = new Connection(socket, connectionListener);
+					Connection connection = new Connection(socket, connectionListener, key);
 					connections.add(connection);
 				}
 			} 
-			catch (IOException e) 
+			catch (Exception e) 
 			{
 				e.printStackTrace();
+				logger.severe(e.getMessage());
 			}
 		}
 	}
@@ -84,7 +88,7 @@ public class ConnectionManager extends Thread
 	public Connection createConnection(Address a) throws IOException
 	{
 		logger.fine("Creating New Connection");
-		Connection c = new Connection(a, connectionListener);
+		Connection c = new Connection(a, connectionListener, key);
 		connections.add(c);
 		logger.info("Created New Connection");
 		return c;

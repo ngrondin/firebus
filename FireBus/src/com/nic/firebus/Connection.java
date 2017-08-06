@@ -7,12 +7,21 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.logging.Logger;
 
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 public class Connection extends Thread 
 {
 	private Logger logger = Logger.getLogger(Connection.class.getName());
 	protected Socket socket;
 	protected InputStream is;
 	protected OutputStream os;
+	//protected CipherInputStream cis;
+	//protected CipherOutputStream cos;
 	protected ConnectionListener listener;
 	protected boolean quit;
 	protected int msgState;
@@ -20,44 +29,61 @@ public class Connection extends Thread
 	protected int msgPos;
 	protected int msgCRC;
 	protected byte[] msg;
-	//protected Address address;
-	protected NodeInformation nodeInformation;
+	protected SecretKey secretKey;
+	protected IvParameterSpec IV;
+	protected Cipher encryptionCipher;
+	protected Cipher decryptionCipher;
 	
-	public Connection(Socket s, ConnectionListener l) throws IOException
+	public Connection(Socket s, ConnectionListener cl, String key) throws IOException
 	{
 		socket = s;
-		is = s.getInputStream();
-		os = s.getOutputStream();
-		listener = l;
-		quit = false;
-		msgState = 0;
-		setName("Firebus Connection");
-		start();
+		initialise(cl, key);
 	}
 	
-	public Connection(Address a, ConnectionListener l) throws UnknownHostException, IOException
+	public Connection(Address a, ConnectionListener cl, String key) throws UnknownHostException, IOException
 	{
 		socket = new Socket(a.getIPAddress(), a.getPort());
+		initialise(cl, key);
+	}
+	
+	protected void initialise(ConnectionListener cl, String key) throws IOException
+	{
 		is = socket.getInputStream();
 		os = socket.getOutputStream();
-		//setAddress(a);
-		listener = l;
+		listener = cl;
 		quit = false;
 		msgState = 0;
 		setName("Firebus Connection");
+
+		try
+		{
+			secretKey = new SecretKeySpec(key.getBytes(), "AES");
+			encryptionCipher = Cipher.getInstance("AES/CFB8/NoPadding");
+			encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey);
+			os.write(encryptionCipher.getIV());
+			byte[] remoteIVBytes = new byte[16];
+			is.read(remoteIVBytes);
+			IvParameterSpec remoteIV = new IvParameterSpec(remoteIVBytes);
+			decryptionCipher = Cipher.getInstance("AES/CFB8/NoPadding");
+			decryptionCipher.init(Cipher.DECRYPT_MODE, secretKey, remoteIV);
+			os = new CipherOutputStream(os, encryptionCipher);
+			is = new CipherInputStream(is, decryptionCipher);
+		}
+		catch(Exception e)
+		{
+			logger.severe("Connection encryption setup failed : " + e.getMessage());
+		}
+		
+		logger.fine("Connection Initialised");
 		start();
 	}
+
 	
 	public String getRemoteAddress()
 	{
 		return socket.getInetAddress().getHostAddress();
 	}
 	
-	public NodeInformation getNodeInformation()
-	{
-		return nodeInformation;
-	}
-
 	public void run()
 	{
 		while(!quit)

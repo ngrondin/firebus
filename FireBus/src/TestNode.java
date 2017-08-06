@@ -7,7 +7,9 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import com.nic.firebus.Consumer;
+import com.nic.firebus.ConsumerInformation;
 import com.nic.firebus.Node;
+import com.nic.firebus.ServiceInformation;
 import com.nic.firebus.ServiceProvider;
 
 
@@ -49,13 +51,13 @@ public class TestNode
 				if(args.length > 2)
 				{
 					final String prefix = args[2];
-					n.registerServiceProvider(args[1], new ServiceProvider() {
+					n.registerServiceProvider(new ServiceInformation(args[1]), new ServiceProvider() {
 						public byte[] requestService(byte[] payload)
 						{
 							System.out.println("Providing Service");
 							return (prefix + " " + new String(payload)).getBytes();
 						}
-					});
+					}, 10);
 					System.out.println("Service Provider Registered");
 				}
 			}
@@ -82,12 +84,12 @@ public class TestNode
 			{
 				if(args.length > 1)
 				{
-					n.registerConsumer(args[1], new Consumer(){
+					n.registerConsumer(new ConsumerInformation(args[1]), new Consumer(){
 						public void consume(byte[] payload)
 						{
 							System.out.println(new String(payload));
 						}
-					});
+					}, 10);
 					System.out.println("Consumer Registered");
 				}
 			}

@@ -1,13 +1,13 @@
-import com.nic.firebus.Node;
+import com.nic.firebus.NodeCore;
 
 
 public class UnitTest
 {
 	public static void main(String args[])
 	{
-		Node n1 = new Node();
+		NodeCore n1 = new NodeCore();
 		try{ Thread.sleep(5000);} catch(Exception e) {}
-		Node n2 = new Node();
+		NodeCore n2 = new NodeCore();
 		
 		try{ Thread.sleep(1000);} catch(Exception e) {}
 		

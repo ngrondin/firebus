@@ -87,7 +87,7 @@ public class NodeInformation
 	{
 		boolean alreadyHasAddress = false;
 		for(int i = 0; i < services.size(); i++)
-			if(services.get(i).getServiceName().equals(si.getServiceName()))
+			if(services.get(i).getName().equals(si.getName()))
 				alreadyHasAddress = true;
 		if(!alreadyHasAddress)
 			services.add(si);
@@ -142,7 +142,7 @@ public class NodeInformation
 	public ServiceInformation getServiceInformation(String sn)
 	{
 		for(int i = 0; i < services.size(); i++)
-			if(services.get(i).getServiceName().equals(sn))
+			if(services.get(i).getName().equals(sn))
 				return services.get(i);
 		return null;
 	}

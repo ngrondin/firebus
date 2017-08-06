@@ -4,26 +4,39 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-public class FunctionManager 
+import com.nic.firebus.exceptions.FirebusFunctionException;
+
+public class FunctionManager implements FunctionListener
 {
+	protected class FunctionEntry
+	{
+		protected FunctionInformation functionInformation;
+		protected BusFunction function;
+		protected int maxConcurrent;
+		protected int currentCount;
+		
+		public FunctionEntry(FunctionInformation fi, BusFunction f, int mc)
+		{
+			functionInformation = fi;
+			function = f;
+			maxConcurrent = mc;
+		}
+	}
+	
 	private Logger logger = Logger.getLogger(FunctionManager.class.getName());
 	protected FunctionListener functionListener;;
-	protected HashMap<String, BusFunction> functions;
+	protected HashMap<String, FunctionEntry> functions;
 	
 	public FunctionManager(FunctionListener fl)
 	{
 		functionListener = fl;
-		functions = new HashMap<String, BusFunction>();
+		functions = new HashMap<String, FunctionEntry>();
 	}
 	
-	public void addFunction(String n, BusFunction f)
+	public void addFunction(FunctionInformation fi, BusFunction f, int mc)
 	{
-		functions.put(n, f);
-	}
-	
-	public BusFunction find(String n)
-	{
-		return functions.get(n);
+		FunctionEntry e = new FunctionEntry(fi, f, mc);
+		functions.put(fi.getName(), e);
 	}
 	
 	public boolean hasFunction(String n)
@@ -38,7 +51,7 @@ public class FunctionManager
 		while(it.hasNext())
 		{
 			String functionName = it.next();
-			BusFunction f = functions.get(functionName);
+			BusFunction f = functions.get(functionName).function;
 			if(f != null)
 			{
 				sb.append(nodeId + ",f,");
@@ -55,21 +68,61 @@ public class FunctionManager
 		return sb.toString();
 	}
 	
-	public void requestService(Message inboundMessage)
+	public void requestService(Message inboundMessage) throws FirebusFunctionException
 	{
 		logger.fine("Starting Service");
 		String functionName = inboundMessage.getSubject();
-		BusFunction f = functions.get(functionName);
-		if(f instanceof ServiceProvider)
-			new FunctionWorker(f, inboundMessage, functionListener);
+		FunctionEntry fe = functions.get(functionName);
+		if(fe != null)
+		{
+			BusFunction f = fe.function;
+			if(f instanceof ServiceProvider)
+			{
+				if(fe.currentCount < fe.maxConcurrent)
+				{
+					new FunctionWorker(f, inboundMessage, this);
+					fe.currentCount++;
+				}
+				else
+				{
+					throw new FirebusFunctionException("Maximum concurrent functions running");
+				}
+			}
+		}
 	}
-	
-	public void consume(Message publishMessage)
+
+	public void functionCallback(Message inboundMessage, byte[] payload)
+	{
+		String functionName = inboundMessage.getSubject();
+		FunctionEntry fe = functions.get(functionName);
+		if(fe != null)
+		{
+			fe.currentCount--;
+		}
+		functionListener.functionCallback(inboundMessage, payload);
+		
+	}
+
+	public void consume(Message publishMessage) throws FirebusFunctionException
 	{
 		String consumerName = publishMessage.getSubject();
-		BusFunction f = functions.get(consumerName);
-		if(f instanceof Consumer)
-			new FunctionWorker(f, publishMessage, null);
+		FunctionEntry fe = functions.get(consumerName);
+		if(fe != null)
+		{
+			BusFunction f = fe.function;
+			if(f instanceof Consumer)
+			{
+				if(fe.currentCount < fe.maxConcurrent)
+				{
+					new FunctionWorker(f, publishMessage, null);
+					fe.currentCount++;
+				}
+				else
+				{
+					throw new FirebusFunctionException("Maximum concurrent functions running");
+				}
+			}
+		}
 	}
 
 	public String toString()
@@ -83,4 +136,5 @@ public class FunctionManager
 		}
 		return sb.toString();
 	}
+
 }

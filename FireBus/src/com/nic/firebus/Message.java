@@ -24,12 +24,13 @@ public class Message
 	public static final int MSGTYPE_NODESTATE = 1;
 	public static final int MSGTYPE_QUERYNODE = 2;
 	public static final int MSGTYPE_FINDSERVICE = 3;
-	public static final int MSGTYPE_REQUESTCONTRACT = 4;
+	public static final int MSGTYPE_REQUESTSERVICECONTRACT = 4;
 	public static final int MSGTYPE_REQUESTSERVICE = 5;
 	public static final int MSGTYPE_SERVICERESPONSE = 6;
-	public static final int MSGTYPE_CONTRACTRESPONSE = 7;
-	public static final int MSGTYPE_PUBLISH = 8;
-	public static final int MSGTYPE_RECALL = 9;
+	public static final int MSGTYPE_SERVICEUNAVAILABLE = 7;
+	public static final int MSGTYPE_SERIVCECONTRACTRESPONSE = 8;
+	public static final int MSGTYPE_PUBLISH = 9;
+	public static final int MSGTYPE_RECALL = 10;
 	
 	protected static int nextId = 0;
 	
@@ -236,22 +237,26 @@ public class Message
 		sb.append("Repeat Count : " + repeatCount + "\r\n");
 		sb.append("Repeats Left : " + repeatsLeft + "\r\n");
 		sb.append("Type         : ");
-		if(type == Message.MSGTYPE_NODESTATE)
-			sb.append("Advertise");
-		else if(type == Message.MSGTYPE_CONNECT)
+		if(type == Message.MSGTYPE_CONNECT)
 			sb.append("Connect");
+		else if(type == Message.MSGTYPE_NODESTATE)
+			sb.append("Advertise");
+		else if(type == Message.MSGTYPE_QUERYNODE)
+			sb.append("Query Node");
 		else if(type == Message.MSGTYPE_FINDSERVICE)
 			sb.append("Find");
-		else if(type == Message.MSGTYPE_QUERYNODE)
-			sb.append("Discover");
-		else if(type == Message.MSGTYPE_PUBLISH)
-			sb.append("Publish");
+		else if(type == Message.MSGTYPE_REQUESTSERVICECONTRACT)
+			sb.append("Request Service Contract");
 		else if(type == Message.MSGTYPE_REQUESTSERVICE)
 			sb.append("Request Service");
 		else if(type == Message.MSGTYPE_SERVICERESPONSE)
 			sb.append("Service Response");
-		else if(type == Message.MSGTYPE_REQUESTCONTRACT)
-			sb.append("Request Contract");
+		else if(type == Message.MSGTYPE_SERVICEUNAVAILABLE)
+			sb.append("Service Unavailable");
+		else if(type == Message.MSGTYPE_SERIVCECONTRACTRESPONSE)
+			sb.append("Service Contract Response");
+		else if(type == Message.MSGTYPE_PUBLISH)
+			sb.append("Publish");
 		else if(type == Message.MSGTYPE_RECALL)
 			sb.append("Recall");
 		sb.append("\r\n");
