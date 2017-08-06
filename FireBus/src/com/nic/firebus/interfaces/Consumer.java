@@ -1,4 +1,5 @@
-package com.nic.firebus;
+package com.nic.firebus.interfaces;
+
 
 public interface Consumer extends BusFunction
 {

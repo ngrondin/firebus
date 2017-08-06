@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
+import com.nic.firebus.interfaces.ServiceRequestor;
+
 public class CorrelationManager 
 {
 	protected class CorrelationEntry

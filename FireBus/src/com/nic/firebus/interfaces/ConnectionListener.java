@@ -1,4 +1,7 @@
-package com.nic.firebus;
+package com.nic.firebus.interfaces;
+
+import com.nic.firebus.Connection;
+import com.nic.firebus.Message;
 
 public interface ConnectionListener 
 {

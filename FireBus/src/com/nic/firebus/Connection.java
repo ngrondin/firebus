@@ -14,6 +14,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.nic.firebus.interfaces.ConnectionListener;
+
 public class Connection extends Thread 
 {
 	private Logger logger = Logger.getLogger(Connection.class.getName());

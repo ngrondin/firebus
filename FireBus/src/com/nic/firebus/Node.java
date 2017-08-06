@@ -1,5 +1,8 @@
 package com.nic.firebus;
 
+import com.nic.firebus.interfaces.Consumer;
+import com.nic.firebus.interfaces.ServiceProvider;
+
 public class Node
 {
 	protected NodeCore nodeCore;

@@ -1,5 +1,10 @@
 package com.nic.firebus;
 
+import com.nic.firebus.interfaces.BusFunction;
+import com.nic.firebus.interfaces.Consumer;
+import com.nic.firebus.interfaces.FunctionListener;
+import com.nic.firebus.interfaces.ServiceProvider;
+
 public class FunctionWorker extends Thread
 {
 	protected BusFunction busFunction;

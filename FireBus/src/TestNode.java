@@ -6,11 +6,11 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import com.nic.firebus.Consumer;
 import com.nic.firebus.ConsumerInformation;
 import com.nic.firebus.Node;
 import com.nic.firebus.ServiceInformation;
-import com.nic.firebus.ServiceProvider;
+import com.nic.firebus.interfaces.Consumer;
+import com.nic.firebus.interfaces.ServiceProvider;
 
 
 public class TestNode
