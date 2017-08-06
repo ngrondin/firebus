@@ -6,6 +6,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import com.nic.firebus.information.NodeInformation;
+import com.nic.firebus.information.ServiceInformation;
+
 public class Directory 
 {
 	private Logger logger = Logger.getLogger(Directory.class.getName());

@@ -1,5 +1,7 @@
 package com.nic.firebus;
 
+import com.nic.firebus.information.ConsumerInformation;
+import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
 

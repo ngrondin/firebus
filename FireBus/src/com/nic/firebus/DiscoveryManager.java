@@ -5,6 +5,8 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
+import com.nic.firebus.interfaces.DiscoveryListener;
+
 public class DiscoveryManager extends Thread
 {
 	protected boolean quit;

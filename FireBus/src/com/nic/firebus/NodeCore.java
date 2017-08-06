@@ -8,8 +8,12 @@ import java.util.logging.Logger;
 import javax.crypto.Cipher;
 
 import com.nic.firebus.exceptions.FirebusFunctionException;
+import com.nic.firebus.information.ConsumerInformation;
+import com.nic.firebus.information.NodeInformation;
+import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.ConnectionListener;
 import com.nic.firebus.interfaces.Consumer;
+import com.nic.firebus.interfaces.DiscoveryListener;
 import com.nic.firebus.interfaces.FunctionListener;
 import com.nic.firebus.interfaces.ServiceProvider;
 

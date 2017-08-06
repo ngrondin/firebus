@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 import com.nic.firebus.exceptions.FirebusFunctionException;
+import com.nic.firebus.information.FunctionInformation;
 import com.nic.firebus.interfaces.BusFunction;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.FunctionListener;

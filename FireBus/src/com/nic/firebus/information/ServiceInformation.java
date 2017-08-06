@@ -1,4 +1,5 @@
-package com.nic.firebus;
+package com.nic.firebus.information;
+
 
 public class ServiceInformation extends FunctionInformation
 {

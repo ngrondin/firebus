@@ -1,7 +1,10 @@
-package com.nic.firebus;
+package com.nic.firebus.information;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import com.nic.firebus.Address;
+import com.nic.firebus.Connection;
 
 public class NodeInformation 
 {
