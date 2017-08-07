@@ -37,9 +37,18 @@ public class TestNode
 						try
 						{
 							String in = br.readLine();
-							byte[] ret = n.requestService(args[1], in.getBytes());
-							if(ret != null)
-								System.out.println(new String(ret));
+							if(in.equals("-si"))
+							{
+								ServiceInformation si = n.getServiceInformation(args[1]);
+								if(si != null)
+									System.out.println(si.toLongString());
+							}
+							else
+							{
+								byte[] ret = n.requestService(args[1], in.getBytes(), 10000);
+								if(ret != null)
+									System.out.println(new String(ret));
+							}
 						} 
 						catch (IOException e) {}
 					}
@@ -51,13 +60,15 @@ public class TestNode
 				if(args.length > 2)
 				{
 					final String prefix = args[2];
-					n.registerServiceProvider(new ServiceInformation(args[1]), new ServiceProvider() {
+					ServiceInformation si = new ServiceInformation(args[1], "text/plain", "{request:String}", "text/plain", "{response:String}");
+					n.registerServiceProvider(si, new ServiceProvider() {
 						public byte[] requestService(byte[] payload)
 						{
 							System.out.println("Providing Service");
+							try{ Thread.sleep(3000); } catch(Exception e) {}
 							return (prefix + " " + new String(payload)).getBytes();
 						}
-					}, 10);
+					}, 2);
 					System.out.println("Service Provider Registered");
 				}
 			}

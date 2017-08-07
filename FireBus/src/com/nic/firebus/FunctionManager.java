@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-import com.nic.firebus.exceptions.FirebusFunctionException;
+import com.nic.firebus.exceptions.FunctionUnavailableException;
 import com.nic.firebus.information.FunctionInformation;
 import com.nic.firebus.interfaces.BusFunction;
 import com.nic.firebus.interfaces.Consumer;
@@ -74,29 +74,38 @@ public class FunctionManager implements FunctionListener
 		return sb.toString();
 	}
 	
-	public void requestService(Message inboundMessage) throws FirebusFunctionException
+	public FunctionInformation getFunctionInformation(String functionName)
 	{
-		logger.fine("Starting Service");
-		String functionName = inboundMessage.getSubject();
+		if(functions.containsKey(functionName))
+			return functions.get(functionName).functionInformation;
+		else
+			return null;
+	}
+	
+	public void executeFunction(Message msg) throws FunctionUnavailableException
+	{
+		logger.fine("Executing Function");
+		String functionName = msg.getSubject();
 		FunctionEntry fe = functions.get(functionName);
 		if(fe != null)
 		{
 			BusFunction f = fe.function;
-			if(f instanceof ServiceProvider)
+			if(fe.currentCount < fe.maxConcurrent)
 			{
-				if(fe.currentCount < fe.maxConcurrent)
-				{
-					new FunctionWorker(f, inboundMessage, this);
-					fe.currentCount++;
-				}
-				else
-				{
-					throw new FirebusFunctionException("Maximum concurrent functions running");
-				}
+				new FunctionWorker(f, msg, this);
+				fe.currentCount++;
 			}
+			else
+			{
+				throw new FunctionUnavailableException("Maximum concurrent functions running");
+			}
+		}	
+		else
+		{
+			throw new FunctionUnavailableException("No such function registered in this node");
 		}
 	}
-
+	
 	public void functionCallback(Message inboundMessage, byte[] payload)
 	{
 		String functionName = inboundMessage.getSubject();
@@ -106,29 +115,6 @@ public class FunctionManager implements FunctionListener
 			fe.currentCount--;
 		}
 		functionListener.functionCallback(inboundMessage, payload);
-		
-	}
-
-	public void consume(Message publishMessage) throws FirebusFunctionException
-	{
-		String consumerName = publishMessage.getSubject();
-		FunctionEntry fe = functions.get(consumerName);
-		if(fe != null)
-		{
-			BusFunction f = fe.function;
-			if(f instanceof Consumer)
-			{
-				if(fe.currentCount < fe.maxConcurrent)
-				{
-					new FunctionWorker(f, publishMessage, null);
-					fe.currentCount++;
-				}
-				else
-				{
-					throw new FirebusFunctionException("Maximum concurrent functions running");
-				}
-			}
-		}
 	}
 
 	public String toString()

@@ -7,8 +7,9 @@ import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
 
-import com.nic.firebus.exceptions.FirebusFunctionException;
+import com.nic.firebus.exceptions.FunctionUnavailableException;
 import com.nic.firebus.information.ConsumerInformation;
+import com.nic.firebus.information.FunctionInformation;
 import com.nic.firebus.information.NodeInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.ConnectionListener;
@@ -16,6 +17,7 @@ import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.DiscoveryListener;
 import com.nic.firebus.interfaces.FunctionListener;
 import com.nic.firebus.interfaces.ServiceProvider;
+import com.nic.firebus.interfaces.ServiceRequestor;
 
 public class NodeCore extends Thread implements ConnectionListener, FunctionListener, DiscoveryListener
 {
@@ -97,12 +99,51 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 	{
 		functionManager.addFunction(consumerInfomation, consumer, maxConcurrent);
 	}
+	
+	public ServiceInformation getServiceInformation(String serviceName)
+	{
+		logger.info("Getting Service Information");
+
+		long expiry = System.currentTimeMillis() + 5000;
+		Message infoMsg = null;
+		NodeInformation ni = null;
+		ServiceInformation si = null;
+
+		while((si == null  ||  (si != null  &&  si.hasFullInformation() == false))  &&  System.currentTimeMillis() < expiry)
+		{
+			while((ni = directory.findServiceProvider(serviceName)) == null  &&  System.currentTimeMillis() < expiry)
+			{
+				logger.fine("Sending Find Service Message");
+				Message findMsg = new Message(0, nodeId, Message.MSGTYPE_FINDSERVICE, serviceName, null);
+				correlationManager.synchronousCall(findMsg, 2000);
+			}
+			
+			if(ni != null)
+			{
+				si = ni.getServiceInformation(serviceName);
+				if(!si.hasFullInformation())
+				{
+					logger.fine("Sending Request Service Information Message");
+					Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_GETFUNCTIONINFORMATION, serviceName, null);
+					infoMsg = correlationManager.synchronousCall(msg, 2000);
+					
+					if(infoMsg == null)
+					{
+						logger.fine("Setting node as unresponsive");
+						ni.setUnresponsive();
+					}
+				}
+			}
+		}
 		
-	public byte[] requestService(String serviceName, byte[] payload)
+		return si;
+	}
+		
+	public byte[] requestService(String serviceName, byte[] payload, int timeout,  ServiceRequestor requestor)
 	{
 		logger.info("Requesting Service");
 
-		long expiry = System.currentTimeMillis() + 5000;
+		long expiry = System.currentTimeMillis() + timeout + 2000;
 		Message respMsg = null;
 		NodeInformation ni = null;
 
@@ -119,7 +160,7 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 			{
 				logger.fine("Sending Request Message");
 				Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_REQUESTSERVICE, serviceName, payload);
-				respMsg = correlationManager.synchronousCall(msg, 2000);
+				respMsg = correlationManager.synchronousCall(msg, timeout);
 				
 				if(respMsg == null)
 				{
@@ -299,13 +340,19 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 						advertiseTo(msg.getOriginatorId());
 						break;
 					case Message.MSGTYPE_FINDSERVICE:
-						if(functionManager.hasFunction(msg.getSubject()))
-							advertiseTo(msg.getOriginatorId());
+						processFindService(msg);
 						break;
 					case Message.MSGTYPE_REQUESTSERVICE:
 						processServiceRequest(msg);
 						break;
+					case Message.MSGTYPE_GETFUNCTIONINFORMATION:
+						processServiceInformationRequest(msg);
+						break;
 					case Message.MSGTYPE_SERVICERESPONSE:
+						correlationManager.receiveResponse(msg);
+						break;
+					case Message.MSGTYPE_SERVICEINFORMATION:
+						processServiceInformation(msg);
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_PUBLISH:
@@ -363,27 +410,57 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		logger.fine("Finished Processing Outbound Message");
 	}
 	
+	protected void processFindService(Message msg)
+	{
+		if(functionManager.hasFunction(msg.getSubject()))
+			advertiseTo(msg.getOriginatorId());
+	}
+	
 	protected void processServiceRequest(Message msg)
 	{
 		try
 		{
-			functionManager.requestService(msg);
+			functionManager.executeFunction(msg);
 		}
-		catch (FirebusFunctionException e)
+		catch (FunctionUnavailableException e)
 		{
 			Message outMsg = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_SERVICEUNAVAILABLE, msg.getSubject(), e.getMessage().getBytes());
 			outMsg.setCorrelation(msg.getCorrelation());
 			outboundQueue.addMessage(outMsg);
 		}
 	}
+
+	protected void processServiceInformationRequest(Message msg)
+	{
+		FunctionInformation fi = functionManager.getFunctionInformation(msg.getSubject());
+		if(fi instanceof ServiceInformation)
+		{
+			ServiceInformation si = (ServiceInformation)fi;
+			Message outMsg = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_SERVICEINFORMATION, msg.getSubject(), si.serialise());
+			outMsg.setCorrelation(msg.getCorrelation());
+			outboundQueue.addMessage(outMsg);
+		}
+	}
+	
+	protected void processServiceInformation(Message msg)
+	{
+		NodeInformation ni = directory.getNodeById(msg.getOriginatorId());
+		ServiceInformation si = ni.getServiceInformation(msg.getSubject());
+		if(si == null)
+		{
+			si = new ServiceInformation(msg.getSubject());
+			ni.addServiceInformation(si);
+		}
+		si.deserialise(msg.getPayload());
+	}
 	
 	protected void processPublish(Message msg)
 	{
 		try
 		{
-			functionManager.consume(msg);
+			functionManager.executeFunction(msg);
 		}
-		catch (FirebusFunctionException e)
+		catch (FunctionUnavailableException e)
 		{
 			logger.severe(e.getMessage());
 		}		

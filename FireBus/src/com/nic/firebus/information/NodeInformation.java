@@ -13,21 +13,12 @@ public class NodeInformation
 	protected ArrayList<Address> addresses;
 	protected ArrayList<Integer> repeaters;
 	protected ArrayList<ServiceInformation> services;
+	protected ArrayList<ConsumerInformation> consumers;
 	protected long lastSentDiscovery;
 	protected long lastUpdated;
 	protected boolean unconnectable;
 	protected boolean unresponsive;
-	//protected int status;
-	
-	
-	/*
-	public final static int STATUS_NEW = 0;
-	public final static int STATUS_CONNECTED = 1;
-	public final static int STATUS_DISCONNECTED = 2;
-	public final static int STATUS_DISAPPEARED = 3;
-	public final static int STATUS_UNREACHABLE = 4;
-	 */
-	
+
 	public NodeInformation(int ni)
 	{
 		nodeId = ni;
@@ -36,9 +27,10 @@ public class NodeInformation
 
 	protected void initialise()
 	{
-		services = new ArrayList<ServiceInformation>();
-		repeaters = new ArrayList<Integer>();
 		addresses = new ArrayList<Address>();
+		repeaters = new ArrayList<Integer>();
+		services = new ArrayList<ServiceInformation>();
+		consumers = new ArrayList<ConsumerInformation>();
 		unconnectable = false;
 		unresponsive = false;
 	}
@@ -72,11 +64,7 @@ public class NodeInformation
 	
 	public void addAddress(Address a)
 	{
-		boolean alreadyHasAddress = false;
-		for(int i = 0; i < addresses.size(); i++)
-			if(addresses.get(i).equals(a))
-				alreadyHasAddress = true;
-		if(!alreadyHasAddress)
+		if(!containsAddress(a))
 			addresses.add(a);
 	}
 	
@@ -88,14 +76,16 @@ public class NodeInformation
 	
 	public void addServiceInformation(ServiceInformation si)
 	{
-		boolean alreadyHasAddress = false;
-		for(int i = 0; i < services.size(); i++)
-			if(services.get(i).getName().equals(si.getName()))
-				alreadyHasAddress = true;
-		if(!alreadyHasAddress)
+		if(getServiceInformation(si.getName()) == null)
 			services.add(si);
 	}
-	
+
+	public void addConsumerInformation(ConsumerInformation ci)
+	{
+		if(getConsumerInformation(ci.getName()) == null)
+			consumers.add(ci);
+	}
+
 	public int getNodeId()
 	{
 		return nodeId;
@@ -150,6 +140,14 @@ public class NodeInformation
 		return null;
 	}
 	
+	public ConsumerInformation getConsumerInformation(String cn)
+	{
+		for(int i = 0; i < consumers.size(); i++)
+			if(consumers.get(i).getName().equals(cn))
+				return consumers.get(i);
+		return null;
+	}
+	
 	public boolean isUnconnectable()
 	{
 		return unconnectable;
@@ -170,6 +168,8 @@ public class NodeInformation
 			sb.append("Repeater  : " + repeaters.get(i) + "\r\n");
 		for(int i = 0; i < services.size(); i++)
 			sb.append("Service   : " + services.get(i) + "\r\n");
+		for(int i = 0; i < consumers.size(); i++)
+			sb.append("Consumers : " + consumers.get(i) + "\r\n");
 		sb.append("Connection: " + connection + "\r\n");
 		return sb.toString();
 	}

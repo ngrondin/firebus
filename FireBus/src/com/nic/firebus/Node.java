@@ -4,6 +4,7 @@ import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
+import com.nic.firebus.interfaces.ServiceRequestor;
 
 public class Node
 {
@@ -39,9 +40,24 @@ public class Node
 		nodeCore.registerConsumer(consumerInfomation, consumer, maxConcurrent);
 	}
 		
+	public ServiceInformation getServiceInformation(String serviceName)
+	{
+		return nodeCore.getServiceInformation(serviceName);
+	}
+
 	public byte[] requestService(String serviceName, byte[] payload)
 	{
-		return nodeCore.requestService(serviceName, payload);
+		return nodeCore.requestService(serviceName, payload, 2000, null);
+	}
+
+	public byte[] requestService(String serviceName, byte[] payload, int timeout)
+	{
+		return nodeCore.requestService(serviceName, payload, timeout, null);
+	}
+	
+	public byte[] requestService(String serviceName, byte[] payload, int timeout, ServiceRequestor requestor)
+	{
+		return nodeCore.requestService(serviceName, payload, timeout, requestor);
 	}
 	
 	public void publish(String dataname, byte[] payload)

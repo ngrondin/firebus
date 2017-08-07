@@ -24,11 +24,12 @@ public class Message
 	public static final int MSGTYPE_NODESTATE = 1;
 	public static final int MSGTYPE_QUERYNODE = 2;
 	public static final int MSGTYPE_FINDSERVICE = 3;
-	public static final int MSGTYPE_REQUESTSERVICECONTRACT = 4;
-	public static final int MSGTYPE_REQUESTSERVICE = 5;
-	public static final int MSGTYPE_SERVICERESPONSE = 6;
-	public static final int MSGTYPE_SERVICEUNAVAILABLE = 7;
-	public static final int MSGTYPE_SERIVCECONTRACTRESPONSE = 8;
+	public static final int MSGTYPE_GETFUNCTIONINFORMATION = 4;
+	public static final int MSGTYPE_SERVICEINFORMATION = 5;
+	public static final int MSGTYPE_REQUESTSERVICE = 6;
+	public static final int MSGTYPE_SERVICERESPONSE = 7;
+	public static final int MSGTYPE_SERVICEUNAVAILABLE = 8;
+	public static final int MSGTYPE_SERVICEERROR = 8;
 	public static final int MSGTYPE_PUBLISH = 9;
 	public static final int MSGTYPE_RECALL = 10;
 	
@@ -245,16 +246,18 @@ public class Message
 			sb.append("Query Node");
 		else if(type == Message.MSGTYPE_FINDSERVICE)
 			sb.append("Find");
-		else if(type == Message.MSGTYPE_REQUESTSERVICECONTRACT)
-			sb.append("Request Service Contract");
+		else if(type == Message.MSGTYPE_GETFUNCTIONINFORMATION)
+			sb.append("Get Function Information");
+		else if(type == Message.MSGTYPE_SERVICEINFORMATION)
+			sb.append("Function Information");
 		else if(type == Message.MSGTYPE_REQUESTSERVICE)
 			sb.append("Request Service");
 		else if(type == Message.MSGTYPE_SERVICERESPONSE)
 			sb.append("Service Response");
 		else if(type == Message.MSGTYPE_SERVICEUNAVAILABLE)
 			sb.append("Service Unavailable");
-		else if(type == Message.MSGTYPE_SERIVCECONTRACTRESPONSE)
-			sb.append("Service Contract Response");
+		else if(type == Message.MSGTYPE_SERVICEERROR)
+			sb.append("Service Error");
 		else if(type == Message.MSGTYPE_PUBLISH)
 			sb.append("Publish");
 		else if(type == Message.MSGTYPE_RECALL)
