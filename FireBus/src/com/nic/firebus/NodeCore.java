@@ -100,88 +100,23 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		functionManager.addFunction(consumerInfomation, consumer, maxConcurrent);
 	}
 	
-	public ServiceInformation getServiceInformation(String serviceName)
+	public ServiceInformation getServiceInformation(String functionName, int timeout)
 	{
-		logger.info("Getting Service Information");
-
-		long expiry = System.currentTimeMillis() + 5000;
-		Message infoMsg = null;
-		NodeInformation ni = null;
-		ServiceInformation si = null;
-
-		while((si == null  ||  (si != null  &&  si.hasFullInformation() == false))  &&  System.currentTimeMillis() < expiry)
-		{
-			while((ni = directory.findServiceProvider(serviceName)) == null  &&  System.currentTimeMillis() < expiry)
-			{
-				logger.fine("Sending Find Service Message");
-				Message findMsg = new Message(0, nodeId, Message.MSGTYPE_FINDSERVICE, serviceName, null);
-				correlationManager.synchronousCall(findMsg, 2000);
-			}
-			
-			if(ni != null)
-			{
-				si = ni.getServiceInformation(serviceName);
-				if(!si.hasFullInformation())
-				{
-					logger.fine("Sending Request Service Information Message");
-					Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_GETFUNCTIONINFORMATION, serviceName, null);
-					infoMsg = correlationManager.synchronousCall(msg, 2000);
-					
-					if(infoMsg == null)
-					{
-						logger.fine("Setting node as unresponsive");
-						ni.setUnresponsive();
-					}
-				}
-			}
-		}
-		
-		return si;
+		InformationRequest ir = new InformationRequest(functionName, timeout, null, correlationManager, directory, nodeId);
+		return ir.getResponse();
 	}
 		
-	public byte[] requestService(String serviceName, byte[] payload, int timeout,  ServiceRequestor requestor)
+	public byte[] requestService(String serviceName, byte[] payload, int timeout)
 	{
-		logger.info("Requesting Service");
-
-		long expiry = System.currentTimeMillis() + timeout + 2000;
-		Message respMsg = null;
-		NodeInformation ni = null;
-
-		while(respMsg == null  &&  System.currentTimeMillis() < expiry)
-		{
-			while((ni = directory.findServiceProvider(serviceName)) == null  &&  System.currentTimeMillis() < expiry)
-			{
-				logger.fine("Sending Find Service Message");
-				Message findMsg = new Message(0, nodeId, Message.MSGTYPE_FINDSERVICE, serviceName, null);
-				correlationManager.synchronousCall(findMsg, 2000);
-			}
-			
-			if(ni != null)
-			{
-				logger.fine("Sending Request Message");
-				Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_REQUESTSERVICE, serviceName, payload);
-				respMsg = correlationManager.synchronousCall(msg, timeout);
-				
-				if(respMsg == null)
-				{
-					logger.fine("Setting node as unresponsive");
-					ni.setUnresponsive();
-				}
-			}
-		}
-
-		if(respMsg != null)
-		{
-			logger.info("Returning Service Response");
-			return respMsg.getPayload();
-		}
-		else
-		{
-			logger.info("No Response Received from Service Request");
-			return null;
-		}
+		ServiceRequest request = new ServiceRequest(serviceName, payload, timeout, null, correlationManager, directory, nodeId);
+		return request.getResponse();
 	}		
 
+	public void requestService(String serviceName, byte[] payload, int timeout, ServiceRequestor requestor)
+	{
+		new ServiceRequest(serviceName, payload, timeout, requestor, correlationManager, directory, nodeId);
+	}	
+	
 	public void publish(String dataname, byte[] payload)
 	{
 		Message msg = new Message(0, nodeId, Message.MSGTYPE_PUBLISH, dataname, payload);
@@ -489,6 +424,7 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		{
 			try
 			{
+				correlationManager.checkExpiredCalls();
 				resolveKnownAddresses();
 				maintainConnectionCount();
 				if(inboundQueue.getMessageCount() > 0)

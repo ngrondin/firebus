@@ -1,10 +1,9 @@
 package com.nic.firebus;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.logging.Logger;
 
-import com.nic.firebus.interfaces.ServiceRequestor;
+import com.nic.firebus.interfaces.CorrelationListener;
 
 public class CorrelationManager 
 {
@@ -12,13 +11,13 @@ public class CorrelationManager
 	{
 		protected Message outboundMessage;
 		protected Message inboundMessage;
-		protected ServiceRequestor serviceRequestor;
+		protected CorrelationListener correlationListener;
 		protected long expiry;
 		
-		public CorrelationEntry(Message om, ServiceRequestor sr, int to)
+		public CorrelationEntry(Message om, CorrelationListener cl, int to)
 		{
 			outboundMessage = om;
-			serviceRequestor = sr;
+			correlationListener = cl;
 			expiry = System.currentTimeMillis() + to;
 		}
 	};
@@ -57,11 +56,11 @@ public class CorrelationManager
 		return e.inboundMessage;
 	}
 	
-	public void asynchronousCall(Message outMsg, ServiceRequestor sr, int timeout)
+	public void asynchronousCall(Message outMsg, CorrelationListener cl, int timeout)
 	{
 		int c = getNextCorrelation();
 		outMsg.setCorrelation(c);
-		CorrelationEntry e = new CorrelationEntry(outMsg, sr, timeout); 
+		CorrelationEntry e = new CorrelationEntry(outMsg, cl, timeout); 
 		entries.put(c, e);
 		outboundQueue.addMessage(outMsg);
 	}
@@ -72,42 +71,43 @@ public class CorrelationManager
 		CorrelationEntry e = entries.get(c);
 		if(e != null)
 		{
-			logger.fine("Received Correlated Response");
+			logger.finer("Received Correlated Response");
 			e.inboundMessage = inMsg;
-			if(e.serviceRequestor != null)
+			if(e.correlationListener != null)
 			{
-				final byte[] pl = inMsg.getPayload();
-				final ServiceRequestor sr = e.serviceRequestor;
+				final CorrelationListener cl = e.correlationListener;
 				Thread t = new Thread(new Runnable() {
 				    public void run() 
 				    {
-				    	sr.requestCallback(pl);
+				    	cl.correlatedResponseReceived(e.outboundMessage, e.inboundMessage);
 				    }
 				});	
 				t.start();
-				entries.remove(e);
+				entries.remove(c);
 			}
 		}
 	}
 	
-	public void houseKeeping()
+	public void checkExpiredCalls()
 	{
 		long currTime = System.currentTimeMillis();
-		Iterator<Integer> it = entries.keySet().iterator();
-		while(it.hasNext())
+		Object[] ids = entries.keySet().toArray();
+		for(int i = 0; i < ids.length; i++)
 		{
-			CorrelationEntry e = entries.get(it.next());
-			if(e.serviceRequestor != null && currTime > e.expiry)
+			int c = (int)ids[i];
+			CorrelationEntry e = entries.get(c);
+			if(e.correlationListener != null && currTime > e.expiry)
 			{
-				final ServiceRequestor sr = e.serviceRequestor;
+				final CorrelationListener cl = e.correlationListener;
+				final Message m = e.outboundMessage;
 				Thread t = new Thread(new Runnable() {
 				    public void run() 
 				    {
-				    	sr.requestTimeout();
+				    	cl.correlationTimedout(m);
 				    }
 				});	
 				t.start();
-				entries.remove(e);				
+				entries.remove(c);				
 			}
 		}
 	}

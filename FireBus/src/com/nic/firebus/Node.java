@@ -42,22 +42,22 @@ public class Node
 		
 	public ServiceInformation getServiceInformation(String serviceName)
 	{
-		return nodeCore.getServiceInformation(serviceName);
+		return nodeCore.getServiceInformation(serviceName, 2000);
 	}
 
 	public byte[] requestService(String serviceName, byte[] payload)
 	{
-		return nodeCore.requestService(serviceName, payload, 2000, null);
+		return nodeCore.requestService(serviceName, payload, 2000);
 	}
 
 	public byte[] requestService(String serviceName, byte[] payload, int timeout)
 	{
-		return nodeCore.requestService(serviceName, payload, timeout, null);
+		return nodeCore.requestService(serviceName, payload, timeout);
 	}
 	
-	public byte[] requestService(String serviceName, byte[] payload, int timeout, ServiceRequestor requestor)
+	public void requestService(String serviceName, byte[] payload, int timeout, ServiceRequestor requestor)
 	{
-		return nodeCore.requestService(serviceName, payload, timeout, requestor);
+		nodeCore.requestService(serviceName, payload, timeout, requestor);
 	}
 	
 	public void publish(String dataname, byte[] payload)

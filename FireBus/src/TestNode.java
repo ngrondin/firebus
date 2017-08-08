@@ -11,6 +11,7 @@ import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
+import com.nic.firebus.interfaces.ServiceRequestor;
 
 
 public class TestNode
@@ -43,6 +44,16 @@ public class TestNode
 								if(si != null)
 									System.out.println(si.toLongString());
 							}
+							else if(in.startsWith("-a "))
+							{
+								n.requestService(args[1], in.substring(3).getBytes(), 10000, new ServiceRequestor() {
+									public void requestCallback(byte[] payload) {
+										System.out.println(new String(payload));
+									}
+									public void requestTimeout() {
+										System.out.println("Timed out");
+									}});
+							}
 							else
 							{
 								byte[] ret = n.requestService(args[1], in.getBytes(), 10000);
@@ -65,7 +76,7 @@ public class TestNode
 						public byte[] requestService(byte[] payload)
 						{
 							System.out.println("Providing Service");
-							try{ Thread.sleep(3000); } catch(Exception e) {}
+							//try{ Thread.sleep(3000); } catch(Exception e) {}
 							return (prefix + " " + new String(payload)).getBytes();
 						}
 					}, 2);
