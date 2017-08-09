@@ -20,6 +20,11 @@ public class Node
 		nodeCore = new NodeCore(p, "firebus", "firebuspassword0");
 	}
 	
+	public Node(String network, String password)
+	{
+		nodeCore = new NodeCore(network, password);
+	}
+
 	public Node(int p, String network, String password)
 	{
 		nodeCore = new NodeCore(p, network, password);

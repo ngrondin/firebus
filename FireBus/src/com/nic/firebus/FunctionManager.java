@@ -60,15 +60,12 @@ public class FunctionManager implements FunctionListener
 			BusFunction f = functions.get(functionName).function;
 			if(f != null)
 			{
-				sb.append(nodeId + ",f,");
 				if(f instanceof ServiceProvider)
-					sb.append("s,");
+					sb.append(nodeId + ",f,s," + functionName + "\r\n");
 				if(f instanceof Publisher)
-					sb.append("p,");
+					sb.append(nodeId + ",f,p," + functionName + "\r\n");
 				if(f instanceof Consumer)
-					sb.append("c,");
-				sb.append(functionName);
-				sb.append("\r\n");
+					sb.append(nodeId + ",f,c," + functionName + "\r\n");
 			}
 		}
 		return sb.toString();

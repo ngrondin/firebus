@@ -46,7 +46,12 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 	{
 		initialise(p, "firebus", "firebuspassword0");
 	}
-	
+
+	public NodeCore(String network, String password)
+	{
+		initialise(0, network, password);
+	}
+
 	public NodeCore(int p, String network, String password)
 	{
 		initialise(p, network, password);
@@ -406,7 +411,7 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		StringBuilder sb = new StringBuilder();
 		sb.append(connectionManager.getAddressStateString(nodeId));
 		sb.append(functionManager.getFunctionStateString(nodeId));
-		sb.append(directory.getDirectoryStateString(nodeId));
+		//sb.append(directory.getDirectoryStateString(nodeId));
 		return sb.toString();
 	}
 	

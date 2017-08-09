@@ -27,10 +27,11 @@ public class TestNode
 		
 		if(args.length > 0)
 		{
-			if(args[0].equals("requestor"))
+			if(args[0].equals("console"))
 			{
 				if(args.length > 1)
 				{
+					String functionName = args[1];
 					boolean quit = false;
 					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 					while(!quit)
@@ -38,15 +39,17 @@ public class TestNode
 						try
 						{
 							String in = br.readLine();
-							if(in.equals("-si"))
+							String[] parts = in.split(" ");
+							if(parts[0].equals("info"))
 							{
-								ServiceInformation si = n.getServiceInformation(args[1]);
+								ServiceInformation si = n.getServiceInformation(functionName);
 								if(si != null)
 									System.out.println(si.toLongString());
 							}
-							else if(in.startsWith("-a "))
+							else if(parts[0].equals("req"))
 							{
-								n.requestService(args[1], in.substring(3).getBytes(), 10000, new ServiceRequestor() {
+								String line = in.substring(parts[0].length());
+								n.requestService(functionName, line.getBytes(), 10000, new ServiceRequestor() {
 									public void requestCallback(byte[] payload) {
 										System.out.println(new String(payload));
 									}
@@ -54,11 +57,10 @@ public class TestNode
 										System.out.println("Timed out");
 									}});
 							}
-							else
+							else if(parts[0].equals("pub"))
 							{
-								byte[] ret = n.requestService(args[1], in.getBytes(), 10000);
-								if(ret != null)
-									System.out.println(new String(ret));
+								String line = in.substring(parts[0].length());
+								n.publish(functionName, line.getBytes());
 							}
 						} 
 						catch (IOException e) {}
@@ -83,24 +85,7 @@ public class TestNode
 					System.out.println("Service Provider Registered");
 				}
 			}
-			
-			if(args[0].equals("publisher"))
-			{
-				if(args.length > 1)
-				{
-					boolean quit = false;
-					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-					while(!quit)
-					{
-						try
-						{
-							String in = br.readLine();
-							n.publish(args[1], in.getBytes());
-						} 
-						catch (IOException e) {}
-					}
-				}
-			}
+
 			
 			if(args[0].equals("consumer"))
 			{

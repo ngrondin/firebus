@@ -22,13 +22,13 @@ public class FunctionWorker extends Thread
 	public void run()
 	{
 		byte[] payload = inboundMessage.getPayload();
-		if(busFunction instanceof ServiceProvider)
+		if(inboundMessage.getType() == Message.MSGTYPE_REQUESTSERVICE  &&  busFunction instanceof ServiceProvider)
 		{
 			byte[] returnPayload = ((ServiceProvider)busFunction).requestService(payload);
 			if(functionListener != null)
 				functionListener.functionCallback(inboundMessage, returnPayload);
 		}
-		else if(busFunction instanceof Consumer)
+		else if(inboundMessage.getType() == Message.MSGTYPE_PUBLISH  &&  busFunction instanceof Consumer)
 		{
 			((Consumer)busFunction).consume(payload);
 		}
