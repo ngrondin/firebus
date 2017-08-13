@@ -68,7 +68,7 @@ public class CorrelationManager
 	public void receiveResponse(Message inMsg)
 	{
 		int c = inMsg.getCorrelation();
-		CorrelationEntry e = entries.get(c);
+		final CorrelationEntry e = entries.get(c);
 		if(e != null)
 		{
 			logger.finer("Received Correlated Response");
