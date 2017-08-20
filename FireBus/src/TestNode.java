@@ -24,7 +24,7 @@ public class TestNode
 		    h.setLevel(Level.INFO);
 
 		Node n = new Node();
-		n.addKnownNodeAddress("54.252.238.59", 1990);
+		//n.addKnownNodeAddress("54.252.238.59", 1990);
 		
 		if(args.length > 0)
 		{

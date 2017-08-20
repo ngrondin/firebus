@@ -64,11 +64,11 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 			Random rnd = new Random();
 			nodeId = rnd.nextInt();
 			quit = false;
-			password = pw;
 			network = n;			
+			password = pw;
 			inboundQueue = new MessageQueue();
 			outboundQueue = new MessageQueue();
-			connectionManager = new ConnectionManager(port, this, pw);
+			connectionManager = new ConnectionManager(port, this, network, pw);
 			functionManager = new FunctionManager(this);
 			directory = new Directory();
 			discoveryManager = new DiscoveryManager(this, nodeId, connectionManager.getAddress());
@@ -191,7 +191,7 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 					outboundQueue.addMessage(msg);
 				}
 			} 
-			catch (IOException e) 
+			catch (Exception e) 
 			{
 			}
 			knownAddresses.remove(i);

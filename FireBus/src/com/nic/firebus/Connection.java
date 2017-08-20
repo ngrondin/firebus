@@ -3,18 +3,24 @@ package com.nic.firebus;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.nic.firebus.interfaces.ConnectionListener;
+import com.nic.firebus.exceptions.ConnectionException;
 
 public class Connection extends Thread 
 {
@@ -22,40 +28,61 @@ public class Connection extends Thread
 	protected Socket socket;
 	protected InputStream is;
 	protected OutputStream os;
-	//protected CipherInputStream cis;
-	//protected CipherOutputStream cos;
-	protected ConnectionListener listener;
+	protected NodeCore nodeCore;
+	protected String networkName;
+	protected int remoteId;
+	protected Address remoteAddress;
+	protected SecretKey secretKey;
+	protected IvParameterSpec IV;
+	protected Cipher encryptionCipher;
+	protected Cipher decryptionCipher;
 	protected boolean quit;
 	protected int msgState;
 	protected int msgLen;
 	protected int msgPos;
 	protected int msgCRC;
 	protected byte[] msg;
-	protected SecretKey secretKey;
-	protected IvParameterSpec IV;
-	protected Cipher encryptionCipher;
-	protected Cipher decryptionCipher;
 	
-	public Connection(Socket s, ConnectionListener cl, String key) throws IOException
+	public Connection(Socket s, NodeCore nc, String net, String key) throws IOException, ConnectionException
 	{
 		socket = s;
-		initialise(cl, key);
+		initialise(nc, net, key);
+		byte[] ab = new byte[4];
+		is.read(ab);
+		InetAddress a = InetAddress.getByAddress(ab);
+		int remotePort = (is.read() << 8);
+		remotePort |= is.read();
+		remoteAddress = new Address(a.getHostAddress(), remotePort);
+		nodeCore.connectionCreated(this);
+		start();
 	}
 	
-	public Connection(Address a, ConnectionListener cl, String key) throws UnknownHostException, IOException
+	public Connection(Address a, NodeCore nc, String net, String key, int listeningPort) throws UnknownHostException, IOException, ConnectionException
 	{
 		socket = new Socket(a.getIPAddress(), a.getPort());
-		initialise(cl, key);
+		remoteAddress = a;
+		initialise(nc, net, key);
+		os.write(socket.getInetAddress().getAddress());
+		os.write((listeningPort >> 8) & 0x00FF);
+		os.write(listeningPort  & 0x00FF);
+		start();
 	}
 	
-	protected void initialise(ConnectionListener cl, String key) throws IOException
+	protected void initialise(NodeCore nc, String net, String key) throws IOException, ConnectionException
 	{
 		is = socket.getInputStream();
 		os = socket.getOutputStream();
-		listener = cl;
-		quit = false;
-		msgState = 0;
-		setName("Firebus Connection");
+		networkName = net;
+		nodeCore = nc;
+		
+		os.write(networkName.length());
+		os.write(networkName.getBytes());
+		int netNameLen = is.read();
+		byte[] netNameBytes = new byte[netNameLen];
+		is.read(netNameBytes);
+		String remoteNetName = new String(netNameBytes);
+		if(!remoteNetName.equals(networkName))
+			throw new ConnectionException("Remote node is not on the same Firebus network");
 
 		try
 		{
@@ -71,19 +98,24 @@ public class Connection extends Thread
 			os = new CipherOutputStream(os, encryptionCipher);
 			is = new CipherInputStream(is, decryptionCipher);
 		}
-		catch(Exception e)
+		catch(IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | InvalidKeyException e)
 		{
 			logger.severe("Connection encryption setup failed : " + e.getMessage());
+			throw new ConnectionException(e.getMessage());
 		}
 		
+		os.write(ByteBuffer.allocate(4).putInt(nodeCore.getNodeId()).array());
+		
 		logger.fine("Connection Initialised");
-		start();
+		quit = false;
+		msgState = 0;
+		setName("Firebus Connection");
 	}
 
 	
-	public String getRemoteAddress()
+	public Address getRemoteAddress()
 	{
-		return socket.getInetAddress().getHostAddress();
+		return remoteAddress;
 	}
 	
 	public void run()
@@ -124,8 +156,8 @@ public class Connection extends Thread
 					if(i == msgCRC)
 					{
 						Message message = new Message(msg, this);
-						if(listener != null)
-							listener.messageReceived(message, this);
+						if(nodeCore != null)
+							nodeCore.messageReceived(message, this);
 					}
 					msgState = 0;
 				}
@@ -133,7 +165,7 @@ public class Connection extends Thread
 			catch (IOException e) 
 			{
 				close();
-				listener.connectionClosed(this);
+				nodeCore.connectionClosed(this);
 			}
 		}
 	}
