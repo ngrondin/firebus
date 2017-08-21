@@ -1,6 +1,5 @@
 package com.nic.firebus;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -88,6 +87,11 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		return nodeId;
 	}
 	
+	public int getPort()
+	{
+		return connectionManager.getPort();
+	}
+	
 	public void addKnownNodeAddress(String a, int p)
 	{
 		Address address = new Address(a, p);
@@ -130,6 +134,10 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 	
 	public void connectionCreated(Connection c) 
 	{
+		NodeInformation ni = directory.getNodeById(c.getRemoteNodeId());
+		ni.setConnection(c);
+		Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_CONNECT, null, getNodeStateString().getBytes());
+		outboundQueue.addMessage(msg);
 	}
 
 	public void messageReceived(Message m, Connection c) 
@@ -183,18 +191,11 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 			try 
 			{
 				Connection connection = connectionManager.createConnection(knownAddresses.get(i));
-				if(connection != null)
-				{
-					Message msg = new Message(0, nodeId, Message.MSGTYPE_CONNECT, null, getNodeStateString().getBytes());
-					msg.setRepeatsLeft(0);
-					msg.setConnection(connection);
-					outboundQueue.addMessage(msg);
-				}
+				knownAddresses.remove(i);
 			} 
 			catch (Exception e) 
 			{
 			}
-			knownAddresses.remove(i);
 		}
 	}
 
@@ -205,14 +206,6 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		{
 			NodeInformation ni = list.get(i);
 			Connection c = connectionManager.obtainConnectionForNode(ni);
-			if(c != null)
-			{
-				ni.setConnection(c);
-				Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_CONNECT, null, getNodeStateString().getBytes());
-				msg.setConnection(c);
-				msg.setRepeatsLeft(0);
-				outboundQueue.addMessage(msg);
-			}
 		}
 	}
 	

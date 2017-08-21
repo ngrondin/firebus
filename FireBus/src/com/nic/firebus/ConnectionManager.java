@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 
 import com.nic.firebus.exceptions.ConnectionException;
 import com.nic.firebus.information.NodeInformation;
-import com.nic.firebus.interfaces.ConnectionListener;
 
 
 public class ConnectionManager extends Thread
@@ -94,7 +93,7 @@ public class ConnectionManager extends Thread
 	public Connection createConnection(Address a) throws IOException, ConnectionException
 	{
 		logger.fine("Creating New Connection");
-		Connection c = new Connection(a, nodeCore, netName, key, port);
+		Connection c = new Connection(a, nodeCore, netName, key);
 		connections.add(c);
 		logger.info("Created New Connection");
 		return c;

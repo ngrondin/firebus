@@ -30,7 +30,7 @@ public class Connection extends Thread
 	protected OutputStream os;
 	protected NodeCore nodeCore;
 	protected String networkName;
-	protected int remoteId;
+	protected int remoteNodeId;
 	protected Address remoteAddress;
 	protected SecretKey secretKey;
 	protected IvParameterSpec IV;
@@ -47,25 +47,12 @@ public class Connection extends Thread
 	{
 		socket = s;
 		initialise(nc, net, key);
-		byte[] ab = new byte[4];
-		is.read(ab);
-		InetAddress a = InetAddress.getByAddress(ab);
-		int remotePort = (is.read() << 8);
-		remotePort |= is.read();
-		remoteAddress = new Address(a.getHostAddress(), remotePort);
-		nodeCore.connectionCreated(this);
-		start();
 	}
 	
-	public Connection(Address a, NodeCore nc, String net, String key, int listeningPort) throws UnknownHostException, IOException, ConnectionException
+	public Connection(Address a, NodeCore nc, String net, String key) throws UnknownHostException, IOException, ConnectionException
 	{
 		socket = new Socket(a.getIPAddress(), a.getPort());
-		remoteAddress = a;
 		initialise(nc, net, key);
-		os.write(socket.getInetAddress().getAddress());
-		os.write((listeningPort >> 8) & 0x00FF);
-		os.write(listeningPort  & 0x00FF);
-		start();
 	}
 	
 	protected void initialise(NodeCore nc, String net, String key) throws IOException, ConnectionException
@@ -105,17 +92,35 @@ public class Connection extends Thread
 		}
 		
 		os.write(ByteBuffer.allocate(4).putInt(nodeCore.getNodeId()).array());
+		os.write(socket.getInetAddress().getAddress());
+		os.write(ByteBuffer.allocate(4).putInt(nodeCore.getPort()).array());
+
+		byte[] ab = new byte[4];
+		is.read(ab);
+		remoteNodeId = (ByteBuffer.wrap(ab)).getInt();
+		is.read(ab);
+		InetAddress a = InetAddress.getByAddress(ab);
+		is.read(ab);
+		int remotePort = (ByteBuffer.wrap(ab)).getInt();
+		remoteAddress = new Address(a.getHostAddress(), remotePort);
 		
 		logger.fine("Connection Initialised");
 		quit = false;
 		msgState = 0;
 		setName("Firebus Connection");
+		nodeCore.connectionCreated(this);
+		start();
 	}
 
 	
 	public Address getRemoteAddress()
 	{
 		return remoteAddress;
+	}
+	
+	public int getRemoteNodeId()
+	{
+		return remoteNodeId;
 	}
 	
 	public void run()
