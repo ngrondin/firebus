@@ -72,10 +72,9 @@ public class ConnectionManager extends Thread
 				while(!quit)
 				{
 					Socket socket = server.accept();
-					logger.info("Accepted New Connection");
-
 					Connection connection = new Connection(socket, nodeCore);
 					connections.add(connection);
+					logger.info("Accepted New Connection");
 				}
 			} 
 			catch (Exception e) 

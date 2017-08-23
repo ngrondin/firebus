@@ -21,7 +21,7 @@ public class TestNode
 		Logger log = LogManager.getLogManager().getLogger("");
 		log.setLevel(Level.FINE);
 		for (Handler h : log.getHandlers()) 
-		    h.setLevel(Level.FINE);
+		    h.setLevel(Level.INFO);
 
 		Node n = new Node();
 		//n.addKnownNodeAddress("54.252.238.59", 1990);

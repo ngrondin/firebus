@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 import com.nic.firebus.information.NodeInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.CorrelationListener;
-import com.nic.firebus.interfaces.ServiceRequestor;
+import com.nic.firebus.interfaces.InformationRequestor;
 
 public class InformationRequest implements CorrelationListener
 {
@@ -16,10 +16,10 @@ public class InformationRequest implements CorrelationListener
 	protected String functionName;
 	protected int timeout;
 	protected long expiry;
-	protected ServiceRequestor requestor;
+	protected InformationRequestor requestor;
 	protected ServiceInformation serviceInformation;
 	
-	public InformationRequest(String n, int t, ServiceRequestor r, CorrelationManager cm, Directory d, int nid)
+	public InformationRequest(String n, int t, InformationRequestor r, CorrelationManager cm, Directory d, int nid)
 	{
 		functionName = n;
 		timeout = t;
@@ -53,13 +53,19 @@ public class InformationRequest implements CorrelationListener
 	
 	protected void process(Message inMsg)
 	{
-		if(System.currentTimeMillis() < expiry)
+		if(System.currentTimeMillis() > expiry)
+		{
+			logger.fine("Information request has expired without receiving a response");
+			if(requestor != null)
+				requestor.informationRequestTimeout();
+		}
+		else
 		{
 			NodeInformation ni = directory.findServiceProvider(functionName);
 			if(ni == null)
 			{
-				logger.fine("Sending Find Service Message");
-				Message findMsg = new Message(0, nodeId, Message.MSGTYPE_FINDSERVICE, functionName, null);
+				logger.fine("Broadcasting Service Information Request Message");
+				Message findMsg = new Message(0, nodeId, Message.MSGTYPE_GETFUNCTIONINFORMATION, functionName, null);
 				correlationManager.asynchronousCall(findMsg, this, 2000);
 			}
 			else
@@ -67,21 +73,17 @@ public class InformationRequest implements CorrelationListener
 				ServiceInformation si = ni.getServiceInformation(functionName);
 				if(!si.hasFullInformation())
 				{
-					logger.fine("Sending Request Service Information Message");
+					logger.fine("Sending Service Information Request Message");
 					Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_GETFUNCTIONINFORMATION, functionName, null);
 					correlationManager.asynchronousCall(msg, this, 2000);
 				}
 				else
 				{
 					serviceInformation = si;
+					if(requestor != null)
+						requestor.informationRequestCallback(serviceInformation);
 				}
 			}
-		}
-		else
-		{
-			logger.fine("Information request has expired without receiving a response");
-			if(requestor != null)
-				requestor.requestTimeout();
 		}
 	}
 

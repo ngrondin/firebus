@@ -3,10 +3,12 @@ package com.nic.firebus;
 import java.util.logging.Logger;
 
 import com.nic.firebus.information.NodeInformation;
+import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.CorrelationListener;
+import com.nic.firebus.interfaces.InformationRequestor;
 import com.nic.firebus.interfaces.ServiceRequestor;
 
-public class ServiceRequest implements CorrelationListener
+public class ServiceRequest implements CorrelationListener, InformationRequestor
 {
 	private Logger logger = Logger.getLogger(NodeCore.class.getName());
 	protected CorrelationManager correlationManager;
@@ -28,6 +30,7 @@ public class ServiceRequest implements CorrelationListener
 		nodeId = nid;
 		correlationManager = cm;
 		directory = d;
+		responsePayload = null;
 		start();
 	}
 
@@ -44,23 +47,39 @@ public class ServiceRequest implements CorrelationListener
 			ni.setUnresponsive();
 		process(null);
 	}
+	
+	public void informationRequestCallback(ServiceInformation si)
+	{
+		process(null);
+	}
+
+	public void informationRequestTimeout()
+	{
+		process(null);
+	}
 
 	protected void start()
 	{
-		logger.fine("Requesting Service");
 		expiry = System.currentTimeMillis() + timeout + 2000;
 		process(null);
 	}
 	
 	protected void process(Message inMsg)
 	{
-		if(System.currentTimeMillis() < expiry)
+		if(System.currentTimeMillis() > expiry)
+		{
+			logger.fine("Service request has expired without receiving a response");
+			if(requestor != null)
+				requestor.requestTimeout();
+		}
+		else
 		{
 			if(inMsg != null  &&  inMsg.getType() == Message.MSGTYPE_SERVICERESPONSE)
 			{
 				logger.fine("Returning Service Response");
+				responsePayload = inMsg.getPayload();
 				if(requestor != null)
-					requestor.requestCallback(inMsg.getPayload());
+					requestor.requestCallback(responsePayload);
 			}
 			else if(inMsg != null  &&  inMsg.getType() == Message.MSGTYPE_SERVICEERROR)
 			{
@@ -79,23 +98,15 @@ public class ServiceRequest implements CorrelationListener
 				NodeInformation ni = directory.findServiceProvider(serviceName);
 				if(ni == null)
 				{
-					logger.fine("Sending Find Service Message");
-					Message findMsg = new Message(0, nodeId, Message.MSGTYPE_FINDSERVICE, serviceName, null);
-					correlationManager.asynchronousCall(findMsg, this, 2000);
+					new InformationRequest(serviceName, 2000, this, correlationManager, directory, nodeId);
 				}
 				else
 				{
-					logger.fine("Sending Request Message");
+					logger.info("Requesting Service");
 					Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
 					correlationManager.asynchronousCall(msg, this, timeout);
 				}
 			}
-		}
-		else
-		{
-			logger.fine("Service request has expired without receiving a response");
-			if(requestor != null)
-				requestor.requestTimeout();
 		}
 	}
 
@@ -105,5 +116,6 @@ public class ServiceRequest implements CorrelationListener
 			try{ Thread.sleep(10); } catch(Exception e) {}
 		return responsePayload;
 	}
+
 
 }

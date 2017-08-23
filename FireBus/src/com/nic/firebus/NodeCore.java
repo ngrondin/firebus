@@ -113,7 +113,6 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 	public void registerServiceProvider(ServiceInformation serviceInformation, ServiceProvider serviceProvider, int maxConcurrent)
 	{
 		functionManager.addFunction(serviceInformation, serviceProvider, maxConcurrent);
-		advertiseTo(0);
 	}
 	
 	public void registerConsumer(ConsumerInformation consumerInfomation, Consumer consumer, int maxConcurrent)
@@ -140,6 +139,7 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 	
 	public void publish(String dataname, byte[] payload)
 	{
+		logger.info("Publishing");
 		Message msg = new Message(0, nodeId, Message.MSGTYPE_PUBLISH, dataname, payload);
 		outboundQueue.addMessage(msg);
 	}
@@ -232,17 +232,17 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 						directory.processStateMessage(new String(msg.getPayload()));
 						advertiseTo(msg.getOriginatorId());
 						break;*/
-					case Message.MSGTYPE_ADVERTISE:
-						directory.processStateMessage(new String(msg.getPayload()));
+					case Message.MSGTYPE_QUERYNODE:
+						processNodeInformationRequest(msg.getOriginatorId());
+						break;
+					case Message.MSGTYPE_NODEINFORMATION:
+						directory.processNodeInformation(new String(msg.getPayload()));
 						if(msg.getCorrelation() != 0)
 							correlationManager.receiveResponse(msg);
 						break;
-					case Message.MSGTYPE_QUERYNODE:
-						advertiseTo(msg.getOriginatorId());
-						break;
-					case Message.MSGTYPE_FINDSERVICE:
+					/*case Message.MSGTYPE_FINDSERVICE:
 						processFindService(msg);
-						break;
+						break;*/
 					case Message.MSGTYPE_REQUESTSERVICE:
 						processServiceRequest(msg);
 						break;
@@ -259,7 +259,7 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_SERVICEINFORMATION:
-						processServiceInformation(msg);
+						directory.processServiceInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload());
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_PUBLISH:
@@ -313,16 +313,17 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		logger.fine("Finished Processing Outbound Message");
 	}
 	
+	/*
 	protected void processFindService(Message msg)
 	{
 		if(functionManager.hasFunction(msg.getSubject()))
 		{
-			Message resp = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_ADVERTISE, msg.getSubject(), getNodeStateString().getBytes());
+			Message resp = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_NODEINFORMATION, msg.getSubject(), getNodeStateString().getBytes());
 			resp.setCorrelation(msg.getCorrelation());
 			outboundQueue.addMessage(resp);
 		}
 	}
-	
+	*/
 	protected void processServiceRequest(Message msg)
 	{
 		try
@@ -348,18 +349,7 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 			outboundQueue.addMessage(outMsg);
 		}
 	}
-	
-	protected void processServiceInformation(Message msg)
-	{
-		NodeInformation ni = directory.getNodeById(msg.getOriginatorId());
-		ServiceInformation si = ni.getServiceInformation(msg.getSubject());
-		if(si == null)
-		{
-			si = new ServiceInformation(msg.getSubject());
-			ni.addServiceInformation(si);
-		}
-		si.deserialise(msg.getPayload());
-	}
+
 	
 	protected void processPublish(Message msg)
 	{
@@ -373,18 +363,13 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		}		
 	}
 	
-	protected String getNodeStateString()
+	protected void processNodeInformationRequest(int destinationNodeId)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append(connectionManager.getAddressStateString(nodeId));
 		sb.append(functionManager.getFunctionStateString(nodeId));
-		//sb.append(directory.getDirectoryStateString(nodeId));
-		return sb.toString();
-	}
-	
-	protected void advertiseTo(int destinationNodeId)
-	{
-		Message msg = new Message(destinationNodeId, nodeId, Message.MSGTYPE_ADVERTISE, null, getNodeStateString().getBytes());
+		sb.append(directory.getDirectoryStateString(nodeId));
+		Message msg = new Message(destinationNodeId, nodeId, Message.MSGTYPE_NODEINFORMATION, null, sb.toString().getBytes());
 		outboundQueue.addMessage(msg);
 	}
 	
@@ -397,7 +382,6 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 			try
 			{
 				correlationManager.checkExpiredCalls();
-				//resolveKnownAddresses();
 				if(lastConnectionMaintenance < System.currentTimeMillis() - 1000)
 				{
 					maintainConnectionCount();

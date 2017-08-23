@@ -22,9 +22,9 @@ public class Message
 
 
 	//public static final int MSGTYPE_CONNECT = 0;
-	public static final int MSGTYPE_ADVERTISE = 1;
-	public static final int MSGTYPE_QUERYNODE = 2;
-	public static final int MSGTYPE_FINDSERVICE = 3;
+	public static final int MSGTYPE_QUERYNODE = 1;
+	public static final int MSGTYPE_NODEINFORMATION = 2;
+	//public static final int MSGTYPE_FINDSERVICE = 3;
 	public static final int MSGTYPE_GETFUNCTIONINFORMATION = 4;
 	public static final int MSGTYPE_SERVICEINFORMATION = 5;
 	public static final int MSGTYPE_REQUESTSERVICE = 6;
@@ -245,12 +245,12 @@ public class Message
 		sb.append("Type         : ");
 		/*if(type == Message.MSGTYPE_CONNECT)
 			sb.append("Connect");
-		else */if(type == Message.MSGTYPE_ADVERTISE)
-			sb.append("Advertise");
-		else if(type == Message.MSGTYPE_QUERYNODE)
+		else */if(type == Message.MSGTYPE_QUERYNODE)
 			sb.append("Query Node");
-		else if(type == Message.MSGTYPE_FINDSERVICE)
-			sb.append("Find");
+		else if(type == Message.MSGTYPE_NODEINFORMATION)
+			sb.append("Node Information");
+		//else if(type == Message.MSGTYPE_FINDSERVICE)
+		//	sb.append("Find");
 		else if(type == Message.MSGTYPE_GETFUNCTIONINFORMATION)
 			sb.append("Get Function Information");
 		else if(type == Message.MSGTYPE_SERVICEINFORMATION)

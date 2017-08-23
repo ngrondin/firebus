@@ -82,7 +82,7 @@ public class Directory
 		}		
 	}
 	
-	public void processStateMessage(String ad)
+	public void processNodeInformation(String ad)
 	{
 		BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(ad.getBytes())));
 		String line;
@@ -135,6 +135,19 @@ public class Directory
 		} 
 	}
 
+	
+	protected void processServiceInformation(int nodeId, String serviceName, byte[] payoad)
+	{
+		NodeInformation ni = getOrCreateNodeInformation(nodeId);
+		ServiceInformation si = ni.getServiceInformation(serviceName);
+		if(si == null)
+		{
+			si = new ServiceInformation(serviceName);
+			ni.addServiceInformation(si);
+		}
+		si.deserialise(payoad);
+	}
+	
 	public NodeInformation findServiceProvider(String name)
 	{
 		for(int i = 0; i < nodes.size(); i++)
