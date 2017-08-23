@@ -63,11 +63,9 @@ public class DiscoveryManager extends Thread
 			    	int id = Integer.parseInt(parts[3]);
 			    	String ad = parts[4];
 			    	int port = Integer.parseInt(parts[5]);
+			    	Address address = new Address(ad, port);
 			    	if(id != nodeId)
-			    	{
-			    		discoveryListener.nodeDiscovered(id, ad, port);
-					    //System.out.println(received);
-			    	}
+			    		discoveryListener.nodeDiscovered(id, address);
 			    }
 			}
 			catch (IOException e) 

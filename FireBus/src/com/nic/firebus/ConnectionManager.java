@@ -17,29 +17,25 @@ public class ConnectionManager extends Thread
 	private Logger logger = Logger.getLogger(ConnectionManager.class.getName());
 	protected int port;
 	protected boolean quit;
-	protected String netName;
-	protected String key;
 	protected ServerSocket server;
 	protected NodeCore nodeCore;
 	protected ArrayList<Connection> connections;
 	
-	public ConnectionManager(NodeCore nc, String n, String k) throws IOException
+	public ConnectionManager(NodeCore nc) throws IOException
 	{
-		initialise(nc, 0, n, k);
+		initialise(nc, 0);
 	}
 	
-	public ConnectionManager(int p, NodeCore nc, String n, String k) throws IOException
+	public ConnectionManager(int p, NodeCore nc) throws IOException
 	{
-		initialise(nc, p, n, k);
+		initialise(nc, p);
 	}
 	
-	protected void initialise(NodeCore nc, int p, String n, String k) throws IOException 
+	protected void initialise(NodeCore nc, int p) throws IOException 
 	{
 		connections = new ArrayList<Connection>();
 		port = p;
 		quit = false;
-		netName = n;
-		key = k;
 		nodeCore = nc;
 		setName("Firebus Connection Manager");
 		if(p == 0)
@@ -78,7 +74,7 @@ public class ConnectionManager extends Thread
 					Socket socket = server.accept();
 					logger.info("Accepted New Connection");
 
-					Connection connection = new Connection(socket, nodeCore, netName, key);
+					Connection connection = new Connection(socket, nodeCore);
 					connections.add(connection);
 				}
 			} 
@@ -93,7 +89,7 @@ public class ConnectionManager extends Thread
 	public Connection createConnection(Address a) throws IOException, ConnectionException
 	{
 		logger.fine("Creating New Connection");
-		Connection c = new Connection(a, nodeCore, netName, key);
+		Connection c = new Connection(a, nodeCore);
 		connections.add(c);
 		logger.info("Created New Connection");
 		return c;
@@ -102,7 +98,7 @@ public class ConnectionManager extends Thread
 	public Connection obtainConnectionForNode(NodeInformation ni) 
 	{
 		logger.fine("Obtaining Connection for Node");
-		Connection c = ni.getConnection();
+		Connection c = getConnectionByNodeId(ni.getNodeId());
 		if(c == null)
 		{
 			for(int i = 0; i < ni.getAddressCount()  &&  c == null; i++)
@@ -111,8 +107,6 @@ public class ConnectionManager extends Thread
 				try 
 				{
 					c = createConnection(a);
-					ni.setConnection(c);
-					break;
 				} 
 				catch (Exception e) 
 				{
@@ -131,6 +125,34 @@ public class ConnectionManager extends Thread
 		}
 		
 		return c;
+	}
+	
+	public int getPort()
+	{
+		return server.getLocalPort();
+	}
+	
+	public int getConnectionCount()
+	{
+		return connections.size();
+	}
+
+	
+	public Connection getConnectionByNodeId(int id)
+	{
+		for(int i = 0; i < connections.size(); i++)
+			if(connections.get(i).getRemoteNodeId() == id)
+				return connections.get(i);
+		return null;
+	}
+	
+	public Connection getConnectionByAddress(Address a)
+	{
+		for(int i = 0; i < connections.size(); i++)
+			if(connections.get(i).getRemoteAddress().equals(a))
+				return connections.get(i);
+		return null;
+		
 	}
 	
 	public void broadcastToAllConnections(Message msg)
@@ -159,15 +181,6 @@ public class ConnectionManager extends Thread
 		}
 	}
 	
-	public int getPort()
-	{
-		return server.getLocalPort();
-	}
-	
-	public int getConnectionCount()
-	{
-		return connections.size();
-	}
 	
 	public String getAddressStateString(int nodeId)
 	{

@@ -20,6 +20,16 @@ public class Directory
 		nodes = new ArrayList<NodeInformation>();
 	}
 	
+	public int getNodeCount()
+	{
+		return nodes.size();
+	}
+	
+	public NodeInformation getNode(int index)
+	{
+		return nodes.get(index);
+	}
+	
 	public NodeInformation getNodeById(int id)
 	{
 		if(id != 0)
@@ -37,31 +47,39 @@ public class Directory
 		return null;
 	}
 
-	public NodeInformation getNodeByConnection(Connection c)
-	{
-		for(int i = 0; i < nodes.size(); i++)
-			if(nodes.get(i).getConnection() == c)
-				return nodes.get(i);
-		return null;
-	}
-	
-
-	public void addNode(NodeInformation n)
-	{
-		logger.fine("Adding Node to Directory");
-		if(!nodes.contains(n))
-			nodes.add(n);
-	}
-	
 	public void deleteNode(NodeInformation n)
 	{
 		logger.fine("Deleting Node to Directory");
 		nodes.remove(n);
 	}
 	
-	public int getNodeCount()
+	public NodeInformation getOrCreateNodeInformation(int nodeId)
 	{
-		return nodes.size();
+		NodeInformation ni = getNodeById(nodeId);
+		if(ni == null)
+		{
+			ni = new NodeInformation(nodeId);
+			nodes.add(ni);
+		}
+		return ni;
+	}
+	
+	public void processDiscoveredNode(int nodeId, Address address)
+	{
+		NodeInformation ni = getNodeById(nodeId);
+		if(ni == null)
+		{
+			NodeInformation nodeByAddress = getNodeByAddress(address);
+			if(nodeByAddress != null)
+				deleteNode(nodeByAddress);
+			ni = new NodeInformation(nodeId);
+			ni.addAddress(address);
+			nodes.add(ni);
+		}
+		else if(!ni.containsAddress(address))
+		{
+			ni.addAddress(address);
+		}		
 	}
 	
 	public void processStateMessage(String ad)
@@ -78,7 +96,7 @@ public class Directory
 				if(ni == null)
 				{
 					ni = new NodeInformation(id);
-					addNode(ni);
+					nodes.add(ni);
 				}
 				ni.setLastUpdatedTime(System.currentTimeMillis());
 				if(parts[1].equals("a"))
@@ -128,26 +146,15 @@ public class Directory
 		return null;
 	}
 
-	public ArrayList<NodeInformation> getNodeToConnectTo()
-	{
-		ArrayList<NodeInformation> list = new ArrayList<NodeInformation>();
-		for(int i = 0; i < nodes.size(); i++)
-		{
-			NodeInformation ni = nodes.get(i);
-			if(ni.getConnection() == null  &&  ni.isUnconnectable() == false)
-				list.add(nodes.get(i));
-		}
-		return list;
-	}
-	
+
 	public String getDirectoryStateString(int nodeId)
 	{
 		StringBuilder sb = new StringBuilder();
 		for(int i = 0; i < nodes.size(); i++)
 		{
 			NodeInformation ni = nodes.get(i);
-			Connection c = ni.getConnection();
-			sb.append(nodeId + ",d," + ni.getNodeId() + "," + (c != null? c.getId() : "") + "\r\n");
+			//Connection c = ni.getConnection();
+			sb.append(nodeId + ",d," + ni.getNodeId() + ",\r\n");
 			for(int j = 0; j < ni.getAddressCount(); j++)
 			{
 				Address a = ni.getAddress(j);

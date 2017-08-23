@@ -16,9 +16,7 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 import com.nic.firebus.exceptions.ConnectionException;
 
@@ -29,10 +27,8 @@ public class Connection extends Thread
 	protected InputStream is;
 	protected OutputStream os;
 	protected NodeCore nodeCore;
-	protected String networkName;
 	protected int remoteNodeId;
 	protected Address remoteAddress;
-	protected SecretKey secretKey;
 	protected IvParameterSpec IV;
 	protected Cipher encryptionCipher;
 	protected Cipher decryptionCipher;
@@ -43,24 +39,25 @@ public class Connection extends Thread
 	protected int msgCRC;
 	protected byte[] msg;
 	
-	public Connection(Socket s, NodeCore nc, String net, String key) throws IOException, ConnectionException
+	public Connection(Socket s, NodeCore nc) throws IOException, ConnectionException
 	{
 		socket = s;
-		initialise(nc, net, key);
+		initialise(nc);
 	}
 	
-	public Connection(Address a, NodeCore nc, String net, String key) throws UnknownHostException, IOException, ConnectionException
+	public Connection(Address a, NodeCore nc) throws UnknownHostException, IOException, ConnectionException
 	{
 		socket = new Socket(a.getIPAddress(), a.getPort());
-		initialise(nc, net, key);
+		initialise(nc);
 	}
 	
-	protected void initialise(NodeCore nc, String net, String key) throws IOException, ConnectionException
+	protected void initialise(NodeCore nc) throws IOException, ConnectionException
 	{
+		nodeCore = nc;
+		String networkName = nodeCore.getNetworkName();
+
 		is = socket.getInputStream();
 		os = socket.getOutputStream();
-		networkName = net;
-		nodeCore = nc;
 		
 		os.write(networkName.length());
 		os.write(networkName.getBytes());
@@ -73,15 +70,14 @@ public class Connection extends Thread
 
 		try
 		{
-			secretKey = new SecretKeySpec(key.getBytes(), "AES");
 			encryptionCipher = Cipher.getInstance("AES/CFB8/NoPadding");
-			encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey);
+			encryptionCipher.init(Cipher.ENCRYPT_MODE, nodeCore.getSecretKey());
 			os.write(encryptionCipher.getIV());
 			byte[] remoteIVBytes = new byte[16];
 			is.read(remoteIVBytes);
 			IvParameterSpec remoteIV = new IvParameterSpec(remoteIVBytes);
 			decryptionCipher = Cipher.getInstance("AES/CFB8/NoPadding");
-			decryptionCipher.init(Cipher.DECRYPT_MODE, secretKey, remoteIV);
+			decryptionCipher.init(Cipher.DECRYPT_MODE, nodeCore.getSecretKey(), remoteIV);
 			os = new CipherOutputStream(os, encryptionCipher);
 			is = new CipherInputStream(is, decryptionCipher);
 		}
@@ -160,7 +156,7 @@ public class Connection extends Thread
 				{
 					if(i == msgCRC)
 					{
-						Message message = new Message(msg, this);
+						Message message = new Message(msg);
 						if(nodeCore != null)
 							nodeCore.messageReceived(message, this);
 					}

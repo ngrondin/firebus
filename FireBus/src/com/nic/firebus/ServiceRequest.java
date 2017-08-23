@@ -59,9 +59,14 @@ public class ServiceRequest implements CorrelationListener
 			if(inMsg != null  &&  inMsg.getType() == Message.MSGTYPE_SERVICERESPONSE)
 			{
 				logger.fine("Returning Service Response");
-				responsePayload = inMsg.getPayload();
 				if(requestor != null)
-					requestor.requestCallback(responsePayload);
+					requestor.requestCallback(inMsg.getPayload());
+			}
+			else if(inMsg != null  &&  inMsg.getType() == Message.MSGTYPE_SERVICEERROR)
+			{
+				logger.fine("Returning Service Error");
+				if(requestor != null)
+					requestor.requestErrorCallback(inMsg.getPayload());
 			}
 			else
 			{

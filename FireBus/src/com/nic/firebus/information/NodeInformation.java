@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import com.nic.firebus.Address;
-import com.nic.firebus.Connection;
 
 public class NodeInformation 
 {
 	protected int nodeId;
-	protected Connection connection;
 	protected ArrayList<Address> addresses;
 	protected ArrayList<Integer> repeaters;
 	protected ArrayList<ServiceInformation> services;
@@ -35,13 +33,14 @@ public class NodeInformation
 		unresponsive = false;
 	}
 
+	/*
 	public void setConnection(Connection c)
 	{
 		connection = c;
 		if(c != null)
 			unconnectable = false;
 	}
-	
+	*/
 	public void setLastDiscoverySentTime(long t)
 	{
 		lastSentDiscovery = t;
@@ -109,10 +108,12 @@ public class NodeInformation
 		return false;
 	}
 	
+	/*
 	public Connection getConnection()
 	{
 		return connection;
 	}
+	*/
 	
 	public long getLastDiscoverySentTime()
 	{
@@ -170,7 +171,7 @@ public class NodeInformation
 			sb.append("Service   : " + services.get(i) + "\r\n");
 		for(int i = 0; i < consumers.size(); i++)
 			sb.append("Consumers : " + consumers.get(i) + "\r\n");
-		sb.append("Connection: " + connection + "\r\n");
+		//sb.append("Connection: " + connection + "\r\n");
 		return sb.toString();
 	}
 

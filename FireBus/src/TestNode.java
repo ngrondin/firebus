@@ -21,7 +21,7 @@ public class TestNode
 		Logger log = LogManager.getLogManager().getLogger("");
 		log.setLevel(Level.FINE);
 		for (Handler h : log.getHandlers()) 
-		    h.setLevel(Level.INFO);
+		    h.setLevel(Level.FINE);
 
 		Node n = new Node();
 		//n.addKnownNodeAddress("54.252.238.59", 1990);
@@ -56,6 +56,9 @@ public class TestNode
 									}
 									public void requestTimeout() {
 										System.out.println("Timed out");
+									}
+									public void requestErrorCallback(byte[] payload) {
+										System.out.println("Error: " + new String(payload));
 									}});
 							}
 							else if(parts[0].equals("pub"))

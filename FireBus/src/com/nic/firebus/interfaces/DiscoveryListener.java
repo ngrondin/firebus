@@ -1,7 +1,9 @@
 package com.nic.firebus.interfaces;
 
+import com.nic.firebus.Address;
+
 public interface DiscoveryListener
 {
-	public void nodeDiscovered(int id, String address, int port);
+	public void nodeDiscovered(int id, Address address);
 	
 }

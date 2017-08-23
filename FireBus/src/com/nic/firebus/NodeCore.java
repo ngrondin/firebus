@@ -5,6 +5,8 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import com.nic.firebus.exceptions.FunctionUnavailableException;
 import com.nic.firebus.information.ConsumerInformation;
@@ -23,9 +25,9 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 	private Logger logger = Logger.getLogger(NodeCore.class.getName());
 	protected int nodeId;
 	protected boolean quit;
-	protected String network;
-	protected String password;
-	protected long lastAddressResolution;
+	protected String networkName;
+	protected SecretKey secretKey;
+	protected long lastConnectionMaintenance;
 	protected MessageQueue inboundQueue;
 	protected MessageQueue outboundQueue;
 	protected ConnectionManager connectionManager;
@@ -63,11 +65,11 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 			Random rnd = new Random();
 			nodeId = rnd.nextInt();
 			quit = false;
-			network = n;			
-			password = pw;
+			networkName = n;	
+			secretKey = new SecretKeySpec(pw.getBytes(), "AES");
 			inboundQueue = new MessageQueue();
 			outboundQueue = new MessageQueue();
-			connectionManager = new ConnectionManager(port, this, network, pw);
+			connectionManager = new ConnectionManager(port, this);
 			functionManager = new FunctionManager(this);
 			directory = new Directory();
 			discoveryManager = new DiscoveryManager(this, nodeId, connectionManager.getAddress());
@@ -90,6 +92,16 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 	public int getPort()
 	{
 		return connectionManager.getPort();
+	}
+	
+	public String getNetworkName()
+	{
+		return networkName;
+	}
+	
+	public SecretKey getSecretKey()
+	{
+		return secretKey;
 	}
 	
 	public void addKnownNodeAddress(String a, int p)
@@ -134,24 +146,26 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 	
 	public void connectionCreated(Connection c) 
 	{
-		NodeInformation ni = directory.getNodeById(c.getRemoteNodeId());
-		ni.setConnection(c);
-		Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_CONNECT, null, getNodeStateString().getBytes());
-		outboundQueue.addMessage(msg);
+		directory.processDiscoveredNode(c.getRemoteNodeId(), c.getRemoteAddress());
 	}
 
 	public void messageReceived(Message m, Connection c) 
 	{
 		logger.fine("Received Message");
+		m.decode();
+		int originatorId = m.getOriginatorId();
+		int connectedId = c.getRemoteNodeId();
+		if(connectedId != originatorId)
+		{
+			NodeInformation originatorNode = directory.getOrCreateNodeInformation(originatorId);
+			originatorNode.addRepeater(connectedId);
+		}
 		inboundQueue.addMessage(m);
 	}
 
 	public void connectionClosed(Connection c) 
 	{
 		logger.info("Connection Closed");
-		NodeInformation ni = directory.getNodeByConnection(c);
-		if(ni != null)
-			ni.setConnection(null);
 		connectionManager.removeConnection(c);
 	}
 	
@@ -163,50 +177,42 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		outboundQueue.addMessage(msg);
 	}
 
-	public void nodeDiscovered(int id, String address, int port)
+	public void nodeDiscovered(int id, Address address)
 	{
-		Address a = new Address(address, port);
-		NodeInformation ni = directory.getNodeById(id);
-		if(ni == null)
-		{
-			NodeInformation nodeByAddress = directory.getNodeByAddress(a);
-			if(nodeByAddress != null)
-				directory.deleteNode(nodeByAddress);
-			ni = new NodeInformation(id);
-			ni.addAddress(a);
-			directory.addNode(ni);
-			logger.info("Node Discovered");
-		}
-		else if(!ni.containsAddress(a))
-		{
-			ni.addAddress(a);
-		}
-	}
-
-	
-	protected void resolveKnownAddresses()
-	{
-		for(int i = 0; i < knownAddresses.size(); i++)
-		{
-			try 
-			{
-				Connection connection = connectionManager.createConnection(knownAddresses.get(i));
-				knownAddresses.remove(i);
-			} 
-			catch (Exception e) 
-			{
-			}
-		}
+		directory.processDiscoveredNode(id,  address);
 	}
 
 	protected void maintainConnectionCount()
 	{
-		ArrayList<NodeInformation> list = directory.getNodeToConnectTo();
-		for(int i = 0; i < list.size(); i++)
+		int i1 = 0;
+		int i2 = 0;
+		while(connectionManager.getConnectionCount() < 3  &&  !(i1 >= knownAddresses.size()  &&  i2 >= directory.getNodeCount()))
 		{
-			NodeInformation ni = list.get(i);
-			Connection c = connectionManager.obtainConnectionForNode(ni);
+			if(i1 < knownAddresses.size())
+			{
+				Address a = knownAddresses.get(i1);
+				if(connectionManager.getConnectionByAddress(a) == null)
+				{
+					try
+					{
+						connectionManager.createConnection(a);
+					}
+					catch(Exception e)
+					{
+						logger.fine(e.getMessage());
+					}
+				}
+				i1++;
+			}
+			else if(i2 < directory.getNodeCount())
+			{
+				NodeInformation ni = directory.getNode(i2);
+				if(connectionManager.getConnectionByNodeId(ni.getNodeId()) == null  &&  !ni.isUnconnectable())
+					connectionManager.obtainConnectionForNode(ni);
+				i2++;
+			}
 		}
+		lastConnectionMaintenance = System.currentTimeMillis();
 	}
 	
 	protected void processNextInboundMessage()
@@ -218,53 +224,15 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		
 		if(msg.getOriginatorId() != nodeId)
 		{
-			int originatorId = msg.getOriginatorId();
-			int repeaterId = msg.getRepeaterId();
-			int connectedNodeId = repeaterId == 0 ? originatorId : repeaterId;
-
-			NodeInformation connectedNode = directory.getNodeById(connectedNodeId);
-			if(connectedNode == null)
-			{
-				connectedNode = new NodeInformation(connectedNodeId);
-				connectedNode.setConnection(msg.getConnection());
-				directory.addNode(connectedNode);
-			}
-			else
-			{
-				if(connectedNode.getConnection() == null)
-				{
-					connectedNode.setConnection(msg.getConnection());
-				}
-				else
-				{
-					if(connectedNode.getConnection() != msg.getConnection())
-					{
-						logger.fine("duplicate connection detected");
-						//TODO: There are 2 different connections, do something to fix
-					}
-				}
-			}
-
-			if(repeaterId != 0)
-			{
-				NodeInformation originatorNode = directory.getNodeById(originatorId);
-				if(originatorNode == null)
-				{
-					originatorNode = new NodeInformation(originatorId);
-					directory.addNode(originatorNode);
-				}
-				originatorNode.addRepeater(repeaterId);
-			}
-			
 			if(msg.getDestinationId() == 0  ||  msg.getDestinationId() == nodeId)
 			{
 				switch(msg.getType())
 				{
-					case Message.MSGTYPE_CONNECT:
+					/*case Message.MSGTYPE_CONNECT:
 						directory.processStateMessage(new String(msg.getPayload()));
 						advertiseTo(msg.getOriginatorId());
-						break;
-					case Message.MSGTYPE_NODESTATE:
+						break;*/
+					case Message.MSGTYPE_ADVERTISE:
 						directory.processStateMessage(new String(msg.getPayload()));
 						if(msg.getCorrelation() != 0)
 							correlationManager.receiveResponse(msg);
@@ -284,6 +252,12 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 					case Message.MSGTYPE_SERVICERESPONSE:
 						correlationManager.receiveResponse(msg);
 						break;
+					case Message.MSGTYPE_SERVICEERROR:
+						correlationManager.receiveResponse(msg);
+						break;
+					case Message.MSGTYPE_SERVICEUNAVAILABLE:
+						correlationManager.receiveResponse(msg);
+						break;
 					case Message.MSGTYPE_SERVICEINFORMATION:
 						processServiceInformation(msg);
 						correlationManager.receiveResponse(msg);
@@ -296,9 +270,8 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 			if(msg.getDestinationId() == 0  ||  msg.getDestinationId() != nodeId)
 			{
 				if(msg.getRepeatCount() > 0)
-					outboundQueue.addMessage(msg.repeat(nodeId));
-			}
-			
+					outboundQueue.addMessage(msg.repeat());
+			}			
 		}
 
 		inboundQueue.deleteNextMessage();
@@ -311,26 +284,23 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		Message msg = outboundQueue.getNextMessage();
 		logger.finest("****Oubound**************\r\n" + msg);
 		msg.encode();
-		Connection c = msg.getConnection();
-		if(c == null)
+		Connection c = null;//msg.getConnection();
+		int destinationNodeId = msg.getDestinationId();
+		if(destinationNodeId != 0)
 		{
-			int destinationNodeId = msg.getDestinationId();
-			if(destinationNodeId != 0)
+			NodeInformation ni = directory.getNodeById(destinationNodeId);
+			if(ni != null)
 			{
-				NodeInformation ni = directory.getNodeById(destinationNodeId);
-				if(ni != null)
+				c = connectionManager.obtainConnectionForNode(ni);
+				if(c == null)
 				{
-					c = connectionManager.obtainConnectionForNode(ni);
-					if(c == null)
+					int rpt = ni.getRandomRepeater();
+					if(rpt != 0)
 					{
-						int rpt = ni.getRandomRepeater();
-						if(rpt != 0)
-						{
-							ni = directory.getNodeById(rpt);
-							c = connectionManager.obtainConnectionForNode(ni);
-						}
-					}							
-				}
+						ni = directory.getNodeById(rpt);
+						c = connectionManager.obtainConnectionForNode(ni);
+					}
+				}							
 			}
 		}
 
@@ -346,7 +316,11 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 	protected void processFindService(Message msg)
 	{
 		if(functionManager.hasFunction(msg.getSubject()))
-			advertiseTo(msg.getOriginatorId());
+		{
+			Message resp = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_ADVERTISE, msg.getSubject(), getNodeStateString().getBytes());
+			resp.setCorrelation(msg.getCorrelation());
+			outboundQueue.addMessage(resp);
+		}
 	}
 	
 	protected void processServiceRequest(Message msg)
@@ -410,7 +384,7 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 	
 	protected void advertiseTo(int destinationNodeId)
 	{
-		Message msg = new Message(destinationNodeId, nodeId, Message.MSGTYPE_NODESTATE, null, getNodeStateString().getBytes());
+		Message msg = new Message(destinationNodeId, nodeId, Message.MSGTYPE_ADVERTISE, null, getNodeStateString().getBytes());
 		outboundQueue.addMessage(msg);
 	}
 	
@@ -423,8 +397,11 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 			try
 			{
 				correlationManager.checkExpiredCalls();
-				resolveKnownAddresses();
-				maintainConnectionCount();
+				//resolveKnownAddresses();
+				if(lastConnectionMaintenance < System.currentTimeMillis() - 1000)
+				{
+					maintainConnectionCount();
+				}
 				if(inboundQueue.getMessageCount() > 0)
 				{
 					processNextInboundMessage();

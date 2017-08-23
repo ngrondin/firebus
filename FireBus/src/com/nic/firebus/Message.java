@@ -4,14 +4,15 @@ import java.nio.ByteBuffer;
 
 public class Message 
 {
-	protected Connection connection;
+	//protected Connection connection;
 	protected byte[] encodedMessage;
 	protected boolean decoded;
 	protected boolean encoded;
 	protected int messageId;
 	protected int originatorId;
 	protected int destinationId;
-	protected int repeaterId;
+	protected int flags;
+	//protected int repeaterId;
 	protected int repeatCount;
 	protected int repeatsLeft;
 	protected int type;
@@ -20,8 +21,8 @@ public class Message
 	protected byte[] payload;
 
 
-	public static final int MSGTYPE_CONNECT = 0;
-	public static final int MSGTYPE_NODESTATE = 1;
+	//public static final int MSGTYPE_CONNECT = 0;
+	public static final int MSGTYPE_ADVERTISE = 1;
 	public static final int MSGTYPE_QUERYNODE = 2;
 	public static final int MSGTYPE_FINDSERVICE = 3;
 	public static final int MSGTYPE_GETFUNCTIONINFORMATION = 4;
@@ -29,16 +30,16 @@ public class Message
 	public static final int MSGTYPE_REQUESTSERVICE = 6;
 	public static final int MSGTYPE_SERVICERESPONSE = 7;
 	public static final int MSGTYPE_SERVICEUNAVAILABLE = 8;
-	public static final int MSGTYPE_SERVICEERROR = 8;
-	public static final int MSGTYPE_PUBLISH = 9;
-	public static final int MSGTYPE_RECALL = 10;
+	public static final int MSGTYPE_SERVICEERROR = 9;
+	public static final int MSGTYPE_PUBLISH = 10;
+	public static final int MSGTYPE_REPUBLISH = 11;
 	
 	protected static int nextId = 0;
 	
-	public Message(byte[] b, Connection c)
+	public Message(byte[] b)
 	{
 		encodedMessage = b;
-		connection = c;
+		//connection = c;
 		decoded = false;
 		encoded = true;
 	}
@@ -48,7 +49,8 @@ public class Message
 		messageId = nextId++;
 		destinationId = d;
 		originatorId = o;
-		repeaterId = 0;
+		flags = 0;
+		//repeaterId = 0;
 		repeatCount = 0;
 		repeatsLeft = 10;
 		type = t;
@@ -59,12 +61,13 @@ public class Message
 		encoded = false;
 	}
 	
-	private Message(int i, int d, int o, int r, int rc, int rl, int t, int c, String s, byte[] p)
+	private Message(int i, int d, int o, int rc, int rl, int t, int c, String s, byte[] p)
 	{
 		messageId = i;
 		destinationId = d;
 		originatorId = o;
-		repeaterId = r;
+		flags = 0;
+		//repeaterId = r;
 		repeatCount = rc;
 		repeatsLeft = rl;
 		type = t;
@@ -75,9 +78,9 @@ public class Message
 		encoded = false;		
 	}
 	
-	public Message repeat(int r)
+	public Message repeat()
 	{
-		Message msg = new Message(messageId, destinationId, originatorId, r, repeatCount + 1, repeatsLeft - 1, type, correlation, subject, payload);
+		Message msg = new Message(messageId, destinationId, originatorId, repeatCount + 1, repeatsLeft - 1, type, correlation, subject, payload);
 		return msg;
 	}
 	
@@ -87,7 +90,8 @@ public class Message
 		messageId = bb.getInt();
 		destinationId = bb.getInt();
 		originatorId = bb.getInt();
-		repeaterId = bb.getInt();
+		//repeaterId = bb.getInt();
+		flags = bb.getInt();
 		repeatCount = bb.get();
 		repeatsLeft = bb.get();
 		type = bb.get();
@@ -111,7 +115,8 @@ public class Message
 		bb.putInt(messageId);
 		bb.putInt(destinationId);
 		bb.putInt(originatorId);
-		bb.putInt(repeaterId);
+		bb.putInt(flags);
+		//bb.putInt(repeaterId);
 		bb.put((byte)repeatCount);
 		bb.put((byte)repeatsLeft);
 		bb.put((byte)type);
@@ -138,12 +143,12 @@ public class Message
 		repeatsLeft = rl;
 	}
 	
-	
+	/*
 	public void setConnection(Connection c)
 	{
 		connection = c;
 	}
-	
+	*/
 	public void setCorrelation(int c)
 	{
 		correlation = c;
@@ -170,10 +175,10 @@ public class Message
 		return originatorId;
 	}
 
-	public int getRepeaterId()
+	/*public int getRepeaterId()
 	{
 		return repeaterId;
-	}
+	}*/
 
 	public int getDestinationId()
 	{
@@ -204,12 +209,12 @@ public class Message
 	{
 		return payload;
 	}
-	
+	/*
 	public Connection getConnection()
 	{
 		return connection;
 	}
-	
+	*/
 	public byte[] getEncodedMessage()
 	{
 		if(!encoded)
@@ -234,13 +239,13 @@ public class Message
 		sb.append("Message Id   : " + messageId + "\r\n");
 		sb.append("Destination  : " + destinationId + "\r\n");
 		sb.append("Originator   : " + originatorId + "\r\n");
-		sb.append("Repeater     : " + repeaterId + "\r\n");
+		//sb.append("Repeater     : " + repeaterId + "\r\n");
 		sb.append("Repeat Count : " + repeatCount + "\r\n");
 		sb.append("Repeats Left : " + repeatsLeft + "\r\n");
 		sb.append("Type         : ");
-		if(type == Message.MSGTYPE_CONNECT)
+		/*if(type == Message.MSGTYPE_CONNECT)
 			sb.append("Connect");
-		else if(type == Message.MSGTYPE_NODESTATE)
+		else */if(type == Message.MSGTYPE_ADVERTISE)
 			sb.append("Advertise");
 		else if(type == Message.MSGTYPE_QUERYNODE)
 			sb.append("Query Node");
@@ -260,8 +265,8 @@ public class Message
 			sb.append("Service Error");
 		else if(type == Message.MSGTYPE_PUBLISH)
 			sb.append("Publish");
-		else if(type == Message.MSGTYPE_RECALL)
-			sb.append("Recall");
+		else if(type == Message.MSGTYPE_REPUBLISH)
+			sb.append("Republish");
 		sb.append("\r\n");
 		sb.append("Correlaton   : " + correlation + "\r\n");
 		sb.append("Subject      : ");
