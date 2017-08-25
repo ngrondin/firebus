@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
+import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.exceptions.FunctionUnavailableException;
 import com.nic.firebus.information.FunctionInformation;
 import com.nic.firebus.interfaces.BusFunction;
@@ -108,11 +109,19 @@ public class FunctionManager implements FunctionListener
 		String functionName = inboundMessage.getSubject();
 		FunctionEntry fe = functions.get(functionName);
 		if(fe != null)
-		{
 			fe.currentCount--;
-		}
 		functionListener.functionCallback(inboundMessage, payload);
 	}
+	
+	public void functionErrorCallback(Message inboundMessage, FunctionErrorException e) 
+	{
+		String functionName = inboundMessage.getSubject();
+		FunctionEntry fe = functions.get(functionName);
+		if(fe != null)
+			fe.currentCount--;
+		functionListener.functionCallback(inboundMessage, payload);
+	}
+
 
 	public String toString()
 	{

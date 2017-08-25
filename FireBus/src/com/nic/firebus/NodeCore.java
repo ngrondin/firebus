@@ -8,6 +8,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.exceptions.FunctionUnavailableException;
 import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.FunctionInformation;
@@ -126,7 +127,7 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		return ir.getResponse();
 	}
 		
-	public byte[] requestService(String serviceName, byte[] payload, int timeout)
+	public byte[] requestService(String serviceName, byte[] payload, int timeout)  throws FunctionErrorException
 	{
 		ServiceRequest request = new ServiceRequest(serviceName, payload, timeout, null, correlationManager, directory, nodeId);
 		return request.getResponse();

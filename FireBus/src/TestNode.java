@@ -7,6 +7,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import com.nic.firebus.Node;
+import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
@@ -57,9 +58,14 @@ public class TestNode
 									public void requestTimeout() {
 										System.out.println("Timed out");
 									}
-									public void requestErrorCallback(byte[] payload) {
-										System.out.println("Error: " + new String(payload));
+									public void requestErrorCallback(FunctionErrorException e) {
+										System.out.println("Error: " + e.getMessage());
 									}});
+							}
+							else if(part[0].equals("reqs"))
+							{
+								String line = in.substring(parts[0].length());
+								n.requestService(functionName, line.getBytes(), 2000);
 							}
 							else if(parts[0].equals("pub"))
 							{

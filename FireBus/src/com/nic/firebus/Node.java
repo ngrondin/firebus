@@ -1,5 +1,6 @@
 package com.nic.firebus;
 
+import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
@@ -50,12 +51,12 @@ public class Node
 		return nodeCore.getServiceInformation(serviceName, 2000);
 	}
 
-	public byte[] requestService(String serviceName, byte[] payload)
+	public byte[] requestService(String serviceName, byte[] payload) throws FunctionErrorException
 	{
 		return nodeCore.requestService(serviceName, payload, 2000);
 	}
 
-	public byte[] requestService(String serviceName, byte[] payload, int timeout)
+	public byte[] requestService(String serviceName, byte[] payload, int timeout) throws FunctionErrorException
 	{
 		return nodeCore.requestService(serviceName, payload, timeout);
 	}

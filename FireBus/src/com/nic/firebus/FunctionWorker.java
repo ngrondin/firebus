@@ -2,6 +2,7 @@ package com.nic.firebus;
 
 import java.util.logging.Logger;
 
+import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.interfaces.BusFunction;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.FunctionListener;
@@ -28,9 +29,18 @@ public class FunctionWorker extends Thread
 		if(inboundMessage.getType() == Message.MSGTYPE_REQUESTSERVICE  &&  busFunction instanceof ServiceProvider)
 		{
 			logger.info("Executing Service Provider");
-			byte[] returnPayload = ((ServiceProvider)busFunction).requestService(payload);
-			if(functionListener != null)
-				functionListener.functionCallback(inboundMessage, returnPayload);
+			byte[] returnPayload = null;
+			try
+			{
+				returnPayload = ((ServiceProvider)busFunction).requestService(payload);
+				if(functionListener != null)
+					functionListener.functionCallback(inboundMessage, returnPayload);
+			}
+			catch(FunctionErrorException e)
+			{
+				if(functionListener != null)
+					functionListener.functionErrorCallback(inboundMessage, e);
+			}
 		}
 		else if(inboundMessage.getType() == Message.MSGTYPE_PUBLISH  &&  busFunction instanceof Consumer)
 		{
