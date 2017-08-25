@@ -5,7 +5,6 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.nic.firebus.exceptions.FunctionErrorException;
@@ -14,20 +13,17 @@ import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.FunctionInformation;
 import com.nic.firebus.information.NodeInformation;
 import com.nic.firebus.information.ServiceInformation;
-import com.nic.firebus.interfaces.ConnectionListener;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.DiscoveryListener;
-import com.nic.firebus.interfaces.FunctionListener;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.interfaces.ServiceRequestor;
 
-public class NodeCore extends Thread implements ConnectionListener, FunctionListener, DiscoveryListener
+public class NodeCore extends Thread implements DiscoveryListener
 {
 	private Logger logger = Logger.getLogger(NodeCore.class.getName());
 	protected int nodeId;
 	protected boolean quit;
 	protected String networkName;
-	protected SecretKey secretKey;
 	protected long lastConnectionMaintenance;
 	protected MessageQueue inboundQueue;
 	protected MessageQueue outboundQueue;
@@ -67,14 +63,13 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 			nodeId = rnd.nextInt();
 			quit = false;
 			networkName = n;	
-			secretKey = new SecretKeySpec(pw.getBytes(), "AES");
 			inboundQueue = new MessageQueue();
 			outboundQueue = new MessageQueue();
-			connectionManager = new ConnectionManager(port, this);
-			functionManager = new FunctionManager(this);
 			directory = new Directory();
-			discoveryManager = new DiscoveryManager(this, nodeId, connectionManager.getAddress());
-			correlationManager = new CorrelationManager(outboundQueue);
+			connectionManager = new ConnectionManager(this, nodeId, networkName,  new SecretKeySpec(pw.getBytes(), "AES"), port);
+			discoveryManager = new DiscoveryManager(this, nodeId, networkName, connectionManager.getAddress());
+			functionManager = new FunctionManager(this);
+			correlationManager = new CorrelationManager(this);
 			knownAddresses = new ArrayList<Address>();
 			setName("Firebus Node");
 			start();			
@@ -90,19 +85,9 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		return nodeId;
 	}
 	
-	public int getPort()
-	{
-		return connectionManager.getPort();
-	}
-	
 	public String getNetworkName()
 	{
 		return networkName;
-	}
-	
-	public SecretKey getSecretKey()
-	{
-		return secretKey;
 	}
 	
 	public void addKnownNodeAddress(String a, int p)
@@ -123,19 +108,19 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 	
 	public ServiceInformation getServiceInformation(String functionName, int timeout)
 	{
-		InformationRequest ir = new InformationRequest(functionName, timeout, null, correlationManager, directory, nodeId);
-		return ir.getResponse();
+		InformationRequestWorker ir = new InformationRequestWorker(functionName, timeout, null, correlationManager, directory, nodeId);
+		return ir.waitForResponse();
 	}
 		
 	public byte[] requestService(String serviceName, byte[] payload, int timeout)  throws FunctionErrorException
 	{
-		ServiceRequest request = new ServiceRequest(serviceName, payload, timeout, null, correlationManager, directory, nodeId);
-		return request.getResponse();
+		ServiceRequestWorker request = new ServiceRequestWorker(serviceName, payload, timeout, null, correlationManager, directory, nodeId);
+		return request.waitForResponse();
 	}		
 
 	public void requestService(String serviceName, byte[] payload, int timeout, ServiceRequestor requestor)
 	{
-		new ServiceRequest(serviceName, payload, timeout, requestor, correlationManager, directory, nodeId);
+		new ServiceRequestWorker(serviceName, payload, timeout, requestor, correlationManager, directory, nodeId);
 	}	
 	
 	public void publish(String dataname, byte[] payload)
@@ -145,11 +130,11 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		outboundQueue.addMessage(msg);
 	}
 	
-	public void connectionCreated(Connection c) 
+	public void sendMessage(Message msg)
 	{
-		directory.processDiscoveredNode(c.getRemoteNodeId(), c.getRemoteAddress());
+		outboundQueue.addMessage(msg);
 	}
-
+	
 	public void messageReceived(Message m, Connection c) 
 	{
 		logger.fine("Received Message");
@@ -162,20 +147,6 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 			originatorNode.addRepeater(connectedId);
 		}
 		inboundQueue.addMessage(m);
-	}
-
-	public void connectionClosed(Connection c) 
-	{
-		logger.info("Connection Closed");
-		connectionManager.removeConnection(c);
-	}
-	
-	public void functionCallback(Message inboundMessage, byte[] payload) 
-	{
-		logger.fine("Function Returned");
-		Message msg = new Message(inboundMessage.getOriginatorId(), nodeId, Message.MSGTYPE_SERVICERESPONSE, inboundMessage.getSubject(), payload);
-		msg.setCorrelation(inboundMessage.getCorrelation());
-		outboundQueue.addMessage(msg);
 	}
 
 	public void nodeDiscovered(int id, Address address)
@@ -421,5 +392,7 @@ public class NodeCore extends Thread implements ConnectionListener, FunctionList
 		sb.append("\r\n");
 		return sb.toString();
 	}
+
+
 
 }

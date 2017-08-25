@@ -50,7 +50,7 @@ public class TestNode
 							}
 							else if(parts[0].equals("req"))
 							{
-								String line = in.substring(parts[0].length());
+								String line = in.substring(parts[0].length() + 1);
 								n.requestService(functionName, line.getBytes(), 10000, new ServiceRequestor() {
 									public void requestCallback(byte[] payload) {
 										System.out.println(new String(payload));
@@ -62,10 +62,18 @@ public class TestNode
 										System.out.println("Error: " + e.getMessage());
 									}});
 							}
-							else if(part[0].equals("reqs"))
+							else if(parts[0].equals("reqs"))
 							{
-								String line = in.substring(parts[0].length());
-								n.requestService(functionName, line.getBytes(), 2000);
+								String line = in.substring(parts[0].length() + 1);
+								try
+								{
+									String resp = new String(n.requestService(functionName, line.getBytes(), 2000));
+									System.out.println(resp);
+								}
+								catch (FunctionErrorException e)
+								{
+									e.printStackTrace();
+								}
 							}
 							else if(parts[0].equals("pub"))
 							{
@@ -85,11 +93,15 @@ public class TestNode
 					final String prefix = args[2];
 					ServiceInformation si = new ServiceInformation(args[1], "text/plain", "{request:String}", "text/plain", "{response:String}");
 					n.registerServiceProvider(si, new ServiceProvider() {
-						public byte[] requestService(byte[] payload)
+						public byte[] service(byte[] payload) throws FunctionErrorException
 						{
 							System.out.println("Providing Service");
 							//try{ Thread.sleep(3000); } catch(Exception e) {}
-							return (prefix + " " + new String(payload)).getBytes();
+							String val = new String(payload);
+							if(val.equals("throw"))
+								throw new FunctionErrorException("this is my error");
+							else
+								return (prefix + " " + new String(payload)).getBytes();
 						}
 					}, 2);
 					System.out.println("Service Provider Registered");

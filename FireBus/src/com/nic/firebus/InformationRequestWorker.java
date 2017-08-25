@@ -7,7 +7,7 @@ import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.CorrelationListener;
 import com.nic.firebus.interfaces.InformationRequestor;
 
-public class InformationRequest implements CorrelationListener
+public class InformationRequestWorker implements CorrelationListener
 {
 	private Logger logger = Logger.getLogger(NodeCore.class.getName());
 	protected CorrelationManager correlationManager;
@@ -19,7 +19,7 @@ public class InformationRequest implements CorrelationListener
 	protected InformationRequestor requestor;
 	protected ServiceInformation serviceInformation;
 	
-	public InformationRequest(String n, int t, InformationRequestor r, CorrelationManager cm, Directory d, int nid)
+	public InformationRequestWorker(String n, int t, InformationRequestor r, CorrelationManager cm, Directory d, int nid)
 	{
 		functionName = n;
 		timeout = t;
@@ -87,7 +87,7 @@ public class InformationRequest implements CorrelationListener
 		}
 	}
 
-	public ServiceInformation getResponse()
+	public ServiceInformation waitForResponse()
 	{
 		while(serviceInformation == null  &&  System.currentTimeMillis() < expiry)
 			try{ Thread.sleep(10); } catch(Exception e) {}

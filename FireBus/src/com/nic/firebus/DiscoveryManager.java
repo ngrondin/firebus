@@ -5,22 +5,22 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
-import com.nic.firebus.interfaces.DiscoveryListener;
-
 public class DiscoveryManager extends Thread
 {
 	protected boolean quit;
 	protected int nodeId;
+	protected String networkName;
 	protected Address address;
 	protected long lastRequestSent;
-	protected DiscoveryListener discoveryListener;
+	protected NodeCore nodeCore;
 	protected MulticastSocket socket;
 	protected InetAddress multicastGroup;
 	
-	public DiscoveryManager(DiscoveryListener dl, int id, Address a)
+	public DiscoveryManager(NodeCore nc, int id, String n, Address a)
 	{
-		discoveryListener = dl;
+		nodeCore = nc;
 		nodeId = id;
+		networkName = n;
 		address = a;
 		quit = false;
 		try
@@ -54,18 +54,20 @@ public class DiscoveryManager extends Thread
 			    {
 			    	String[] parts = received.split(" ");
 			    	int id = Integer.parseInt(parts[4]);
-			    	if(id != nodeId)
+			    	String net = parts[5];
+			    	if(id != nodeId  &&  net.equals(networkName))
 			    		sendAdvertisement();
 			    }
 			    if(received.startsWith("Firebus anouncement from"))
 			    {
 			    	String[] parts = received.split(" ");
 			    	int id = Integer.parseInt(parts[3]);
-			    	String ad = parts[4];
-			    	int port = Integer.parseInt(parts[5]);
+			    	String net = parts[4];
+			    	String ad = parts[5];
+			    	int port = Integer.parseInt(parts[6]);
 			    	Address address = new Address(ad, port);
-			    	if(id != nodeId)
-			    		discoveryListener.nodeDiscovered(id, address);
+			    	if(id != nodeId  &&  net.equals(networkName))
+			    		nodeCore.nodeDiscovered(id, address);
 			    }
 			}
 			catch (IOException e) 
@@ -83,7 +85,7 @@ public class DiscoveryManager extends Thread
 		{
 			try 
 			{
-				String val = "Firebus discovery request from " + nodeId;
+				String val = "Firebus discovery request from " + nodeId + " " + networkName;
 				multicastSend(val);
 	        }
 	        catch (IOException e) 
@@ -99,7 +101,7 @@ public class DiscoveryManager extends Thread
 	{
 		try 
 		{
-			String val = "Firebus anouncement from " + nodeId + " " + address.getIPAddress() + " " + address.getPort();
+			String val = "Firebus anouncement from " + nodeId + " " + networkName + " " + address.getIPAddress() + " " + address.getPort();
 			multicastSend(val);
 		}
         catch (IOException e) 

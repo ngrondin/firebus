@@ -24,14 +24,14 @@ public class CorrelationManager
 	
 	private Logger logger = Logger.getLogger(CorrelationManager.class.getName());
 	protected HashMap<Integer, CorrelationEntry> entries;
-	protected MessageQueue outboundQueue;
+	protected NodeCore nodeCore;
 	
 	protected static int nextCorrelation = 1;
 	
-	public CorrelationManager(MessageQueue oq)
+	public CorrelationManager(NodeCore nc)
 	{
 		entries = new HashMap<Integer, CorrelationEntry>();
-		outboundQueue = oq;
+		nodeCore = nc;
 	}
 	
 	public int getNextCorrelation()
@@ -45,7 +45,7 @@ public class CorrelationManager
 		outMsg.setCorrelation(c);
 		CorrelationEntry e = new CorrelationEntry(outMsg, null, timeout); 
 		entries.put(c, e);
-		outboundQueue.addMessage(outMsg);
+		nodeCore.sendMessage(outMsg);
 		int time = 0;
 		while(time < timeout  &&  e.inboundMessage == null)
 		{
@@ -62,7 +62,7 @@ public class CorrelationManager
 		outMsg.setCorrelation(c);
 		CorrelationEntry e = new CorrelationEntry(outMsg, cl, timeout); 
 		entries.put(c, e);
-		outboundQueue.addMessage(outMsg);
+		nodeCore.sendMessage(outMsg);
 	}
 	
 	public void receiveResponse(Message inMsg)

@@ -16,9 +16,11 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 import com.nic.firebus.exceptions.ConnectionException;
+import com.nic.firebus.interfaces.ConnectionListener;
 
 public class Connection extends Thread 
 {
@@ -26,7 +28,8 @@ public class Connection extends Thread
 	protected Socket socket;
 	protected InputStream is;
 	protected OutputStream os;
-	protected NodeCore nodeCore;
+	protected ConnectionListener listener;
+	//protected NodeCore nodeCore;
 	protected int remoteNodeId;
 	protected Address remoteAddress;
 	protected IvParameterSpec IV;
@@ -39,45 +42,46 @@ public class Connection extends Thread
 	protected int msgCRC;
 	protected byte[] msg;
 	
-	public Connection(Socket s, NodeCore nc) throws IOException, ConnectionException
+	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) throws IOException, ConnectionException
 	{
 		socket = s;
-		initialise(nc);
+		initialise(net, k, nid, p, cl);
 	}
 	
-	public Connection(Address a, NodeCore nc) throws UnknownHostException, IOException, ConnectionException
+	public Connection(Address a, String net, SecretKey k, int nid, int p, ConnectionListener cl) throws UnknownHostException, IOException, ConnectionException
 	{
 		socket = new Socket(a.getIPAddress(), a.getPort());
-		initialise(nc);
+		initialise(net, k, nid, p, cl);
 	}
 	
-	protected void initialise(NodeCore nc) throws IOException, ConnectionException
+	protected void initialise(String net, SecretKey k, int nid, int p, ConnectionListener cl) throws IOException, ConnectionException
 	{
-		nodeCore = nc;
-		String networkName = nodeCore.getNetworkName();
-
+		//nodeCore = nc;
+		//String networkName = net;
+		listener = cl;
+		
 		is = socket.getInputStream();
 		os = socket.getOutputStream();
 		
-		os.write(networkName.length());
-		os.write(networkName.getBytes());
+		os.write(net.length());
+		os.write(net.getBytes());
 		int netNameLen = is.read();
 		byte[] netNameBytes = new byte[netNameLen];
 		is.read(netNameBytes);
 		String remoteNetName = new String(netNameBytes);
-		if(!remoteNetName.equals(networkName))
+		if(!remoteNetName.equals(net))
 			throw new ConnectionException("Remote node is not on the same Firebus network");
 
 		try
 		{
 			encryptionCipher = Cipher.getInstance("AES/CFB8/NoPadding");
-			encryptionCipher.init(Cipher.ENCRYPT_MODE, nodeCore.getSecretKey());
+			encryptionCipher.init(Cipher.ENCRYPT_MODE, k);
 			os.write(encryptionCipher.getIV());
 			byte[] remoteIVBytes = new byte[16];
 			is.read(remoteIVBytes);
 			IvParameterSpec remoteIV = new IvParameterSpec(remoteIVBytes);
 			decryptionCipher = Cipher.getInstance("AES/CFB8/NoPadding");
-			decryptionCipher.init(Cipher.DECRYPT_MODE, nodeCore.getSecretKey(), remoteIV);
+			decryptionCipher.init(Cipher.DECRYPT_MODE, k, remoteIV);
 			os = new CipherOutputStream(os, encryptionCipher);
 			is = new CipherInputStream(is, decryptionCipher);
 		}
@@ -87,9 +91,9 @@ public class Connection extends Thread
 			throw new ConnectionException(e.getMessage());
 		}
 		
-		os.write(ByteBuffer.allocate(4).putInt(nodeCore.getNodeId()).array());
+		os.write(ByteBuffer.allocate(4).putInt(nid).array());
 		os.write(socket.getInetAddress().getAddress());
-		os.write(ByteBuffer.allocate(4).putInt(nodeCore.getPort()).array());
+		os.write(ByteBuffer.allocate(4).putInt(p).array());
 
 		byte[] ab = new byte[4];
 		is.read(ab);
@@ -104,7 +108,7 @@ public class Connection extends Thread
 		quit = false;
 		msgState = 0;
 		setName("Firebus Connection");
-		nodeCore.connectionCreated(this);
+		listener.connectionCreated(this);
 		start();
 	}
 
@@ -157,8 +161,8 @@ public class Connection extends Thread
 					if(i == msgCRC)
 					{
 						Message message = new Message(msg);
-						if(nodeCore != null)
-							nodeCore.messageReceived(message, this);
+						if(listener != null)
+							listener.messageReceived(message, this);
 					}
 					msgState = 0;
 				}
@@ -166,7 +170,7 @@ public class Connection extends Thread
 			catch (IOException e) 
 			{
 				close();
-				nodeCore.connectionClosed(this);
+				listener.connectionClosed(this);
 			}
 		}
 	}

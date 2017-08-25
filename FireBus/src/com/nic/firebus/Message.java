@@ -4,15 +4,14 @@ import java.nio.ByteBuffer;
 
 public class Message 
 {
-	//protected Connection connection;
 	protected byte[] encodedMessage;
 	protected boolean decoded;
 	protected boolean encoded;
+	protected short version;
 	protected int messageId;
 	protected int originatorId;
 	protected int destinationId;
 	protected int flags;
-	//protected int repeaterId;
 	protected int repeatCount;
 	protected int repeatsLeft;
 	protected int type;
@@ -21,10 +20,8 @@ public class Message
 	protected byte[] payload;
 
 
-	//public static final int MSGTYPE_CONNECT = 0;
 	public static final int MSGTYPE_QUERYNODE = 1;
 	public static final int MSGTYPE_NODEINFORMATION = 2;
-	//public static final int MSGTYPE_FINDSERVICE = 3;
 	public static final int MSGTYPE_GETFUNCTIONINFORMATION = 4;
 	public static final int MSGTYPE_SERVICEINFORMATION = 5;
 	public static final int MSGTYPE_REQUESTSERVICE = 6;
@@ -39,18 +36,17 @@ public class Message
 	public Message(byte[] b)
 	{
 		encodedMessage = b;
-		//connection = c;
 		decoded = false;
 		encoded = true;
 	}
 
 	public Message(int d, int o, int t, String s, byte[] p)
 	{
+		version = 1;
 		messageId = nextId++;
 		destinationId = d;
 		originatorId = o;
 		flags = 0;
-		//repeaterId = 0;
 		repeatCount = 0;
 		repeatsLeft = 10;
 		type = t;
@@ -63,11 +59,11 @@ public class Message
 	
 	private Message(int i, int d, int o, int rc, int rl, int t, int c, String s, byte[] p)
 	{
+		version = 1;
 		messageId = i;
 		destinationId = d;
 		originatorId = o;
 		flags = 0;
-		//repeaterId = r;
 		repeatCount = rc;
 		repeatsLeft = rl;
 		type = t;
@@ -87,10 +83,10 @@ public class Message
 	public void decode()
 	{
 		ByteBuffer bb = ByteBuffer.wrap(encodedMessage);
+		version = bb.getShort();
 		messageId = bb.getInt();
 		destinationId = bb.getInt();
 		originatorId = bb.getInt();
-		//repeaterId = bb.getInt();
 		flags = bb.getInt();
 		repeatCount = bb.get();
 		repeatsLeft = bb.get();
@@ -106,17 +102,17 @@ public class Message
 	
 	public void encode()
 	{
-		int len = 27;
+		int len = 29;
 		if(subject != null)
 			len += subject.length();
 		if(payload != null)
 			len += payload.length;
 		ByteBuffer bb = ByteBuffer.allocate(len);
+		bb.putShort(version);
 		bb.putInt(messageId);
 		bb.putInt(destinationId);
 		bb.putInt(originatorId);
 		bb.putInt(flags);
-		//bb.putInt(repeaterId);
 		bb.put((byte)repeatCount);
 		bb.put((byte)repeatsLeft);
 		bb.put((byte)type);
@@ -239,18 +235,13 @@ public class Message
 		sb.append("Message Id   : " + messageId + "\r\n");
 		sb.append("Destination  : " + destinationId + "\r\n");
 		sb.append("Originator   : " + originatorId + "\r\n");
-		//sb.append("Repeater     : " + repeaterId + "\r\n");
 		sb.append("Repeat Count : " + repeatCount + "\r\n");
 		sb.append("Repeats Left : " + repeatsLeft + "\r\n");
 		sb.append("Type         : ");
-		/*if(type == Message.MSGTYPE_CONNECT)
-			sb.append("Connect");
-		else */if(type == Message.MSGTYPE_QUERYNODE)
+		if(type == Message.MSGTYPE_QUERYNODE)
 			sb.append("Query Node");
 		else if(type == Message.MSGTYPE_NODEINFORMATION)
 			sb.append("Node Information");
-		//else if(type == Message.MSGTYPE_FINDSERVICE)
-		//	sb.append("Find");
 		else if(type == Message.MSGTYPE_GETFUNCTIONINFORMATION)
 			sb.append("Get Function Information");
 		else if(type == Message.MSGTYPE_SERVICEINFORMATION)

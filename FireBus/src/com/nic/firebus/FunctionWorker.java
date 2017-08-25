@@ -32,7 +32,7 @@ public class FunctionWorker extends Thread
 			byte[] returnPayload = null;
 			try
 			{
-				returnPayload = ((ServiceProvider)busFunction).requestService(payload);
+				returnPayload = ((ServiceProvider)busFunction).service(payload);
 				if(functionListener != null)
 					functionListener.functionCallback(inboundMessage, returnPayload);
 			}

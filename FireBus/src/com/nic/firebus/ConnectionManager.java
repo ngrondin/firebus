@@ -8,35 +8,44 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import javax.crypto.SecretKey;
+
 import com.nic.firebus.exceptions.ConnectionException;
 import com.nic.firebus.information.NodeInformation;
+import com.nic.firebus.interfaces.ConnectionListener;
 
 
-public class ConnectionManager extends Thread
+public class ConnectionManager extends Thread implements ConnectionListener
 {
 	private Logger logger = Logger.getLogger(ConnectionManager.class.getName());
+	protected int nodeId;
+	protected String networkName;
+	protected SecretKey secretKey;
 	protected int port;
 	protected boolean quit;
 	protected ServerSocket server;
 	protected NodeCore nodeCore;
 	protected ArrayList<Connection> connections;
 	
-	public ConnectionManager(NodeCore nc) throws IOException
+	public ConnectionManager(NodeCore nc, int nid, String n, SecretKey k) throws IOException
 	{
-		initialise(nc, 0);
+		initialise(nc, nid, n, k, 0);
 	}
 	
-	public ConnectionManager(int p, NodeCore nc) throws IOException
+	public ConnectionManager(NodeCore nc, int nid, String n, SecretKey k, int p) throws IOException
 	{
-		initialise(nc, p);
+		initialise(nc, nid, n, k, p);
 	}
 	
-	protected void initialise(NodeCore nc, int p) throws IOException 
+	protected void initialise(NodeCore nc, int nid, String n, SecretKey k, int p) throws IOException 
 	{
 		connections = new ArrayList<Connection>();
+		nodeCore = nc;
+		nodeId = nid;
+		networkName = n;
+		secretKey = k;
 		port = p;
 		quit = false;
-		nodeCore = nc;
 		setName("Firebus Connection Manager");
 		if(p == 0)
 		{
@@ -72,7 +81,7 @@ public class ConnectionManager extends Thread
 				while(!quit)
 				{
 					Socket socket = server.accept();
-					Connection connection = new Connection(socket, nodeCore);
+					Connection connection = new Connection(socket, networkName, secretKey, nodeId, port, this);
 					connections.add(connection);
 					logger.info("Accepted New Connection");
 				}
@@ -85,10 +94,28 @@ public class ConnectionManager extends Thread
 		}
 	}
 	
+
+	public void connectionCreated(Connection c)
+	{
+		nodeCore.nodeDiscovered(c.getRemoteNodeId(), c.getRemoteAddress());
+	}
+
+	public void messageReceived(Message m, Connection c)
+	{
+		nodeCore.messageReceived(m, c);
+		
+	}
+
+	public void connectionClosed(Connection c)
+	{
+		logger.info("Connection Closed");
+		removeConnection(c);
+	}
+	
 	public Connection createConnection(Address a) throws IOException, ConnectionException
 	{
 		logger.fine("Creating New Connection");
-		Connection c = new Connection(a, nodeCore);
+		Connection c = new Connection(a, networkName, secretKey, nodeId, port, this);
 		connections.add(c);
 		logger.info("Created New Connection");
 		return c;
@@ -202,4 +229,5 @@ public class ConnectionManager extends Thread
 		}
 		return sb.toString();
 	}
+
 }

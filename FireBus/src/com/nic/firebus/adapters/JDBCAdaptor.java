@@ -52,7 +52,7 @@ public class JDBCAdaptor implements ServiceProvider, Consumer
 		}		
 	}
 
-	public byte[] requestService(byte[] payload) 
+	public byte[] service(byte[] payload) 
 	{
 		StringBuilder sb = new StringBuilder();
 		String sqlStr = new String(payload);

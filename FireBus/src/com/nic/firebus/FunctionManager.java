@@ -31,12 +31,12 @@ public class FunctionManager implements FunctionListener
 	}
 	
 	private Logger logger = Logger.getLogger(FunctionManager.class.getName());
-	protected FunctionListener functionListener;;
+	protected NodeCore nodeCore;
 	protected HashMap<String, FunctionEntry> functions;
 	
-	public FunctionManager(FunctionListener fl)
+	public FunctionManager(NodeCore nc)
 	{
-		functionListener = fl;
+		nodeCore = nc;
 		functions = new HashMap<String, FunctionEntry>();
 	}
 	
@@ -106,20 +106,27 @@ public class FunctionManager implements FunctionListener
 	
 	public void functionCallback(Message inboundMessage, byte[] payload)
 	{
+		logger.fine("Function Returned");
 		String functionName = inboundMessage.getSubject();
 		FunctionEntry fe = functions.get(functionName);
 		if(fe != null)
 			fe.currentCount--;
-		functionListener.functionCallback(inboundMessage, payload);
+
+		Message msg = new Message(inboundMessage.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, inboundMessage.getSubject(), payload);
+		msg.setCorrelation(inboundMessage.getCorrelation());
+		nodeCore.sendMessage(msg);
 	}
 	
-	public void functionErrorCallback(Message inboundMessage, FunctionErrorException e) 
+	public void functionErrorCallback(Message inboundMessage, FunctionErrorException error) 
 	{
 		String functionName = inboundMessage.getSubject();
 		FunctionEntry fe = functions.get(functionName);
 		if(fe != null)
 			fe.currentCount--;
-		functionListener.functionCallback(inboundMessage, payload);
+
+		Message msg = new Message(inboundMessage.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEERROR, inboundMessage.getSubject(), error.getMessage().getBytes());
+		msg.setCorrelation(inboundMessage.getCorrelation());
+		nodeCore.sendMessage(msg);
 	}
 
 

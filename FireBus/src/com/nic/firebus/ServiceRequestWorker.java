@@ -2,13 +2,14 @@ package com.nic.firebus;
 
 import java.util.logging.Logger;
 
+import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.NodeInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.CorrelationListener;
 import com.nic.firebus.interfaces.InformationRequestor;
 import com.nic.firebus.interfaces.ServiceRequestor;
 
-public class ServiceRequest implements CorrelationListener, InformationRequestor
+public class ServiceRequestWorker implements CorrelationListener, InformationRequestor
 {
 	private Logger logger = Logger.getLogger(NodeCore.class.getName());
 	protected CorrelationManager correlationManager;
@@ -20,8 +21,9 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 	protected long expiry;
 	protected ServiceRequestor requestor;
 	protected byte[] responsePayload;
+	protected String errorMessage;
 	
-	public ServiceRequest(String n, byte[] p, int t, ServiceRequestor r, CorrelationManager cm, Directory d, int nid)
+	public ServiceRequestWorker(String n, byte[] p, int t, ServiceRequestor r, CorrelationManager cm, Directory d, int nid)
 	{
 		serviceName = n;
 		requestPayload = p;
@@ -31,6 +33,7 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 		correlationManager = cm;
 		directory = d;
 		responsePayload = null;
+		errorMessage = null;
 		start();
 	}
 
@@ -84,8 +87,9 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 			else if(inMsg != null  &&  inMsg.getType() == Message.MSGTYPE_SERVICEERROR)
 			{
 				logger.fine("Returning Service Error");
+				errorMessage = new String(inMsg.getPayload());
 				if(requestor != null)
-					requestor.requestErrorCallback(inMsg.getPayload());
+					requestor.requestErrorCallback(new FunctionErrorException(errorMessage));
 			}
 			else
 			{
@@ -98,7 +102,7 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 				NodeInformation ni = directory.findServiceProvider(serviceName);
 				if(ni == null)
 				{
-					new InformationRequest(serviceName, 2000, this, correlationManager, directory, nodeId);
+					new InformationRequestWorker(serviceName, 2000, this, correlationManager, directory, nodeId);
 				}
 				else
 				{
@@ -110,11 +114,15 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 		}
 	}
 
-	public byte[] getResponse()
+	public byte[] waitForResponse() throws FunctionErrorException
 	{
-		while(responsePayload == null  &&  System.currentTimeMillis() < expiry)
+		while(responsePayload == null  &&  errorMessage == null  &&  System.currentTimeMillis() < expiry)
 			try{ Thread.sleep(10); } catch(Exception e) {}
-		return responsePayload;
+		
+		if(responsePayload != null)
+				return responsePayload;
+		else
+			throw new FunctionErrorException(errorMessage);
 	}
 
 
