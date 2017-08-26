@@ -9,9 +9,9 @@ import com.nic.firebus.interfaces.CorrelationListener;
 import com.nic.firebus.interfaces.InformationRequestor;
 import com.nic.firebus.interfaces.ServiceRequestor;
 
-public class ServiceRequestWorker implements CorrelationListener, InformationRequestor
+public class ServiceRequest implements CorrelationListener, InformationRequestor
 {
-	private Logger logger = Logger.getLogger(NodeCore.class.getName());
+	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected CorrelationManager correlationManager;
 	protected Directory directory;
 	protected int nodeId;
@@ -23,7 +23,7 @@ public class ServiceRequestWorker implements CorrelationListener, InformationReq
 	protected byte[] responsePayload;
 	protected String errorMessage;
 	
-	public ServiceRequestWorker(String n, byte[] p, int t, ServiceRequestor r, CorrelationManager cm, Directory d, int nid)
+	public ServiceRequest(String n, byte[] p, int t, ServiceRequestor r, CorrelationManager cm, Directory d, int nid)
 	{
 		serviceName = n;
 		requestPayload = p;
@@ -102,7 +102,7 @@ public class ServiceRequestWorker implements CorrelationListener, InformationReq
 				NodeInformation ni = directory.findServiceProvider(serviceName);
 				if(ni == null)
 				{
-					new InformationRequestWorker(serviceName, 2000, this, correlationManager, directory, nodeId);
+					new InformationRequest(serviceName, 2000, this, correlationManager, directory, nodeId);
 				}
 				else
 				{

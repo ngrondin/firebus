@@ -24,12 +24,11 @@ import com.nic.firebus.interfaces.ConnectionListener;
 
 public class Connection extends Thread 
 {
-	private Logger logger = Logger.getLogger(Connection.class.getName());
+	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected Socket socket;
 	protected InputStream is;
 	protected OutputStream os;
 	protected ConnectionListener listener;
-	//protected NodeCore nodeCore;
 	protected int remoteNodeId;
 	protected Address remoteAddress;
 	protected IvParameterSpec IV;

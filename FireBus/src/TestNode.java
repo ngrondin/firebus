@@ -1,9 +1,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import com.nic.firebus.Node;
@@ -19,11 +16,7 @@ public class TestNode
 {
 	public static void main(String[] args)
 	{
-		Logger log = LogManager.getLogManager().getLogger("");
-		log.setLevel(Level.FINE);
-		for (Handler h : log.getHandlers()) 
-		    h.setLevel(Level.INFO);
-
+		Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
 		Node n = new Node();
 		//n.addKnownNodeAddress("54.252.238.59", 1990);
 		

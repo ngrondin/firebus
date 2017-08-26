@@ -30,7 +30,7 @@ public class FunctionManager implements FunctionListener
 		}
 	}
 	
-	private Logger logger = Logger.getLogger(FunctionManager.class.getName());
+	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected NodeCore nodeCore;
 	protected HashMap<String, FunctionEntry> functions;
 	

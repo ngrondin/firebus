@@ -12,7 +12,7 @@ import com.nic.firebus.information.ServiceInformation;
 
 public class Directory 
 {
-	private Logger logger = Logger.getLogger(Directory.class.getName());
+	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected ArrayList<NodeInformation> nodes;
 
 	public Directory()

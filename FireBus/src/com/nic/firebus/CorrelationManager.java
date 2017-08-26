@@ -22,7 +22,7 @@ public class CorrelationManager
 		}
 	};
 	
-	private Logger logger = Logger.getLogger(CorrelationManager.class.getName());
+	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected HashMap<Integer, CorrelationEntry> entries;
 	protected NodeCore nodeCore;
 	

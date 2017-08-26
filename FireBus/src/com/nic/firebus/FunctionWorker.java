@@ -10,7 +10,7 @@ import com.nic.firebus.interfaces.ServiceProvider;
 
 public class FunctionWorker extends Thread
 {
-	private Logger logger = Logger.getLogger(FunctionWorker.class.getName());
+	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected BusFunction busFunction;
 	protected Message inboundMessage;
 	protected FunctionListener functionListener;

@@ -2,6 +2,8 @@ package com.nic.firebus;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
@@ -17,10 +19,11 @@ import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.DiscoveryListener;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.interfaces.ServiceRequestor;
+import com.nic.firebus.logging.FirebusSimpleFormatter;
 
 public class NodeCore extends Thread implements DiscoveryListener
 {
-	private Logger logger = Logger.getLogger(NodeCore.class.getName());
+	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected int nodeId;
 	protected boolean quit;
 	protected String networkName;
@@ -63,15 +66,23 @@ public class NodeCore extends Thread implements DiscoveryListener
 			nodeId = rnd.nextInt();
 			quit = false;
 			networkName = n;	
+
+			FileHandler fh = new FileHandler("FirebusNode_" + nodeId + ".log");
+			fh.setFormatter(new FirebusSimpleFormatter());
+			fh.setLevel(Level.FINE);
+			logger.addHandler(fh);
+			logger.setLevel(Level.FINE);
+			
 			inboundQueue = new MessageQueue();
 			outboundQueue = new MessageQueue();
 			directory = new Directory();
 			connectionManager = new ConnectionManager(this, nodeId, networkName,  new SecretKeySpec(pw.getBytes(), "AES"), port);
-			discoveryManager = new DiscoveryManager(this, nodeId, networkName, connectionManager.getAddress());
+			discoveryManager = new DiscoveryManager(this, nodeId, networkName, connectionManager.getPort());
 			functionManager = new FunctionManager(this);
 			correlationManager = new CorrelationManager(this);
 			knownAddresses = new ArrayList<Address>();
 			setName("Firebus Node");
+			
 			start();			
 		}
 		catch(Exception e)
@@ -108,19 +119,19 @@ public class NodeCore extends Thread implements DiscoveryListener
 	
 	public ServiceInformation getServiceInformation(String functionName, int timeout)
 	{
-		InformationRequestWorker ir = new InformationRequestWorker(functionName, timeout, null, correlationManager, directory, nodeId);
+		InformationRequest ir = new InformationRequest(functionName, timeout, null, correlationManager, directory, nodeId);
 		return ir.waitForResponse();
 	}
 		
 	public byte[] requestService(String serviceName, byte[] payload, int timeout)  throws FunctionErrorException
 	{
-		ServiceRequestWorker request = new ServiceRequestWorker(serviceName, payload, timeout, null, correlationManager, directory, nodeId);
+		ServiceRequest request = new ServiceRequest(serviceName, payload, timeout, null, correlationManager, directory, nodeId);
 		return request.waitForResponse();
 	}		
 
 	public void requestService(String serviceName, byte[] payload, int timeout, ServiceRequestor requestor)
 	{
-		new ServiceRequestWorker(serviceName, payload, timeout, requestor, correlationManager, directory, nodeId);
+		new ServiceRequest(serviceName, payload, timeout, requestor, correlationManager, directory, nodeId);
 	}	
 	
 	public void publish(String dataname, byte[] payload)

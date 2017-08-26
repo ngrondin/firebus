@@ -17,7 +17,7 @@ import com.nic.firebus.interfaces.ConnectionListener;
 
 public class ConnectionManager extends Thread implements ConnectionListener
 {
-	private Logger logger = Logger.getLogger(ConnectionManager.class.getName());
+	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected int nodeId;
 	protected String networkName;
 	protected SecretKey secretKey;
@@ -81,9 +81,9 @@ public class ConnectionManager extends Thread implements ConnectionListener
 				while(!quit)
 				{
 					Socket socket = server.accept();
+					logger.info("Accepted New Connection");
 					Connection connection = new Connection(socket, networkName, secretKey, nodeId, port, this);
 					connections.add(connection);
-					logger.info("Accepted New Connection");
 				}
 			} 
 			catch (Exception e) 
