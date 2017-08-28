@@ -10,6 +10,12 @@ public class Payload
 {
 	public byte[] data;
 	public HashMap<String, String> metadata;
+
+	public Payload(byte[] d)
+	{
+		metadata = new HashMap<String, String>();
+		data = d;
+	}
 	
 	public Payload(HashMap<String, String> md, byte[] d)
 	{
@@ -20,28 +26,38 @@ public class Payload
 		data = d;
 	}
 	
-	public Payload(byte[] encodedMessage)
+	public static Payload deserialise(byte[] encodedMessage)
 	{
-		ByteBuffer bb = ByteBuffer.wrap(encodedMessage);
-		int metadataLen = bb.getInt();
-		String metadataStr = new String(encodedMessage, bb.position(), metadataLen);
-		bb.position(bb.position() + metadataLen);
-		
-		data = new byte[bb.remaining()];
-		System.arraycopy(encodedMessage, bb.position(), data, 0, bb.remaining());
-		
-		try
+		if(encodedMessage != null  &&  encodedMessage.length > 0)
 		{
-			Properties props = new Properties();
-			props.load(new StringReader(metadataStr.substring(1, metadataStr.length() - 1).replace(", ", "\n")));       
-			for (Map.Entry<Object, Object> e : props.entrySet()) 
-			    metadata.put((String)e.getKey(), (String)e.getValue());
+			ByteBuffer bb = ByteBuffer.wrap(encodedMessage);
+			int metadataLen = bb.getInt();
+			String metadataStr = new String(encodedMessage, bb.position(), metadataLen);
+			bb.position(bb.position() + metadataLen);
+			
+			byte[] data = new byte[bb.remaining()];
+			System.arraycopy(encodedMessage, bb.position(), data, 0, bb.remaining());
+			
+			HashMap<String, String> metadata = new HashMap<String, String>();
+			try
+			{
+				Properties props = new Properties();
+				props.load(new StringReader(metadataStr.substring(1, metadataStr.length() - 1).replace(", ", "\n")));       
+				for (Map.Entry<Object, Object> e : props.entrySet()) 
+				    metadata.put((String)e.getKey(), (String)e.getValue());
+			}
+			catch(Exception e)
+			{}
+			
+			return new Payload(metadata, data);
 		}
-		catch(Exception e)
-		{}
+		else
+		{
+			return null;
+		}
 	}
 	
-	public byte[] encode()
+	public byte[] serialise()
 	{
 		int len = 4;
 		if(!metadata.isEmpty())

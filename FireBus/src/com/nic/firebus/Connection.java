@@ -160,7 +160,7 @@ public class Connection extends Thread
 				{
 					if(i == msgCRC)
 					{
-						Message message = new Message(msg);
+						Message message = Message.deserialise(msg);
 						if(listener != null)
 							listener.messageReceived(message, this);
 					}
@@ -179,7 +179,7 @@ public class Connection extends Thread
 	{
 		try
 		{
-			byte[] bytes = msg.getEncodedMessage();
+			byte[] bytes = msg.serialise();
 			os.write(0x7E);
 			os.write(bytes.length & 0x00FF);
 			os.write((bytes.length >> 8) & 0x00FF);

@@ -149,7 +149,6 @@ public class NodeCore extends Thread implements DiscoveryListener
 	public void messageReceived(Message m, Connection c) 
 	{
 		logger.fine("Received Message");
-		m.decode();
 		int originatorId = m.getOriginatorId();
 		int connectedId = c.getRemoteNodeId();
 		if(connectedId != originatorId)
@@ -202,7 +201,6 @@ public class NodeCore extends Thread implements DiscoveryListener
 	{
 		logger.fine("Processing Inbound Message");
 		Message msg = inboundQueue.getNextMessage();
-		msg.decode();
 		logger.finest("****Inbound****************\r\n" + msg);
 		
 		if(msg.getOriginatorId() != nodeId)
@@ -266,7 +264,6 @@ public class NodeCore extends Thread implements DiscoveryListener
 		logger.fine("Processing Outbound Message");
 		Message msg = outboundQueue.getNextMessage();
 		logger.finest("****Oubound**************\r\n" + msg);
-		msg.encode();
 		Connection c = null;//msg.getConnection();
 		int destinationNodeId = msg.getDestinationId();
 		if(destinationNodeId != 0)

@@ -1,16 +1,13 @@
 package com.nic.firebus;
 
-import java.io.StringReader;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+
 
 public class Message 
 {
 	protected byte[] encodedMessage;
-	protected boolean decoded;
-	protected boolean encoded;
+	//protected boolean decoded;
+	//protected boolean encoded;
 	protected short version;
 	protected int messageId;
 	protected int originatorId;
@@ -35,18 +32,20 @@ public class Message
 	public static final int MSGTYPE_PUBLISH = 10;
 	public static final int MSGTYPE_REPUBLISH = 11;
 	
+	protected static final short  MESSAGE_VERSION = 1;
+	
 	protected static int nextId = 0;
 	
-	public Message(byte[] b)
+	/*public Message(byte[] b)
 	{
 		encodedMessage = b;
 		decoded = false;
 		encoded = true;
-	}
+	}*/
 
 	public Message(int d, int o, int t, String s, Payload p)
 	{
-		version = 1;
+		version = MESSAGE_VERSION;
 		messageId = nextId++;
 		destinationId = d;
 		originatorId = o;
@@ -57,59 +56,67 @@ public class Message
 		correlation = 0;
 		subject = s;
 		payload = p;
-		decoded = true;
-		encoded = false;
+		//decoded = true;
+		//encoded = false;
 	}
 	
 
-	private Message(int i, int d, int o, int rc, int rl, int t, int c, String s, Payload p)
+	private Message(int i, int d, int o, int f, int rc, int rl, int t, int c, String s, Payload p)
 	{
-		version = 1;
+		version = MESSAGE_VERSION;
 		messageId = i;
 		destinationId = d;
 		originatorId = o;
-		flags = 0;
+		flags = f;
 		repeatCount = rc;
 		repeatsLeft = rl;
 		type = t;
 		correlation = c;
 		subject = s;
 		payload = p;
-		decoded = true;
-		encoded = false;		
+		//decoded = true;
+		//encoded = false;		
 	}
 	
 	public Message repeat()
 	{
-		Message msg = new Message(messageId, destinationId, originatorId, repeatCount + 1, repeatsLeft - 1, type, correlation, subject, payload);
+		Message msg = new Message(messageId, destinationId, originatorId, flags, repeatCount + 1, repeatsLeft - 1, type, correlation, subject, payload);
 		return msg;
 	}
 	
-	public void decode()
+	public static Message deserialise(byte[] encodedMessage)
 	{
 		ByteBuffer bb = ByteBuffer.wrap(encodedMessage);
-		version = bb.getShort();
-		messageId = bb.getInt();
-		destinationId = bb.getInt();
-		originatorId = bb.getInt();
-		flags = bb.getInt();
-		repeatCount = bb.get();
-		repeatsLeft = bb.get();
-		type = bb.get();
-		correlation = bb.getInt();
-		int subjectLen = bb.getInt();
-		subject = new String(encodedMessage, bb.position(), subjectLen);
-		bb.position(bb.position() + subjectLen);
-		byte[] payloadBytes = new byte[bb.remaining()];
-		payload = new Payload(payloadBytes);
-		decoded = true;
+		short version = bb.getShort();
+		if(version == MESSAGE_VERSION)
+		{
+			int messageId = bb.getInt();
+			int destinationId = bb.getInt();
+			int originatorId = bb.getInt();
+			int flags = bb.getInt();
+			int repeatCount = bb.get();
+			int repeatsLeft = bb.get();
+			int type = bb.get();
+			int correlation = bb.getInt();
+			int subjectLen = bb.getInt();
+			String subject = new String(encodedMessage, bb.position(), subjectLen);
+			bb.position(bb.position() + subjectLen);
+			byte[] payloadBytes = new byte[bb.remaining()];
+			bb.get(payloadBytes);
+			Payload payload = Payload.deserialise(payloadBytes);
+			return new Message(messageId, destinationId, originatorId, flags, repeatCount + 1, repeatsLeft - 1, type, correlation, subject, payload);			
+		}
+		else
+		{
+			return null;
+		}
 	}
 	
-	public void encode()
+	public byte[] serialise()
 	{
 		byte[] payloadBytes = null;
 		if(payload != null)
-			payloadBytes = payload.encode();
+			payloadBytes = payload.serialise();
 		int len = 29;
 		if(subject != null)
 			len += subject.length();
@@ -139,8 +146,7 @@ public class Message
 		{
 			bb.put(payloadBytes);	
 		}
-		encodedMessage = bb.array();
-		encoded = true;
+		return bb.array();
 	}
 	
 	
@@ -204,18 +210,18 @@ public class Message
 	{
 		return payload;
 	}
-
+/*
 	public byte[] getEncodedMessage()
 	{
 		if(!encoded)
 			encode();
 		return encodedMessage;
 	}
-	
+	*/
 	public int getCRC()
 	{
 		int crc = 0;
-		byte[] b = getEncodedMessage();
+		byte[] b = serialise();
 		for(int i = 0; i < b.length; i++)
 		{
 			crc = (crc ^ b[i]) & 0x00FF;
