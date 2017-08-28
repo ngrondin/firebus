@@ -25,11 +25,11 @@ public class FunctionWorker extends Thread
 	
 	public void run()
 	{
-		byte[] payload = inboundMessage.getPayload();
+		Payload payload = inboundMessage.getPayload();
 		if(inboundMessage.getType() == Message.MSGTYPE_REQUESTSERVICE  &&  busFunction instanceof ServiceProvider)
 		{
 			logger.info("Executing Service Provider");
-			byte[] returnPayload = null;
+			Payload returnPayload = null;
 			try
 			{
 				returnPayload = ((ServiceProvider)busFunction).service(payload);

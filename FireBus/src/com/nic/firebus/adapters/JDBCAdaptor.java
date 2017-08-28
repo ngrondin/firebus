@@ -8,6 +8,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import com.nic.firebus.Node;
+import com.nic.firebus.Payload;
 import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
@@ -38,9 +39,9 @@ public class JDBCAdaptor implements ServiceProvider, Consumer
         connection = DriverManager.getConnection(connStr);
 	}
 
-	public void consume(byte[] payload) 
+	public void consume(Payload payload) 
 	{
-		String sqlStr = new String(payload);
+		String sqlStr = new String(payload.data);
 		try
 		{
 	        PreparedStatement stmt = connection.prepareStatement(sqlStr);
@@ -52,10 +53,10 @@ public class JDBCAdaptor implements ServiceProvider, Consumer
 		}		
 	}
 
-	public byte[] service(byte[] payload) 
+	public Payload service(Payload payload) 
 	{
 		StringBuilder sb = new StringBuilder();
-		String sqlStr = new String(payload);
+		String sqlStr = new String(payload.data);
 		try
 		{
 	        PreparedStatement stmt = connection.prepareStatement(sqlStr);
@@ -84,7 +85,7 @@ public class JDBCAdaptor implements ServiceProvider, Consumer
 		{
 			sb.append(e.getMessage());
 		}
-		return sb.toString().getBytes();
+		return new Payload(null, sb.toString().getBytes());
 	}
 
 	

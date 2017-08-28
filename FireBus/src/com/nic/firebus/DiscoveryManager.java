@@ -81,7 +81,7 @@ public class DiscoveryManager extends Thread
 			    	String net = parts[5];
 			    	if(id != nodeId  &&  net.equals(networkName))
 			    	{
-				    	logger.fine("Received a discovery request from " + id + " on network " + net);
+				    	logger.fine("Received a discovery request from " + id + " on network \"" + net + "\"");
 			    		sendAdvertisement(packet.getAddress());
 			    	}
 			    }
@@ -95,7 +95,7 @@ public class DiscoveryManager extends Thread
 			    	Address address = new Address(ad, port);
 			    	if(id != nodeId  &&  net.equals(networkName))
 			    	{
-				    	logger.fine("Received a anouncement from " + id + " on network " + net + " with address " + address);
+				    	logger.fine("Received a anouncement from " + id + " on network \"" + net + "\" with address " + address);
 			    		nodeCore.nodeDiscovered(id, address);
 			    	}
 			    }
@@ -116,7 +116,13 @@ public class DiscoveryManager extends Thread
 			try 
 			{
 				String val = "Firebus discovery request from " + nodeId + " " + networkName;
-				multicastSend(val, discoveryAddress);
+				Enumeration<NetworkInterface> ifs =  NetworkInterface.getNetworkInterfaces();
+		        while (ifs.hasMoreElements()) 
+		        {
+		            NetworkInterface xface = ifs.nextElement();
+		            if(!xface.isLoopback()  &&  xface.isUp())
+						multicastSend(val, xface);
+		        }
 		    	logger.fine("Sent a discovery request");
 	        }
 	        catch (IOException e) 
@@ -133,9 +139,10 @@ public class DiscoveryManager extends Thread
 		try 
 		{
 			InetAddress localAddress = getLocalAddressForRemoteConnection(addr);
+			NetworkInterface iface = NetworkInterface.getByInetAddress(localAddress);
 			String val = "Firebus anouncement from " + nodeId + " " + networkName + " " + localAddress.getHostAddress()+ " " + connectionsPort;
-			multicastSend(val, addr);
-	    	logger.fine("Sent a discovery anouncement " + nodeId + " " + networkName + " " + localAddress.getHostAddress()+ " " + connectionsPort);
+			multicastSend(val, iface);
+	    	logger.fine("Sent a discovery anouncement for node " + nodeId + " on network \"" + networkName + "\" at address " + localAddress.getHostAddress()+ " " + connectionsPort + " via NIC " + iface.getName());
 		}
         catch (IOException e) 
 		{
@@ -144,11 +151,14 @@ public class DiscoveryManager extends Thread
 		
 	}	
 	
-	protected void multicastSend(String value, InetAddress addr) throws IOException
+	protected void multicastSend(String value, NetworkInterface xface) throws IOException
 	{
 		byte[] buf = value.getBytes();
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, discoveryAddress, discoveryPort);
+    	socket.setNetworkInterface(xface);
+    	socket.send(packet);
 		
+		/*
 		Enumeration<NetworkInterface> ifs =  NetworkInterface.getNetworkInterfaces();
         while (ifs.hasMoreElements()) 
         {
@@ -159,6 +169,7 @@ public class DiscoveryManager extends Thread
             	socket.send(packet);
             }
         }
+        */
 	}
 	
     private InetAddress getLocalAddressForRemoteConnection(InetAddress remoteAddress) 

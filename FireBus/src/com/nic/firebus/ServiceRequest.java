@@ -1,5 +1,6 @@
 package com.nic.firebus;
 
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 import com.nic.firebus.exceptions.FunctionErrorException;
@@ -16,14 +17,14 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 	protected Directory directory;
 	protected int nodeId;
 	protected String serviceName;
-	protected byte[] requestPayload;
+	protected Payload requestPayload;
 	protected int timeout;
 	protected long expiry;
 	protected ServiceRequestor requestor;
-	protected byte[] responsePayload;
+	protected Payload responsePayload;
 	protected String errorMessage;
 	
-	public ServiceRequest(String n, byte[] p, int t, ServiceRequestor r, CorrelationManager cm, Directory d, int nid)
+	public ServiceRequest(String n, Payload p, int t, ServiceRequestor r, CorrelationManager cm, Directory d, int nid)
 	{
 		serviceName = n;
 		requestPayload = p;
@@ -87,7 +88,7 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 			else if(inMsg != null  &&  inMsg.getType() == Message.MSGTYPE_SERVICEERROR)
 			{
 				logger.fine("Returning Service Error");
-				errorMessage = new String(inMsg.getPayload());
+				errorMessage = new String(inMsg.getPayload().data);
 				if(requestor != null)
 					requestor.requestErrorCallback(new FunctionErrorException(errorMessage));
 			}
@@ -114,7 +115,7 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 		}
 	}
 
-	public byte[] waitForResponse() throws FunctionErrorException
+	public Payload waitForResponse() throws FunctionErrorException
 	{
 		while(responsePayload == null  &&  errorMessage == null  &&  System.currentTimeMillis() < expiry)
 			try{ Thread.sleep(10); } catch(Exception e) {}

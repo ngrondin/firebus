@@ -55,6 +55,7 @@ public class Connection extends Thread
 	
 	protected void initialise(String net, SecretKey k, int nid, int p, ConnectionListener cl) throws IOException, ConnectionException
 	{
+		logger.fine("Initialising Connection");
 		//nodeCore = nc;
 		//String networkName = net;
 		listener = cl;
@@ -91,7 +92,7 @@ public class Connection extends Thread
 		}
 		
 		os.write(ByteBuffer.allocate(4).putInt(nid).array());
-		os.write(socket.getInetAddress().getAddress());
+		os.write(socket.getLocalAddress().getAddress());
 		os.write(ByteBuffer.allocate(4).putInt(p).array());
 
 		byte[] ab = new byte[4];
@@ -102,8 +103,8 @@ public class Connection extends Thread
 		is.read(ab);
 		int remotePort = (ByteBuffer.wrap(ab)).getInt();
 		remoteAddress = new Address(a.getHostAddress(), remotePort);
-		
-		logger.fine("Connection Initialised");
+		logger.info("Established connection with node " + remoteNodeId + " at address " + remoteAddress);
+
 		quit = false;
 		msgState = 0;
 		setName("Firebus Connection");

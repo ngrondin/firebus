@@ -51,22 +51,22 @@ public class Node
 		return nodeCore.getServiceInformation(serviceName, 2000);
 	}
 
-	public byte[] requestService(String serviceName, byte[] payload) throws FunctionErrorException
+	public Payload requestService(String serviceName, Payload payload) throws FunctionErrorException
 	{
 		return nodeCore.requestService(serviceName, payload, 2000);
 	}
 
-	public byte[] requestService(String serviceName, byte[] payload, int timeout) throws FunctionErrorException
+	public Payload requestService(String serviceName, Payload payload, int timeout) throws FunctionErrorException
 	{
 		return nodeCore.requestService(serviceName, payload, timeout);
 	}
 	
-	public void requestService(String serviceName, byte[] payload, int timeout, ServiceRequestor requestor)
+	public void requestService(String serviceName, Payload payload, int timeout, ServiceRequestor requestor)
 	{
 		nodeCore.requestService(serviceName, payload, timeout, requestor);
 	}
 	
-	public void publish(String dataname, byte[] payload)
+	public void publish(String dataname, Payload payload)
 	{
 		nodeCore.publish(dataname, payload);
 	}

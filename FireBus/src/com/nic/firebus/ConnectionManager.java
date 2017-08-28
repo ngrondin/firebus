@@ -117,7 +117,6 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		logger.fine("Creating New Connection");
 		Connection c = new Connection(a, networkName, secretKey, nodeId, port, this);
 		connections.add(c);
-		logger.info("Created New Connection");
 		return c;
 	}
 	

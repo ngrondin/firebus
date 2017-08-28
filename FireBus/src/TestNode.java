@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.util.logging.Logger;
 
 import com.nic.firebus.Node;
+import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.ServiceInformation;
@@ -44,9 +45,9 @@ public class TestNode
 							else if(parts[0].equals("req"))
 							{
 								String line = in.substring(parts[0].length() + 1);
-								n.requestService(functionName, line.getBytes(), 10000, new ServiceRequestor() {
-									public void requestCallback(byte[] payload) {
-										System.out.println(new String(payload));
+								n.requestService(functionName, new Payload(null, line.getBytes()), 10000, new ServiceRequestor() {
+									public void requestCallback(Payload payload) {
+										System.out.println(new String(payload.data));
 									}
 									public void requestTimeout() {
 										System.out.println("Timed out");
@@ -60,7 +61,7 @@ public class TestNode
 								String line = in.substring(parts[0].length() + 1);
 								try
 								{
-									String resp = new String(n.requestService(functionName, line.getBytes(), 2000));
+									String resp = new String(n.requestService(functionName, new Payload(null, line.getBytes()), 2000).data);
 									System.out.println(resp);
 								}
 								catch (FunctionErrorException e)
@@ -71,7 +72,7 @@ public class TestNode
 							else if(parts[0].equals("pub"))
 							{
 								String line = in.substring(parts[0].length());
-								n.publish(functionName, line.getBytes());
+								n.publish(functionName, new Payload(line.getBytes()));
 							}
 						} 
 						catch (IOException e) {}
@@ -86,15 +87,15 @@ public class TestNode
 					final String prefix = args[2];
 					ServiceInformation si = new ServiceInformation(args[1], "text/plain", "{request:String}", "text/plain", "{response:String}");
 					n.registerServiceProvider(si, new ServiceProvider() {
-						public byte[] service(byte[] payload) throws FunctionErrorException
+						public Payload service(Payload payload) throws FunctionErrorException
 						{
 							System.out.println("Providing Service");
 							//try{ Thread.sleep(3000); } catch(Exception e) {}
-							String val = new String(payload);
+							String val = new String(payload.data);
 							if(val.equals("throw"))
 								throw new FunctionErrorException("this is my error");
 							else
-								return (prefix + " " + new String(payload)).getBytes();
+								return new Payload(null,  (prefix + " " + new String(payload.data)).getBytes());
 						}
 					}, 2);
 					System.out.println("Service Provider Registered");
@@ -107,9 +108,9 @@ public class TestNode
 				if(args.length > 1)
 				{
 					n.registerConsumer(new ConsumerInformation(args[1]), new Consumer(){
-						public void consume(byte[] payload)
+						public void consume(Payload payload)
 						{
-							System.out.println(new String(payload));
+							System.out.println(new String(payload.data));
 						}
 					}, 10);
 					System.out.println("Consumer Registered");

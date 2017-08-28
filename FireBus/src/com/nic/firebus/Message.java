@@ -1,6 +1,10 @@
 package com.nic.firebus;
 
+import java.io.StringReader;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class Message 
 {
@@ -17,7 +21,7 @@ public class Message
 	protected int type;
 	protected int correlation;
 	protected String subject;
-	protected byte[] payload;
+	protected Payload payload;
 
 
 	public static final int MSGTYPE_QUERYNODE = 1;
@@ -40,7 +44,7 @@ public class Message
 		encoded = true;
 	}
 
-	public Message(int d, int o, int t, String s, byte[] p)
+	public Message(int d, int o, int t, String s, Payload p)
 	{
 		version = 1;
 		messageId = nextId++;
@@ -57,7 +61,8 @@ public class Message
 		encoded = false;
 	}
 	
-	private Message(int i, int d, int o, int rc, int rl, int t, int c, String s, byte[] p)
+
+	private Message(int i, int d, int o, int rc, int rl, int t, int c, String s, Payload p)
 	{
 		version = 1;
 		messageId = i;
@@ -95,18 +100,21 @@ public class Message
 		int subjectLen = bb.getInt();
 		subject = new String(encodedMessage, bb.position(), subjectLen);
 		bb.position(bb.position() + subjectLen);
-		payload = new byte[bb.remaining()];
-		System.arraycopy(encodedMessage, bb.position(), payload, 0, bb.remaining());
+		byte[] payloadBytes = new byte[bb.remaining()];
+		payload = new Payload(payloadBytes);
 		decoded = true;
 	}
 	
 	public void encode()
 	{
+		byte[] payloadBytes = null;
+		if(payload != null)
+			payloadBytes = payload.encode();
 		int len = 29;
 		if(subject != null)
 			len += subject.length();
-		if(payload != null)
-			len += payload.length;
+		if(payloadBytes != null)
+			len += payloadBytes.length;
 		ByteBuffer bb = ByteBuffer.allocate(len);
 		bb.putShort(version);
 		bb.putInt(messageId);
@@ -126,25 +134,21 @@ public class Message
 		{
 			bb.putInt(0);
 		}
-		if(payload != null)
+
+		if(payloadBytes != null)
 		{
-			bb.put(payload);	
+			bb.put(payloadBytes);	
 		}
 		encodedMessage = bb.array();
 		encoded = true;
 	}
+	
 	
 	public void setRepeatsLeft(int rl)
 	{
 		repeatsLeft = rl;
 	}
 	
-	/*
-	public void setConnection(Connection c)
-	{
-		connection = c;
-	}
-	*/
 	public void setCorrelation(int c)
 	{
 		correlation = c;
@@ -165,16 +169,10 @@ public class Message
 		return type;
 	}
 	
-
 	public int getOriginatorId()
 	{
 		return originatorId;
 	}
-
-	/*public int getRepeaterId()
-	{
-		return repeaterId;
-	}*/
 
 	public int getDestinationId()
 	{
@@ -200,17 +198,13 @@ public class Message
 	{
 		return subject;
 	}
+
 	
-	public byte[] getPayload()
+	public Payload getPayload()
 	{
 		return payload;
 	}
-	/*
-	public Connection getConnection()
-	{
-		return connection;
-	}
-	*/
+
 	public byte[] getEncodedMessage()
 	{
 		if(!encoded)
@@ -265,7 +259,7 @@ public class Message
 			sb.append(subject);
 		sb.append("\r\n");
 		if(payload != null)
-			sb.append(new String(payload));
+			sb.append(payload);
 		return sb.toString();
 	}
 }

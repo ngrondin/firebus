@@ -104,7 +104,7 @@ public class FunctionManager implements FunctionListener
 		}
 	}
 	
-	public void functionCallback(Message inboundMessage, byte[] payload)
+	public void functionCallback(Message inboundMessage, Payload payload)
 	{
 		logger.fine("Function Returned");
 		String functionName = inboundMessage.getSubject();
@@ -124,7 +124,7 @@ public class FunctionManager implements FunctionListener
 		if(fe != null)
 			fe.currentCount--;
 
-		Message msg = new Message(inboundMessage.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEERROR, inboundMessage.getSubject(), error.getMessage().getBytes());
+		Message msg = new Message(inboundMessage.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEERROR, inboundMessage.getSubject(), new Payload(null, error.getMessage().getBytes()));
 		msg.setCorrelation(inboundMessage.getCorrelation());
 		nodeCore.sendMessage(msg);
 	}

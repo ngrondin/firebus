@@ -123,18 +123,18 @@ public class NodeCore extends Thread implements DiscoveryListener
 		return ir.waitForResponse();
 	}
 		
-	public byte[] requestService(String serviceName, byte[] payload, int timeout)  throws FunctionErrorException
+	public Payload requestService(String serviceName, Payload payload, int timeout)  throws FunctionErrorException
 	{
 		ServiceRequest request = new ServiceRequest(serviceName, payload, timeout, null, correlationManager, directory, nodeId);
 		return request.waitForResponse();
 	}		
 
-	public void requestService(String serviceName, byte[] payload, int timeout, ServiceRequestor requestor)
+	public void requestService(String serviceName, Payload payload, int timeout, ServiceRequestor requestor)
 	{
 		new ServiceRequest(serviceName, payload, timeout, requestor, correlationManager, directory, nodeId);
 	}	
 	
-	public void publish(String dataname, byte[] payload)
+	public void publish(String dataname, Payload payload)
 	{
 		logger.info("Publishing");
 		Message msg = new Message(0, nodeId, Message.MSGTYPE_PUBLISH, dataname, payload);
@@ -219,7 +219,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 						processNodeInformationRequest(msg.getOriginatorId());
 						break;
 					case Message.MSGTYPE_NODEINFORMATION:
-						directory.processNodeInformation(new String(msg.getPayload()));
+						directory.processNodeInformation(new String(msg.getPayload().data));
 						if(msg.getCorrelation() != 0)
 							correlationManager.receiveResponse(msg);
 						break;
@@ -242,7 +242,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_SERVICEINFORMATION:
-						directory.processServiceInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload());
+						directory.processServiceInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload().data);
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_PUBLISH:
@@ -315,7 +315,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 		}
 		catch (FunctionUnavailableException e)
 		{
-			Message outMsg = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_SERVICEUNAVAILABLE, msg.getSubject(), e.getMessage().getBytes());
+			Message outMsg = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_SERVICEUNAVAILABLE, msg.getSubject(),new Payload(null,  e.getMessage().getBytes()));
 			outMsg.setCorrelation(msg.getCorrelation());
 			outboundQueue.addMessage(outMsg);
 		}
@@ -327,7 +327,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 		if(fi instanceof ServiceInformation)
 		{
 			ServiceInformation si = (ServiceInformation)fi;
-			Message outMsg = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_SERVICEINFORMATION, msg.getSubject(), si.serialise());
+			Message outMsg = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_SERVICEINFORMATION, msg.getSubject(), new Payload(null, si.serialise()));
 			outMsg.setCorrelation(msg.getCorrelation());
 			outboundQueue.addMessage(outMsg);
 		}
@@ -352,7 +352,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 		sb.append(connectionManager.getAddressStateString(nodeId));
 		sb.append(functionManager.getFunctionStateString(nodeId));
 		sb.append(directory.getDirectoryStateString(nodeId));
-		Message msg = new Message(destinationNodeId, nodeId, Message.MSGTYPE_NODEINFORMATION, null, sb.toString().getBytes());
+		Message msg = new Message(destinationNodeId, nodeId, Message.MSGTYPE_NODEINFORMATION, null, new Payload(null, sb.toString().getBytes()));
 		outboundQueue.addMessage(msg);
 	}
 	
