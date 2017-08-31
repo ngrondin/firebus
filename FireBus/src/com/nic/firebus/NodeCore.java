@@ -2,8 +2,6 @@ package com.nic.firebus;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
@@ -19,7 +17,6 @@ import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.DiscoveryListener;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.interfaces.ServiceRequestor;
-import com.nic.firebus.logging.FirebusSimpleFormatter;
 
 public class NodeCore extends Thread implements DiscoveryListener
 {
@@ -66,13 +63,6 @@ public class NodeCore extends Thread implements DiscoveryListener
 			nodeId = rnd.nextInt();
 			quit = false;
 			networkName = n;	
-
-			FileHandler fh = new FileHandler("FirebusNode_" + nodeId + ".log");
-			fh.setFormatter(new FirebusSimpleFormatter());
-			fh.setLevel(Level.FINE);
-			logger.addHandler(fh);
-			logger.setLevel(Level.FINE);
-			
 			inboundQueue = new MessageQueue();
 			outboundQueue = new MessageQueue();
 			directory = new Directory();
@@ -148,15 +138,18 @@ public class NodeCore extends Thread implements DiscoveryListener
 	
 	public void messageReceived(Message m, Connection c) 
 	{
-		logger.fine("Received Message");
 		int originatorId = m.getOriginatorId();
 		int connectedId = c.getRemoteNodeId();
-		if(connectedId != originatorId)
+		if(originatorId != nodeId)
 		{
-			NodeInformation originatorNode = directory.getOrCreateNodeInformation(originatorId);
-			originatorNode.addRepeater(connectedId);
+			logger.fine("Received Message");
+			if(connectedId != originatorId)
+			{
+				NodeInformation originatorNode = directory.getOrCreateNodeInformation(originatorId);
+				originatorNode.addRepeater(connectedId);
+			}
+			inboundQueue.addMessage(m);
 		}
-		inboundQueue.addMessage(m);
 	}
 
 	public void nodeDiscovered(int id, Address address)

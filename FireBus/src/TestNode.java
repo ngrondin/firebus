@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.nic.firebus.Node;
@@ -11,6 +13,7 @@ import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.interfaces.ServiceRequestor;
+import com.nic.firebus.logging.FirebusSimpleFormatter;
 
 
 public class TestNode
@@ -18,8 +21,21 @@ public class TestNode
 	public static void main(String[] args)
 	{
 		Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
+		try
+		{
+			FileHandler fh = new FileHandler("TestNode.log");
+			fh.setFormatter(new FirebusSimpleFormatter());
+			fh.setLevel(Level.FINEST);
+			Logger logger = Logger.getLogger("com.nic.firebus");
+			logger.addHandler(fh);
+			logger.setLevel(Level.FINEST);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+
 		Node n = new Node();
-		//n.addKnownNodeAddress("54.252.238.59", 1990);
 		
 		if(args.length > 0)
 		{

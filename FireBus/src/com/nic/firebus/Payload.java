@@ -26,6 +26,32 @@ public class Payload
 		data = d;
 	}
 	
+	public byte[] serialise()
+	{
+		int len = 4;
+		if(!metadata.isEmpty())
+			len += metadata.toString().length();
+		if(data != null)
+			len += data.length;
+		ByteBuffer bb = ByteBuffer.allocate(len);
+		if(!metadata.isEmpty())
+		{
+			String metadataStr = metadata.toString();
+			bb.putInt(metadataStr.length());
+			bb.put(metadataStr.getBytes(), 0, metadataStr.length());
+		}
+		else
+		{
+			bb.putInt(0);
+		}
+
+		if(data != null)
+		{
+			bb.put(data);	
+		}
+		return  bb.array();
+	}
+	
 	public static Payload deserialise(byte[] encodedMessage)
 	{
 		if(encodedMessage != null  &&  encodedMessage.length > 0)
@@ -55,32 +81,6 @@ public class Payload
 		{
 			return null;
 		}
-	}
-	
-	public byte[] serialise()
-	{
-		int len = 4;
-		if(!metadata.isEmpty())
-			len += metadata.toString().length();
-		if(data != null)
-			len += data.length;
-		ByteBuffer bb = ByteBuffer.allocate(len);
-		if(!metadata.isEmpty())
-		{
-			String metadataStr = metadata.toString();
-			bb.putInt(metadataStr.length());
-			bb.put(metadataStr.getBytes(), 0, metadataStr.length());
-		}
-		else
-		{
-			bb.putInt(0);
-		}
-
-		if(data != null)
-		{
-			bb.put(data);	
-		}
-		return  bb.array();
 	}
 	
 	public String toString()

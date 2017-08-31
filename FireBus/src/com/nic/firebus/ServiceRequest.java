@@ -1,6 +1,5 @@
 package com.nic.firebus;
 
-import java.util.HashMap;
 import java.util.logging.Logger;
 
 import com.nic.firebus.exceptions.FunctionErrorException;

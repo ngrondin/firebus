@@ -5,13 +5,13 @@ import java.util.ArrayList;
 public class MessageQueue
 {
 	protected ArrayList<Message> messages;
-	protected ArrayList<Integer> processedHash;
+	protected ArrayList<Long> processedIds;
 	protected ArrayList<Long> processedTime;
 	
 	public MessageQueue()
 	{
 		messages = new ArrayList<Message>();
-		processedHash = new ArrayList<Integer>();
+		processedIds = new ArrayList<Long>();
 		processedTime = new ArrayList<Long>();
 	}
 	
@@ -20,14 +20,15 @@ public class MessageQueue
 		long ct = System.currentTimeMillis();
 		while(processedTime.size() > 0  &&  processedTime.get(0) < ct - 60000)
 		{
-			processedHash.remove(0);
+			processedIds.remove(0);
 			processedTime.remove(0);
 		}
 		
-		if(!processedHash.contains(m.hashCode()))
+		long Id = (((long)m.getOriginatorId()) << 32) | ((long)m.getid());
+		if(!processedIds.contains(Id))
 		{
 			messages.add(m);
-			processedHash.add(m.hashCode());
+			processedIds.add(Id);
 			processedTime.add(ct);
 		}
 	}

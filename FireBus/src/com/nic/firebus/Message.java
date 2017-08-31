@@ -74,8 +74,6 @@ public class Message
 		correlation = c;
 		subject = s;
 		payload = p;
-		//decoded = true;
-		//encoded = false;		
 	}
 	
 	public Message repeat()
@@ -104,7 +102,7 @@ public class Message
 			byte[] payloadBytes = new byte[bb.remaining()];
 			bb.get(payloadBytes);
 			Payload payload = Payload.deserialise(payloadBytes);
-			return new Message(messageId, destinationId, originatorId, flags, repeatCount + 1, repeatsLeft - 1, type, correlation, subject, payload);			
+			return new Message(messageId, destinationId, originatorId, flags, repeatCount, repeatsLeft, type, correlation, subject, payload);			
 		}
 		else
 		{
