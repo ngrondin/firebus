@@ -116,7 +116,7 @@ public class JSONList extends JSONEntity
 			return null;		
 	}
 	
-	public JSONObject getMap(int i)
+	public JSONObject getObject(int i)
 	{
 		JSONEntity obj = list.get(i);
 		if(obj != null  &&  obj instanceof JSONObject)

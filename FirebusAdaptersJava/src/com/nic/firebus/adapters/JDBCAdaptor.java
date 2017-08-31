@@ -6,26 +6,27 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import com.nic.firebus.Node;
 import com.nic.firebus.Payload;
+import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
+import com.nic.firebus.utils.JSONObject;
 
-public class JDBCAdaptor implements ServiceProvider, Consumer
+public class JDBCAdaptor extends FirebusAdapter  implements ServiceProvider, Consumer
 {
-	protected Node node;
 	protected String connStr;
 	protected Connection connection;
 	
-	public JDBCAdaptor(String fbn, String fbpw, String sn, String cs) throws SQLException
+	public JDBCAdaptor(Node n, JSONObject c) throws SQLException
 	{
-		connStr = cs;
-		node = new Node();
-		node.registerConsumer(new ConsumerInformation(sn), this, 10);
-		node.registerServiceProvider(new ServiceInformation(sn), this, 10);
+		super(n, c);
+		node.registerConsumer(new ConsumerInformation(config.getString("consumername")), this, 10);
+		node.registerServiceProvider(new ServiceInformation(config.getString("servicename")), this, 10);
 		connectJDBC();
 	}
 	
@@ -36,7 +37,7 @@ public class JDBCAdaptor implements ServiceProvider, Consumer
 			connection.close();
 			connection = null;
 		}
-        connection = DriverManager.getConnection(connStr);
+        connection = DriverManager.getConnection(config.getString("connectionstring"));
 	}
 
 	public void consume(Payload payload) 
@@ -53,7 +54,7 @@ public class JDBCAdaptor implements ServiceProvider, Consumer
 		}		
 	}
 
-	public Payload service(Payload payload) 
+	public Payload service(Payload payload) throws FunctionErrorException
 	{
 		StringBuilder sb = new StringBuilder();
 		String sqlStr = new String(payload.data);
@@ -89,22 +90,4 @@ public class JDBCAdaptor implements ServiceProvider, Consumer
 	}
 
 	
-	public static void main(String[] args)
-	{
-		if(args.length >= 4)
-		{
-			String firebusNetwork = args[0];
-			String firebusPassword = args[1];
-			String subjectName = args[2];
-			String jdbcString = args[3];
-			try 
-			{
-				new JDBCAdaptor(firebusNetwork, firebusPassword, subjectName, jdbcString);
-			} 
-			catch (SQLException e) 
-			{
-				e.printStackTrace();
-			}			
-		}
-	}
 }
