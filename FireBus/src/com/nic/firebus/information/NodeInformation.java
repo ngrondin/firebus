@@ -33,14 +33,6 @@ public class NodeInformation
 		unresponsive = false;
 	}
 
-	/*
-	public void setConnection(Connection c)
-	{
-		connection = c;
-		if(c != null)
-			unconnectable = false;
-	}
-	*/
 	public void setLastDiscoverySentTime(long t)
 	{
 		lastSentDiscovery = t;
@@ -63,7 +55,7 @@ public class NodeInformation
 	
 	public void addAddress(Address a)
 	{
-		if(!containsAddress(a))
+		if(a != null  &&  !containsAddress(a))
 			addresses.add(a);
 	}
 	
@@ -107,13 +99,6 @@ public class NodeInformation
 				return true;
 		return false;
 	}
-	
-	/*
-	public Connection getConnection()
-	{
-		return connection;
-	}
-	*/
 	
 	public long getLastDiscoverySentTime()
 	{

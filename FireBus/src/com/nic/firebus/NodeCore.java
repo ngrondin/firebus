@@ -142,7 +142,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 		int connectedId = c.getRemoteNodeId();
 		if(originatorId != nodeId)
 		{
-			logger.fine("Received Message");
+			logger.fine("Received Message from node " + c.getRemoteNodeId());
 			if(connectedId != originatorId)
 			{
 				NodeInformation originatorNode = directory.getOrCreateNodeInformation(originatorId);
@@ -202,10 +202,6 @@ public class NodeCore extends Thread implements DiscoveryListener
 			{
 				switch(msg.getType())
 				{
-					/*case Message.MSGTYPE_CONNECT:
-						directory.processStateMessage(new String(msg.getPayload()));
-						advertiseTo(msg.getOriginatorId());
-						break;*/
 					case Message.MSGTYPE_QUERYNODE:
 						processNodeInformationRequest(msg.getOriginatorId());
 						break;
@@ -214,9 +210,6 @@ public class NodeCore extends Thread implements DiscoveryListener
 						if(msg.getCorrelation() != 0)
 							correlationManager.receiveResponse(msg);
 						break;
-					/*case Message.MSGTYPE_FINDSERVICE:
-						processFindService(msg);
-						break;*/
 					case Message.MSGTYPE_REQUESTSERVICE:
 						processServiceRequest(msg);
 						break;
@@ -286,17 +279,6 @@ public class NodeCore extends Thread implements DiscoveryListener
 		logger.fine("Finished Processing Outbound Message");
 	}
 	
-	/*
-	protected void processFindService(Message msg)
-	{
-		if(functionManager.hasFunction(msg.getSubject()))
-		{
-			Message resp = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_NODEINFORMATION, msg.getSubject(), getNodeStateString().getBytes());
-			resp.setCorrelation(msg.getCorrelation());
-			outboundQueue.addMessage(resp);
-		}
-	}
-	*/
 	protected void processServiceRequest(Message msg)
 	{
 		try
@@ -316,6 +298,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 		FunctionInformation fi = functionManager.getFunctionInformation(msg.getSubject());
 		if(fi instanceof ServiceInformation)
 		{
+			logger.fine("Responding to a service information request");
 			ServiceInformation si = (ServiceInformation)fi;
 			Message outMsg = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_SERVICEINFORMATION, msg.getSubject(), new Payload(null, si.serialise()));
 			outMsg.setCorrelation(msg.getCorrelation());
@@ -338,6 +321,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 	
 	protected void processNodeInformationRequest(int destinationNodeId)
 	{
+		logger.fine("Responding to a node information request");
 		StringBuilder sb = new StringBuilder();
 		sb.append(connectionManager.getAddressStateString(nodeId));
 		sb.append(functionManager.getFunctionStateString(nodeId));
@@ -345,8 +329,6 @@ public class NodeCore extends Thread implements DiscoveryListener
 		Message msg = new Message(destinationNodeId, nodeId, Message.MSGTYPE_NODEINFORMATION, null, new Payload(null, sb.toString().getBytes()));
 		outboundQueue.addMessage(msg);
 	}
-	
-
 	
 	public void run()
 	{

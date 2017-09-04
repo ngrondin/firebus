@@ -50,14 +50,13 @@ public class Connection extends Thread
 	public Connection(Address a, String net, SecretKey k, int nid, int p, ConnectionListener cl) throws UnknownHostException, IOException, ConnectionException
 	{
 		socket = new Socket(a.getIPAddress(), a.getPort());
+		remoteAddress = a;
 		initialise(net, k, nid, p, cl);
 	}
 	
 	protected void initialise(String net, SecretKey k, int nid, int p, ConnectionListener cl) throws IOException, ConnectionException
 	{
 		logger.fine("Initialising Connection");
-		//nodeCore = nc;
-		//String networkName = net;
 		listener = cl;
 		
 		is = socket.getInputStream();
@@ -102,9 +101,16 @@ public class Connection extends Thread
 		InetAddress a = InetAddress.getByAddress(ab);
 		is.read(ab);
 		int remotePort = (ByteBuffer.wrap(ab)).getInt();
-		remoteAddress = new Address(a.getHostAddress(), remotePort);
+		Address advertisedRemoteAddress = new Address(a.getHostAddress(), remotePort);
+		if(remoteAddress == null)
+		{
+			if(advertisedRemoteAddress.getIPAddress().equals(socket.getInetAddress().getHostAddress()))
+			{
+				remoteAddress = advertisedRemoteAddress;
+			}
+		}
+		
 		logger.info("Established connection with node " + remoteNodeId + " at address " + remoteAddress);
-
 		quit = false;
 		msgState = 0;
 		setName("Firebus Connection");

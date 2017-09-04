@@ -174,7 +174,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	public Connection getConnectionByAddress(Address a)
 	{
 		for(int i = 0; i < connections.size(); i++)
-			if(connections.get(i).getRemoteAddress().equals(a))
+			if(connections.get(i).getRemoteAddress() != null  &&  connections.get(i).getRemoteAddress().equals(a))
 				return connections.get(i);
 		return null;
 		
