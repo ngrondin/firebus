@@ -1,7 +1,5 @@
 package com.nic.firebus.adapters;
 
-import java.util.Properties;
-
 import com.nic.firebus.Node;
 import com.nic.firebus.utils.JSONObject;
 
