@@ -1,5 +1,9 @@
 package com.nic.firebus.adapters;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.HashMap;
+
 import com.nic.firebus.Node;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
@@ -33,8 +37,23 @@ public class FileAdapter extends FirebusAdapter implements ServiceProvider, Cons
 
 	public Payload service(Payload payload) throws FunctionErrorException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		String fileName = new String(payload.data);
+		try
+		{
+			HashMap<String, String> metadata = new HashMap<String, String>();
+			File file = new File(path + "\\" + fileName);
+			FileInputStream fis = new FileInputStream(file);
+			metadata.put("filename", file.getName());
+			byte[] bytes = new byte[fis.available()];
+			fis.read(bytes);
+			fis.close();
+			Payload response = new Payload(metadata, bytes);
+			return response;
+		}
+		catch(Exception e)
+		{
+			throw new FunctionErrorException(e.getMessage());
+		}
 	}
 
 }
