@@ -16,12 +16,12 @@ import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.utils.JSONObject;
 
-public class JDBCAdaptor extends FirebusAdapter  implements ServiceProvider, Consumer
+public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 {
 	protected String connStr;
 	protected Connection connection;
 	
-	public JDBCAdaptor(Node n, JSONObject c) throws SQLException
+	public JDBCAdapter(Node n, JSONObject c) throws SQLException
 	{
 		super(n, c);
 		node.registerConsumer(new ConsumerInformation(config.getString("consumername")), this, 10);

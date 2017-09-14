@@ -20,6 +20,7 @@ public class FunctionWorker extends Thread
 		busFunction = f;
 		inboundMessage = im;
 		functionListener = fl;
+		setName("Firebus Function Worker");
 		start();
 	}
 	

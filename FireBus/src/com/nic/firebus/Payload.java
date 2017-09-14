@@ -83,6 +83,26 @@ public class Payload
 		}
 	}
 	
+	public byte[] getBytes()
+	{
+		return data;
+	}
+	
+	public String getString()
+	{
+		return new String(data);
+	}
+	
+	public void setData(byte[] bytes)
+	{
+		data = bytes;
+	}
+	
+	public void setData(String s)
+	{
+		data = s.getBytes();
+	}
+	
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();

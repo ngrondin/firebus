@@ -70,4 +70,9 @@ public class Node
 	{
 		nodeCore.publish(dataname, payload);
 	}
+	
+	public void close()
+	{
+		nodeCore.close();
+	}
 }

@@ -72,6 +72,19 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		start();		
 	}
 
+	public void close()
+	{
+		try
+		{
+			quit = true;
+			server.close();
+		}
+		catch(Exception e)
+		{
+			logger.severe(e.getMessage());
+		}
+	}
+	
 	public void run()
 	{
 		while(!quit)
@@ -88,7 +101,6 @@ public class ConnectionManager extends Thread implements ConnectionListener
 			} 
 			catch (Exception e) 
 			{
-				e.printStackTrace();
 				logger.severe(e.getMessage());
 			}
 		}

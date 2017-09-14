@@ -32,7 +32,6 @@ public class DiscoveryManager extends Thread
 		nodeCore = nc;
 		nodeId = id;
 		networkName = n;
-		//address = a;
 		connectionsPort = p;
 		quit = false;
 		try
@@ -60,6 +59,19 @@ public class DiscoveryManager extends Thread
 
 		setName("Firebus Discovery Manager");
 		start();
+	}
+	
+	public void close()
+	{
+		try
+		{
+			quit = true;
+			socket.close();
+		}
+		catch(Exception e)
+		{
+			logger.severe(e.getMessage());
+		}
 	}
 	
 	public void run()
@@ -102,7 +114,7 @@ public class DiscoveryManager extends Thread
 			}
 			catch (IOException e) 
 			{
-				e.printStackTrace();
+				logger.severe(e.getMessage());
 			}
 		}
 		socket.close();

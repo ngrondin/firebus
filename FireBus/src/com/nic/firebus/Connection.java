@@ -139,30 +139,33 @@ public class Connection extends Thread
 				if(msgState == 0)
 				{
 					if(i == 0x7E)
+					{
+						msgLen = 0;
+						msgPos = 0;
 						msgState = 1;
+					}
 				}
 				else if(msgState == 1)
 				{
-					msgLen = i;
-					msgState = 2;
+					msgLen |= i << (8 * msgPos);
+					msgPos++;
+					if(msgPos == 4)
+					{
+						msg = new byte[msgLen];
+						msgPos = 0;
+						msgCRC = 0;
+						msgState = 2;
+					}
 				}
 				else if(msgState == 2)
-				{
-					msgLen += (256 * i);
-					msgState = 3;
-					msgPos = 0;
-					msgCRC = 0;
-					msg = new byte[msgLen];
-				}
-				else if(msgState == 3)
 				{
 					msg[msgPos] = (byte)i;
 					msgCRC = (msgCRC ^ i) & 0x00FF;
 					msgPos++;
 					if(msgPos == msgLen)
-						msgState = 4;
+						msgState = 3;
 				}
-				else if(msgState == 4)
+				else if(msgState == 3)
 				{
 					if(i == msgCRC)
 					{
@@ -187,8 +190,10 @@ public class Connection extends Thread
 		{
 			byte[] bytes = msg.serialise();
 			os.write(0x7E);
-			os.write(bytes.length & 0x00FF);
-			os.write((bytes.length >> 8) & 0x00FF);
+			os.write(bytes.length & 0x000000FF);
+			os.write((bytes.length >> 8) & 0x000000FF);
+			os.write((bytes.length >> 16) & 0x000000FF);
+			os.write((bytes.length >> 24) & 0x000000FF);
 			os.write(bytes);
 			os.write(msg.getCRC());
 			os.flush();

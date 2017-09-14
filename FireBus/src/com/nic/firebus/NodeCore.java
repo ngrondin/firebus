@@ -81,6 +81,13 @@ public class NodeCore extends Thread implements DiscoveryListener
 		}
 	}
 	
+	public void close()
+	{
+		connectionManager.close();
+		discoveryManager.close();
+		quit = true;
+	}
+	
 	public int getNodeId()
 	{
 		return nodeId;

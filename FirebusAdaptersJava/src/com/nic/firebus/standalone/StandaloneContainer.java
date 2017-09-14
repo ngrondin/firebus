@@ -1,7 +1,10 @@
-package com.nic.firebus.adapters;
+package com.nic.firebus.standalone;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,10 +16,22 @@ import com.nic.firebus.utils.JSONObject;
 
 public class StandaloneContainer
 {
+	private Logger logger = Logger.getLogger("com.nic.firebus.standalone");
 	protected Node node;
 
 	public StandaloneContainer(JSONObject config)
 	{
+		Properties adapterClasses = new Properties();
+		try
+		{
+			InputStream is = getClass().getResourceAsStream("/com/nic/firebus/adapters/AdapterClasses.properties");
+			adapterClasses.load(is);
+		}
+		catch(IOException e)
+		{
+			logger.severe(e.getMessage());
+		}
+		
 		node = new Node(config.getString("network"), config.getString("password"));
 		JSONList knownAddresses = config.getList("knownaddresses");
 		for(int i = 0; i < knownAddresses.size(); i++)
@@ -31,11 +46,19 @@ public class StandaloneContainer
 		{
 			try 
 			{
-				String className = adapters.getObject(i).getString("class");
+				String type = adapters.getObject(i).getString("type");
 				JSONObject adapterConfig = adapters.getObject(i).getObject("config");
-				Class<?> c = Class.forName(className);
-				Constructor<?> cons = c.getConstructor(new Class[]{Node.class, JSONObject.class});
-				cons.newInstance(new Object[]{node, adapterConfig});
+				String className = adapterClasses.getProperty(type);
+				if(className != null  &&  adapterConfig != null)
+				{
+					Class<?> c = Class.forName(className);
+					Constructor<?> cons = c.getConstructor(new Class[]{Node.class, JSONObject.class});
+					cons.newInstance(new Object[]{node, adapterConfig});
+				}
+				else
+				{
+					logger.severe("Adapter of type " + type + " has no defined class or has no configuration");
+				}
 			}
 			catch(Exception e)
 			{

@@ -6,8 +6,6 @@ import java.nio.ByteBuffer;
 public class Message 
 {
 	protected byte[] encodedMessage;
-	//protected boolean decoded;
-	//protected boolean encoded;
 	protected short version;
 	protected int messageId;
 	protected int originatorId;
