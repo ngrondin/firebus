@@ -2,37 +2,44 @@ package com.nic.firebus.adapters;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import com.nic.firebus.Node;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
-import com.nic.firebus.information.ConsumerInformation;
-import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.utils.JSONObject;
 
-public class FileAdapter extends FirebusAdapter implements ServiceProvider, Consumer
+public class FileAdapter extends Adapter implements ServiceProvider, Consumer
 {
+	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
 	protected String path;
 	
 	public FileAdapter(Node n, JSONObject c)
 	{
 		super(n, c);
 		path = config.getString("path");
-		String consumerName = config.getString("consumername");
-		String serviceName = config.getString("servicename");
-		if(consumerName != null)
-			node.registerConsumer(new ConsumerInformation(consumerName), this, 10);
-		if(serviceName != null)
-			node.registerServiceProvider(new ServiceInformation(serviceName), this, 10);
 	}
 
 	public void consume(Payload payload)
 	{
-		// TODO Auto-generated method stub
-		
+		try
+		{
+			String fileName = payload.metadata.get("filename");
+			if(fileName == null)
+				fileName = "firebusfile.txt";
+			File file = new File(path + File.separator + fileName);
+			FileOutputStream fos = new FileOutputStream(file);
+			fos.write(payload.data);
+			fos.close();
+		}
+		catch(Exception e)
+		{
+			logger.severe(e.getMessage());
+		}
 	}
 
 	public Payload service(Payload payload) throws FunctionErrorException
@@ -41,12 +48,28 @@ public class FileAdapter extends FirebusAdapter implements ServiceProvider, Cons
 		try
 		{
 			HashMap<String, String> metadata = new HashMap<String, String>();
-			File file = new File(path + "\\" + fileName);
-			FileInputStream fis = new FileInputStream(file);
-			metadata.put("filename", file.getName());
-			byte[] bytes = new byte[fis.available()];
-			fis.read(bytes);
-			fis.close();
+			File file = new File(path + File.separator + fileName);
+			byte[] bytes = null;
+			if(!file.isDirectory())
+			{
+				FileInputStream fis = new FileInputStream(file);
+				metadata.put("filename", file.getName());
+				bytes = new byte[fis.available()];
+				fis.read(bytes);
+				fis.close();
+			}
+			else
+			{
+				StringBuilder sb = new StringBuilder();
+				String[] list = file.list();
+				for(int i = 0; i < list.length; i++)
+				{
+					if(i > 0)
+						sb.append("\r\n");
+					sb.append(list[i]);
+				}
+				bytes = sb.toString().getBytes();
+			}
 			Payload response = new Payload(metadata, bytes);
 			return response;
 		}

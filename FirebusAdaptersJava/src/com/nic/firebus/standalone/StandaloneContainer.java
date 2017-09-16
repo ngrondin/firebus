@@ -10,6 +10,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.nic.firebus.Node;
+import com.nic.firebus.Payload;
+import com.nic.firebus.distributables.DistributableService;
+import com.nic.firebus.information.ConsumerInformation;
+import com.nic.firebus.information.ServiceInformation;
+import com.nic.firebus.interfaces.BusFunction;
+import com.nic.firebus.interfaces.Consumer;
+import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.logging.FirebusSimpleFormatter;
 import com.nic.firebus.utils.JSONList;
 import com.nic.firebus.utils.JSONObject;
@@ -34,11 +41,14 @@ public class StandaloneContainer
 		
 		node = new Node(config.getString("network"), config.getString("password"));
 		JSONList knownAddresses = config.getList("knownaddresses");
-		for(int i = 0; i < knownAddresses.size(); i++)
+		if(knownAddresses != null)
 		{
-			String address = knownAddresses.getObject(i).getString("address");
-			int port = Integer.parseInt(knownAddresses.getObject(i).getString("port"));
-			node.addKnownNodeAddress(address, port);
+			for(int i = 0; i < knownAddresses.size(); i++)
+			{
+				String address = knownAddresses.getObject(i).getString("address");
+				int port = Integer.parseInt(knownAddresses.getObject(i).getString("port"));
+				node.addKnownNodeAddress(address, port);
+			}
 		}
 		
 		JSONList adapters = config.getList("adapters");
@@ -46,25 +56,69 @@ public class StandaloneContainer
 		{
 			try 
 			{
-				String type = adapters.getObject(i).getString("type");
-				JSONObject adapterConfig = adapters.getObject(i).getObject("config");
+				JSONObject adapter = adapters.getObject(i); 
+				String type = adapter.getString("type");
+				String serviceName = adapter.getString("servicename");
+				String consumerName = adapter.getString("consumername");
+				JSONObject adapterConfig = adapter.getObject("config");
 				String className = adapterClasses.getProperty(type);
-				if(className != null  &&  adapterConfig != null)
+				if(className != null)
 				{
-					Class<?> c = Class.forName(className);
-					Constructor<?> cons = c.getConstructor(new Class[]{Node.class, JSONObject.class});
-					cons.newInstance(new Object[]{node, adapterConfig});
+					try
+					{
+						Class<?> c = Class.forName(className);
+						Constructor<?> cons = c.getConstructor(new Class[]{Node.class, JSONObject.class});
+						if(adapterConfig != null)
+						{
+							BusFunction func = (BusFunction)cons.newInstance(new Object[]{node, adapterConfig});
+							if(serviceName != null  &&  func instanceof ServiceProvider)
+								node.registerServiceProvider(new ServiceInformation(serviceName), ((ServiceProvider)func), 10);
+							if(consumerName != null  &&  func instanceof Consumer)
+								node.registerConsumer(new ConsumerInformation(consumerName), ((Consumer)func), 10);
+						}
+						else
+						{
+							logger.severe("No configuration has been defined for adapter " + type);
+						}
+					}
+					catch(Exception e)
+					{
+						logger.severe("Class " + className + " cannot be found in the classpath");
+					}
 				}
 				else
 				{
-					logger.severe("Adapter of type " + type + " has no defined class or has no configuration");
+					logger.severe("Adapter of type " + type + " does not have a defined class");
 				}
 			}
 			catch(Exception e)
 			{
-				e.printStackTrace();
+				logger.severe(e.getMessage());
 			}
 		}
+		
+		JSONList services = config.getList("distributableservices");
+		if(services != null)
+		{
+			for(int i = 0; i < services.size(); i++)
+			{
+				String serviceName = services.getString(i);
+				Payload request = new Payload(serviceName.getBytes());
+				try
+				{
+					Payload response = node.requestService("firebus_distributable_services_source", request);
+					JSONObject serviceConfig = new JSONObject(response.getString());
+					String type = serviceConfig.getString("type");
+					DistributableService service = DistributableService.instantiate(node, type, serviceConfig.getObject("config"));
+					node.registerServiceProvider(new ServiceInformation(serviceName), service, 10);
+				}
+				catch(Exception e)
+				{
+					logger.severe(e.getMessage());
+				}
+			}
+		}
+
 	}
 	
 	public static void main(String[] args)

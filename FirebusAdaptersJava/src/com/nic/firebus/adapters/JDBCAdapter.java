@@ -10,8 +10,6 @@ import java.sql.SQLException;
 import com.nic.firebus.Node;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
-import com.nic.firebus.information.ConsumerInformation;
-import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.utils.JSONObject;
@@ -24,8 +22,6 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	public JDBCAdapter(Node n, JSONObject c) throws SQLException
 	{
 		super(n, c);
-		node.registerConsumer(new ConsumerInformation(config.getString("consumername")), this, 10);
-		node.registerServiceProvider(new ServiceInformation(config.getString("servicename")), this, 10);
 		connectJDBC();
 	}
 	

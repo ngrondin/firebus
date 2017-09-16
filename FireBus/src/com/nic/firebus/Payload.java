@@ -11,6 +11,12 @@ public class Payload
 	public byte[] data;
 	public HashMap<String, String> metadata;
 
+	public Payload()
+	{
+		metadata = new HashMap<String, String>();
+		data = new byte[0];
+	}
+
 	public Payload(byte[] d)
 	{
 		metadata = new HashMap<String, String>();

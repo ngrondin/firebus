@@ -1,6 +1,5 @@
-package com.nic.firebus.adapters;
+package com.nic.firebus.distributables;
 
-import java.util.HashMap;
 import java.util.logging.Logger;
 
 import javax.script.Bindings;
@@ -12,17 +11,16 @@ import javax.script.ScriptException;
 import com.nic.firebus.Node;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
-import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.utils.JSONObject;
 
-public class ScriptedAdapter extends Adapter implements ServiceProvider
+public class ScriptedService extends DistributableService
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
+	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected String script;
 	protected ScriptEngine js;
 	protected Bindings bindings;
-	
-	public ScriptedAdapter(Node n, JSONObject c) 
+
+	public ScriptedService(Node n, JSONObject c)
 	{
 		super(n, c);
 		script = c.getString("source");
@@ -32,8 +30,7 @@ public class ScriptedAdapter extends Adapter implements ServiceProvider
 
 	public Payload service(Payload payload) throws FunctionErrorException
 	{
-		HashMap<String, String> metadata = new HashMap<String, String>();
-		Payload response = new Payload(metadata, null);
+		Payload response = new Payload();
 		bindings.put("request", payload);
 		bindings.put("response", response);
 		try
@@ -46,7 +43,5 @@ public class ScriptedAdapter extends Adapter implements ServiceProvider
 		}
 		return response;
 	}
-	
-	
 
 }

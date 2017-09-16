@@ -1,9 +1,11 @@
 package com.nic.firebus;
 
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class MessageQueue
 {
+	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected ArrayList<Message> messages;
 	protected ArrayList<Long> processedIds;
 	protected ArrayList<Long> processedTime;
@@ -30,6 +32,10 @@ public class MessageQueue
 			messages.add(m);
 			processedIds.add(Id);
 			processedTime.add(ct);
+		}
+		else
+		{
+			logger.fine("Dropped echo message");
 		}
 	}
 	

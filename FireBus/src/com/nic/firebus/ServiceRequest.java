@@ -14,6 +14,7 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected CorrelationManager correlationManager;
 	protected Directory directory;
+	protected FunctionManager functionManager;
 	protected int nodeId;
 	protected String serviceName;
 	protected Payload requestPayload;
@@ -23,7 +24,7 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 	protected Payload responsePayload;
 	protected String errorMessage;
 	
-	public ServiceRequest(String n, Payload p, int t, ServiceRequestor r, CorrelationManager cm, Directory d, int nid)
+	public ServiceRequest(String n, Payload p, int t, ServiceRequestor r, CorrelationManager cm, Directory d, FunctionManager fm, int nid)
 	{
 		serviceName = n;
 		requestPayload = p;
@@ -32,6 +33,7 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 		nodeId = nid;
 		correlationManager = cm;
 		directory = d;
+		functionManager = fm;
 		responsePayload = null;
 		errorMessage = null;
 		start();
@@ -99,15 +101,25 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 					//TODO Set the node as temporarily unavailable
 				}
 				
-				NodeInformation ni = directory.findServiceProvider(serviceName);
-				if(ni == null)
+				int serviceProviderNodeId = 0;
+				if(functionManager.hasFunction(serviceName))
+					serviceProviderNodeId = nodeId;
+
+				if(serviceProviderNodeId == 0)
+				{
+					NodeInformation ni = directory.findServiceProvider(serviceName);
+					if(ni != null)
+						serviceProviderNodeId = ni.getNodeId();
+				}
+				
+				if(serviceProviderNodeId == 0)
 				{
 					new InformationRequest(serviceName, 2000, this, correlationManager, directory, nodeId);
 				}
 				else
 				{
 					logger.info("Requesting Service");
-					Message msg = new Message(ni.getNodeId(), nodeId, Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
+					Message msg = new Message(serviceProviderNodeId, nodeId, Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
 					correlationManager.asynchronousCall(msg, this, timeout);
 				}
 			}

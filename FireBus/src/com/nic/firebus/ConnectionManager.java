@@ -78,6 +78,8 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		{
 			quit = true;
 			server.close();
+			for(int i = 0; i < connections.size(); i++)
+				connections.get(i).close();
 		}
 		catch(Exception e)
 		{
@@ -134,7 +136,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	
 	public Connection obtainConnectionForNode(NodeInformation ni) 
 	{
-		logger.fine("Obtaining Connection for Node");
+		logger.fine("Obtaining connection for node " + ni.getNodeId());
 		Connection c = getConnectionByNodeId(ni.getNodeId());
 		if(c == null)
 		{
@@ -194,6 +196,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	
 	public void broadcastToAllConnections(Message msg)
 	{
+		logger.fine("Broadcasting message to all connections");
 		for(int i = 0; i < connections.size(); i++)
 		{
 			connections.get(i).sendMessage(msg);

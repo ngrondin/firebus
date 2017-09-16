@@ -122,13 +122,13 @@ public class NodeCore extends Thread implements DiscoveryListener
 		
 	public Payload requestService(String serviceName, Payload payload, int timeout)  throws FunctionErrorException
 	{
-		ServiceRequest request = new ServiceRequest(serviceName, payload, timeout, null, correlationManager, directory, nodeId);
+		ServiceRequest request = new ServiceRequest(serviceName, payload, timeout, null, correlationManager, directory, functionManager, nodeId);
 		return request.waitForResponse();
 	}		
 
 	public void requestService(String serviceName, Payload payload, int timeout, ServiceRequestor requestor)
 	{
-		new ServiceRequest(serviceName, payload, timeout, requestor, correlationManager, directory, nodeId);
+		new ServiceRequest(serviceName, payload, timeout, requestor, correlationManager, directory, functionManager, nodeId);
 	}	
 	
 	public void publish(String dataname, Payload payload)
@@ -149,13 +149,17 @@ public class NodeCore extends Thread implements DiscoveryListener
 		int connectedId = c.getRemoteNodeId();
 		if(originatorId != nodeId)
 		{
-			logger.fine("Received Message from node " + c.getRemoteNodeId());
+			logger.fine("Received message from node " + c.getRemoteNodeId());
 			if(connectedId != originatorId)
 			{
 				NodeInformation originatorNode = directory.getOrCreateNodeInformation(originatorId);
 				originatorNode.addRepeater(connectedId);
 			}
 			inboundQueue.addMessage(m);
+		}
+		else
+		{
+			logger.fine("Blocked message from self");
 		}
 	}
 
@@ -203,47 +207,44 @@ public class NodeCore extends Thread implements DiscoveryListener
 		Message msg = inboundQueue.getNextMessage();
 		logger.finest("****Inbound****************\r\n" + msg);
 		
-		if(msg.getOriginatorId() != nodeId)
+		if(msg.getDestinationId() == 0  ||  msg.getDestinationId() == nodeId)
 		{
-			if(msg.getDestinationId() == 0  ||  msg.getDestinationId() == nodeId)
+			switch(msg.getType())
 			{
-				switch(msg.getType())
-				{
-					case Message.MSGTYPE_QUERYNODE:
-						processNodeInformationRequest(msg.getOriginatorId());
-						break;
-					case Message.MSGTYPE_NODEINFORMATION:
-						directory.processNodeInformation(new String(msg.getPayload().data));
-						if(msg.getCorrelation() != 0)
-							correlationManager.receiveResponse(msg);
-						break;
-					case Message.MSGTYPE_REQUESTSERVICE:
-						processServiceRequest(msg);
-						break;
-					case Message.MSGTYPE_GETFUNCTIONINFORMATION:
-						processServiceInformationRequest(msg);
-						break;
-					case Message.MSGTYPE_SERVICERESPONSE:
+				case Message.MSGTYPE_QUERYNODE:
+					processNodeInformationRequest(msg.getOriginatorId());
+					break;
+				case Message.MSGTYPE_NODEINFORMATION:
+					directory.processNodeInformation(new String(msg.getPayload().data));
+					if(msg.getCorrelation() != 0)
 						correlationManager.receiveResponse(msg);
-						break;
-					case Message.MSGTYPE_SERVICEERROR:
-						correlationManager.receiveResponse(msg);
-						break;
-					case Message.MSGTYPE_SERVICEUNAVAILABLE:
-						correlationManager.receiveResponse(msg);
-						break;
-					case Message.MSGTYPE_SERVICEINFORMATION:
-						directory.processServiceInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload().data);
-						correlationManager.receiveResponse(msg);
-						break;
-					case Message.MSGTYPE_PUBLISH:
-						processPublish(msg);
-				}
+					break;
+				case Message.MSGTYPE_REQUESTSERVICE:
+					processServiceRequest(msg);
+					break;
+				case Message.MSGTYPE_GETFUNCTIONINFORMATION:
+					processServiceInformationRequest(msg);
+					break;
+				case Message.MSGTYPE_SERVICERESPONSE:
+					correlationManager.receiveResponse(msg);
+					break;
+				case Message.MSGTYPE_SERVICEERROR:
+					correlationManager.receiveResponse(msg);
+					break;
+				case Message.MSGTYPE_SERVICEUNAVAILABLE:
+					correlationManager.receiveResponse(msg);
+					break;
+				case Message.MSGTYPE_SERVICEINFORMATION:
+					directory.processServiceInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload().data);
+					correlationManager.receiveResponse(msg);
+					break;
+				case Message.MSGTYPE_PUBLISH:
+					processPublish(msg);
 			}
 			
 			if(msg.getDestinationId() == 0  ||  msg.getDestinationId() != nodeId)
 			{
-				if(msg.getRepeatCount() > 0)
+				if(msg.getRepeatsLeft() > 0)
 					outboundQueue.addMessage(msg.repeat());
 			}			
 		}
@@ -257,30 +258,37 @@ public class NodeCore extends Thread implements DiscoveryListener
 		logger.fine("Processing Outbound Message");
 		Message msg = outboundQueue.getNextMessage();
 		logger.finest("****Oubound**************\r\n" + msg);
-		Connection c = null;//msg.getConnection();
+		Connection c = null;
 		int destinationNodeId = msg.getDestinationId();
-		if(destinationNodeId != 0)
+		if(destinationNodeId == nodeId)
 		{
-			NodeInformation ni = directory.getNodeById(destinationNodeId);
-			if(ni != null)
-			{
-				c = connectionManager.obtainConnectionForNode(ni);
-				if(c == null)
-				{
-					int rpt = ni.getRandomRepeater();
-					if(rpt != 0)
-					{
-						ni = directory.getNodeById(rpt);
-						c = connectionManager.obtainConnectionForNode(ni);
-					}
-				}							
-			}
+			inboundQueue.addMessage(msg);
 		}
-
-		if(c == null)
-			connectionManager.broadcastToAllConnections(msg);
 		else
-			c.sendMessage(msg);
+		{
+			if(destinationNodeId != 0)
+			{
+				NodeInformation ni = directory.getNodeById(destinationNodeId);
+				if(ni != null)
+				{
+					c = connectionManager.obtainConnectionForNode(ni);
+					if(c == null)
+					{
+						int rpt = ni.getRandomRepeater();
+						if(rpt != 0)
+						{
+							ni = directory.getNodeById(rpt);
+							c = connectionManager.obtainConnectionForNode(ni);
+						}
+					}							
+				}
+			}
+
+			if(c == null)
+				connectionManager.broadcastToAllConnections(msg);
+			else
+				c.sendMessage(msg);
+		}
 		
 		outboundQueue.deleteNextMessage();
 		logger.fine("Finished Processing Outbound Message");

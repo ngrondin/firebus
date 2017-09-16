@@ -1,6 +1,7 @@
 package com.nic.firebus.utils;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,8 +20,18 @@ public class JSONObject extends JSONEntity
 	{
 		attributes = new HashMap<String, JSONEntity>();
 	}
-	
+
+	public JSONObject(String s)
+	{
+		initialise(new ByteArrayInputStream(s.getBytes()));
+	}
+
 	public JSONObject(InputStream is)
+	{
+		initialise(is);
+	}
+	
+	public void initialise(InputStream is)
 	{
 		attributes = new HashMap<String, JSONEntity>();
 		boolean inString = false;

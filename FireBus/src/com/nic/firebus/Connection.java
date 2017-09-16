@@ -173,6 +173,10 @@ public class Connection extends Thread
 						if(listener != null)
 							listener.messageReceived(message, this);
 					}
+					else
+					{
+						logger.fine("Received corrupted message from connection " + getId() + " from node id " + remoteNodeId);
+					}
 					msgState = 0;
 				}
 			} 
@@ -200,16 +204,16 @@ public class Connection extends Thread
 		}
 		catch(Exception e)
 		{
-			e.printStackTrace();
+			logger.severe(e.getMessage());
 		}
+		logger.fine("Sent message on connection " + this.getId() + " to remote node " + remoteNodeId);
 	}
 	
 	public void close()
 	{
-		
-		quit = true;
 		try 
 		{
+			quit = true;
 			socket.close();
 		} 
 		catch (IOException e) 
