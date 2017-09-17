@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-import com.nic.firebus.Node;
+import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.interfaces.ServiceProvider;
@@ -19,7 +19,7 @@ public class DistributableServiceStorageAdapter extends Adapter implements Servi
 	protected String path;
 
 
-	public DistributableServiceStorageAdapter(Node n, JSONObject c)
+	public DistributableServiceStorageAdapter(Firebus n, JSONObject c)
 	{
 		super(n, c);
 		serviceConfigs = new HashMap<String, JSONObject>();

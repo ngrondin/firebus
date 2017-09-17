@@ -9,7 +9,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.nic.firebus.Node;
+import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.distributables.DistributableService;
 import com.nic.firebus.information.ConsumerInformation;
@@ -24,7 +24,7 @@ import com.nic.firebus.utils.JSONObject;
 public class StandaloneContainer
 {
 	private Logger logger = Logger.getLogger("com.nic.firebus.standalone");
-	protected Node node;
+	protected Firebus node;
 
 	public StandaloneContainer(JSONObject config)
 	{
@@ -39,7 +39,7 @@ public class StandaloneContainer
 			logger.severe(e.getMessage());
 		}
 		
-		node = new Node(config.getString("network"), config.getString("password"));
+		node = new Firebus(config.getString("network"), config.getString("password"));
 		JSONList knownAddresses = config.getList("knownaddresses");
 		if(knownAddresses != null)
 		{
@@ -67,7 +67,7 @@ public class StandaloneContainer
 					try
 					{
 						Class<?> c = Class.forName(className);
-						Constructor<?> cons = c.getConstructor(new Class[]{Node.class, JSONObject.class});
+						Constructor<?> cons = c.getConstructor(new Class[]{Firebus.class, JSONObject.class});
 						if(adapterConfig != null)
 						{
 							BusFunction func = (BusFunction)cons.newInstance(new Object[]{node, adapterConfig});

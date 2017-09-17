@@ -9,7 +9,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import com.nic.firebus.Node;
+import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.interfaces.ServiceProvider;
@@ -22,7 +22,7 @@ public class ScriptedAdapter extends Adapter implements ServiceProvider
 	protected ScriptEngine js;
 	protected Bindings bindings;
 	
-	public ScriptedAdapter(Node n, JSONObject c) 
+	public ScriptedAdapter(Firebus n, JSONObject c) 
 	{
 		super(n, c);
 		script = c.getString("source");

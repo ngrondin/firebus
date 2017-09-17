@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-import com.nic.firebus.Node;
+import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.interfaces.Consumer;
@@ -19,7 +19,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	protected String connStr;
 	protected Connection connection;
 	
-	public JDBCAdapter(Node n, JSONObject c) throws SQLException
+	public JDBCAdapter(Firebus n, JSONObject c) throws SQLException
 	{
 		super(n, c);
 		connectJDBC();
