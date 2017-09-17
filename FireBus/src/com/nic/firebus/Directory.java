@@ -136,7 +136,7 @@ public class Directory
 	}
 
 	
-	protected void processServiceInformation(int nodeId, String serviceName, byte[] payoad)
+	public void processServiceInformation(int nodeId, String serviceName, byte[] payoad)
 	{
 		NodeInformation ni = getOrCreateNodeInformation(nodeId);
 		ServiceInformation si = ni.getServiceInformation(serviceName);

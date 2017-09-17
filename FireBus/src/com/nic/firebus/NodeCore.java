@@ -7,16 +7,11 @@ import java.util.logging.Logger;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.exceptions.FunctionUnavailableException;
-import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.FunctionInformation;
 import com.nic.firebus.information.NodeInformation;
 import com.nic.firebus.information.ServiceInformation;
-import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.DiscoveryListener;
-import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.interfaces.ServiceRequestor;
 
 public class NodeCore extends Thread implements DiscoveryListener
 {
@@ -66,6 +61,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 			inboundQueue = new MessageQueue();
 			outboundQueue = new MessageQueue();
 			directory = new Directory();
+			directory.getOrCreateNodeInformation(nodeId);
 			connectionManager = new ConnectionManager(this, nodeId, networkName,  new SecretKeySpec(pw.getBytes(), "AES"), port);
 			discoveryManager = new DiscoveryManager(this, nodeId, networkName, connectionManager.getPort());
 			functionManager = new FunctionManager(this);
@@ -98,46 +94,27 @@ public class NodeCore extends Thread implements DiscoveryListener
 		return networkName;
 	}
 	
+	public Directory getDirectory()
+	{
+		return directory;
+	}
+
+	public FunctionManager getFunctionManager()
+	{
+		return functionManager;
+	}
+	
+	public CorrelationManager getCorrelationManager()
+	{
+		return correlationManager;
+	}
+	
 	public void addKnownNodeAddress(String a, int p)
 	{
 		Address address = new Address(a, p);
 		knownAddresses.add(address);
 	}
-	
-	public void registerServiceProvider(ServiceInformation serviceInformation, ServiceProvider serviceProvider, int maxConcurrent)
-	{
-		functionManager.addFunction(serviceInformation, serviceProvider, maxConcurrent);
-	}
-	
-	public void registerConsumer(ConsumerInformation consumerInfomation, Consumer consumer, int maxConcurrent)
-	{
-		functionManager.addFunction(consumerInfomation, consumer, maxConcurrent);
-	}
-	
-	public ServiceInformation getServiceInformation(String functionName, int timeout)
-	{
-		InformationRequest ir = new InformationRequest(functionName, timeout, null, correlationManager, directory, nodeId);
-		return ir.waitForResponse();
-	}
 		
-	public Payload requestService(String serviceName, Payload payload, int timeout)  throws FunctionErrorException
-	{
-		ServiceRequest request = new ServiceRequest(serviceName, payload, timeout, null, correlationManager, directory, functionManager, nodeId);
-		return request.waitForResponse();
-	}		
-
-	public void requestService(String serviceName, Payload payload, int timeout, ServiceRequestor requestor)
-	{
-		new ServiceRequest(serviceName, payload, timeout, requestor, correlationManager, directory, functionManager, nodeId);
-	}	
-	
-	public void publish(String dataname, Payload payload)
-	{
-		logger.info("Publishing");
-		Message msg = new Message(0, nodeId, Message.MSGTYPE_PUBLISH, dataname, payload);
-		outboundQueue.addMessage(msg);
-	}
-	
 	public void sendMessage(Message msg)
 	{
 		outboundQueue.addMessage(msg);
@@ -260,11 +237,14 @@ public class NodeCore extends Thread implements DiscoveryListener
 		logger.finest("****Oubound**************\r\n" + msg);
 		Connection c = null;
 		int destinationNodeId = msg.getDestinationId();
-		if(destinationNodeId == nodeId)
+		int originatorNodeId = msg.getOriginatorId();
+		
+		if(destinationNodeId == nodeId  ||  (destinationNodeId == 0  &&  originatorNodeId == nodeId))
 		{
 			inboundQueue.addMessage(msg);
 		}
-		else
+
+		if(destinationNodeId != nodeId  ||  destinationNodeId == 0)
 		{
 			if(destinationNodeId != 0)
 			{
@@ -310,7 +290,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 
 	protected void processServiceInformationRequest(Message msg)
 	{
-		FunctionInformation fi = functionManager.getFunctionInformation(msg.getSubject());
+		FunctionInformation fi = functionManager.getServiceInformation(msg.getSubject());
 		if(fi instanceof ServiceInformation)
 		{
 			logger.fine("Responding to a service information request");

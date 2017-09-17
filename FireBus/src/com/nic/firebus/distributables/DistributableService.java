@@ -6,7 +6,7 @@ import java.lang.reflect.Constructor;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import com.nic.firebus.Node;
+import com.nic.firebus.Firebus;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.utils.JSONObject;
 
@@ -14,16 +14,16 @@ public abstract class DistributableService implements ServiceProvider
 {
 	protected static Properties serviceClasses;
 
-	protected Node node;
+	protected Firebus node;
 	protected JSONObject config;
 	
-	public DistributableService(Node n, JSONObject c)
+	public DistributableService(Firebus n, JSONObject c)
 	{
 		node = n;
 		config = c;
 	}
 
-	public static DistributableService instantiate(Node node, String type, JSONObject config)
+	public static DistributableService instantiate(Firebus node, String type, JSONObject config)
 	{
 		Logger logger = Logger.getLogger("com.nic.firebus");
 		DistributableService service = null;
@@ -49,7 +49,7 @@ public abstract class DistributableService implements ServiceProvider
 			try
 			{
 				Class<?> c = Class.forName(className);
-				Constructor<?> cons = c.getConstructor(new Class[]{Node.class, JSONObject.class});
+				Constructor<?> cons = c.getConstructor(new Class[]{Firebus.class, JSONObject.class});
 				if(config != null)
 				{
 					service = (DistributableService)cons.newInstance(new Object[]{node, config});

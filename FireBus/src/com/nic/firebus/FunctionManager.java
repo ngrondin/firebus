@@ -6,7 +6,9 @@ import java.util.logging.Logger;
 
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.exceptions.FunctionUnavailableException;
+import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.FunctionInformation;
+import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.BusFunction;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.FunctionListener;
@@ -17,16 +19,26 @@ public class FunctionManager implements FunctionListener
 {
 	protected class FunctionEntry
 	{
-		protected FunctionInformation functionInformation;
+		protected ServiceInformation serviceInformation;
+		protected ConsumerInformation consumerInformation;
 		protected BusFunction function;
 		protected int maxConcurrent;
 		protected int currentCount;
 		
-		public FunctionEntry(FunctionInformation fi, BusFunction f, int mc)
+		public FunctionEntry(BusFunction f, int mc)
 		{
-			functionInformation = fi;
 			function = f;
 			maxConcurrent = mc;
+		}
+		
+		public void setServiceInformation(ServiceInformation si)
+		{
+			serviceInformation = si;
+		}
+		
+		public void setConsumerInformation(ConsumerInformation ci)
+		{
+			consumerInformation = ci;
 		}
 	}
 	
@@ -42,8 +54,17 @@ public class FunctionManager implements FunctionListener
 	
 	public void addFunction(FunctionInformation fi, BusFunction f, int mc)
 	{
-		FunctionEntry e = new FunctionEntry(fi, f, mc);
-		functions.put(fi.getName(), e);
+		String functionName = fi.getName();
+		FunctionEntry e = functions.get(functionName);
+		if(e == null)
+		{
+			e = new FunctionEntry(f, mc);
+			functions.put(fi.getName(), e);
+		}
+		if(fi instanceof ServiceInformation)
+			e.setServiceInformation((ServiceInformation)fi);
+		else
+			e.setConsumerInformation((ConsumerInformation)fi);
 	}
 	
 	public boolean hasFunction(String n)
@@ -72,10 +93,10 @@ public class FunctionManager implements FunctionListener
 		return sb.toString();
 	}
 	
-	public FunctionInformation getFunctionInformation(String functionName)
+	public ServiceInformation getServiceInformation(String functionName)
 	{
 		if(functions.containsKey(functionName))
-			return functions.get(functionName).functionInformation;
+			return functions.get(functionName).serviceInformation;
 		else
 			return null;
 	}

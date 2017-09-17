@@ -5,7 +5,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.nic.firebus.Node;
+import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ConsumerInformation;
@@ -35,7 +35,7 @@ public class TestNode
 			e.printStackTrace();
 		}
 
-		Node n = new Node();
+		Firebus n = new Firebus();
 		
 		if(args.length > 0)
 		{

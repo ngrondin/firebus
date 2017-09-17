@@ -4,18 +4,12 @@ import java.util.logging.Logger;
 
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.NodeInformation;
-import com.nic.firebus.information.ServiceInformation;
-import com.nic.firebus.interfaces.CorrelationListener;
-import com.nic.firebus.interfaces.InformationRequestor;
 import com.nic.firebus.interfaces.ServiceRequestor;
 
-public class ServiceRequest implements CorrelationListener, InformationRequestor
+public class ServiceRequest extends Thread
 {
 	private Logger logger = Logger.getLogger("com.nic.firebus");
-	protected CorrelationManager correlationManager;
-	protected Directory directory;
-	protected FunctionManager functionManager;
-	protected int nodeId;
+	protected NodeCore nodeCore;
 	protected String serviceName;
 	protected Payload requestPayload;
 	protected int timeout;
@@ -23,109 +17,58 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 	protected ServiceRequestor requestor;
 	protected Payload responsePayload;
 	protected String errorMessage;
-	
-	public ServiceRequest(String n, Payload p, int t, ServiceRequestor r, CorrelationManager cm, Directory d, FunctionManager fm, int nid)
+
+	public ServiceRequest(NodeCore nc, String sn, Payload p, int t, ServiceRequestor r)
 	{
-		serviceName = n;
+		nodeCore = nc;
+		serviceName = sn;
 		requestPayload = p;
 		timeout = t;
 		requestor = r;
-		nodeId = nid;
-		correlationManager = cm;
-		directory = d;
-		functionManager = fm;
 		responsePayload = null;
 		errorMessage = null;
+		expiry = System.currentTimeMillis() + timeout + 2000;
 		start();
 	}
-
-	public void correlatedResponseReceived(Message outMsg, Message inMsg) 
-	{
-		process(inMsg);
-	}
 	
-	public void correlationTimedout(Message outMsg)
+	public void run()
 	{
-		logger.fine("Setting node as unresponsive");
-		NodeInformation ni = directory.getNodeById(outMsg.getDestinationId());
-		if(ni != null)
-			ni.setUnresponsive();
-		process(null);
-	}
-	
-	public void informationRequestCallback(ServiceInformation si)
-	{
-		process(null);
-	}
-
-	public void informationRequestTimeout()
-	{
-		process(null);
-	}
-
-	protected void start()
-	{
-		expiry = System.currentTimeMillis() + timeout + 2000;
-		process(null);
-	}
-	
-	protected void process(Message inMsg)
-	{
-		if(System.currentTimeMillis() > expiry)
+		int serviceProviderId = 0;
+		/*
+		if(nodeCore.getFunctionManager().hasFunction(serviceName))
 		{
-			logger.fine("Service request has expired without receiving a response");
-			if(requestor != null)
-				requestor.requestTimeout();
+			serviceProviderId = nodeCore.getNodeId();
 		}
 		else
-		{
-			if(inMsg != null  &&  inMsg.getType() == Message.MSGTYPE_SERVICERESPONSE)
+		{*/
+			NodeInformation ni = nodeCore.getDirectory().findServiceProvider(serviceName);
+			if(ni == null)
 			{
-				logger.fine("Returning Service Response");
-				responsePayload = inMsg.getPayload();
-				if(requestor != null)
-					requestor.requestCallback(responsePayload);
-			}
-			else if(inMsg != null  &&  inMsg.getType() == Message.MSGTYPE_SERVICEERROR)
-			{
-				logger.fine("Returning Service Error");
-				errorMessage = new String(inMsg.getPayload().data);
-				if(requestor != null)
-					requestor.requestErrorCallback(new FunctionErrorException(errorMessage));
-			}
+				logger.fine("Broadcasting Service Information Request Message");
+				Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, serviceName, null);
+				Message respMsg = nodeCore.getCorrelationManager().synchronousCall(findMsg, timeout);
+				if(respMsg != null)
+				{
+					serviceProviderId = respMsg.getOriginatorId();
+				}
+			}	
 			else
 			{
-				if(inMsg != null  &&  inMsg.getType() == Message.MSGTYPE_SERVICEUNAVAILABLE)
-				{
-					logger.fine("No Response Received from Service Request");
-					//TODO Set the node as temporarily unavailable
-				}
-				
-				int serviceProviderNodeId = 0;
-				if(functionManager.hasFunction(serviceName))
-					serviceProviderNodeId = nodeId;
-
-				if(serviceProviderNodeId == 0)
-				{
-					NodeInformation ni = directory.findServiceProvider(serviceName);
-					if(ni != null)
-						serviceProviderNodeId = ni.getNodeId();
-				}
-				
-				if(serviceProviderNodeId == 0)
-				{
-					new InformationRequest(serviceName, 2000, this, correlationManager, directory, nodeId);
-				}
-				else
-				{
-					logger.info("Requesting Service");
-					Message msg = new Message(serviceProviderNodeId, nodeId, Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
-					correlationManager.asynchronousCall(msg, this, timeout);
-				}
+				serviceProviderId = ni.getNodeId();
 			}
-		}
-	}
+		//}
 
+		if(serviceProviderId != 0)
+		{
+			logger.info("Requesting Service");
+			Message msg = new Message(serviceProviderId, nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
+			Message resp = nodeCore.getCorrelationManager().synchronousCall(msg, timeout);
+			if(resp != null)
+				responsePayload = resp.getPayload();
+		}
+
+	}
+	
 	public Payload waitForResponse() throws FunctionErrorException
 	{
 		while(responsePayload == null  &&  errorMessage == null  &&  System.currentTimeMillis() < expiry)
@@ -136,6 +79,5 @@ public class ServiceRequest implements CorrelationListener, InformationRequestor
 		else
 			throw new FunctionErrorException(errorMessage);
 	}
-
 
 }

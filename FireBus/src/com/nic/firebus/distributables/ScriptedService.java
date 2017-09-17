@@ -8,7 +8,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import com.nic.firebus.Node;
+import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.utils.JSONObject;
@@ -20,7 +20,7 @@ public class ScriptedService extends DistributableService
 	protected ScriptEngine js;
 	protected Bindings bindings;
 
-	public ScriptedService(Node n, JSONObject c)
+	public ScriptedService(Firebus n, JSONObject c)
 	{
 		super(n, c);
 		script = c.getString("source");
