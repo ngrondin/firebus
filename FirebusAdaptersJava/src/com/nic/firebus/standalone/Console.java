@@ -176,7 +176,7 @@ public class Console implements ServiceRequestor
 		{
 			Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
 			Logger logger = Logger.getLogger("com.nic.firebus");
-			FileHandler fh = new FileHandler("FirebusStandaloneContainer.log");
+			FileHandler fh = new FileHandler("Console.log");
 			fh.setFormatter(new FirebusSimpleFormatter());
 			fh.setLevel(Level.FINEST);
 			logger.addHandler(fh);
