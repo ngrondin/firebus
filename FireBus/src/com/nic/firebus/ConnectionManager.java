@@ -108,7 +108,6 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		}
 	}
 	
-
 	public void connectionCreated(Connection c)
 	{
 		nodeCore.nodeDiscovered(c.getRemoteNodeId(), c.getRemoteAddress());
@@ -117,7 +116,6 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	public void messageReceived(Message m, Connection c)
 	{
 		nodeCore.messageReceived(m, c);
-		
 	}
 
 	public void connectionClosed(Connection c)

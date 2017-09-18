@@ -16,7 +16,7 @@ public class JSONList extends JSONEntity
 		list = new ArrayList<JSONEntity>();
 	}
 	
-	public JSONList(InputStream is)
+	public JSONList(InputStream is) throws JSONException
 	{
 		list = new ArrayList<JSONEntity>();
 		int cInt = -1;

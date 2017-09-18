@@ -61,7 +61,6 @@ public class NodeCore extends Thread implements DiscoveryListener
 			inboundQueue = new MessageQueue();
 			outboundQueue = new MessageQueue();
 			directory = new Directory();
-			directory.getOrCreateNodeInformation(nodeId);
 			connectionManager = new ConnectionManager(this, nodeId, networkName,  new SecretKeySpec(pw.getBytes(), "AES"), port);
 			discoveryManager = new DiscoveryManager(this, nodeId, networkName, connectionManager.getPort());
 			functionManager = new FunctionManager(this);
@@ -170,7 +169,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 			else if(i2 < directory.getNodeCount())
 			{
 				NodeInformation ni = directory.getNode(i2);
-				if(connectionManager.getConnectionByNodeId(ni.getNodeId()) == null  &&  !ni.isUnconnectable())
+				if(connectionManager.getConnectionByNodeId(ni.getNodeId()) == null  &&  ni.getAddressCount() > 0  &&  !ni.isUnconnectable())
 					connectionManager.obtainConnectionForNode(ni);
 				i2++;
 			}

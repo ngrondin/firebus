@@ -21,17 +21,24 @@ public class JSONObject extends JSONEntity
 		attributes = new HashMap<String, JSONEntity>();
 	}
 
-	public JSONObject(String s)
+	public JSONObject(String s) throws JSONException
 	{
-		initialise(new ByteArrayInputStream(s.getBytes()));
+		try
+		{
+			initialise(new ByteArrayInputStream(s.getBytes()));
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
-	public JSONObject(InputStream is)
+	public JSONObject(InputStream is) throws IOException, JSONException
 	{
 		initialise(is);
 	}
 	
-	public void initialise(InputStream is)
+	protected void initialise(InputStream is) throws IOException, JSONException
 	{
 		attributes = new HashMap<String, JSONEntity>();
 		boolean inString = false;
@@ -47,47 +54,44 @@ public class JSONObject extends JSONEntity
 		else
 			bis = new BufferedInputStream(is);
 		
-		try
+		while(c == ' '  && c != -1)
+			c = (char)bis.read();
+		
+		if(c == '{')
 		{
-			while(c == ' '  && c != -1)
-				c = (char)bis.read();
-			
-			if(c == '{')
+			while((cInt = bis.read()) != -1)
 			{
-				while((cInt = bis.read()) != -1)
+				c = (char)cInt;
+				if(c == '\"')
 				{
-					c = (char)cInt;
-					if(c == '\"')
-					{
-						if(inString)
-							inString = false;
-						else
-							inString = true;
-					}
-					else if(c == ':'  &&   !inString)
-					{
-						value = readJSONValue(bis);
-						inValueName = false;
-					}
-					else if((c == ',' || c == '}')  && !inString)
-					{
-						attributes.put(valueName.trim(), value);
-						valueName = "";
-						value = null;
-						inValueName = true;
-						if(c == '}')
-							break;
-					}			
-					else if(inValueName)
-					{
-						valueName += c;
-					}
+					if(inString)
+						inString = false;
+					else
+						inString = true;
 				}
-			}					
-		}
-		catch(IOException e)
+				else if(c == ':'  &&  !inString)
+				{
+					value = readJSONValue(bis);
+					inValueName = false;
+				}
+				else if((c == ',' || c == '}')  && !inString)
+				{
+					attributes.put(valueName.trim(), value);
+					valueName = "";
+					value = null;
+					inValueName = true;
+					if(c == '}')
+						break;
+				}			
+				else if(inValueName)
+				{
+					valueName += c;
+				}
+			}
+		}	
+		else
 		{
-	
+			throw new JSONException("Expecting {");
 		}
 	}
 	

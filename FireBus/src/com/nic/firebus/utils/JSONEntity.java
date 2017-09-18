@@ -7,7 +7,7 @@ import java.io.InputStream;
 public abstract class JSONEntity
 {
 	
-	protected JSONEntity readJSONValue(InputStream is) throws IOException
+	protected JSONEntity readJSONValue(InputStream is) throws IOException, JSONException
 	{
 		boolean inString = false;
 		String valueString = "";
