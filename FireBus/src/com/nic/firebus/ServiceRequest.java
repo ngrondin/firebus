@@ -27,20 +27,14 @@ public class ServiceRequest extends Thread
 		requestor = r;
 		responsePayload = null;
 		errorMessage = null;
-		expiry = System.currentTimeMillis() + timeout + 2000;
+		expiry = System.currentTimeMillis() + timeout;
 		start();
 	}
 	
 	public void run()
 	{
-		int serviceProviderId = 0;
-		/*
-		if(nodeCore.getFunctionManager().hasFunction(serviceName))
+		while(responsePayload == null  &&  System.currentTimeMillis() < expiry)
 		{
-			serviceProviderId = nodeCore.getNodeId();
-		}
-		else
-		{*/
 			NodeInformation ni = nodeCore.getDirectory().findServiceProvider(serviceName);
 			if(ni == null)
 			{
@@ -49,24 +43,25 @@ public class ServiceRequest extends Thread
 				Message respMsg = nodeCore.getCorrelationManager().synchronousCall(findMsg, timeout);
 				if(respMsg != null)
 				{
-					serviceProviderId = respMsg.getOriginatorId();
+					ni = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId());
 				}
 			}	
-			else
+
+			if(ni != null)
 			{
-				serviceProviderId = ni.getNodeId();
-			}
-		//}
-
-		if(serviceProviderId != 0)
-		{
-			logger.info("Requesting Service");
-			Message msg = new Message(serviceProviderId, nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
-			Message resp = nodeCore.getCorrelationManager().synchronousCall(msg, timeout);
-			if(resp != null)
-				responsePayload = resp.getPayload();
+				logger.info("Requesting Service");
+				Message msg = new Message(ni.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
+				Message resp = nodeCore.getCorrelationManager().synchronousCall(msg, timeout);
+				if(resp != null)
+				{
+					responsePayload = resp.getPayload();
+				}
+				else
+				{
+					nodeCore.getDirectory().deleteNode(ni);
+				}
+			}			
 		}
-
 	}
 	
 	public Payload waitForResponse() throws FunctionErrorException

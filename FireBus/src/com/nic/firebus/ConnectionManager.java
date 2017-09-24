@@ -120,7 +120,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 
 	public void connectionClosed(Connection c)
 	{
-		logger.info("Connection Closed");
+		logger.info("Connection " + c.getId() + " Closed");
 		removeConnection(c);
 	}
 	
@@ -158,7 +158,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		}
 		else
 		{
-			logger.fine("Connection retreived");
+			logger.fine("Connection retreived " + c.getId());
 		}
 		
 		return c;

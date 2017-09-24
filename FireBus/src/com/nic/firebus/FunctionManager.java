@@ -4,44 +4,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-import com.nic.firebus.exceptions.FunctionErrorException;
-import com.nic.firebus.exceptions.FunctionUnavailableException;
-import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.FunctionInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.BusFunction;
 import com.nic.firebus.interfaces.Consumer;
-import com.nic.firebus.interfaces.FunctionListener;
 import com.nic.firebus.interfaces.Publisher;
 import com.nic.firebus.interfaces.ServiceProvider;
 
-public class FunctionManager implements FunctionListener
+public class FunctionManager
 {
-	protected class FunctionEntry
-	{
-		protected ServiceInformation serviceInformation;
-		protected ConsumerInformation consumerInformation;
-		protected BusFunction function;
-		protected int maxConcurrent;
-		protected int currentCount;
-		
-		public FunctionEntry(BusFunction f, int mc)
-		{
-			function = f;
-			maxConcurrent = mc;
-		}
-		
-		public void setServiceInformation(ServiceInformation si)
-		{
-			serviceInformation = si;
-		}
-		
-		public void setConsumerInformation(ConsumerInformation ci)
-		{
-			consumerInformation = ci;
-		}
-	}
-	
 	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected NodeCore nodeCore;
 	protected HashMap<String, FunctionEntry> functions;
@@ -52,19 +23,15 @@ public class FunctionManager implements FunctionListener
 		functions = new HashMap<String, FunctionEntry>();
 	}
 	
-	public void addFunction(FunctionInformation fi, BusFunction f, int mc)
+	public void addFunction(String functionName, BusFunction f, int mc)
 	{
-		String functionName = fi.getName();
+		logger.fine("Adding function to node : " + functionName);
 		FunctionEntry e = functions.get(functionName);
 		if(e == null)
 		{
-			e = new FunctionEntry(f, mc);
-			functions.put(fi.getName(), e);
+			e = new FunctionEntry(functionName, f, mc);
+			functions.put(functionName, e);
 		}
-		if(fi instanceof ServiceInformation)
-			e.setServiceInformation((ServiceInformation)fi);
-		else
-			e.setConsumerInformation((ConsumerInformation)fi);
 	}
 	
 	public boolean hasFunction(String n)
@@ -93,63 +60,56 @@ public class FunctionManager implements FunctionListener
 		return sb.toString();
 	}
 	
+	public void processServiceInformationRequest(Message msg)
+	{
+		FunctionInformation fi = getServiceInformation(msg.getSubject());
+		if(fi instanceof ServiceInformation)
+		{
+			logger.fine("Responding to a service information request");
+			ServiceInformation si = (ServiceInformation)fi;
+			Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEINFORMATION, msg.getSubject(), new Payload(si.serialise()));
+			outMsg.setCorrelation(msg.getCorrelation());
+			nodeCore.sendMessage(outMsg);
+		}
+	}
+	
 	public ServiceInformation getServiceInformation(String functionName)
 	{
 		if(functions.containsKey(functionName))
-			return functions.get(functionName).serviceInformation;
-		else
-			return null;
+		{
+			BusFunction f = functions.get(functionName).function;
+			if(f instanceof ServiceProvider)
+				return ((ServiceProvider)f).getServiceInformation();
+		}
+		return null;
 	}
 	
-	public void executeFunction(Message msg) throws FunctionUnavailableException
+	public void executeFunction(Message msg)
 	{
 		logger.fine("Executing Function");
 		String functionName = msg.getSubject();
 		FunctionEntry fe = functions.get(functionName);
 		if(fe != null)
 		{
-			BusFunction f = fe.function;
-			if(fe.currentCount < fe.maxConcurrent)
+			if(fe.canRunOneMore())
 			{
-				new FunctionWorker(f, msg, this);
-				fe.currentCount++;
+				new FunctionWorker(fe, msg, nodeCore);
 			}
 			else
 			{
-				throw new FunctionUnavailableException("Maximum concurrent functions running");
+				Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEUNAVAILABLE, msg.getSubject(),new Payload(null,  "Maximum concurrent functions running".getBytes()));
+				outMsg.setCorrelation(msg.getCorrelation());
+				nodeCore.sendMessage(outMsg);
 			}
 		}	
 		else
 		{
-			throw new FunctionUnavailableException("No such function registered in this node");
+			Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEUNAVAILABLE, msg.getSubject(),new Payload(null,  "No such function registered in this node".getBytes()));
+			outMsg.setCorrelation(msg.getCorrelation());
+			nodeCore.sendMessage(outMsg);
 		}
 	}
 	
-	public void functionCallback(Message inboundMessage, Payload payload)
-	{
-		logger.fine("Function Returned");
-		String functionName = inboundMessage.getSubject();
-		FunctionEntry fe = functions.get(functionName);
-		if(fe != null)
-			fe.currentCount--;
-
-		Message msg = new Message(inboundMessage.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, inboundMessage.getSubject(), payload);
-		msg.setCorrelation(inboundMessage.getCorrelation());
-		nodeCore.sendMessage(msg);
-	}
-	
-	public void functionErrorCallback(Message inboundMessage, FunctionErrorException error) 
-	{
-		String functionName = inboundMessage.getSubject();
-		FunctionEntry fe = functions.get(functionName);
-		if(fe != null)
-			fe.currentCount--;
-
-		Message msg = new Message(inboundMessage.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEERROR, inboundMessage.getSubject(), new Payload(null, error.getMessage().getBytes()));
-		msg.setCorrelation(inboundMessage.getCorrelation());
-		nodeCore.sendMessage(msg);
-	}
-
 
 	public String toString()
 	{

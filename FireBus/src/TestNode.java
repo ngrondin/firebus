@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
-import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
@@ -56,7 +55,7 @@ public class TestNode
 							{
 								ServiceInformation si = n.getServiceInformation(functionName);
 								if(si != null)
-									System.out.println(si.toLongString());
+									System.out.println(si.toString());
 							}
 							else if(parts[0].equals("req"))
 							{
@@ -101,8 +100,7 @@ public class TestNode
 				if(args.length > 2)
 				{
 					final String prefix = args[2];
-					ServiceInformation si = new ServiceInformation(args[1], "text/plain", "{request:String}", "text/plain", "{response:String}");
-					n.registerServiceProvider(si, new ServiceProvider() {
+					n.registerServiceProvider(args[1], new ServiceProvider() {
 						public Payload service(Payload payload) throws FunctionErrorException
 						{
 							System.out.println("Providing Service");
@@ -112,6 +110,11 @@ public class TestNode
 								throw new FunctionErrorException("this is my error");
 							else
 								return new Payload(null,  (prefix + " " + new String(payload.data)).getBytes());
+						}
+
+						public ServiceInformation getServiceInformation()
+						{
+							return  new ServiceInformation("text/plain", "{request:String}", "text/plain", "{response:String}");
 						}
 					}, 2);
 					System.out.println("Service Provider Registered");
@@ -123,7 +126,7 @@ public class TestNode
 			{
 				if(args.length > 1)
 				{
-					n.registerConsumer(new ConsumerInformation(args[1]), new Consumer(){
+					n.registerConsumer(args[1], new Consumer(){
 						public void consume(Payload payload)
 						{
 							System.out.println(new String(payload.data));

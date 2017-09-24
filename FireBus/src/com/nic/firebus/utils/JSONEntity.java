@@ -1,6 +1,5 @@
 package com.nic.firebus.utils;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -9,57 +8,32 @@ public abstract class JSONEntity
 	
 	protected JSONEntity readJSONValue(InputStream is) throws IOException, JSONException
 	{
-		boolean inString = false;
-		String valueString = "";
 		JSONEntity value = null;				
 		int cInt = -1;
 		
-		BufferedInputStream bis = null;
-		if(is instanceof BufferedInputStream)
-			bis = (BufferedInputStream)is;
+		PositionTrackingInputStream bis = null;
+		if(is instanceof PositionTrackingInputStream)
+			bis = (PositionTrackingInputStream)is;
 		else
-			bis = new BufferedInputStream(is);
+			bis = new PositionTrackingInputStream(is);
 
 		bis.mark(1);
 		while((cInt = bis.read()) != -1)
 		{
 			char c = (char)cInt;
-			if(c == '\"')
-			{
-				if(inString)
-					inString = false;
-				else
-					inString = true;
-			}
-			else if((c == ',' || c == ']' || c == '}')  && !inString)
+			if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
 			{
 				bis.reset();
-				if(value == null)
-					value = new JSONLiteral(valueString.trim());
+				if(c == '{')
+					value = new JSONObject(bis);
+				else if(c == '[')
+					value = new JSONList(bis);
+				else
+					value = new JSONLiteral(bis);
 				break;
 			}
-			else
-			{
-				if(!inString)
-				{
-					if(c == '{')
-					{
-						bis.reset();
-						value = new JSONObject(bis);
-						break;
-					}
-					else if(c == '[')
-					{
-						bis.reset();
-						value = new JSONList(bis);
-						break;
-					}
-				}
-				valueString += c;
-			}
 			bis.mark(1);
-		}
-				
+		}				
 		return value;
 	}
 		

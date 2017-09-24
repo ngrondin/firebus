@@ -1,6 +1,5 @@
 package com.nic.firebus.utils;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,9 +7,6 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
-
-
-
 
 public class JSONObject extends JSONEntity
 {
@@ -42,57 +38,116 @@ public class JSONObject extends JSONEntity
 	{
 		attributes = new HashMap<String, JSONEntity>();
 		boolean inString = false;
-		boolean inValueName = true;
-		String valueName = "";
+		boolean correctlyClosed = false;
+		String key = "";
 		JSONEntity value = null;				
 		int cInt = -1;
 		char c = ' ';
+		int readState = 0; 
 		
-		BufferedInputStream bis = null;
-		if(is instanceof BufferedInputStream)
-			bis = (BufferedInputStream)is;
+		PositionTrackingInputStream bis = null;
+		if(is instanceof PositionTrackingInputStream)
+			bis = (PositionTrackingInputStream)is;
 		else
-			bis = new BufferedInputStream(is);
+			bis = new PositionTrackingInputStream(is);
 		
-		while(c == ' '  && c != -1)
-			c = (char)bis.read();
-		
-		if(c == '{')
+		while((cInt = bis.read()) != -1)
 		{
-			while((cInt = bis.read()) != -1)
+			c = (char)cInt;
+			if(readState == 0) // Before opening bracket
 			{
-				c = (char)cInt;
-				if(c == '\"')
+				if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
 				{
-					if(inString)
-						inString = false;
+					if(c == '{')
+						readState = 1;
 					else
+						throw new JSONException("Expected '{' at line " + bis.getLine() + " column " + bis.getColumn());
+				}				
+			}
+			else if(readState == 1) // Before key
+			{
+				if(c == '{' || c == '}' || c == '[' || c == ']' || c == ',')
+				{
+					throw new JSONException("Expected a new key at line " + bis.getLine() + " column " + bis.getColumn());
+				}
+				if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
+				{
+					readState = 2;
+					key = "";
+					if(c == '"')
 						inString = true;
+					else
+						key += c;
+				}					
+			}
+			else if(readState == 2) // In key
+			{
+				if(inString)
+				{
+					if(c == '"')
+					{
+						inString = false;
+						readState = 3;
+					}
+					else
+					{
+						key += c;
+					}
 				}
-				else if(c == ':'  &&  !inString)
+				else
 				{
-					value = readJSONValue(bis);
-					inValueName = false;
-				}
-				else if((c == ',' || c == '}')  && !inString)
-				{
-					attributes.put(valueName.trim(), value);
-					valueName = "";
-					value = null;
-					inValueName = true;
-					if(c == '}')
-						break;
-				}			
-				else if(inValueName)
-				{
-					valueName += c;
+					if(c == ' ' || c == '\r' || c == '\n' || c == '\t')
+					{
+						readState = 3;
+					}
+					else if(c == ':')
+					{
+						value = readJSONValue(bis);
+						readState = 4;
+					}
+					else if(c == '"')
+					{
+						throw new JSONException("Illegal character at line " + bis.getLine() + " column " + bis.getColumn());
+					}
+					else
+					{
+						key += c;
+					}
 				}
 			}
-		}	
-		else
-		{
-			throw new JSONException("Expecting {");
+			else if(readState == 3) // After Key
+			{
+				if(c == ':')
+				{
+					value = readJSONValue(bis);
+					readState = 4;
+				}
+				else if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
+				{
+					throw new JSONException("Expected ':' at line " + bis.getLine() + " column " + bis.getColumn());
+				}
+			}
+			else if(readState == 4) // After value
+			{
+				if(c == ','  ||  c == '}')
+				{
+					attributes.put(key, value);
+					if(c == '}')
+					{
+						correctlyClosed = true;
+						break;
+					}
+					else
+						readState = 1;
+				}
+				else if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
+				{
+					throw new JSONException("Expected '}' at line " + bis.getLine() + " column " + bis.getColumn());
+				}
+			}
 		}
+		if(!correctlyClosed)
+			throw new JSONException("Missing '}' as line " + bis.getLine() + " column " + bis.getColumn());
 	}
 	
 	public void write(OutputStream os)

@@ -6,7 +6,7 @@ import java.lang.reflect.Constructor;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import com.nic.firebus.Firebus;
+import com.nic.firebus.NodeCore;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.utils.JSONObject;
 
@@ -14,16 +14,30 @@ public abstract class DistributableService implements ServiceProvider
 {
 	protected static Properties serviceClasses;
 
-	protected Firebus node;
+	protected NodeCore nodeCore;
 	protected JSONObject config;
+	protected long expiry;
 	
-	public DistributableService(Firebus n, JSONObject c)
+	public DistributableService(NodeCore nc, JSONObject c)
 	{
-		node = n;
+		nodeCore = nc;
 		config = c;
+		expiry = System.currentTimeMillis() + 315360000000L;
+		if(config.get("expires") != null)
+			setValidityTime(Integer.parseInt(config.getString("expires")));
+	}
+	
+	public void setValidityTime(int v)
+	{
+		expiry = System.currentTimeMillis() + (1000 * v);
+	}
+	
+	public boolean isExpired()
+	{
+		return System.currentTimeMillis() > expiry;
 	}
 
-	public static DistributableService instantiate(Firebus node, String type, JSONObject config)
+	public static DistributableService instantiate(NodeCore nodeCore, String type, JSONObject config)
 	{
 		Logger logger = Logger.getLogger("com.nic.firebus");
 		DistributableService service = null;
@@ -49,10 +63,10 @@ public abstract class DistributableService implements ServiceProvider
 			try
 			{
 				Class<?> c = Class.forName(className);
-				Constructor<?> cons = c.getConstructor(new Class[]{Firebus.class, JSONObject.class});
+				Constructor<?> cons = c.getConstructor(new Class[]{NodeCore.class, JSONObject.class});
 				if(config != null)
 				{
-					service = (DistributableService)cons.newInstance(new Object[]{node, config});
+					service = (DistributableService)cons.newInstance(new Object[]{nodeCore, config});
 				}
 				else
 				{

@@ -116,7 +116,7 @@ public class Directory
 						ServiceInformation si = ni.getServiceInformation(serviceName);
 						if(si == null)
 							si = new ServiceInformation(serviceName);
-						ni.addServiceInformation(si);
+						ni.addServiceInformation(serviceName, si);
 					}
 					else if(functionType.equals("c"))
 					{
@@ -124,7 +124,7 @@ public class Directory
 						ConsumerInformation ci = ni.getConsumerInformation(consumerName);
 						if(ci == null)
 							ci = new ConsumerInformation(consumerName);
-						ni.addConsumerInformation(ci);
+						ni.addConsumerInformation(consumerName, ci);
 					}
 				}
 			}
@@ -143,7 +143,7 @@ public class Directory
 		if(si == null)
 		{
 			si = new ServiceInformation(serviceName);
-			ni.addServiceInformation(si);
+			ni.addServiceInformation(serviceName, si);
 		}
 		si.deserialise(payoad);
 	}
@@ -166,12 +166,11 @@ public class Directory
 		for(int i = 0; i < nodes.size(); i++)
 		{
 			NodeInformation ni = nodes.get(i);
-			//Connection c = ni.getConnection();
 			sb.append(nodeId + ",d," + ni.getNodeId() + ",\r\n");
 			for(int j = 0; j < ni.getAddressCount(); j++)
 			{
 				Address a = ni.getAddress(j);
-				sb.append(nodeId + ",d," + ni.getNodeId() + "a" + a.getIPAddress() + "," + a.getPort() + "\r\n");
+				sb.append(nodeId + ",d," + ni.getNodeId() + ",a," + a.getIPAddress() + "," + a.getPort() + "\r\n");
 			}
 		}
 		return sb.toString();

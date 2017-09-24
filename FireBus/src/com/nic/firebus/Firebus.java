@@ -3,7 +3,6 @@ package com.nic.firebus;
 import java.util.logging.Logger;
 
 import com.nic.firebus.exceptions.FunctionErrorException;
-import com.nic.firebus.information.ConsumerInformation;
 import com.nic.firebus.information.NodeInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
@@ -34,40 +33,48 @@ public class Firebus
 	{
 		nodeCore = new NodeCore(p, network, password);
 	}
+	
+	public Firebus(NodeCore nc)
+	{
+		nodeCore = nc;
+	}
 
 	public void addKnownNodeAddress(String a, int p)
 	{
 		nodeCore.addKnownNodeAddress(a, p);
 	}
 	
-	public void registerServiceProvider(ServiceInformation serviceInformation, ServiceProvider serviceProvider, int maxConcurrent)
+	public void registerServiceProvider(String serviceName, ServiceProvider serviceProvider, int maxConcurrent)
 	{
-		nodeCore.getFunctionManager().addFunction(serviceInformation, serviceProvider, maxConcurrent);
+		nodeCore.getFunctionManager().addFunction(serviceName, serviceProvider, maxConcurrent);
 	}
 	
-	public void registerConsumer(ConsumerInformation consumerInfomation, Consumer consumer, int maxConcurrent)
+	public void registerConsumer(String consumerName, Consumer consumer, int maxConcurrent)
 	{
-		nodeCore.getFunctionManager().addFunction(consumerInfomation, consumer, maxConcurrent);
+		nodeCore.getFunctionManager().addFunction(consumerName, consumer, maxConcurrent);
+	}
+	
+	public NodeInformation getNodeInformation(int nodeId)
+	{
+		logger.fine("Sending Node Information Request Message");
+		Message queryMsg = new Message(nodeId, nodeCore.getNodeId(), Message.MSGTYPE_QUERYNODE, null, null);
+		Message respMsg = nodeCore.getCorrelationManager().synchronousCall(queryMsg, 2000);
+		if(respMsg != null)
+			return nodeCore.getDirectory().getNodeById(nodeId);
+		return null;
 	}
 	
 	public ServiceInformation getServiceInformation(String serviceName)
 	{
 		ServiceInformation si = null;
-		if(nodeCore.getFunctionManager().hasFunction(serviceName))
+		NodeInformation ni = nodeCore.getDirectory().findServiceProvider(serviceName);
+		if(ni == null)
 		{
-			si = nodeCore.getFunctionManager().getServiceInformation(serviceName);
-		}
-		else
-		{
-			NodeInformation ni = nodeCore.getDirectory().findServiceProvider(serviceName);
-			if(ni == null)
-			{
-				logger.fine("Broadcasting Service Information Request Message");
-				Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, serviceName, null);
-				Message respMsg = nodeCore.getCorrelationManager().synchronousCall(findMsg, 2000);
-				if(respMsg != null)
-					si = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId()).getServiceInformation(serviceName);
-			}	
+			logger.fine("Broadcasting Service Information Request Message");
+			Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, serviceName, null);
+			Message respMsg = nodeCore.getCorrelationManager().synchronousCall(findMsg, 2000);
+			if(respMsg != null)
+				si = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId()).getServiceInformation(serviceName);
 		}
 
 		return si;

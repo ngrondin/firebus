@@ -7,10 +7,7 @@ import java.util.logging.Logger;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.nic.firebus.exceptions.FunctionUnavailableException;
-import com.nic.firebus.information.FunctionInformation;
 import com.nic.firebus.information.NodeInformation;
-import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.DiscoveryListener;
 
 public class NodeCore extends Thread implements DiscoveryListener
@@ -61,6 +58,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 			inboundQueue = new MessageQueue();
 			outboundQueue = new MessageQueue();
 			directory = new Directory();
+			directory.getOrCreateNodeInformation(nodeId);
 			connectionManager = new ConnectionManager(this, nodeId, networkName,  new SecretKeySpec(pw.getBytes(), "AES"), port);
 			discoveryManager = new DiscoveryManager(this, nodeId, networkName, connectionManager.getPort());
 			functionManager = new FunctionManager(this);
@@ -112,11 +110,19 @@ public class NodeCore extends Thread implements DiscoveryListener
 	{
 		Address address = new Address(a, p);
 		knownAddresses.add(address);
+		synchronized(this)
+		{
+			this.notifyAll();
+		}
 	}
 		
 	public void sendMessage(Message msg)
 	{
 		outboundQueue.addMessage(msg);
+		synchronized(this)
+		{
+			this.notifyAll();
+		}
 	}
 	
 	public void messageReceived(Message m, Connection c) 
@@ -132,6 +138,10 @@ public class NodeCore extends Thread implements DiscoveryListener
 				originatorNode.addRepeater(connectedId);
 			}
 			inboundQueue.addMessage(m);
+			synchronized(this)
+			{
+				this.notifyAll();
+			}
 		}
 		else
 		{
@@ -142,6 +152,11 @@ public class NodeCore extends Thread implements DiscoveryListener
 	public void nodeDiscovered(int id, Address address)
 	{
 		directory.processDiscoveredNode(id,  address);
+		synchronized(this)
+		{
+			this.notifyAll();
+		}
+
 	}
 
 	protected void maintainConnectionCount()
@@ -188,18 +203,21 @@ public class NodeCore extends Thread implements DiscoveryListener
 			switch(msg.getType())
 			{
 				case Message.MSGTYPE_QUERYNODE:
-					processNodeInformationRequest(msg.getOriginatorId());
+					processNodeInformationRequest(msg);
 					break;
 				case Message.MSGTYPE_NODEINFORMATION:
 					directory.processNodeInformation(new String(msg.getPayload().data));
-					if(msg.getCorrelation() != 0)
-						correlationManager.receiveResponse(msg);
-					break;
-				case Message.MSGTYPE_REQUESTSERVICE:
-					processServiceRequest(msg);
+					correlationManager.receiveResponse(msg);
 					break;
 				case Message.MSGTYPE_GETFUNCTIONINFORMATION:
-					processServiceInformationRequest(msg);
+					functionManager.processServiceInformationRequest(msg);
+					break;
+				case Message.MSGTYPE_SERVICEINFORMATION:
+					directory.processServiceInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload().data);
+					correlationManager.receiveResponse(msg);
+					break;
+				case Message.MSGTYPE_REQUESTSERVICE:
+					functionManager.executeFunction(msg);
 					break;
 				case Message.MSGTYPE_SERVICERESPONSE:
 					correlationManager.receiveResponse(msg);
@@ -210,20 +228,17 @@ public class NodeCore extends Thread implements DiscoveryListener
 				case Message.MSGTYPE_SERVICEUNAVAILABLE:
 					correlationManager.receiveResponse(msg);
 					break;
-				case Message.MSGTYPE_SERVICEINFORMATION:
-					directory.processServiceInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload().data);
-					correlationManager.receiveResponse(msg);
-					break;
 				case Message.MSGTYPE_PUBLISH:
-					processPublish(msg);
+					functionManager.executeFunction(msg);
+					break;
 			}
-			
-			if(msg.getDestinationId() == 0  ||  msg.getDestinationId() != nodeId)
-			{
-				if(msg.getRepeatsLeft() > 0)
-					outboundQueue.addMessage(msg.repeat());
-			}			
 		}
+
+		if(msg.getDestinationId() == 0  ||  msg.getDestinationId() != nodeId)
+		{
+			if(msg.getRepeatsLeft() > 0)
+				sendMessage(msg.repeat());
+		}			
 
 		inboundQueue.deleteNextMessage();
 		logger.fine("Finished Processing Inbound Message");
@@ -238,7 +253,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 		int destinationNodeId = msg.getDestinationId();
 		int originatorNodeId = msg.getOriginatorId();
 		
-		if(destinationNodeId == nodeId  ||  (destinationNodeId == 0  &&  originatorNodeId == nodeId))
+		if(originatorNodeId == nodeId  &&  (destinationNodeId == nodeId  ||  destinationNodeId == 0))
 		{
 			inboundQueue.addMessage(msg);
 		}
@@ -273,55 +288,17 @@ public class NodeCore extends Thread implements DiscoveryListener
 		logger.fine("Finished Processing Outbound Message");
 	}
 	
-	protected void processServiceRequest(Message msg)
-	{
-		try
-		{
-			functionManager.executeFunction(msg);
-		}
-		catch (FunctionUnavailableException e)
-		{
-			Message outMsg = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_SERVICEUNAVAILABLE, msg.getSubject(),new Payload(null,  e.getMessage().getBytes()));
-			outMsg.setCorrelation(msg.getCorrelation());
-			outboundQueue.addMessage(outMsg);
-		}
-	}
 
-	protected void processServiceInformationRequest(Message msg)
-	{
-		FunctionInformation fi = functionManager.getServiceInformation(msg.getSubject());
-		if(fi instanceof ServiceInformation)
-		{
-			logger.fine("Responding to a service information request");
-			ServiceInformation si = (ServiceInformation)fi;
-			Message outMsg = new Message(msg.getOriginatorId(), nodeId, Message.MSGTYPE_SERVICEINFORMATION, msg.getSubject(), new Payload(null, si.serialise()));
-			outMsg.setCorrelation(msg.getCorrelation());
-			outboundQueue.addMessage(outMsg);
-		}
-	}
-
-	
-	protected void processPublish(Message msg)
-	{
-		try
-		{
-			functionManager.executeFunction(msg);
-		}
-		catch (FunctionUnavailableException e)
-		{
-			logger.severe(e.getMessage());
-		}		
-	}
-	
-	protected void processNodeInformationRequest(int destinationNodeId)
+	protected void processNodeInformationRequest(Message reqMsg)
 	{
 		logger.fine("Responding to a node information request");
 		StringBuilder sb = new StringBuilder();
 		sb.append(connectionManager.getAddressStateString(nodeId));
 		sb.append(functionManager.getFunctionStateString(nodeId));
 		sb.append(directory.getDirectoryStateString(nodeId));
-		Message msg = new Message(destinationNodeId, nodeId, Message.MSGTYPE_NODEINFORMATION, null, new Payload(null, sb.toString().getBytes()));
-		outboundQueue.addMessage(msg);
+		Message msg = new Message(reqMsg.getOriginatorId(), nodeId, Message.MSGTYPE_NODEINFORMATION, null, new Payload(null, sb.toString().getBytes()));
+		msg.setCorrelation(reqMsg.getCorrelation());
+		sendMessage(msg);
 	}
 	
 	public void run()
@@ -345,14 +322,17 @@ public class NodeCore extends Thread implements DiscoveryListener
 				}
 				else
 				{
-					Thread.sleep(10);
+					synchronized(this)
+					{
+						this.wait();
+						System.out.println("cycle");
+					}
 				}
 			}
 			catch(Exception e)
 			{
 				e.printStackTrace();
 			}
-
 		}
 	}
 

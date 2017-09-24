@@ -1,6 +1,5 @@
 package com.nic.firebus.utils;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,45 +15,58 @@ public class JSONList extends JSONEntity
 		list = new ArrayList<JSONEntity>();
 	}
 	
-	public JSONList(InputStream is) throws JSONException
+	public JSONList(InputStream is) throws JSONException, IOException
 	{
 		list = new ArrayList<JSONEntity>();
 		int cInt = -1;
+		boolean correctlyClosed = false;
 		char c = ' ';
-		
-		BufferedInputStream bis = null;
-		if(is instanceof BufferedInputStream)
-			bis = (BufferedInputStream)is;
+		int readState = 0; 
+
+		PositionTrackingInputStream bis = null;
+		if(is instanceof PositionTrackingInputStream)
+			bis = (PositionTrackingInputStream)is;
 		else
-			bis = new BufferedInputStream(is);
+			bis = new PositionTrackingInputStream(is);
 		
-		try
-		{		
-			while(c == ' '  && c != -1)
-				c = (char)bis.read();
-			
-			if(c == '[')
+		while((cInt = bis.read()) != -1)
+		{
+			c = (char)cInt;
+			if(readState == 0) // Before opening bracket
 			{
-				list.add(readJSONValue(is));
-				
-				while((cInt = is.read()) != -1)
+				if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
 				{
-					c = (char)cInt;
-					if(c == ',')
+					if(c == '[')
 					{
-						list.add(readJSONValue(is));
+						JSONEntity value = readJSONValue(bis);
+						if(value != null)
+							list.add(value);
+						readState = 1;
 					}
-					else if(c == ']')
-					{
-						break;
-					}
+					else
+						throw new JSONException("Expected '[' at line " + bis.getLine() + " column " + bis.getColumn());
+				}						
+			}
+			else if(readState == 1)
+			{
+				if(c == ']')
+				{
+					correctlyClosed = true;
+					break;
 				}
+				else if(c == ',')
+				{
+					JSONEntity value = readJSONValue(bis);
+					if(value != null)
+						list.add(value);
+				}
+				else if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
+					throw new JSONException("Expected ',' or ']' at line " + bis.getLine() + " column " + bis.getColumn());
 			}
 		}
-		catch(IOException e)
-		{
-	
-		}
+		if(!correctlyClosed)
+			throw new JSONException("Missing ']' as line " + bis.getLine() + " column " + bis.getColumn());
+
 	}
 	
 	public void write(OutputStream os)

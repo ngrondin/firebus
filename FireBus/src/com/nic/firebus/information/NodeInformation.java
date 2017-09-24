@@ -1,6 +1,8 @@
 package com.nic.firebus.information;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
 
 import com.nic.firebus.Address;
@@ -10,8 +12,8 @@ public class NodeInformation
 	protected int nodeId;
 	protected ArrayList<Address> addresses;
 	protected ArrayList<Integer> repeaters;
-	protected ArrayList<ServiceInformation> services;
-	protected ArrayList<ConsumerInformation> consumers;
+	protected HashMap<String, ServiceInformation> services;
+	protected HashMap<String, ConsumerInformation> consumers;
 	protected long lastSentDiscovery;
 	protected long lastUpdated;
 	protected boolean unconnectable;
@@ -27,8 +29,8 @@ public class NodeInformation
 	{
 		addresses = new ArrayList<Address>();
 		repeaters = new ArrayList<Integer>();
-		services = new ArrayList<ServiceInformation>();
-		consumers = new ArrayList<ConsumerInformation>();
+		services = new HashMap<String, ServiceInformation>();
+		consumers = new HashMap<String, ConsumerInformation>();
 		unconnectable = false;
 		unresponsive = false;
 	}
@@ -65,16 +67,16 @@ public class NodeInformation
 			repeaters.add(id);
 	}
 	
-	public void addServiceInformation(ServiceInformation si)
+	public void addServiceInformation(String sn, ServiceInformation si)
 	{
-		if(getServiceInformation(si.getName()) == null)
-			services.add(si);
+		if(!services.containsKey(sn))
+			services.put(sn, si);
 	}
 
-	public void addConsumerInformation(ConsumerInformation ci)
+	public void addConsumerInformation(String cn, ConsumerInformation ci)
 	{
-		if(getConsumerInformation(ci.getName()) == null)
-			consumers.add(ci);
+		if(!consumers.containsKey(cn))
+			consumers.put(cn, ci);
 	}
 
 	public int getNodeId()
@@ -120,18 +122,12 @@ public class NodeInformation
 	
 	public ServiceInformation getServiceInformation(String sn)
 	{
-		for(int i = 0; i < services.size(); i++)
-			if(services.get(i).getName().equals(sn))
-				return services.get(i);
-		return null;
+		return services.get(sn);
 	}
 	
 	public ConsumerInformation getConsumerInformation(String cn)
 	{
-		for(int i = 0; i < consumers.size(); i++)
-			if(consumers.get(i).getName().equals(cn))
-				return consumers.get(i);
-		return null;
+		return consumers.get(cn);
 	}
 	
 	public boolean isUnconnectable()
@@ -152,11 +148,12 @@ public class NodeInformation
 			sb.append("Address   : " + addresses.get(i) + "\r\n");
 		for(int i = 0; i < repeaters.size(); i++)
 			sb.append("Repeater  : " + repeaters.get(i) + "\r\n");
-		for(int i = 0; i < services.size(); i++)
-			sb.append("Service   : " + services.get(i) + "\r\n");
-		for(int i = 0; i < consumers.size(); i++)
-			sb.append("Consumers : " + consumers.get(i) + "\r\n");
-		//sb.append("Connection: " + connection + "\r\n");
+		Iterator<String> it = services.keySet().iterator();
+		while(it.hasNext())
+			sb.append("Service   : " + it.next() + "\r\n");
+		it = consumers.keySet().iterator();
+		while(it.hasNext())
+			sb.append("Consumers : " + it.next() + "\r\n");
 		return sb.toString();
 	}
 

@@ -23,6 +23,12 @@ public class Payload
 		data = d;
 	}
 	
+	public Payload(String s)
+	{
+		metadata = new HashMap<String, String>();
+		data = s.getBytes();
+	}
+	
 	public Payload(HashMap<String, String> md, byte[] d)
 	{
 		if(md != null)

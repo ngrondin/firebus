@@ -68,22 +68,25 @@ public class CorrelationManager
 	public void receiveResponse(Message inMsg)
 	{
 		int c = inMsg.getCorrelation();
-		final CorrelationEntry e = entries.get(c);
-		if(e != null)
+		if(c != 0)
 		{
-			logger.finer("Received Correlated Response");
-			e.inboundMessage = inMsg;
-			if(e.correlationListener != null)
+			final CorrelationEntry e = entries.get(c);
+			if(e != null)
 			{
-				final CorrelationListener cl = e.correlationListener;
-				Thread t = new Thread(new Runnable() {
-				    public void run() 
-				    {
-				    	cl.correlatedResponseReceived(e.outboundMessage, e.inboundMessage);
-				    }
-				});	
-				t.start();
-				entries.remove(c);
+				logger.finer("Received Correlated Response");
+				e.inboundMessage = inMsg;
+				if(e.correlationListener != null)
+				{
+					final CorrelationListener cl = e.correlationListener;
+					Thread t = new Thread(new Runnable() {
+					    public void run() 
+					    {
+					    	cl.correlatedResponseReceived(e.outboundMessage, e.inboundMessage);
+					    }
+					});	
+					t.start();
+					entries.remove(c);
+				}
 			}
 		}
 	}

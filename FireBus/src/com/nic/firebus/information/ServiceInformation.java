@@ -13,13 +13,11 @@ public class ServiceInformation extends FunctionInformation
 	
 	public ServiceInformation(String sn)
 	{
-		super(sn);
 		fullInformation = false;
 	}
 	
-	public ServiceInformation(String sn, String rqmt, String rqc, String rpmt, String rpc)
+	public ServiceInformation(String rqmt, String rqc, String rpmt, String rpc)
 	{
-		super(sn);
 		requestMimeType = rqmt;
 		requestContract = rqc;
 		responseMimeType = rpmt;
@@ -130,7 +128,7 @@ public class ServiceInformation extends FunctionInformation
 		fullInformation = true;
 	}
 
-	public String toLongString()
+	public String toString()
 	{
 		return requestMimeType + "\r\n" + requestContract + "\r\n" + responseMimeType + "\r\n" + responseContract + "\r\n"; 
 	}

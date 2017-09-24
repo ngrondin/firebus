@@ -7,7 +7,6 @@ public class ConsumerInformation extends FunctionInformation
 	
 	public ConsumerInformation(String sn)
 	{
-		super(sn);
 	}
 
 }

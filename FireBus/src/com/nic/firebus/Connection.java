@@ -43,6 +43,8 @@ public class Connection extends Thread
 	
 	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) throws IOException, ConnectionException
 	{
+		logger.fine("Initialising received connection");
+		
 		socket = s;
 		listener = cl;
 		networkName = net;
@@ -50,11 +52,12 @@ public class Connection extends Thread
 		localNodeId = nid;
 		localPort = p;
 		start();
-		//initialise(net, k, nid, p, cl);
 	}
 	
 	public Connection(Address a, String net, SecretKey k, int nid, int p, ConnectionListener cl) throws UnknownHostException, IOException, ConnectionException
 	{
+		logger.fine("Initiialising connection to " + a);
+		
 		remoteAddress = a;
 		listener = cl;
 		networkName = net;
@@ -62,15 +65,8 @@ public class Connection extends Thread
 		localNodeId = nid;
 		localPort = p;
 		start();
-		//initialise(net, k, nid, p, cl);
 	}
 
-	/*
-	protected void initialise(String net, SecretKey k, int nid, int p, ConnectionListener cl) throws IOException, ConnectionException
-	{
-		start();
-	}
-*/
 	
 	public Address getRemoteAddress()
 	{
@@ -97,8 +93,6 @@ public class Connection extends Thread
 	
 	protected void initialise()
 	{
-		logger.fine("Initialising Connection");
-		
 		try
 		{
 			if(socket == null  &&  remoteAddress != null)
@@ -148,7 +142,7 @@ public class Connection extends Thread
 						}
 					}
 
-					logger.info("Established connection with node " + remoteNodeId + " at address " + remoteAddress);
+					logger.info("Established connection " + getId() + " with node " + remoteNodeId + " at address " + remoteAddress);
 					running = true;
 				}
 				else
@@ -158,7 +152,7 @@ public class Connection extends Thread
 			}
 			else
 			{
-				logger.fine("Socket not connected");
+				logger.fine("Socket not connected for connection " + getId());
 			}
 		}
 		catch(Exception e)
@@ -246,7 +240,7 @@ public class Connection extends Thread
 			{
 				logger.severe(e.getMessage());
 			}
-			logger.fine("Sent message on connection " + this.getId() + " to remote node " + remoteNodeId);
+			logger.fine("Sent message on connection " + getId() + " to remote node " + remoteNodeId);
 		}
 	}
 	

@@ -9,8 +9,11 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import com.nic.firebus.Firebus;
+import com.nic.firebus.NodeCore;
 import com.nic.firebus.Payload;
+import com.nic.firebus.ServiceRequest;
 import com.nic.firebus.exceptions.FunctionErrorException;
+import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.utils.JSONObject;
 
 public class ScriptedService extends DistributableService
@@ -19,13 +22,37 @@ public class ScriptedService extends DistributableService
 	protected String script;
 	protected ScriptEngine js;
 	protected Bindings bindings;
+	protected ServiceInformation serviceInformation;
 
-	public ScriptedService(Firebus n, JSONObject c)
+	public ScriptedService(NodeCore nc, JSONObject c)
 	{
-		super(n, c);
+		super(nc, c);
 		script = c.getString("source");
+		if(script == null)
+		{
+			String sourceLocation = c.getString("sourcelocation");
+			if(sourceLocation != null)
+			{
+				try
+				{
+					String[] parts = sourceLocation.split(":");
+					ServiceRequest sr = new ServiceRequest(nodeCore, parts[0], new Payload(parts[1]), 2000, null);
+					Payload response = sr.waitForResponse();
+					if(response != null)
+						script = response.getString();
+					else
+						logger.severe("No source file found for distributable scripted service in location " + sourceLocation);
+				}
+				catch(Exception e)
+				{
+					logger.severe("General error when retrieving the scripted service source file : " + e.getMessage());
+				}
+			}
+		}
 		js = new ScriptEngineManager().getEngineByName("javascript");
 	    bindings = js.getBindings(ScriptContext.ENGINE_SCOPE);
+	    bindings.put("firebus", new Firebus(nodeCore));
+	    serviceInformation = new ServiceInformation(c.getString("requestmime"), c.getString("requestcontract"), c.getString("responsemime"), c.getString("responsecontract"));
 	}
 
 	public Payload service(Payload payload) throws FunctionErrorException
@@ -40,8 +67,14 @@ public class ScriptedService extends DistributableService
 		catch (ScriptException e)
 		{
 			logger.severe(e.getMessage());
+			throw new FunctionErrorException(e.getMessage());
 		}
 		return response;
+	}
+
+	public ServiceInformation getServiceInformation()
+	{
+		return serviceInformation;
 	}
 
 }
