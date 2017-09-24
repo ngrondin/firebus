@@ -38,85 +38,95 @@ public class Console implements ServiceRequestor
 				String in = br.readLine();
 				String[] parts = in.split(" ");
 				String command = parts[0];
-				String functionName = "";
-				Payload payload = null;
-				String inputFileName = null;
-				if(parts.length > 1)
+				
+				if(command.equals("req") || command.equals("pub") || command.equals("si"))
 				{
-					functionName = parts[1];
-					if(parts.length > 2)
+					String functionName = "";
+					Payload payload = null;
+					String inputFileName = null;
+					if(parts.length > 1)
 					{
-						inputFileName = getSwitchValue(parts, "if");
-						int dataStart = command.length() + functionName.length() + 2;
-						for(int i = 2; i < parts.length; i+=2)
+						functionName = parts[1];
+						if(parts.length > 2)
 						{
-							if(parts[i].startsWith("-"))
-								dataStart += parts[i].length() + parts[i + 1].length() + 2;
+							inputFileName = getSwitchValue(parts, "if");
+							int dataStart = command.length() + functionName.length() + 2;
+							for(int i = 2; i < parts.length; i+=2)
+							{
+								if(parts[i].startsWith("-"))
+									dataStart += parts[i].length() + parts[i + 1].length() + 2;
+								else
+									break;
+							}
+							
+							if(dataStart < in.length())
+							{
+								payload = new Payload(in.substring(dataStart).getBytes());
+							}
+							
+							if(payload == null  &&  inputFileName != null)
+							{
+								try
+								{
+									FileInputStream fis = new FileInputStream(inputFileName);
+									byte[] data = new byte[fis.available()];
+									fis.read(data);
+									fis.close();
+									payload = new Payload(data);
+									payload.metadata.put("filename", inputFileName);
+								}
+								catch(IOException e)
+								{
+									logger.severe(e.getMessage());
+								}
+							}
+						}
+					}
+					
+					if(payload == null)
+					{
+						payload = new Payload(new byte[0]);
+					}
+
+					if(command.equals("req") && functionName != null)
+					{
+						try
+						{
+							Payload response = firebus.requestService(functionName, payload, 2000);
+							if(response.metadata.containsKey("filename"))
+							{
+								String fileName = response.metadata.get("filename");
+								FileOutputStream fos = new FileOutputStream(fileName);
+								fos.write(response.data);
+								fos.close();
+								System.out.println("Received file " + fileName);
+							}
 							else
-								break;
-						}
-						
-						if(dataStart < in.length())
-						{
-							payload = new Payload(in.substring(dataStart).getBytes());
-						}
-						
-						if(payload == null  &&  inputFileName != null)
-						{
-							try
 							{
-								FileInputStream fis = new FileInputStream(inputFileName);
-								byte[] data = new byte[fis.available()];
-								fis.read(data);
-								fis.close();
-								payload = new Payload(data);
-								payload.metadata.put("filename", inputFileName);
-							}
-							catch(IOException e)
-							{
-								logger.severe(e.getMessage());
+								System.out.println(response.getString());
 							}
 						}
+						catch (FunctionErrorException e)
+						{
+							e.printStackTrace();
+						}					
+					}
+					else if(command.equals("pub") && functionName != null)
+					{
+						firebus.publish(functionName, payload);
+					}
+					else if(command.equals("si")  &&  functionName != null)
+					{
+						ServiceInformation si = firebus.getServiceInformation(functionName);
+						if(si != null)
+							System.out.println(si);
 					}
 				}
-				
-				if(payload == null)
+				else if(command.equals("ni"))
 				{
-					payload = new Payload(new byte[0]);
-				}
-				
-				if(command.equals("req") && functionName != null)
-				{
-					try
-					{
-						Payload response = firebus.requestService(functionName, payload, 2000);
-						if(response.metadata.containsKey("filename"))
-						{
-							String fileName = response.metadata.get("filename");
-							FileOutputStream fos = new FileOutputStream(fileName);
-							fos.write(response.data);
-							fos.close();
-							System.out.println("Received file " + fileName);
-						}
-						else
-						{
-							System.out.println(response.getString());
-						}
-					}
-					catch (FunctionErrorException e)
-					{
-						e.printStackTrace();
-					}					
-				}
-				else if(command.equals("pub") && functionName != null)
-				{
-					firebus.publish(functionName, payload);
-				}
-				else if(command.equals("si")  &&  functionName != null)
-				{
-					ServiceInformation si = firebus.getServiceInformation(functionName);
-					if(si != null)
-						System.out.println(si);
+					int nodeId = Integer.parseInt(parts[1]);
+					NodeInformation ni = firebus.getNodeInformation(nodeId);
+					System.out.println(ni);
 				}
 				else if(command.equals("dir"))
 				{

@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
+import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.utils.JSONObject;
@@ -77,6 +78,11 @@ public class FileAdapter extends Adapter implements ServiceProvider, Consumer
 		{
 			throw new FunctionErrorException(e.getMessage());
 		}
+	}
+
+	public ServiceInformation getServiceInformation()
+	{
+		return new ServiceInformation("text/plain", "", "text/plain", "");
 	}
 
 }

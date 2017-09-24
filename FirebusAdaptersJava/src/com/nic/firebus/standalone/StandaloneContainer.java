@@ -12,8 +12,6 @@ import java.util.logging.Logger;
 import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.distributables.DistributableService;
-import com.nic.firebus.information.ConsumerInformation;
-import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.BusFunction;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
@@ -24,7 +22,7 @@ import com.nic.firebus.utils.JSONObject;
 public class StandaloneContainer
 {
 	private Logger logger = Logger.getLogger("com.nic.firebus.standalone");
-	protected Firebus node;
+	protected Firebus firebus;
 
 	public StandaloneContainer(JSONObject config)
 	{
@@ -39,7 +37,7 @@ public class StandaloneContainer
 			logger.severe(e.getMessage());
 		}
 		
-		node = new Firebus(config.getString("network"), config.getString("password"));
+		firebus = new Firebus(config.getString("network"), config.getString("password"));
 		JSONList knownAddresses = config.getList("knownaddresses");
 		if(knownAddresses != null)
 		{
@@ -47,7 +45,8 @@ public class StandaloneContainer
 			{
 				String address = knownAddresses.getObject(i).getString("address");
 				int port = Integer.parseInt(knownAddresses.getObject(i).getString("port"));
-				node.addKnownNodeAddress(address, port);
+				logger.fine("Adding known address " + address + ":" + port);
+				firebus.addKnownNodeAddress(address, port);
 			}
 		}
 		
@@ -56,6 +55,7 @@ public class StandaloneContainer
 		{
 			try 
 			{
+				logger.fine("Adding adapter to container");
 				JSONObject adapter = adapters.getObject(i); 
 				String type = adapter.getString("type");
 				String serviceName = adapter.getString("servicename");
@@ -70,11 +70,12 @@ public class StandaloneContainer
 						Constructor<?> cons = c.getConstructor(new Class[]{Firebus.class, JSONObject.class});
 						if(adapterConfig != null)
 						{
-							BusFunction func = (BusFunction)cons.newInstance(new Object[]{node, adapterConfig});
+							logger.fine("Instantiating new adapter of type " + type);
+							BusFunction func = (BusFunction)cons.newInstance(new Object[]{firebus, adapterConfig});
 							if(serviceName != null  &&  func instanceof ServiceProvider)
-								node.registerServiceProvider(new ServiceInformation(serviceName), ((ServiceProvider)func), 10);
+								firebus.registerServiceProvider(serviceName, ((ServiceProvider)func), 10);
 							if(consumerName != null  &&  func instanceof Consumer)
-								node.registerConsumer(new ConsumerInformation(consumerName), ((Consumer)func), 10);
+								firebus.registerConsumer(consumerName, ((Consumer)func), 10);
 						}
 						else
 						{
@@ -93,32 +94,35 @@ public class StandaloneContainer
 			}
 			catch(Exception e)
 			{
-				logger.severe(e.getMessage());
+				logger.severe("General error message when instantiating a new adapter: " + e.getMessage());
 			}
 		}
-		
+		/*
 		JSONList services = config.getList("distributableservices");
 		if(services != null)
 		{
 			for(int i = 0; i < services.size(); i++)
 			{
+				logger.fine("Adding distributable service to container");
 				String serviceName = services.getString(i);
 				Payload request = new Payload(serviceName.getBytes());
 				try
 				{
-					Payload response = node.requestService("firebus_distributable_services_source", request);
+					logger.fine("Getting source for distributable service : " + serviceName);
+					Payload response = firebus.requestService("firebus_distributable_services_source", request);
 					JSONObject serviceConfig = new JSONObject(response.getString());
 					String type = serviceConfig.getString("type");
-					DistributableService service = DistributableService.instantiate(node, type, serviceConfig.getObject("config"));
-					node.registerServiceProvider(new ServiceInformation(serviceName), service, 10);
+					logger.fine("Instantiating new distributable service : " + serviceName);
+					DistributableService service = DistributableService.instantiate(firebus, type, serviceConfig.getObject("config"));
+					firebus.registerServiceProvider(serviceName, service, 10);
 				}
 				catch(Exception e)
 				{
-					logger.severe(e.getMessage());
+					logger.severe("General error message when instantiating a new distributed service : " + e.getMessage());
 				}
 			}
 		}
-
+		*/
 	}
 	
 	public static void main(String[] args)

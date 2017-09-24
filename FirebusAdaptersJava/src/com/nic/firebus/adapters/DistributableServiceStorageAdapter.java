@@ -9,7 +9,9 @@ import java.util.logging.Logger;
 import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
+import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.ServiceProvider;
+import com.nic.firebus.utils.JSONException;
 import com.nic.firebus.utils.JSONObject;
 
 public class DistributableServiceStorageAdapter extends Adapter implements ServiceProvider
@@ -29,36 +31,13 @@ public class DistributableServiceStorageAdapter extends Adapter implements Servi
 		if(!path.endsWith(File.separator))
 			path = path + File.separator;
 		
-		try
-		{
-			File dir = new File(path);
-			if(dir.isDirectory())
-			{
-				File[] list = dir.listFiles();
-				for(int i = 0; i < list.length; i++)
-				{
-					File file = list[i];
-					if(file.isFile()  &&  file.getName().toUpperCase().endsWith("JSON"))
-					{
-						JSONObject functionConfig = new JSONObject(new FileInputStream(list[i]));
-						String serviceName = functionConfig.getString("servicename");
-						if(serviceName != null)
-						{
-							serviceConfigs.put(serviceName, functionConfig);
-						}
-					}							
-				}
-			}
-		}
-		catch(Exception e)
-		{
-			logger.severe(e.getMessage());
-		}
+
 	}
 
 
 	public Payload service(Payload payload) throws FunctionErrorException
 	{
+		refreshConfigs();
 		Payload response = new Payload();;
 		String serviceName = payload.getString();
 		if(serviceName.equals(""))
@@ -80,4 +59,46 @@ public class DistributableServiceStorageAdapter extends Adapter implements Servi
 		return response;
 	}
 
+	
+	public ServiceInformation getServiceInformation()
+	{
+		return new ServiceInformation("text/plain", "", "text/plain", "");
+	}
+
+	protected void refreshConfigs()
+	{
+		try
+		{
+			File dir = new File(path);
+			if(dir.isDirectory())
+			{
+				File[] list = dir.listFiles();
+				for(int i = 0; i < list.length; i++)
+				{
+					File file = list[i];
+					if(file.isFile()  &&  file.getName().toUpperCase().endsWith("JSON"))
+					{
+						try
+						{
+							JSONObject functionConfig = new JSONObject(new FileInputStream(list[i]));
+							String serviceName = functionConfig.getString("servicename");
+							if(serviceName != null)
+							{
+								serviceConfigs.put(serviceName, functionConfig);
+							}
+						}
+						catch(JSONException e)
+						{
+							logger.info("Error reading config file : " + file.getName() + " (" + e.getMessage() + ")");
+						}
+					}							
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			logger.severe(e.getMessage());
+		}
+	}
+	
 }

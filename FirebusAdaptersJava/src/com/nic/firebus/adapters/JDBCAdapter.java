@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
+import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.utils.JSONObject;
@@ -84,5 +85,9 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		return new Payload(null, sb.toString().getBytes());
 	}
 
-	
+	public ServiceInformation getServiceInformation()
+	{
+		return new ServiceInformation("text/plain", "", "text/json", "{}");
+	}
+
 }
