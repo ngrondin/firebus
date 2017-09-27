@@ -2,9 +2,12 @@ package com.nic.firebus;
 
 import java.util.logging.Logger;
 
+import com.nic.firebus.distributables.DistributableService;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.NodeInformation;
+import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.ServiceRequestor;
+import com.nic.firebus.utils.JSONObject;
 
 public class ServiceRequest extends Thread
 {
@@ -15,24 +18,41 @@ public class ServiceRequest extends Thread
 	protected int timeout;
 	protected long expiry;
 	protected ServiceRequestor requestor;
-	protected Payload responsePayload;
+	//protected Payload responsePayload;
 	protected String errorMessage;
 
-	public ServiceRequest(NodeCore nc, String sn, Payload p, int t, ServiceRequestor r)
+	public ServiceRequest(NodeCore nc, String sn, Payload p, int t)
 	{
 		nodeCore = nc;
 		serviceName = sn;
 		requestPayload = p;
 		timeout = t;
-		requestor = r;
-		responsePayload = null;
 		errorMessage = null;
 		expiry = System.currentTimeMillis() + timeout;
+	}
+	
+	public void execute(ServiceRequestor r)
+	{
+		requestor = r;
 		start();
 	}
 	
 	public void run()
 	{
+		try
+		{
+			Payload responsePayload = execute();
+			requestor.requestCallback(responsePayload);
+		}
+		catch(FunctionErrorException e)
+		{
+			requestor.requestErrorCallback(e);
+		}		
+	}
+	
+	public Payload execute() throws FunctionErrorException
+	{
+		Payload responsePayload = null;
 		while(responsePayload == null  &&  System.currentTimeMillis() < expiry)
 		{
 			NodeInformation ni = nodeCore.getDirectory().findServiceProvider(serviceName);
@@ -45,7 +65,36 @@ public class ServiceRequest extends Thread
 				{
 					ni = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId());
 				}
-			}	
+			}
+			
+			if(ni == null)
+			{
+				try
+				{
+					logger.fine("Trying to retreive distributable service");
+					ServiceRequest request = new ServiceRequest(nodeCore, "firebus_distributable_services_source", new Payload(serviceName.getBytes()), 2000);
+					Payload response = request.execute();
+					if(response != null)
+					{
+						logger.fine("Instantiating distributable service : " + serviceName);
+						JSONObject serviceConfig = new JSONObject(response.getString());
+						String type = serviceConfig.getString("type");
+						DistributableService newDS = DistributableService.instantiate(nodeCore, type, serviceConfig.getObject("config"));
+						nodeCore.getFunctionManager().addFunction(serviceName, newDS, 10);
+						ni = nodeCore.getDirectory().getNodeById(nodeCore.getNodeId());
+						ni.addServiceInformation(serviceName, new ServiceInformation(serviceName));						
+						logger.fine("Instantiated distributable service : " + serviceName);
+					}
+					else
+					{
+						logger.fine("No response received from 'firebus_distributable_services_source' ");
+					}
+				}
+				catch(Exception e)
+				{
+					logger.severe("General error message when refreshing the source of a distributable function : " + e.getMessage());
+				}
+			}
 
 			if(ni != null)
 			{
@@ -62,17 +111,11 @@ public class ServiceRequest extends Thread
 				}
 			}			
 		}
-	}
-	
-	public Payload waitForResponse() throws FunctionErrorException
-	{
-		while(responsePayload == null  &&  errorMessage == null  &&  System.currentTimeMillis() < expiry)
-			try{ Thread.sleep(10); } catch(Exception e) {}
 		
 		if(responsePayload != null)
-				return responsePayload;
+			return responsePayload;
 		else
 			throw new FunctionErrorException(errorMessage);
 	}
-
+	
 }

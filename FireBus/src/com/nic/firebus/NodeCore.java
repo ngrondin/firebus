@@ -79,6 +79,10 @@ public class NodeCore extends Thread implements DiscoveryListener
 		connectionManager.close();
 		discoveryManager.close();
 		quit = true;
+		synchronized(this)
+		{
+			this.notifyAll();
+		}
 	}
 	
 	public int getNodeId()
@@ -151,7 +155,9 @@ public class NodeCore extends Thread implements DiscoveryListener
 
 	public void nodeDiscovered(int id, Address address)
 	{
+		logger.fine("Node discovered : " + id + " at address " + address);
 		directory.processDiscoveredNode(id,  address);
+		lastConnectionMaintenance = 0;
 		synchronized(this)
 		{
 			this.notifyAll();
@@ -163,6 +169,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 	{
 		int i1 = 0;
 		int i2 = 0;
+		logger.finest("Maintaining connection counts");
 		while(connectionManager.getConnectionCount() < 3  &&  !(i1 >= knownAddresses.size()  &&  i2 >= directory.getNodeCount()))
 		{
 			if(i1 < knownAddresses.size())
@@ -196,7 +203,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 	{
 		logger.fine("Processing Inbound Message");
 		Message msg = inboundQueue.getNextMessage();
-		logger.finest("****Inbound****************\r\n" + msg);
+		logger.finer("****Inbound****************\r\n" + msg);
 		
 		if(msg.getDestinationId() == 0  ||  msg.getDestinationId() == nodeId)
 		{
@@ -248,7 +255,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 	{
 		logger.fine("Processing Outbound Message");
 		Message msg = outboundQueue.getNextMessage();
-		logger.finest("****Oubound**************\r\n" + msg);
+		logger.finer("****Oubound**************\r\n" + msg);
 		Connection c = null;
 		int destinationNodeId = msg.getDestinationId();
 		int originatorNodeId = msg.getOriginatorId();
@@ -305,6 +312,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 	{
 		while(!quit)
 		{
+			logger.finest("Doing a control cycle");
 			try
 			{
 				correlationManager.checkExpiredCalls();
@@ -325,7 +333,6 @@ public class NodeCore extends Thread implements DiscoveryListener
 					synchronized(this)
 					{
 						this.wait();
-						System.out.println("cycle");
 					}
 				}
 			}

@@ -37,8 +37,8 @@ public class FunctionWorker extends Thread
 				logger.fine("Distributable service  " + functionEntry.serviceName + " has expired, refreshing the source");
 				try
 				{
-					ServiceRequest request = new ServiceRequest(nodeCore, "firebus_distributable_services_source", new Payload(functionEntry.serviceName.getBytes()), 2000, null);
-					Payload response = request.waitForResponse();
+					ServiceRequest request = new ServiceRequest(nodeCore, "firebus_distributable_services_source", new Payload(functionEntry.serviceName.getBytes()), 2000);
+					Payload response = request.execute();
 					if(response != null)
 					{
 						logger.fine("Refreshing distributable service : " + functionEntry.serviceName);

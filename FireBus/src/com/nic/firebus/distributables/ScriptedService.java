@@ -36,8 +36,8 @@ public class ScriptedService extends DistributableService
 				try
 				{
 					String[] parts = sourceLocation.split(":");
-					ServiceRequest sr = new ServiceRequest(nodeCore, parts[0], new Payload(parts[1]), 2000, null);
-					Payload response = sr.waitForResponse();
+					ServiceRequest sr = new ServiceRequest(nodeCore, parts[0], new Payload(parts[1]), 2000);
+					Payload response = sr.execute();
 					if(response != null)
 						script = response.getString();
 					else

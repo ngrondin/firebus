@@ -82,19 +82,20 @@ public class Firebus
 
 	public Payload requestService(String serviceName, Payload payload) throws FunctionErrorException
 	{
-		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, 2000, null);
-		return request.waitForResponse();
+		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, 2000);
+		return request.execute();
 	}
 
 	public Payload requestService(String serviceName, Payload payload, int timeout) throws FunctionErrorException
 	{
-		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, timeout, null);
-		return request.waitForResponse();
+		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, timeout);
+		return request.execute();
 	}
 	
 	public void requestService(String serviceName, Payload payload, int timeout, ServiceRequestor requestor)
 	{
-		new ServiceRequest(nodeCore, serviceName, payload, timeout, requestor);
+		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, timeout);
+		request.execute(requestor);
 	}
 	
 	public void publish(String dataname, Payload payload)
