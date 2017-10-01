@@ -1,12 +1,15 @@
 package com.nic.firebus.adapters;
 
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
+import com.mongodb.client.ListIndexesIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
@@ -55,8 +58,45 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					JSONObject data = packet.getObject("data");
 					if(data != null)
 					{
-						Document doc = Document.parse(data.toString());
-						collection.insertOne(doc);
+						Document incomingDoc = Document.parse(data.toString());
+						Document existingDoc = null;
+						MongoCursor<Document> it = collection.listIndexes().iterator();
+						while(it.hasNext()  &&  existingDoc == null)
+						{
+							Document indexDoc = it.next();
+							Document keyDoc = (Document)indexDoc.get("key");
+							boolean missingField = false;
+							Document findDoc = new Document();
+							Iterator<Entry<String, Object>> it2 = keyDoc.entrySet().iterator();
+							while(it2.hasNext())
+							{
+								Entry<String, Object> indexField = it2.next();
+								String indexFieldName = indexField.getKey();
+								String indexFieldValue = data.getString(indexFieldName);
+								if(indexFieldValue != null)
+									findDoc.append(indexFieldName, indexFieldValue);
+								else
+									missingField = true;
+							}
+							if(!missingField)
+							{
+								existingDoc = collection.find(findDoc).first();
+							}
+							else
+							{
+								findDoc = null;
+							}
+						}
+						
+						if(existingDoc != null)
+						{
+							//incomingDoc.remove("_id");
+							collection.updateOne(existingDoc, new Document("$set", incomingDoc));
+						}
+						else
+						{
+							collection.insertOne(incomingDoc);
+						}
 					}
 				}
 				else
@@ -124,4 +164,5 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 	{
 		return null;
 	}
+	
 }
