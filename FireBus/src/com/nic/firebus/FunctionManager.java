@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-import com.nic.firebus.information.FunctionInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.BusFunction;
 import com.nic.firebus.interfaces.Consumer;
@@ -62,17 +61,24 @@ public class FunctionManager
 	
 	public void processServiceInformationRequest(Message msg)
 	{
-		FunctionInformation fi = getServiceInformation(msg.getSubject());
-		if(fi instanceof ServiceInformation)
+		String functionName = msg.getSubject();
+		if(functions.containsKey(functionName))
 		{
-			logger.fine("Responding to a service information request");
-			ServiceInformation si = (ServiceInformation)fi;
-			Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEINFORMATION, msg.getSubject(), new Payload(si.serialise()));
-			outMsg.setCorrelation(msg.getCorrelation());
-			nodeCore.sendMessage(outMsg);
+			BusFunction f = functions.get(functionName).function;
+			if(f instanceof ServiceProvider)
+			{
+				ServiceInformation si =  ((ServiceProvider)f).getServiceInformation();
+				if(si == null)
+					si = new ServiceInformation(functionName);
+				logger.fine("Responding to a service information request");
+				Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEINFORMATION, msg.getSubject(), new Payload(si.serialise()));
+				outMsg.setCorrelation(msg.getCorrelation());
+				nodeCore.sendMessage(outMsg);
+			}
 		}
 	}
-	
+
+	/*
 	public ServiceInformation getServiceInformation(String functionName)
 	{
 		if(functions.containsKey(functionName))
@@ -83,6 +89,7 @@ public class FunctionManager
 		}
 		return null;
 	}
+	*/
 	
 	public void executeFunction(Message msg)
 	{

@@ -155,14 +155,14 @@ public class JSONList extends JSONEntity
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append('[');
-		sb.append('\r');
+		sb.append("\r\n");
 		for(int i = 0; i < list.size(); i++)
 		{
 			sb.append(indentString(indent + 1));
 			sb.append(list.get(i).toString(indent + 1));
 			if(i < list.size() - 1)
 				sb.append(',');
-			sb.append('\r');
+			sb.append("\r\n");
 		}
 		sb.append(indentString(indent));
 		sb.append(']');

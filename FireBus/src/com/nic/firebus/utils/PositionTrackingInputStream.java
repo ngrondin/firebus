@@ -9,6 +9,7 @@ public class PositionTrackingInputStream extends BufferedInputStream
 	protected int col;
 	protected int line;
 	protected boolean cornl;
+	protected int lastVal;
 	
 	public PositionTrackingInputStream(InputStream is)
 	{
@@ -40,6 +41,7 @@ public class PositionTrackingInputStream extends BufferedInputStream
 			cornl = false;
 			col++;
 		}
+		lastVal = i;
 		return i;
 	}
 	

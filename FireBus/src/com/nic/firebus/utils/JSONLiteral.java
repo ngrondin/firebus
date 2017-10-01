@@ -25,6 +25,7 @@ public class JSONLiteral extends JSONEntity
 		else
 			bis = new PositionTrackingInputStream(is);
 		
+		bis.mark(1);
 		while((cInt = bis.read()) != -1)
 		{
 			c = (char)cInt;
@@ -56,8 +57,9 @@ public class JSONLiteral extends JSONEntity
 				}
 				else
 				{
-					if(c == ' ' || c == '\r' || c == '\n' || c == '\t')
+					if(c == ' ' || c == '\r' || c == '\n' || c == '\t' || c == ',' || c == '}')
 					{
+						bis.reset();
 						break;
 					}
 					else
@@ -66,6 +68,7 @@ public class JSONLiteral extends JSONEntity
 					}
 				}
 			}
+			bis.mark(1);
 		}
 	}
 	

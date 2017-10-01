@@ -248,7 +248,7 @@ public class JSONObject extends JSONEntity
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append('{');
-		sb.append('\r');
+		sb.append("\r\n");
 		Iterator<String> it = attributes.keySet().iterator();
 		while(it.hasNext())
 		{
@@ -261,7 +261,7 @@ public class JSONObject extends JSONEntity
 			sb.append(attributes.get(valueName).toString(indent + 1));
 			if(it.hasNext())
 				sb.append(',');
-			sb.append('\r');
+			sb.append("\r\n");
 		}
 		sb.append(indentString(indent));
 		sb.append('}');
