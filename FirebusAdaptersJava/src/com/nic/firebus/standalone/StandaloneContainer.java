@@ -95,37 +95,10 @@ public class StandaloneContainer
 				logger.severe("General error message when instantiating a new adapter: " + e.getMessage());
 			}
 		}
-		/*
-		JSONList services = config.getList("distributableservices");
-		if(services != null)
-		{
-			for(int i = 0; i < services.size(); i++)
-			{
-				logger.fine("Adding distributable service to container");
-				String serviceName = services.getString(i);
-				Payload request = new Payload(serviceName.getBytes());
-				try
-				{
-					logger.fine("Getting source for distributable service : " + serviceName);
-					Payload response = firebus.requestService("firebus_distributable_services_source", request);
-					JSONObject serviceConfig = new JSONObject(response.getString());
-					String type = serviceConfig.getString("type");
-					logger.fine("Instantiating new distributable service : " + serviceName);
-					DistributableService service = DistributableService.instantiate(firebus, type, serviceConfig.getObject("config"));
-					firebus.registerServiceProvider(serviceName, service, 10);
-				}
-				catch(Exception e)
-				{
-					logger.severe("General error message when instantiating a new distributed service : " + e.getMessage());
-				}
-			}
-		}
-		*/
 	}
 	
 	public static void main(String[] args)
 	{
-
 		if(args.length > 0)
 		{			
 			try
