@@ -234,6 +234,11 @@ public class JSONObject extends JSONEntity
 			return null;
 	}
 	
+	public boolean containsKey(String key)
+	{
+		return attributes.containsKey(key);
+	}
+	
 	public Set<String> keySet()
 	{
 		return attributes.keySet();
