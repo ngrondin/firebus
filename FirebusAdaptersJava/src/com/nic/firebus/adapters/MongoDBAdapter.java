@@ -1,5 +1,6 @@
 package com.nic.firebus.adapters;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -7,7 +8,6 @@ import java.util.logging.Logger;
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
-import com.mongodb.client.ListIndexesIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -129,10 +129,23 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				MongoCollection<Document> collection = database.getCollection(objectName);
 				if(collection != null)
 				{
-					JSONObject filter = request.getObject("filter");
-					if(filter != null)
+					Iterator<Document> it = null;
+					if(request.containsKey("filter"))
 					{
-						Iterator<Document> it = collection.find(Document.parse(filter.toString())).iterator();		
+						JSONObject filter = request.getObject("filter");
+						it = collection.find(Document.parse(filter.toString())).iterator();		
+					}
+					else if(request.containsKey("aggregation"))
+					{
+						JSONList aggregation = request.getList("aggregation");
+						ArrayList<Document> list = new ArrayList<Document>();
+						for(int i = 0; i < aggregation.size(); i++)
+							list.add(Document.parse(aggregation.getObject(i).toString()));
+						it = collection.aggregate(list).iterator();
+					}
+					
+					if(it != null)
+					{
 						JSONList list = new JSONList();
 						while(it.hasNext())
 						{
