@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.nic.firebus.Firebus;
-import com.nic.firebus.interfaces.BusFunction;
+import com.nic.firebus.adapters.Adapter;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.logging.FirebusSimpleFormatter;
@@ -54,11 +54,11 @@ public class StandaloneContainer
 			try 
 			{
 				logger.fine("Adding adapter to container");
-				JSONObject adapter = adapters.getObject(i); 
-				String type = adapter.getString("type");
-				String serviceName = adapter.getString("servicename");
-				String consumerName = adapter.getString("consumername");
-				JSONObject adapterConfig = adapter.getObject("config");
+				JSONObject depploymentConfig = adapters.getObject(i); 
+				String type = depploymentConfig.getString("type");
+				String serviceName = depploymentConfig.getString("servicename");
+				String consumerName = depploymentConfig.getString("consumername");
+				JSONObject adapterConfig = depploymentConfig.getObject("config");
 				String className = adapterClasses.getProperty(type);
 				if(className != null)
 				{
@@ -69,11 +69,11 @@ public class StandaloneContainer
 						if(adapterConfig != null)
 						{
 							logger.fine("Instantiating new adapter of type " + type);
-							BusFunction func = (BusFunction)cons.newInstance(new Object[]{firebus, adapterConfig});
-							if(serviceName != null  &&  func instanceof ServiceProvider)
-								firebus.registerServiceProvider(serviceName, ((ServiceProvider)func), 10);
-							if(consumerName != null  &&  func instanceof Consumer)
-								firebus.registerConsumer(consumerName, ((Consumer)func), 10);
+							Adapter adapter = (Adapter)cons.newInstance(new Object[]{firebus, adapterConfig});
+							if(serviceName != null  &&  adapter instanceof ServiceProvider)
+								firebus.registerServiceProvider(serviceName, ((ServiceProvider)adapter), 10);
+							if(consumerName != null  &&  adapter instanceof Consumer)
+								firebus.registerConsumer(consumerName, ((Consumer)adapter), 10);
 						}
 						else
 						{
@@ -95,32 +95,6 @@ public class StandaloneContainer
 				logger.severe("General error message when instantiating a new adapter: " + e.getMessage());
 			}
 		}
-		/*
-		JSONList services = config.getList("distributableservices");
-		if(services != null)
-		{
-			for(int i = 0; i < services.size(); i++)
-			{
-				logger.fine("Adding distributable service to container");
-				String serviceName = services.getString(i);
-				Payload request = new Payload(serviceName.getBytes());
-				try
-				{
-					logger.fine("Getting source for distributable service : " + serviceName);
-					Payload response = firebus.requestService("firebus_distributable_services_source", request);
-					JSONObject serviceConfig = new JSONObject(response.getString());
-					String type = serviceConfig.getString("type");
-					logger.fine("Instantiating new distributable service : " + serviceName);
-					DistributableService service = DistributableService.instantiate(firebus, type, serviceConfig.getObject("config"));
-					firebus.registerServiceProvider(serviceName, service, 10);
-				}
-				catch(Exception e)
-				{
-					logger.severe("General error message when instantiating a new distributed service : " + e.getMessage());
-				}
-			}
-		}
-		*/
 	}
 	
 	public static void main(String[] args)
