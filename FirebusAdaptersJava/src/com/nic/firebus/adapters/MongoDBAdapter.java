@@ -143,6 +143,10 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 							list.add(Document.parse(aggregation.getObject(i).toString()));
 						it = collection.aggregate(list).iterator();
 					}
+					else
+					{
+						it = collection.find(new Document()).iterator();		
+					}
 					
 					if(it != null)
 					{

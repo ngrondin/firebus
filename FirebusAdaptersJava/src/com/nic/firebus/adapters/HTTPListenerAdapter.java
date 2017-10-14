@@ -40,11 +40,11 @@ public class HTTPListenerAdapter extends Adapter
 				String query = exch.getRequestURI().getQuery();
 				String path = exch.getRequestURI().getPath();
 				String mime = exch.getRequestHeaders().getFirst("Content-Type");
-				String resource = "";
+				String get = "";
 				if(path.length() > serviceName.length() + 2)
-					resource = path.substring(2 + serviceName.length());
+					get = path.substring(2 + serviceName.length());
 
-				firebusRequest.metadata.put("resource", resource);
+				firebusRequest.metadata.put("get", get);
 				if(mime != null)
 					firebusRequest.metadata.put("mime", mime);
 				
@@ -73,12 +73,15 @@ public class HTTPListenerAdapter extends Adapter
 				}
 				else
 				{
-					String[] parts = query.split("&");
-					for(int i = 0; i < parts.length; i++)
+					if(query != null)
 					{
-						String[] subParts = parts[i].split("=");
-						if(subParts.length == 2)
-							firebusRequest.metadata.put(subParts[0],  subParts[1]);
+						String[] parts = query.split("&");
+						for(int i = 0; i < parts.length; i++)
+						{
+							String[] subParts = parts[i].split("=");
+							if(subParts.length == 2)
+								firebusRequest.metadata.put(subParts[0],  subParts[1]);
+						}
 					}
 					firebusRequest.setData(baos.toByteArray());
 				}				
