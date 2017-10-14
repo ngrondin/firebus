@@ -51,6 +51,7 @@ public class JSONObject extends JSONEntity
 		else
 			bis = new PositionTrackingInputStream(is);
 		
+		bis.mark(1);
 		while((cInt = bis.read()) != -1)
 		{
 			c = (char)cInt;
@@ -68,16 +69,18 @@ public class JSONObject extends JSONEntity
 			{
 				if(c == '{' || c == '}' || c == '[' || c == ']' || c == ',')
 				{
+					if(c == '}'  &&  attributes.isEmpty())
+					{
+						correctlyClosed = true;
+						break;
+					}
 					throw new JSONException("Expected a new key at line " + bis.getLine() + " column " + bis.getColumn());
 				}
 				if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
 				{
-					readState = 2;
 					key = "";
-					if(c == '"')
-						inString = true;
-					else
-						key += c;
+					bis.reset();
+					readState = 2;
 				}					
 			}
 			else if(readState == 2) // In key
@@ -102,12 +105,14 @@ public class JSONObject extends JSONEntity
 					}
 					else if(c == ':')
 					{
-						value = readJSONValue(bis);
 						readState = 4;
 					}
 					else if(c == '"')
 					{
-						throw new JSONException("Illegal character at line " + bis.getLine() + " column " + bis.getColumn());
+						if(key.equals(""))
+							inString = true;
+						else
+							throw new JSONException("Illegal character at line " + bis.getLine() + " column " + bis.getColumn());
 					}
 					else
 					{
@@ -119,7 +124,6 @@ public class JSONObject extends JSONEntity
 			{
 				if(c == ':')
 				{
-					value = readJSONValue(bis);
 					readState = 4;
 				}
 				else if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
@@ -127,24 +131,30 @@ public class JSONObject extends JSONEntity
 					throw new JSONException("Expected ':' at line " + bis.getLine() + " column " + bis.getColumn());
 				}
 			}
-			else if(readState == 4) // After value
+			else if(readState == 4) // before value
 			{
-				if(c == ','  ||  c == '}')
+				bis.reset();
+				value = readJSONValue(bis);
+				attributes.put(key, value);
+				readState = 5;
+			}
+			else if(readState == 5) // After value
+			{
+				if(c == '}')
 				{
-					attributes.put(key, value);
-					if(c == '}')
-					{
-						correctlyClosed = true;
-						break;
-					}
-					else
-						readState = 1;
+					correctlyClosed = true;
+					break;
 				}
-				else if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
+				else if(c == ',')
+				{
+					readState = 1;
+				}
+				else if(c != ' ' &&  c != '\r' && c != '\n' && c != '\t')
 				{
 					throw new JSONException("Expected '}' at line " + bis.getLine() + " column " + bis.getColumn());
 				}
 			}
+			bis.mark(1);
 		}
 		if(!correctlyClosed)
 			throw new JSONException("Missing '}' as line " + bis.getLine() + " column " + bis.getColumn());

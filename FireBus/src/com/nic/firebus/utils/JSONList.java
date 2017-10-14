@@ -29,6 +29,7 @@ public class JSONList extends JSONEntity
 		else
 			bis = new PositionTrackingInputStream(is);
 		
+		bis.mark(1);
 		while((cInt = bis.read()) != -1)
 		{
 			c = (char)cInt;
@@ -38,16 +39,13 @@ public class JSONList extends JSONEntity
 				{
 					if(c == '[')
 					{
-						JSONEntity value = readJSONValue(bis);
-						if(value != null)
-							list.add(value);
 						readState = 1;
 					}
 					else
 						throw new JSONException("Expected '[' at line " + bis.getLine() + " column " + bis.getColumn());
 				}						
 			}
-			else if(readState == 1)
+			else if(readState == 1) // before first value
 			{
 				if(c == ']')
 				{
@@ -56,13 +54,47 @@ public class JSONList extends JSONEntity
 				}
 				else if(c == ',')
 				{
+					throw new JSONException("Expected value or ']' at line " + bis.getLine() + " column " + bis.getColumn());
+				}
+				else if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
+				{
+					bis.reset();
 					JSONEntity value = readJSONValue(bis);
 					if(value != null)
 						list.add(value);
+					readState = 3;
+				}
+			}
+			else if(readState == 2) // before subsequent values
+			{
+				if(c == ']'  ||  c == ',')
+				{
+					throw new JSONException("Expected value at line " + bis.getLine() + " column " + bis.getColumn());
 				}
 				else if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
-					throw new JSONException("Expected ',' or ']' at line " + bis.getLine() + " column " + bis.getColumn());
+				{
+					bis.reset();
+					JSONEntity value = readJSONValue(bis);
+					if(value != null)
+						list.add(value);
+					readState = 3;
+				}
 			}
+			else if(readState == 3)  //  after value
+			{
+				if(c == ']')
+				{
+					correctlyClosed = true;
+					break;
+				}
+				else if(c == ',')
+				{
+					readState = 2;
+				}
+				else if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
+					throw new JSONException("Expected ',' or ']' at line " + bis.getLine() + " column " + bis.getColumn());				
+			}
+			bis.mark(1);
 		}
 		if(!correctlyClosed)
 			throw new JSONException("Missing ']' as line " + bis.getLine() + " column " + bis.getColumn());

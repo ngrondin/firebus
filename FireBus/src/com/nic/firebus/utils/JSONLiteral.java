@@ -33,12 +33,9 @@ public class JSONLiteral extends JSONEntity
 			{
 				if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
 				{
-					readState = 1;
+					bis.reset();
 					value = "";
-					if(c == '"')
-						inString = true;
-					else
-						value += c;
+					readState = 1;
 				}					
 			}
 			else if(readState == 1) // In value
@@ -57,7 +54,14 @@ public class JSONLiteral extends JSONEntity
 				}
 				else
 				{
-					if(c == ' ' || c == '\r' || c == '\n' || c == '\t' || c == ',' || c == '}')
+					if(c == '"')
+					{
+						if(value.equals(""))
+							inString = true;
+						else
+							throw new JSONException("Illegal character at line " + bis.getLine() + " column " + bis.getColumn());
+					}
+					else if(c == ' ' || c == '\r' || c == '\n' || c == '\t' || c == ',' || c == '}' || c == ']')
 					{
 						bis.reset();
 						break;
@@ -84,7 +88,10 @@ public class JSONLiteral extends JSONEntity
 
 	public String toString(int indent)
 	{
-		return "\"" + getString() + "\"";
+		if(value == null)
+			return "\"\"";
+		else
+			return "\"" + getString() + "\"";
 	}
 	
 	public JSONLiteral getCopy()
