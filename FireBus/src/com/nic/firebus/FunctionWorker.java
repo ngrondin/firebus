@@ -15,7 +15,7 @@ public class FunctionWorker extends Thread
 	protected Message inboundMessage;
 	protected NodeCore nodeCore;
 	
-	public FunctionWorker(FunctionEntry fe, Message im, NodeCore nc) //FunctionListener fl)
+	public FunctionWorker(FunctionEntry fe, Message im, NodeCore nc)
 	{
 		functionEntry = fe;
 		inboundMessage = im;

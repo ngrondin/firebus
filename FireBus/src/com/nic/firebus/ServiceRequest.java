@@ -15,10 +15,10 @@ public class ServiceRequest extends Thread
 	protected NodeCore nodeCore;
 	protected String serviceName;
 	protected Payload requestPayload;
-	protected int timeout;
+	protected int subTimeout;
+	protected int totalTimeout;
 	protected long expiry;
 	protected ServiceRequestor requestor;
-	//protected Payload responsePayload;
 	protected String errorMessage;
 
 	public ServiceRequest(NodeCore nc, String sn, Payload p, int t)
@@ -26,9 +26,10 @@ public class ServiceRequest extends Thread
 		nodeCore = nc;
 		serviceName = sn;
 		requestPayload = p;
-		timeout = t;
+		totalTimeout = t;
+		subTimeout = totalTimeout / 4;
 		errorMessage = null;
-		expiry = System.currentTimeMillis() + timeout;
+		expiry = System.currentTimeMillis() + totalTimeout;
 	}
 	
 	public void execute(ServiceRequestor r)
@@ -60,7 +61,7 @@ public class ServiceRequest extends Thread
 			{
 				logger.fine("Broadcasting Service Information Request Message");
 				Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, serviceName, null);
-				Message respMsg = nodeCore.getCorrelationManager().synchronousCall(findMsg, timeout);
+				Message respMsg = nodeCore.getCorrelationManager().synchronousCall(findMsg, totalTimeout);
 				if(respMsg != null)
 				{
 					ni = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId());
@@ -72,7 +73,7 @@ public class ServiceRequest extends Thread
 				try
 				{
 					logger.fine("Trying to retreive distributable service");
-					ServiceRequest request = new ServiceRequest(nodeCore, "firebus_distributable_services_source", new Payload(serviceName.getBytes()), 2000);
+					ServiceRequest request = new ServiceRequest(nodeCore, "firebus_distributable_services_source", new Payload(serviceName.getBytes()), subTimeout);
 					Payload response = request.execute();
 					if(response != null)
 					{
@@ -100,7 +101,7 @@ public class ServiceRequest extends Thread
 			{
 				logger.info("Requesting Service");
 				Message msg = new Message(ni.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
-				Message resp = nodeCore.getCorrelationManager().synchronousCall(msg, timeout);
+				Message resp = nodeCore.getCorrelationManager().synchronousCall(msg, subTimeout);
 				if(resp != null)
 				{
 					responsePayload = resp.getPayload();
