@@ -78,7 +78,16 @@ public class FunctionWorker extends Thread
 			}
 			catch(FunctionErrorException e)
 			{
-				Message msg = new Message(inboundMessage.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEERROR, inboundMessage.getSubject(), new Payload(e.getMessage().getBytes()));
+				Throwable t = e;
+				String errorMessage = "";
+				while(t != null)
+				{
+					if(errorMessage.length() > 0)
+						errorMessage += " : ";
+					errorMessage += t.getMessage();
+					t = t.getCause();
+				}
+				Message msg = new Message(inboundMessage.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEERROR, inboundMessage.getSubject(), new Payload(errorMessage.getBytes()));
 				msg.setCorrelation(inboundMessage.getCorrelation());
 				nodeCore.sendMessage(msg);
 			}
