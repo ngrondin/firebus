@@ -73,7 +73,7 @@ public class ServiceRequest extends Thread
 				}
 			}
 			
-			if(ni == null)
+			if(ni == null  &&  !serviceName.equals("firebus_distributable_services_source"))
 			{
 				try
 				{
@@ -131,6 +131,9 @@ public class ServiceRequest extends Thread
 						{
 							respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, requestTimeout);
 						}
+						
+						if(System.currentTimeMillis() > expiry)
+							throw new FunctionTimeoutException("Service " + serviceName + " timed out while executing");
 					}
 				}
 				else
@@ -143,7 +146,7 @@ public class ServiceRequest extends Thread
 		if(responsePayload != null)
 			return responsePayload;
 		else
-			throw new FunctionTimeoutException("Service " + serviceName + " has timed out");
+			throw new FunctionTimeoutException("Service " + serviceName + " could not be found");
 	}
 	
 }

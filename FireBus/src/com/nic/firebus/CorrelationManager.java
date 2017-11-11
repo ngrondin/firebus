@@ -54,6 +54,7 @@ public class CorrelationManager
 	public Message waitForResponse(int correlationId, int timeout)
 	{
 		CorrelationEntry entry = entries.get(correlationId);
+		Message responseMessage = null;
 		if(entry != null)
 		{
 			entry.expiry = System.currentTimeMillis() + timeout;
@@ -68,25 +69,21 @@ public class CorrelationManager
 				}
 				catch(InterruptedException e)
 				{
-					logger.severe("Correlation synchronous call was interrupted : " + e.getMessage());
+					logger.severe("Correlation wait was interrupted : " + e.getMessage());
 				}
 			}
-			
-			if(entry.inboundMessage.getType() == Message.MSGTYPE_SERVICEPROGRESS)
+
+			if(entry.inboundMessage != null)
 			{
-				entry.inboundMessage = null;
+				responseMessage = entry.inboundMessage;
+				if(entry.inboundMessage.getType() == Message.MSGTYPE_SERVICEPROGRESS)
+					entry.inboundMessage = null;
+				else
+					entries.remove(entry);
 			}
-			else
-			{
-				entries.remove(entry);
-			}
-			
-			return entry.inboundMessage;
 		}
-		else
-		{
-			return null;
-		}
+		
+		return responseMessage;
 	}
 	
 	public Message sendRequestAndWait(Message outMsg, int timeout)

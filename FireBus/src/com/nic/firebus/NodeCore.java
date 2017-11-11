@@ -312,7 +312,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 	{
 		while(!quit)
 		{
-			logger.finest("Doing a control cycle");
+			//logger.finest("Doing a control cycle");
 			try
 			{
 				correlationManager.checkExpiredCalls();
@@ -332,7 +332,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 				{
 					synchronized(this)
 					{
-						this.wait();
+						this.wait(100);
 					}
 				}
 			}
