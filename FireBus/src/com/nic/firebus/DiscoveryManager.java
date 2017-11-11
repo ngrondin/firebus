@@ -46,7 +46,14 @@ public class DiscoveryManager extends Thread
 	            NetworkInterface xface = ifs.nextElement();
 	            if(!xface.isLoopback()  &&  xface.isUp())
 	            {
-	            	socket.joinGroup(new InetSocketAddress(discoveryAddress, discoveryPort), xface);
+	            	try
+	            	{
+	            		socket.joinGroup(new InetSocketAddress(discoveryAddress, discoveryPort), xface);
+	            	}
+	            	catch(Exception e)
+	            	{
+	            		logger.info(xface.getName() + " could not join discovery address group");
+	            	}
                 }
 	        }	
 	        

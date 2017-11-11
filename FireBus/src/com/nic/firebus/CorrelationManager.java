@@ -43,18 +43,51 @@ public class CorrelationManager
 	{
 		int c = getNextCorrelation();
 		outMsg.setCorrelation(c);
-		CorrelationEntry e = new CorrelationEntry(outMsg, null, timeout); 
-		entries.put(c, e);
+		CorrelationEntry entry = new CorrelationEntry(outMsg, null, timeout); 
+		entries.put(c, entry);
 		nodeCore.sendMessage(outMsg);
-		int time = 0;
-		while(time < timeout  &&  e.inboundMessage == null)
-		{
-			try{Thread.sleep(10);} catch(Exception err){}
-			time += 10;
-		}
-		entries.remove(e);
-		return e.inboundMessage;
+		return waitForResponse(c, timeout);
 	}
+
+	
+	public Message waitForResponse(int correlationId, int timeout)
+	{
+		CorrelationEntry entry = entries.get(correlationId);
+		if(entry != null)
+		{
+			long expiry = System.currentTimeMillis() + timeout;
+			while(System.currentTimeMillis() < expiry  &&  entry.inboundMessage == null)
+			{
+				try
+				{
+					synchronized(this)
+					{
+						this.wait();
+					}
+				}
+				catch(InterruptedException e)
+				{
+					logger.severe("Correlation synchronous call was interrupted : " + e.getMessage());
+				}
+			}
+			
+			if(entry.inboundMessage.getType() == Message.MSGTYPE_SERVICEPROGRESS)
+			{
+				entry.inboundMessage = null;
+			}
+			else
+			{
+				entries.remove(entry);
+			}
+			
+			return entry.inboundMessage;
+		}
+		else
+		{
+			return null;
+		}
+	}
+	
 	
 	public void asynchronousCall(Message outMsg, CorrelationListener cl, int timeout)
 	{
@@ -87,6 +120,13 @@ public class CorrelationManager
 					t.start();
 					entries.remove(c);
 				}
+				else
+				{
+					synchronized(this)
+					{
+						notify();
+					}
+				}
 			}
 		}
 	}
@@ -111,6 +151,13 @@ public class CorrelationManager
 				});	
 				t.start();
 				entries.remove(c);				
+			}
+			else
+			{
+				synchronized(this)
+				{
+					notify();
+				}
 			}
 		}
 	}

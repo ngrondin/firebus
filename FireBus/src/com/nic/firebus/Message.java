@@ -27,20 +27,14 @@ public class Message
 	public static final int MSGTYPE_SERVICERESPONSE = 7;
 	public static final int MSGTYPE_SERVICEUNAVAILABLE = 8;
 	public static final int MSGTYPE_SERVICEERROR = 9;
-	public static final int MSGTYPE_PUBLISH = 10;
-	public static final int MSGTYPE_REPUBLISH = 11;
+	public static final int MSGTYPE_SERVICEPROGRESS = 10;
+	public static final int MSGTYPE_PUBLISH = 11;
+	public static final int MSGTYPE_REPUBLISH = 12;
 	
-	protected static final short  MESSAGE_VERSION = 1;
+	protected static final short  MESSAGE_VERSION = 2;
 	
 	protected static int nextId = 0;
 	
-	/*public Message(byte[] b)
-	{
-		encodedMessage = b;
-		decoded = false;
-		encoded = true;
-	}*/
-
 	public Message(int d, int o, int t, String s, Payload p)
 	{
 		version = MESSAGE_VERSION;
@@ -54,8 +48,6 @@ public class Message
 		correlation = 0;
 		subject = s;
 		payload = p;
-		//decoded = true;
-		//encoded = false;
 	}
 	
 
@@ -250,6 +242,8 @@ public class Message
 			sb.append("Service Unavailable");
 		else if(type == Message.MSGTYPE_SERVICEERROR)
 			sb.append("Service Error");
+		else if(type == Message.MSGTYPE_SERVICEPROGRESS)
+			sb.append("Service In Progress");
 		else if(type == Message.MSGTYPE_PUBLISH)
 			sb.append("Publish");
 		else if(type == Message.MSGTYPE_REPUBLISH)

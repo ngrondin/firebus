@@ -16,7 +16,7 @@ public class ServiceRequest extends Thread
 	protected String serviceName;
 	protected Payload requestPayload;
 	protected int subTimeout;
-	protected int totalTimeout;
+	protected int requestTimeout;
 	protected long expiry;
 	protected ServiceRequestor requestor;
 	protected String errorMessage;
@@ -26,10 +26,10 @@ public class ServiceRequest extends Thread
 		nodeCore = nc;
 		serviceName = sn;
 		requestPayload = p;
-		totalTimeout = t;
-		subTimeout = totalTimeout / 4;
+		requestTimeout = t;
+		subTimeout = 500;
 		errorMessage = null;
-		expiry = System.currentTimeMillis() + totalTimeout;
+		expiry = System.currentTimeMillis() + requestTimeout;
 	}
 	
 	public void execute(ServiceRequestor r)
@@ -61,7 +61,7 @@ public class ServiceRequest extends Thread
 			{
 				logger.fine("Broadcasting Service Information Request Message");
 				Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, serviceName, null);
-				Message respMsg = nodeCore.getCorrelationManager().synchronousCall(findMsg, totalTimeout);
+				Message respMsg = nodeCore.getCorrelationManager().synchronousCall(findMsg, subTimeout);
 				if(respMsg != null)
 				{
 					ni = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId());
@@ -73,7 +73,7 @@ public class ServiceRequest extends Thread
 				try
 				{
 					logger.fine("Trying to retreive distributable service");
-					ServiceRequest request = new ServiceRequest(nodeCore, "firebus_distributable_services_source", new Payload(serviceName.getBytes()), subTimeout);
+					ServiceRequest request = new ServiceRequest(nodeCore, "firebus_distributable_services_source", new Payload(serviceName.getBytes()), subTimeout * 2);
 					Payload response = request.execute();
 					if(response != null)
 					{
@@ -93,7 +93,7 @@ public class ServiceRequest extends Thread
 				}
 				catch(Exception e)
 				{
-					logger.severe("General error message when refreshing the source of a distributable function : " + e.getMessage());
+					logger.severe("General error when refreshing the source of a distributable function : " + e.getMessage());
 				}
 			}
 
@@ -101,7 +101,7 @@ public class ServiceRequest extends Thread
 			{
 				logger.info("Requesting Service");
 				Message msg = new Message(ni.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
-				Message resp = nodeCore.getCorrelationManager().synchronousCall(msg, subTimeout);
+				Message resp = nodeCore.getCorrelationManager().synchronousCall(msg, requestTimeout);
 				if(resp != null)
 				{
 					responsePayload = resp.getPayload();
