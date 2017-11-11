@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import com.nic.firebus.FirebusAdmin;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
+import com.nic.firebus.exceptions.FunctionTimeoutException;
 import com.nic.firebus.information.NodeInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.ServiceRequestor;
@@ -108,8 +109,12 @@ public class Console implements ServiceRequestor
 						}
 						catch (FunctionErrorException e)
 						{
-							e.printStackTrace();
-						}					
+							System.out.println("Function error: " + e.getMessage());
+						}
+						catch (FunctionTimeoutException e)
+						{
+							System.out.println("Request has timed out: " + e.getMessage());
+						}
 					}
 					else if(command.equals("pub") && functionName != null)
 					{
@@ -188,9 +193,9 @@ public class Console implements ServiceRequestor
 			Logger logger = Logger.getLogger("com.nic.firebus");
 			FileHandler fh = new FileHandler("Console.log");
 			fh.setFormatter(new FirebusSimpleFormatter());
-			fh.setLevel(Level.FINEST);
+			fh.setLevel(Level.FINER);
 			logger.addHandler(fh);
-			logger.setLevel(Level.FINEST);
+			logger.setLevel(Level.FINER);
 		}
 		catch(Exception e)
 		{
