@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import com.nic.firebus.distributables.DistributableService;
 import com.nic.firebus.exceptions.FunctionErrorException;
+import com.nic.firebus.exceptions.FunctionTimeoutException;
 import com.nic.firebus.information.NodeInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.ServiceRequestor;
@@ -48,10 +49,14 @@ public class ServiceRequest extends Thread
 		catch(FunctionErrorException e)
 		{
 			requestor.requestErrorCallback(e);
-		}		
+		}
+		catch(FunctionTimeoutException e)
+		{
+			requestor.requestTimeout();
+		}
 	}
 	
-	public Payload execute() throws FunctionErrorException
+	public Payload execute() throws FunctionErrorException, FunctionTimeoutException
 	{
 		Payload responsePayload = null;
 		while(responsePayload == null  &&  System.currentTimeMillis() < expiry)
@@ -61,7 +66,7 @@ public class ServiceRequest extends Thread
 			{
 				logger.fine("Broadcasting Service Information Request Message");
 				Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, serviceName, null);
-				Message respMsg = nodeCore.getCorrelationManager().synchronousCall(findMsg, subTimeout);
+				Message respMsg = nodeCore.getCorrelationManager().sendRequestAndWait(findMsg, subTimeout);
 				if(respMsg != null)
 				{
 					ni = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId());
@@ -100,11 +105,33 @@ public class ServiceRequest extends Thread
 			if(ni != null)
 			{
 				logger.info("Requesting Service");
-				Message msg = new Message(ni.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
-				Message resp = nodeCore.getCorrelationManager().synchronousCall(msg, requestTimeout);
-				if(resp != null)
+				Message reqMsg = new Message(ni.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
+				int correlation = nodeCore.getCorrelationManager().sendRequest(reqMsg, subTimeout);
+				Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
+				if(respMsg != null)
 				{
-					responsePayload = resp.getPayload();
+					while(System.currentTimeMillis() < expiry)
+					{
+						if(respMsg.getType() == Message.MSGTYPE_SERVICEERROR)
+						{
+							errorMessage = respMsg.getPayload().getString();
+							throw new FunctionErrorException(errorMessage);
+						}
+						else if(respMsg.getType() == Message.MSGTYPE_SERVICEUNAVAILABLE)
+						{
+							ni.getServiceInformation(serviceName).reduceRating();
+							break;
+						} 
+						else if(respMsg.getType() == Message.MSGTYPE_SERVICERESPONSE)
+						{
+							responsePayload = respMsg.getPayload();
+							break;
+						}
+						else if(respMsg.getType() == Message.MSGTYPE_SERVICEPROGRESS)
+						{
+							respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, requestTimeout);
+						}
+					}
 				}
 				else
 				{
@@ -116,7 +143,7 @@ public class ServiceRequest extends Thread
 		if(responsePayload != null)
 			return responsePayload;
 		else
-			throw new FunctionErrorException(errorMessage);
+			throw new FunctionTimeoutException("Service " + serviceName + " has timed out");
 	}
 	
 }

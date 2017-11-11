@@ -34,11 +34,12 @@ public class CorrelationManager
 		nodeCore = nc;
 	}
 	
-	public int getNextCorrelation()
+	protected int getNextCorrelation()
 	{
 		return nextCorrelation++;
 	}
 	
+	/*
 	public Message synchronousCall(Message outMsg, int timeout)
 	{
 		int c = getNextCorrelation();
@@ -48,15 +49,15 @@ public class CorrelationManager
 		nodeCore.sendMessage(outMsg);
 		return waitForResponse(c, timeout);
 	}
-
+*/
 	
 	public Message waitForResponse(int correlationId, int timeout)
 	{
 		CorrelationEntry entry = entries.get(correlationId);
 		if(entry != null)
 		{
-			long expiry = System.currentTimeMillis() + timeout;
-			while(System.currentTimeMillis() < expiry  &&  entry.inboundMessage == null)
+			entry.expiry = System.currentTimeMillis() + timeout;
+			while(System.currentTimeMillis() < entry.expiry  &&  entry.inboundMessage == null)
 			{
 				try
 				{
@@ -88,14 +89,25 @@ public class CorrelationManager
 		}
 	}
 	
+	public Message sendRequestAndWait(Message outMsg, int timeout)
+	{
+		int c = sendRequest(outMsg, null, timeout);
+		return waitForResponse(c, timeout);
+	}
 	
-	public void asynchronousCall(Message outMsg, CorrelationListener cl, int timeout)
+	public int sendRequest(Message outMsg, int timeout)
+	{
+		return sendRequest(outMsg, null, timeout);
+	}
+	
+	public int sendRequest(Message outMsg, CorrelationListener cl, int timeout)
 	{
 		int c = getNextCorrelation();
 		outMsg.setCorrelation(c);
 		CorrelationEntry e = new CorrelationEntry(outMsg, cl, timeout); 
 		entries.put(c, e);
 		nodeCore.sendMessage(outMsg);
+		return c;
 	}
 	
 	public void receiveResponse(Message inMsg)

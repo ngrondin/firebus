@@ -150,13 +150,19 @@ public class Directory
 	
 	public NodeInformation findServiceProvider(String name)
 	{
+		NodeInformation bestNode = null;
+		int bestNodeRating = 0;
 		for(int i = 0; i < nodes.size(); i++)
 		{
 			NodeInformation ni = nodes.get(i);
-			if(ni.getServiceInformation(name) != null  &&  !ni.isUnresponsive())
-				return ni;
+			ServiceInformation si = ni.getServiceInformation(name);
+			if(si != null  &&  !ni.isUnresponsive()  &&  si.getRating() > bestNodeRating)
+			{
+				bestNode = ni;
+				bestNodeRating = si.getRating();
+			}
 		}
-		return null;
+		return bestNode;
 	}
 
 

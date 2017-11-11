@@ -10,6 +10,7 @@ public class ServiceInformation extends FunctionInformation
 	protected String requestContract;
 	protected String responseMimeType;
 	protected String responseContract;
+	protected int rating;
 	
 	public ServiceInformation(String sn)
 	{
@@ -23,6 +24,7 @@ public class ServiceInformation extends FunctionInformation
 		responseMimeType = rpmt;
 		responseContract = rpc;
 		fullInformation = true;
+		rating = 100;
 	}
 
 	public String getRequestMimeType()
@@ -45,9 +47,24 @@ public class ServiceInformation extends FunctionInformation
 		return responseContract;
 	}
 	
+	public int getRating()
+	{
+		return rating;
+	}
+	
 	public boolean hasFullInformation()
 	{
 		return fullInformation;
+	}
+	
+	public void reduceRating()
+	{
+		rating--;
+	}
+	
+	public void increaseRating()
+	{
+		rating++;
 	}
 	
 	public byte[] serialise()

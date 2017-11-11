@@ -29,47 +29,52 @@ public class FunctionWorker extends Thread
 	{
 		Payload inPayload = inboundMessage.getPayload();
 
-		if(functionEntry.function instanceof DistributableService)
-		{
-			DistributableService ds = (DistributableService)functionEntry.function;
-			if(ds.isExpired())
-			{
-				logger.fine("Distributable service  " + functionEntry.serviceName + " has expired, refreshing the source");
-				try
-				{
-					ServiceRequest request = new ServiceRequest(nodeCore, "firebus_distributable_services_source", new Payload(functionEntry.serviceName.getBytes()), 2000);
-					Payload response = request.execute();
-					if(response != null)
-					{
-						logger.fine("Refreshing distributable service : " + functionEntry.serviceName);
-						JSONObject serviceConfig = new JSONObject(response.getString());
-						String type = serviceConfig.getString("type");
-						DistributableService newDS = DistributableService.instantiate(nodeCore, type, serviceConfig.getObject("config"));
-						functionEntry.setFunction(newDS);
-						logger.fine("Refreshed distributable service : " + functionEntry.serviceName);
-					}
-					else
-					{
-						logger.fine("No response received from 'firebus_distributable_services_source' ");
-					}
-				}
-				catch(Exception e)
-				{
-					logger.severe("General error message when refreshing the source of a distributable function : " + e.getMessage());
-				}
-			}
-		}
-		
 		if(inboundMessage.getType() == Message.MSGTYPE_REQUESTSERVICE  && functionEntry.function instanceof ServiceProvider)
 		{
+			if(functionEntry.function instanceof DistributableService)
+			{
+				DistributableService ds = (DistributableService)functionEntry.function;
+				if(ds.isExpired())
+				{
+					logger.fine("Distributable service  " + functionEntry.serviceName + " has expired, refreshing the source");
+					try
+					{
+						ServiceRequest request = new ServiceRequest(nodeCore, "firebus_distributable_services_source", new Payload(functionEntry.serviceName.getBytes()), 2000);
+						Payload response = request.execute();
+						if(response != null)
+						{
+							logger.fine("Refreshing distributable service : " + functionEntry.serviceName);
+							JSONObject serviceConfig = new JSONObject(response.getString());
+							String type = serviceConfig.getString("type");
+							DistributableService newDS = DistributableService.instantiate(nodeCore, type, serviceConfig.getObject("config"));
+							functionEntry.setFunction(newDS);
+							logger.fine("Refreshed distributable service : " + functionEntry.serviceName);
+						}
+						else
+						{
+							logger.fine("No response received from 'firebus_distributable_services_source' ");
+						}
+					}
+					catch(Exception e)
+					{
+						logger.severe("General error message when refreshing the source of a distributable function : " + e.getMessage());
+					}
+				}
+			}
+			
 			logger.info("Executing Service Provider");
 			Payload returnPayload = null;
 			try
 			{
+				Message progressMsg = new Message(inboundMessage.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEPROGRESS, inboundMessage.getSubject(), null);
+				progressMsg.setCorrelation(inboundMessage.getCorrelation());
+				nodeCore.sendMessage(progressMsg);
+
 				returnPayload = ((ServiceProvider)functionEntry.function).service(inPayload);
-				Message msg = new Message(inboundMessage.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, inboundMessage.getSubject(), returnPayload);
-				msg.setCorrelation(inboundMessage.getCorrelation());
-				nodeCore.sendMessage(msg);
+				
+				Message responseMsg = new Message(inboundMessage.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, inboundMessage.getSubject(), returnPayload);
+				responseMsg.setCorrelation(inboundMessage.getCorrelation());
+				nodeCore.sendMessage(responseMsg);
 			}
 			catch(FunctionErrorException e)
 			{

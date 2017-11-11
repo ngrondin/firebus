@@ -3,6 +3,7 @@ package com.nic.firebus;
 import java.util.logging.Logger;
 
 import com.nic.firebus.exceptions.FunctionErrorException;
+import com.nic.firebus.exceptions.FunctionTimeoutException;
 import com.nic.firebus.information.NodeInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
@@ -58,7 +59,7 @@ public class Firebus
 	{
 		logger.fine("Sending Node Information Request Message");
 		Message queryMsg = new Message(nodeId, nodeCore.getNodeId(), Message.MSGTYPE_QUERYNODE, null, null);
-		Message respMsg = nodeCore.getCorrelationManager().synchronousCall(queryMsg, 2000);
+		Message respMsg = nodeCore.getCorrelationManager().sendRequestAndWait(queryMsg, 2000);
 		if(respMsg != null)
 			return nodeCore.getDirectory().getNodeById(nodeId);
 		return null;
@@ -72,7 +73,7 @@ public class Firebus
 		{
 			logger.fine("Broadcasting Service Information Request Message");
 			Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, serviceName, null);
-			Message respMsg = nodeCore.getCorrelationManager().synchronousCall(findMsg, 2000);
+			Message respMsg = nodeCore.getCorrelationManager().sendRequestAndWait(findMsg, 2000);
 			if(respMsg != null)
 				si = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId()).getServiceInformation(serviceName);
 		}
@@ -80,13 +81,13 @@ public class Firebus
 		return si;
 	}
 
-	public Payload requestService(String serviceName, Payload payload) throws FunctionErrorException
+	public Payload requestService(String serviceName, Payload payload) throws FunctionErrorException, FunctionTimeoutException
 	{
 		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, 2000);
 		return request.execute();
 	}
 
-	public Payload requestService(String serviceName, Payload payload, int timeout) throws FunctionErrorException
+	public Payload requestService(String serviceName, Payload payload, int timeout) throws FunctionErrorException, FunctionTimeoutException
 	{
 		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, timeout);
 		return request.execute();

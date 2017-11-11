@@ -79,7 +79,7 @@ public class TestNode
 									String resp = new String(n.requestService(functionName, new Payload(null, line.getBytes()), 2000).data);
 									System.out.println(resp);
 								}
-								catch (FunctionErrorException e)
+								catch (Exception e)
 								{
 									e.printStackTrace();
 								}
