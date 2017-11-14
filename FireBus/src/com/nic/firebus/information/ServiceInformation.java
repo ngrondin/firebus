@@ -15,6 +15,7 @@ public class ServiceInformation extends FunctionInformation
 	public ServiceInformation(String sn)
 	{
 		fullInformation = false;
+		rating = 100;
 	}
 	
 	public ServiceInformation(String rqmt, String rqc, String rpmt, String rpc)

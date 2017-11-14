@@ -39,18 +39,7 @@ public class CorrelationManager
 		return nextCorrelation++;
 	}
 	
-	/*
-	public Message synchronousCall(Message outMsg, int timeout)
-	{
-		int c = getNextCorrelation();
-		outMsg.setCorrelation(c);
-		CorrelationEntry entry = new CorrelationEntry(outMsg, null, timeout); 
-		entries.put(c, entry);
-		nodeCore.sendMessage(outMsg);
-		return waitForResponse(c, timeout);
-	}
-*/
-	
+
 	public Message waitForResponse(int correlationId, int timeout)
 	{
 		CorrelationEntry entry = entries.get(correlationId);

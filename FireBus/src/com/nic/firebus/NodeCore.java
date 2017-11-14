@@ -226,6 +226,9 @@ public class NodeCore extends Thread implements DiscoveryListener
 				case Message.MSGTYPE_REQUESTSERVICE:
 					functionManager.executeFunction(msg);
 					break;
+				case Message.MSGTYPE_SERVICEPROGRESS:
+					correlationManager.receiveResponse(msg);
+					break;
 				case Message.MSGTYPE_SERVICERESPONSE:
 					correlationManager.receiveResponse(msg);
 					break;

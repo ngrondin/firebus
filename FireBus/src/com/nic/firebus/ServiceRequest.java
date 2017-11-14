@@ -58,6 +58,7 @@ public class ServiceRequest extends Thread
 	
 	public Payload execute() throws FunctionErrorException, FunctionTimeoutException
 	{
+		logger.info("Requesting Service");
 		Payload responsePayload = null;
 		while(responsePayload == null  &&  System.currentTimeMillis() < expiry)
 		{
@@ -104,7 +105,7 @@ public class ServiceRequest extends Thread
 
 			if(ni != null)
 			{
-				logger.info("Requesting Service");
+				logger.fine("Sending service request message to " + ni.getNodeId());
 				Message reqMsg = new Message(ni.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
 				int correlation = nodeCore.getCorrelationManager().sendRequest(reqMsg, subTimeout);
 				Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
@@ -133,7 +134,10 @@ public class ServiceRequest extends Thread
 						}
 						
 						if(System.currentTimeMillis() > expiry)
+						{
+							logger.info("Service request " + serviceName + " has timed out while executing");
 							throw new FunctionTimeoutException("Service " + serviceName + " timed out while executing");
+						}
 					}
 				}
 				else

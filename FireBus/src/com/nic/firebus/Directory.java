@@ -49,7 +49,7 @@ public class Directory
 
 	public void deleteNode(NodeInformation n)
 	{
-		logger.fine("Deleting Node to Directory");
+		logger.fine("Deleting Node from Directory");
 		nodes.remove(n);
 	}
 	
