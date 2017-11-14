@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.nic.firebus.Firebus;
@@ -44,6 +45,17 @@ public class HTTPListenerAdapter extends Adapter
 				if(path.length() > serviceName.length() + 2)
 					get = path.substring(2 + serviceName.length());
 
+				List<String> cookies = exch.getRequestHeaders().get("Cookie");
+				if(cookies != null)
+				{
+					for(int i = 0; i < cookies.size(); i++)
+					{
+						String cookie = cookies.get(i);
+						String[] parts = cookie.split("=");
+						firebusRequest.metadata.put(parts[0], parts[1]);
+					}
+				}
+				
 				firebusRequest.metadata.put("get", get);
 				if(mime != null)
 					firebusRequest.metadata.put("mime", mime);
@@ -92,6 +104,8 @@ public class HTTPListenerAdapter extends Adapter
 				{
 					if(firebusResponse.metadata.get("mime") != null)
 						exch.getResponseHeaders().add("Content-Type", firebusResponse.metadata.get("mime")); 
+					if(firebusResponse.metadata.get("sessionid") != null)
+						exch.getResponseHeaders().add("Set-Cookie", "sessionid=" + firebusResponse.metadata.get("sessionid") + "; Path=/"); 
 					exch.sendResponseHeaders(200, firebusResponse.getBytes().length);
 					os.write(firebusResponse.getBytes());
 				}
@@ -104,6 +118,7 @@ public class HTTPListenerAdapter extends Adapter
 			}
 			catch(Exception e)
 			{
+				os.write(e.getMessage().getBytes());
 				logger.severe("General error requesting service from HTTP request " + e.getMessage());
 			}
 			os.close();
