@@ -190,12 +190,12 @@ public class JSONObject extends JSONEntity
 		}		
 	}
 	
-	public void put(String key, String value)
+	public void put(String key, Object value)
 	{
 		JSONEntity val = new JSONLiteral(value);
 		put(key, val);
 	}
-	
+
 	public JSONEntity get(String key)
 	{
 		JSONEntity ret = null;
@@ -224,6 +224,25 @@ public class JSONObject extends JSONEntity
 			return ((JSONLiteral)obj).getString();
 		else
 			return null;
+	}
+	
+	public Number getNumber(String key)
+	{
+		JSONEntity obj = get(key);
+		if(obj != null  &&  obj instanceof JSONLiteral)
+			return ((JSONLiteral)obj).getNumber();
+		else
+			return null;
+	}
+
+	
+	public boolean getBoolean(String key)
+	{
+		JSONEntity obj = get(key);
+		if(obj != null  &&  obj instanceof JSONLiteral)
+			return ((JSONLiteral)obj).getBoolean();
+		else
+			return false;
 	}
 	
 	public JSONObject getObject(String key)

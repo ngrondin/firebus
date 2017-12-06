@@ -160,6 +160,24 @@ public class JSONList extends JSONEntity
 			return null;		
 	}
 	
+	public Number getNumber(int i)
+	{
+		JSONEntity obj = list.get(i);
+		if(obj != null  &&  obj instanceof JSONLiteral)
+			return ((JSONLiteral)obj).getNumber();
+		else
+			return null;
+	}
+
+	public boolean getBoolean(int i)
+	{
+		JSONEntity obj = list.get(i);
+		if(obj != null  &&  obj instanceof JSONLiteral)
+			return ((JSONLiteral)obj).getBoolean();
+		else
+			return false;
+	}
+	
 	public JSONObject getObject(int i)
 	{
 		JSONEntity obj = list.get(i);
