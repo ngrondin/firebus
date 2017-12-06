@@ -107,9 +107,9 @@ public class StandaloneContainer
 				Logger logger = Logger.getLogger("com.nic.firebus");
 				FileHandler fh = new FileHandler("FirebusStandaloneContainer.log");
 				fh.setFormatter(new FirebusSimpleFormatter());
-				fh.setLevel(Level.FINEST);
+				fh.setLevel(Level.FINER);
 				logger.addHandler(fh);
-				logger.setLevel(Level.FINEST);
+				logger.setLevel(Level.FINER);
 
 				JSONObject config = new JSONObject(new FileInputStream(args[0]));
 				new StandaloneContainer(config);
