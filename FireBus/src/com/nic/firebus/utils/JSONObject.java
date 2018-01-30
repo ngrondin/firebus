@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -173,12 +174,15 @@ public class JSONObject extends JSONEntity
 		}		
 	}
 	
-	public void put(String key, JSONEntity value)
+	public void put(String key, Object value)
 	{
 		int dot = key.indexOf('.');
 		if(dot == -1)
 		{
-			attributes.put(key, value);
+			if(value instanceof JSONEntity)
+				attributes.put(key, (JSONEntity)value);
+			else
+				attributes.put(key, new JSONLiteral(value));
 		}
 		else
 		{
@@ -190,12 +194,6 @@ public class JSONObject extends JSONEntity
 		}		
 	}
 	
-	public void put(String key, Object value)
-	{
-		JSONEntity val = new JSONLiteral(value);
-		put(key, val);
-	}
-
 	public JSONEntity get(String key)
 	{
 		JSONEntity ret = null;
@@ -244,6 +242,16 @@ public class JSONObject extends JSONEntity
 		else
 			return false;
 	}
+	
+	public Date getDate(String key)
+	{
+		JSONEntity obj = get(key);
+		if(obj != null  &&  obj instanceof JSONLiteral)
+			return ((JSONLiteral)obj).getDate();
+		else
+			return null;
+	}
+	
 	
 	public JSONObject getObject(String key)
 	{

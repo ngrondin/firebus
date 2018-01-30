@@ -2,18 +2,23 @@ package com.nic.firebus.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class JSONLiteral extends JSONEntity
 {
 	protected String stringValue;
 	protected boolean boolValue;
 	protected Number numberValue;
+	protected Date dateValue;
 	protected int valueType;
 	
 	static public int TYPE_NULL = 0;
 	static public int TYPE_STRING = 1;
 	static public int TYPE_NUMBER = 2;
 	static public int TYPE_BOOLEAN = 3;
+	static public int TYPE_DATE = 4;
 	
 	public JSONLiteral(Object v)
 	{
@@ -35,6 +40,11 @@ public class JSONLiteral extends JSONEntity
 		{
 			valueType = TYPE_BOOLEAN;
 			boolValue = (Boolean)v;
+		}
+		else if(v instanceof Date)
+		{
+			valueType = TYPE_DATE;
+			dateValue = (Date)v;
 		}
 	}
 	
@@ -74,6 +84,18 @@ public class JSONLiteral extends JSONEntity
 					{
 						inString = false;
 						hadQuotes = true;
+						if(stringValue.matches("^(?:[1-9]\\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d{1,9})?(?:Z|[+-][01]\\d:[0-5]\\d)$"))
+						{
+							valueType = TYPE_DATE;
+							try
+							{
+								dateValue = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(stringValue);
+							} 
+							catch (ParseException e)
+							{
+								throw new JSONException("Error processing date value");
+							}
+						}
 						break;
 					}
 					else
@@ -99,6 +121,10 @@ public class JSONLiteral extends JSONEntity
 							{
 								valueType = TYPE_BOOLEAN;
 								boolValue = stringValue.equalsIgnoreCase("true") ? true : false;
+							}
+							else if(stringValue.equalsIgnoreCase("null"))
+							{
+								valueType = TYPE_NULL;
 							}
 							else if(stringValue.matches("[-+]?\\d*\\.?\\d+"))
 							{
@@ -128,6 +154,8 @@ public class JSONLiteral extends JSONEntity
 			return "" + numberValue;
 		else if(valueType == TYPE_BOOLEAN)
 			return "" + boolValue;
+		else if(valueType == TYPE_DATE)
+			return (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")).format(dateValue);
 		return "";
 	}
 
@@ -141,13 +169,35 @@ public class JSONLiteral extends JSONEntity
 	public Number getNumber()
 	{
 		if(valueType == TYPE_STRING)
-			return 0;
+			try
+			{
+				return Double.parseDouble(stringValue);
+			}
+			catch(NumberFormatException e)
+			{
+				return 0;
+			}
 		else if(valueType == TYPE_NUMBER)
 			return numberValue;
 		else if(valueType == TYPE_BOOLEAN)
 			return boolValue == true ? 1 : 0;
+		else if(valueType == TYPE_DATE)
+			return dateValue.getTime();
 		return 0;
 	}
+	
+	public Date getDate()
+	{
+		if(valueType == TYPE_STRING)
+			return null;
+		else if(valueType == TYPE_NUMBER)
+			return new Date(numberValue.longValue());
+		else if(valueType == TYPE_BOOLEAN)
+			return null;
+		else if(valueType == TYPE_DATE)
+			return dateValue;
+		return null;
+	}		
 	
 	public int getType()
 	{
@@ -163,7 +213,7 @@ public class JSONLiteral extends JSONEntity
 	{
 		if(valueType == TYPE_NULL)
 			return "null";
-		if(valueType == TYPE_STRING)
+		else if(valueType == TYPE_STRING  ||  valueType == TYPE_DATE)
 			return "\"" + getString() + "\"";
 		else
 			return getString();
@@ -179,6 +229,8 @@ public class JSONLiteral extends JSONEntity
 			return new JSONLiteral(new Double((Double)numberValue));
 		else if(valueType == TYPE_BOOLEAN)
 			return new JSONLiteral(new Boolean(boolValue));
+		else if(valueType == TYPE_DATE)
+			return new JSONLiteral(new Date(dateValue.getTime()));
 		return null;
 	}
 }
