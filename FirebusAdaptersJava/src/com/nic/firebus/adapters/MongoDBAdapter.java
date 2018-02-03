@@ -50,12 +50,13 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		{
 			JSONObject packet = new JSONObject(payload.getString());
 			String objectName = packet.getString("object");
+			String operation = packet.getString("operation");
+			JSONObject data = packet.getObject("data");
 			if(database != null)
 			{
 				MongoCollection<Document> collection = database.getCollection(objectName);
 				if(collection != null)
 				{
-					JSONObject data = packet.getObject("data");
 					if(data != null)
 					{
 						Document incomingDoc = Document.parse(data.toString());
@@ -90,12 +91,15 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 						
 						if(existingDoc != null)
 						{
-							//incomingDoc.remove("_id");
-							collection.updateOne(existingDoc, new Document("$set", incomingDoc));
+							if(operation.equals("delete"))
+								collection.deleteOne(existingDoc);
+							else
+								collection.updateOne(existingDoc, new Document("$set", incomingDoc));
 						}
 						else
 						{
-							collection.insertOne(incomingDoc);
+							if(operation == null || (operation !=null && operation.equals("insert")))
+								collection.insertOne(incomingDoc);
 						}
 					}
 				}
