@@ -91,10 +91,10 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 						
 						if(existingDoc != null)
 						{
-							if(operation.equals("delete"))
-								collection.deleteOne(existingDoc);
-							else
+							if(operation == null || (operation !=null && operation.equals("insert")))
 								collection.updateOne(existingDoc, new Document("$set", incomingDoc));
+							else if(operation != null  && operation.equals("delete"))
+								collection.deleteOne(existingDoc);
 						}
 						else
 						{
