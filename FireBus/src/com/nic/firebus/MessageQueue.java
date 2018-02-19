@@ -7,35 +7,38 @@ public class MessageQueue
 {
 	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected ArrayList<Message> messages;
-	protected ArrayList<Long> processedIds;
-	protected ArrayList<Long> processedTime;
+	protected ArrayList<Long[]> processed;
+	//protected ArrayList<Long> processedTime;
 	
 	public MessageQueue()
 	{
 		messages = new ArrayList<Message>();
-		processedIds = new ArrayList<Long>();
-		processedTime = new ArrayList<Long>();
+		processed = new ArrayList<Long[]>();
+		//processedTime = new ArrayList<Long>();
 	}
 	
 	public void addMessage(Message m)
 	{
-		long ct = System.currentTimeMillis();
-		while(processedTime.size() > 0  &&  processedTime.get(0) < ct - 60000)
+		synchronized(this)
 		{
-			processedIds.remove(0);
-			processedTime.remove(0);
-		}
-		
-		long Id = (((long)m.getOriginatorId()) << 32) | ((long)m.getid());
-		if(!processedIds.contains(Id))
-		{
-			messages.add(m);
-			processedIds.add(Id);
-			processedTime.add(ct);
-		}
-		else
-		{
-			logger.fine("Dropped echo message");
+			long ct = System.currentTimeMillis();
+			while(processed.size() > 0  &&  processed.get(0)[0] < ct - 60000)
+				processed.remove(0);
+			
+			long id = (((long)m.getOriginatorId()) << 32) | ((long)m.getid());
+			boolean isEcho = false;
+			for(int i = 0; i < processed.size(); i++)
+				if(processed.get(i)[1] == id) isEcho = true;
+			
+			if(isEcho == false)
+			{
+				messages.add(m);
+				processed.add(new Long[]{ct, id});
+			}
+			else
+			{
+				logger.fine("Dropped echo message");
+			}
 		}
 	}
 	
@@ -44,14 +47,18 @@ public class MessageQueue
 		return messages.size();
 	}
 	
-	public Message getNextMessage()
+	public Message popNextMessage()
 	{
-		return messages.get(0);
-	}
-		
-	public void deleteNextMessage()
-	{
-		messages.remove(0);
+		synchronized(this)
+		{
+			Message msg = null;
+			if(messages.size() > 0)
+			{
+				msg = messages.get(0);
+				messages.remove(0);
+			}
+			return msg;
+		}
 	}
 
 	

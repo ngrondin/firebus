@@ -202,99 +202,102 @@ public class NodeCore extends Thread implements DiscoveryListener
 	protected void processNextInboundMessage()
 	{
 		logger.fine("Processing Inbound Message");
-		Message msg = inboundQueue.getNextMessage();
-		logger.finer("****Inbound****************\r\n" + msg);
-		
-		if(msg.getDestinationId() == 0  ||  msg.getDestinationId() == nodeId)
+		Message msg = inboundQueue.popNextMessage();
+		if(msg != null)
 		{
-			switch(msg.getType())
+			logger.finer("****Inbound****************\r\n" + msg);
+			if(msg.getDestinationId() == 0  ||  msg.getDestinationId() == nodeId)
 			{
-				case Message.MSGTYPE_QUERYNODE:
-					processNodeInformationRequest(msg);
-					break;
-				case Message.MSGTYPE_NODEINFORMATION:
-					directory.processNodeInformation(new String(msg.getPayload().data));
-					correlationManager.receiveResponse(msg);
-					break;
-				case Message.MSGTYPE_GETFUNCTIONINFORMATION:
-					functionManager.processServiceInformationRequest(msg);
-					break;
-				case Message.MSGTYPE_SERVICEINFORMATION:
-					directory.processServiceInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload().data);
-					correlationManager.receiveResponse(msg);
-					break;
-				case Message.MSGTYPE_REQUESTSERVICE:
-					functionManager.executeFunction(msg);
-					break;
-				case Message.MSGTYPE_SERVICEPROGRESS:
-					correlationManager.receiveResponse(msg);
-					break;
-				case Message.MSGTYPE_SERVICERESPONSE:
-					correlationManager.receiveResponse(msg);
-					break;
-				case Message.MSGTYPE_SERVICEERROR:
-					correlationManager.receiveResponse(msg);
-					break;
-				case Message.MSGTYPE_SERVICEUNAVAILABLE:
-					correlationManager.receiveResponse(msg);
-					break;
-				case Message.MSGTYPE_PUBLISH:
-					functionManager.executeFunction(msg);
-					break;
+				switch(msg.getType())
+				{
+					case Message.MSGTYPE_QUERYNODE:
+						processNodeInformationRequest(msg);
+						break;
+					case Message.MSGTYPE_NODEINFORMATION:
+						directory.processNodeInformation(new String(msg.getPayload().data));
+						correlationManager.receiveResponse(msg);
+						break;
+					case Message.MSGTYPE_GETFUNCTIONINFORMATION:
+						functionManager.processServiceInformationRequest(msg);
+						break;
+					case Message.MSGTYPE_SERVICEINFORMATION:
+						directory.processServiceInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload().data);
+						correlationManager.receiveResponse(msg);
+						break;
+					case Message.MSGTYPE_REQUESTSERVICE:
+						functionManager.executeFunction(msg);
+						break;
+					case Message.MSGTYPE_SERVICEPROGRESS:
+						correlationManager.receiveResponse(msg);
+						break;
+					case Message.MSGTYPE_SERVICERESPONSE:
+						correlationManager.receiveResponse(msg);
+						break;
+					case Message.MSGTYPE_SERVICEERROR:
+						correlationManager.receiveResponse(msg);
+						break;
+					case Message.MSGTYPE_SERVICEUNAVAILABLE:
+						correlationManager.receiveResponse(msg);
+						break;
+					case Message.MSGTYPE_PUBLISH:
+						functionManager.executeFunction(msg);
+						break;
+				}
 			}
+
+			if(msg.getDestinationId() == 0  ||  msg.getDestinationId() != nodeId)
+			{
+				if(msg.getRepeatsLeft() > 0)
+					sendMessage(msg.repeat());
+			}				
 		}
 
-		if(msg.getDestinationId() == 0  ||  msg.getDestinationId() != nodeId)
-		{
-			if(msg.getRepeatsLeft() > 0)
-				sendMessage(msg.repeat());
-		}			
-
-		inboundQueue.deleteNextMessage();
 		logger.fine("Finished Processing Inbound Message");
 	}
 
 	protected void processNextOutboundMessage()
 	{
 		logger.fine("Processing Outbound Message");
-		Message msg = outboundQueue.getNextMessage();
-		logger.finer("****Oubound**************\r\n" + msg);
-		Connection c = null;
-		int destinationNodeId = msg.getDestinationId();
-		int originatorNodeId = msg.getOriginatorId();
-		
-		if(originatorNodeId == nodeId  &&  (destinationNodeId == nodeId  ||  destinationNodeId == 0))
+		Message msg = outboundQueue.popNextMessage();
+		if(msg != null)
 		{
-			inboundQueue.addMessage(msg);
-		}
-
-		if(destinationNodeId != nodeId  ||  destinationNodeId == 0)
-		{
-			if(destinationNodeId != 0)
+			logger.finer("****Oubound**************\r\n" + msg);
+			Connection c = null;
+			int destinationNodeId = msg.getDestinationId();
+			int originatorNodeId = msg.getOriginatorId();
+			
+			if(originatorNodeId == nodeId  &&  (destinationNodeId == nodeId  ||  destinationNodeId == 0))
 			{
-				NodeInformation ni = directory.getNodeById(destinationNodeId);
-				if(ni != null)
-				{
-					c = connectionManager.obtainConnectionForNode(ni);
-					if(c == null)
-					{
-						int rpt = ni.getRandomRepeater();
-						if(rpt != 0)
-						{
-							ni = directory.getNodeById(rpt);
-							c = connectionManager.obtainConnectionForNode(ni);
-						}
-					}							
-				}
+				inboundQueue.addMessage(msg);
 			}
 
-			if(c == null)
-				connectionManager.broadcastToAllConnections(msg);
-			else
-				c.sendMessage(msg);
+			if(destinationNodeId != nodeId  ||  destinationNodeId == 0)
+			{
+				if(destinationNodeId != 0)
+				{
+					NodeInformation ni = directory.getNodeById(destinationNodeId);
+					if(ni != null)
+					{
+						c = connectionManager.obtainConnectionForNode(ni);
+						if(c == null)
+						{
+							int rpt = ni.getRandomRepeater();
+							if(rpt != 0)
+							{
+								ni = directory.getNodeById(rpt);
+								c = connectionManager.obtainConnectionForNode(ni);
+							}
+						}							
+					}
+				}
+
+				if(c == null)
+					connectionManager.broadcastToAllConnections(msg);
+				else
+					c.sendMessage(msg);
+			}
 		}
-		
-		outboundQueue.deleteNextMessage();
+
 		logger.fine("Finished Processing Outbound Message");
 	}
 	
