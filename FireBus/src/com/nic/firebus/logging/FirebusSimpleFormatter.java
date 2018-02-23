@@ -13,6 +13,8 @@ public class FirebusSimpleFormatter extends Formatter
 		buf.append("\t");
 		buf.append(pad(rec.getLevel().toString(), 10));
 		buf.append("\t");
+		buf.append(pad(Thread.currentThread().getName(), 30));
+		buf.append("\t");
 		String className = rec.getSourceClassName();
 		buf.append(pad(className.substring(className.lastIndexOf(".") + 1), 25));
 		buf.append("\t");

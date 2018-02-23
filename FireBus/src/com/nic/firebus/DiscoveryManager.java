@@ -64,7 +64,7 @@ public class DiscoveryManager extends Thread
 			e.printStackTrace();
 		}
 
-		setName("Firebus Discovery Manager");
+		setName("fbDiscoveryMgr");
 		start();
 	}
 	

@@ -64,7 +64,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 			functionManager = new FunctionManager(this);
 			correlationManager = new CorrelationManager(this);
 			knownAddresses = new ArrayList<Address>();
-			setName("Firebus Node");
+			setName("fbNodeCore");
 			
 			start();			
 		}
@@ -116,16 +116,17 @@ public class NodeCore extends Thread implements DiscoveryListener
 		knownAddresses.add(address);
 		synchronized(this)
 		{
-			this.notifyAll();
+			this.notify();
 		}
 	}
 		
 	public void sendMessage(Message msg)
 	{
+		logger.fine("Putting msg in outbound queue");
 		outboundQueue.addMessage(msg);
 		synchronized(this)
 		{
-			this.notifyAll();
+			this.notify();
 		}
 	}
 	
@@ -144,7 +145,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 			inboundQueue.addMessage(m);
 			synchronized(this)
 			{
-				this.notifyAll();
+				this.notify();
 			}
 		}
 		else
@@ -160,7 +161,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 		lastConnectionMaintenance = 0;
 		synchronized(this)
 		{
-			this.notifyAll();
+			this.notify();
 		}
 
 	}
@@ -205,7 +206,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 		Message msg = inboundQueue.popNextMessage();
 		if(msg != null)
 		{
-			logger.finer("****Inbound****************\r\n" + msg);
+			logger.finer("\"****Inbound****************\r\n" + msg + "\"");
 			if(msg.getDestinationId() == 0  ||  msg.getDestinationId() == nodeId)
 			{
 				switch(msg.getType())
@@ -261,7 +262,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 		Message msg = outboundQueue.popNextMessage();
 		if(msg != null)
 		{
-			logger.finer("****Oubound**************\r\n" + msg);
+			logger.finer("\"****Oubound**************\r\n" + msg + "\"");
 			Connection c = null;
 			int destinationNodeId = msg.getDestinationId();
 			int originatorNodeId = msg.getOriginatorId();
@@ -338,7 +339,7 @@ public class NodeCore extends Thread implements DiscoveryListener
 				{
 					synchronized(this)
 					{
-						this.wait(100);
+						wait(100);
 					}
 				}
 			}

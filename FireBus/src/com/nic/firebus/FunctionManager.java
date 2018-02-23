@@ -78,18 +78,6 @@ public class FunctionManager
 		}
 	}
 
-	/*
-	public ServiceInformation getServiceInformation(String functionName)
-	{
-		if(functions.containsKey(functionName))
-		{
-			BusFunction f = functions.get(functionName).function;
-			if(f instanceof ServiceProvider)
-				return ((ServiceProvider)f).getServiceInformation();
-		}
-		return null;
-	}
-	*/
 	
 	public void executeFunction(Message msg)
 	{

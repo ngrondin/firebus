@@ -81,7 +81,7 @@ public class Connection extends Thread
 	public void run()
 	{
 		running = false;
-		setName("Firebus Connection");
+		setName("fbConn" + getId());
 		initialise();
 		if(running)
 		{
@@ -235,12 +235,13 @@ public class Connection extends Thread
 				os.write(bytes);
 				os.write(msg.getCRC());
 				os.flush();
+				logger.fine("Sent message on connection " + getId() + " to remote node " + remoteNodeId);
 			}
 			catch(Exception e)
 			{
 				logger.severe(e.getMessage());
+				close();
 			}
-			logger.fine("Sent message on connection " + getId() + " to remote node " + remoteNodeId);
 		}
 	}
 	
@@ -254,12 +255,12 @@ public class Connection extends Thread
 		} 
 		catch (IOException e) 
 		{
-			e.printStackTrace();
+			logger.severe(e.getMessage());
 		}
 	}
 	
 	public String toString()
 	{
-		return "" + this.getId();
+		return "" + getId();
 	}
 }

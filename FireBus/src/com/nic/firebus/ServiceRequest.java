@@ -41,6 +41,7 @@ public class ServiceRequest extends Thread
 	
 	public void run()
 	{
+		setName("fbServiceReq" + getId());
 		try
 		{
 			Payload responsePayload = execute();

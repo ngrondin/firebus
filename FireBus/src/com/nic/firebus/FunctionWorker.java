@@ -20,7 +20,7 @@ public class FunctionWorker extends Thread
 		functionEntry = fe;
 		inboundMessage = im;
 		nodeCore = nc;
-		setName("Firebus Function Worker");
+		setName("fbWorker" + getId());
 		functionEntry.runStarted();
 		start();
 	}
@@ -62,7 +62,7 @@ public class FunctionWorker extends Thread
 				}
 			}
 			
-			logger.info("Executing Service Provider");
+			logger.info("Executing Service Provider (correlation: " + inboundMessage.getCorrelation() + ")");
 			Payload returnPayload = null;
 			try
 			{

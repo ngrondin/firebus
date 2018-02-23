@@ -46,7 +46,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		secretKey = k;
 		port = p;
 		quit = false;
-		setName("Firebus Connection Manager");
+		setName("fbConnMgr");
 		if(p == 0)
 		{
 			port = 1990;

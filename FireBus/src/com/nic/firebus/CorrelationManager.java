@@ -34,44 +34,70 @@ public class CorrelationManager
 		nodeCore = nc;
 	}
 	
-	protected int getNextCorrelation()
+	protected synchronized int getNextCorrelation()
 	{
 		return nextCorrelation++;
 	}
 	
+	protected synchronized CorrelationEntry getEntry(int correlationId)
+	{
+		return entries.get(correlationId);
+	}
+
+	protected synchronized void putEntry(int correlationId, CorrelationEntry entry)
+	{
+		entries.put(correlationId, entry);
+	}
+
+	protected synchronized void removeEntry(int correlationId)
+	{
+		entries.remove(correlationId);
+	}
+	
+	protected synchronized Integer[] getEntryKeyArray()
+	{
+		return entries.keySet().toArray(new Integer[0]);
+	}
 
 	public Message waitForResponse(int correlationId, int timeout)
 	{
-		CorrelationEntry entry = entries.get(correlationId);
+		CorrelationEntry entry = getEntry(correlationId);
 		Message responseMessage = null;
 		if(entry != null)
 		{
-			entry.expiry = System.currentTimeMillis() + timeout;
-			while(System.currentTimeMillis() < entry.expiry  &&  entry.inboundMessage == null)
+			synchronized(entry)
 			{
-				try
+				entry.expiry = System.currentTimeMillis() + timeout;
+				while(System.currentTimeMillis() < entry.expiry  &&  entry.inboundMessage == null)
 				{
-					synchronized(this)
+					try
 					{
-						this.wait();
+						entry.wait();
+					}
+					catch(InterruptedException e)
+					{
+						logger.severe("Correlation wait was interrupted : " + e.getMessage());
 					}
 				}
-				catch(InterruptedException e)
+	
+				if(entry.inboundMessage != null)
 				{
-					logger.severe("Correlation wait was interrupted : " + e.getMessage());
+					responseMessage = entry.inboundMessage;
+					if(entry.inboundMessage.getType() == Message.MSGTYPE_SERVICEPROGRESS)
+					{
+						entry.inboundMessage = null;
+					}
+					else
+					{
+						removeEntry(correlationId);	
+					}
+				}
+				else
+				{
+					removeEntry(correlationId);	
 				}
 			}
-
-			if(entry.inboundMessage != null)
-			{
-				responseMessage = entry.inboundMessage;
-				if(entry.inboundMessage.getType() == Message.MSGTYPE_SERVICEPROGRESS)
-					entry.inboundMessage = null;
-				else
-					entries.remove(entry);
-			}
-		}
-		
+		}		
 		return responseMessage;
 	}
 	
@@ -91,38 +117,40 @@ public class CorrelationManager
 		int c = getNextCorrelation();
 		outMsg.setCorrelation(c);
 		CorrelationEntry e = new CorrelationEntry(outMsg, cl, timeout); 
-		entries.put(c, e);
+		putEntry(c, e);
 		nodeCore.sendMessage(outMsg);
 		return c;
 	}
 	
 	public void receiveResponse(Message inMsg)
 	{
-		int c = inMsg.getCorrelation();
-		if(c != 0)
+		int correlationId = inMsg.getCorrelation();
+		if(correlationId != 0)
 		{
-			final CorrelationEntry e = entries.get(c);
-			if(e != null)
+			CorrelationEntry entry = getEntry(correlationId);
+			if(entry != null)
 			{
-				logger.finer("Received Correlated Response");
-				e.inboundMessage = inMsg;
-				if(e.correlationListener != null)
+				synchronized(entry)
 				{
-					final CorrelationListener cl = e.correlationListener;
-					Thread t = new Thread(new Runnable() {
-					    public void run() 
-					    {
-					    	cl.correlatedResponseReceived(e.outboundMessage, e.inboundMessage);
-					    }
-					});	
-					t.start();
-					entries.remove(c);
-				}
-				else
-				{
-					synchronized(this)
+					logger.finer("Received Correlated Response");
+					entry.inboundMessage = inMsg;
+					if(entry.correlationListener != null)
 					{
-						notify();
+						final CorrelationListener cl = entry.correlationListener;
+						final Message oMsg = entry.outboundMessage;
+						final Message iMsg = entry.inboundMessage;
+						Thread t = new Thread(new Runnable() {
+						    public void run() 
+						    {
+						    	cl.correlatedResponseReceived(oMsg, iMsg);
+						    }
+						});	
+						t.start();
+						removeEntry(correlationId);
+					}
+					else
+					{
+						entry.notify();
 					}
 				}
 			}
@@ -132,29 +160,35 @@ public class CorrelationManager
 	public void checkExpiredCalls()
 	{
 		long currTime = System.currentTimeMillis();
-		Object[] ids = entries.keySet().toArray();
+		Integer[] ids = getEntryKeyArray();
 		for(int i = 0; i < ids.length; i++)
 		{
-			int c = (int)ids[i];
-			CorrelationEntry e = entries.get(c);
-			if(e.correlationListener != null && currTime > e.expiry)
+			CorrelationEntry entry = getEntry(ids[i]);
+			if(entry != null)
 			{
-				final CorrelationListener cl = e.correlationListener;
-				final Message m = e.outboundMessage;
-				Thread t = new Thread(new Runnable() {
-				    public void run() 
-				    {
-				    	cl.correlationTimedout(m);
-				    }
-				});	
-				t.start();
-				entries.remove(c);				
-			}
-			else
-			{
-				synchronized(this)
+				synchronized(entry)
 				{
-					notify();
+					if(currTime > entry.expiry)
+					{
+						logger.finer("Correlation " + ids[i] + " has expired");
+						if(entry.correlationListener != null)
+						{
+							final CorrelationListener cl = entry.correlationListener;
+							final Message m = entry.outboundMessage;
+							Thread t = new Thread(new Runnable() {
+							    public void run() 
+							    {
+							    	cl.correlationTimedout(m);
+							    }
+							});	
+							t.start();
+							removeEntry(ids[i]);
+						}
+						else
+						{
+							entry.notify();
+						}					
+					}
 				}
 			}
 		}
