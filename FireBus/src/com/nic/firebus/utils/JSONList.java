@@ -119,11 +119,18 @@ public class JSONList extends JSONEntity
 		return list.size();
 	}
 	
-	public void add(JSONEntity o)
+	public void add(Object o)
 	{
-		list.add(o);
+		if(o instanceof JSONEntity)
+			list.add((JSONEntity)o);
+		else
+			list.add(new JSONLiteral(o));		
 	}
-
+	
+	public void remove(int i)
+	{
+		list.remove(i);
+	}
 	
 	public JSONEntity get(String key)
 	{

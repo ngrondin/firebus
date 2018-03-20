@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import com.nic.firebus.Firebus;
@@ -144,6 +145,7 @@ public class HTTPListenerAdapter extends Adapter
 					server.createContext("/" + serviceName, new Handler(serviceName));
 				}
 			}
+			server.setExecutor(Executors.newCachedThreadPool());
 			server.start();
 		} 
 		catch (IOException e)

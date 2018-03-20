@@ -199,6 +199,21 @@ public class JSONLiteral extends JSONEntity
 		return null;
 	}		
 	
+	public Object getObject()
+	{
+		if(valueType == TYPE_NULL)
+			return null;
+		if(valueType == TYPE_STRING)
+			return stringValue;
+		else if(valueType == TYPE_NUMBER)
+			return numberValue;
+		else if(valueType == TYPE_BOOLEAN)
+			return boolValue;
+		else if(valueType == TYPE_DATE)
+			return dateValue;
+		return null;
+	}
+	
 	public int getType()
 	{
 		return valueType;

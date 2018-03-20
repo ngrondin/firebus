@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-public class JSONObject extends JSONEntity
+public class JSONObject extends JSONEntity 
 {
 	protected HashMap<String, JSONEntity> attributes;
 	
@@ -176,22 +176,56 @@ public class JSONObject extends JSONEntity
 	
 	public void put(String key, Object value)
 	{
+		JSONEntity val = null;
+		if(value instanceof JSONEntity)
+			val = (JSONEntity)value;
+		else
+			val = new JSONLiteral(value);
+
 		int dot = key.indexOf('.');
 		if(dot == -1)
 		{
-			if(value instanceof JSONEntity)
-				attributes.put(key, (JSONEntity)value);
-			else
-				attributes.put(key, new JSONLiteral(value));
+			attributes.put(key, val);
 		}
 		else
 		{
 			String root = key.substring(0, dot);
 			String rest = key.substring(dot + 1);
 			JSONEntity obj = attributes.get(root);
-			if(obj instanceof JSONObject)
-				((JSONObject)obj).put(rest,  value);
+			if(obj != null)
+			{
+				if(obj instanceof JSONObject)
+					((JSONObject)obj).put(rest,  value);
+			}
+			else
+			{
+				attributes.put(key, val);
+			}
 		}		
+	}
+	
+	public void remove(String key)
+	{
+		int dot = key.indexOf('.');
+		if(dot == -1)
+		{
+			attributes.remove(key);
+		}
+		else
+		{
+			String root = key.substring(0, dot);
+			String rest = key.substring(dot + 1);
+			JSONEntity obj = attributes.get(root);
+			if(obj != null)
+			{
+				if(obj instanceof JSONObject)
+					((JSONObject)obj).remove(rest);
+			}
+			else
+			{
+				attributes.remove("key");
+			}
+		}				
 	}
 	
 	public JSONEntity get(String key)
@@ -207,10 +241,17 @@ public class JSONObject extends JSONEntity
 			String root = key.substring(0, dot);
 			String rest = key.substring(dot + 1);
 			JSONEntity obj = attributes.get(root);
-			if(obj instanceof JSONObject)
-				ret = ((JSONObject)obj).get(rest);
-			else if(obj instanceof JSONList)
-				ret = ((JSONList)obj).get(rest);
+			if(obj != null)
+			{
+				if(obj instanceof JSONObject)
+					ret = ((JSONObject)obj).get(rest);
+				else if(obj instanceof JSONList)
+					ret = ((JSONList)obj).get(rest);
+			}
+			else
+			{
+				ret = attributes.get(key);
+			}
 		}
 		return ret;
 	}
