@@ -34,14 +34,15 @@ public class HTTPListenerAdapter extends Adapter
 			InputStream is = exch.getRequestBody();
 			OutputStream os = exch.getResponseBody();
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			String query = exch.getRequestURI().getQuery();
+			String path = exch.getRequestURI().getPath();
+			String mime = exch.getRequestHeaders().getFirst("Content-Type");
+			String accept = exch.getRequestHeaders().getFirst("Accept");
 			int c = 0;
 			while((c = is.read()) != -1)
 				baos.write(c);
 			try
 			{
-				String query = exch.getRequestURI().getQuery();
-				String path = exch.getRequestURI().getPath();
-				String mime = exch.getRequestHeaders().getFirst("Content-Type");
 				String get = "";
 				if(path.length() > serviceName.length() + 2)
 					get = path.substring(2 + serviceName.length());
@@ -119,7 +120,13 @@ public class HTTPListenerAdapter extends Adapter
 			}
 			catch(Exception e)
 			{
-				os.write(e.getMessage().getBytes());
+				String resp = "";
+				if(accept.contains("application/json"))
+					resp = "{\r\n\t\"error\" : \"" + e.getMessage() + "\"\r\n}";
+				if(accept.contains("text/html"))
+					resp = "<div>" + e.getMessage() + "</div>";
+				exch.sendResponseHeaders(500, resp.length());
+				os.write(resp.getBytes());
 				logger.severe("General error requesting service from HTTP request " + e.getMessage());
 			}
 			os.close();

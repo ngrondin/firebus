@@ -147,7 +147,7 @@ public class JSONLiteral extends JSONEntity
 	public String getString()
 	{
 		if(valueType == TYPE_NULL)
-			return "";
+			return null;
 		if(valueType == TYPE_STRING)
 			return stringValue;
 		else if(valueType == TYPE_NUMBER)
