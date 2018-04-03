@@ -122,7 +122,7 @@ public class HTTPListenerAdapter extends Adapter
 			{
 				String resp = "";
 				if(accept.contains("application/json"))
-					resp = "{\r\n\t\"error\" : \"" + e.getMessage() + "\"\r\n}";
+					resp = "{\r\n\t\"error\" : \"" + e.getMessage().replaceAll("\"", "'").replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n") + "\"\r\n}";
 				if(accept.contains("text/html"))
 					resp = "<div>" + e.getMessage() + "</div>";
 				exch.sendResponseHeaders(500, resp.length());
