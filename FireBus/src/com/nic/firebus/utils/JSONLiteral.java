@@ -53,6 +53,7 @@ public class JSONLiteral extends JSONEntity
 		boolean inString = false;
 		int cInt = -1;
 		char c = ' ';
+		char previousC = ' ';
 		int readState = 0; 
 		boolean hadQuotes = false;
 		valueType = TYPE_STRING;
@@ -66,6 +67,7 @@ public class JSONLiteral extends JSONEntity
 		bis.mark(1);
 		while((cInt = bis.read()) != -1)
 		{
+			previousC = c;
 			c = (char)cInt;
 			if(readState == 0) // Before value
 			{
@@ -80,7 +82,7 @@ public class JSONLiteral extends JSONEntity
 			{
 				if(inString)
 				{
-					if(c == '"')
+					if(c == '"'  &&  previousC != '\\')
 					{
 						inString = false;
 						hadQuotes = true;
