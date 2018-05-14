@@ -127,6 +127,19 @@ public class JSONList extends JSONEntity
 			list.add(new JSONLiteral(o));		
 	}
 	
+	public void merge(JSONList other)
+	{
+		for(int i = 0; i < other.size(); i++)
+		{
+			boolean exists = false;
+			for(int j = 0; j < size(); j++)
+				if(get(j).toString().equals(other.get(i).toString()))
+					exists = true;
+			if(!exists)
+				add(other.get(i));
+		}		
+	}
+	
 	public void remove(int i)
 	{
 		list.remove(i);

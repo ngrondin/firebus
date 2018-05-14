@@ -204,6 +204,40 @@ public class JSONObject extends JSONEntity
 		}		
 	}
 	
+	public void merge(JSONObject other)
+	{
+		Iterator<String> it = other.keySet().iterator();
+		while(it.hasNext())
+		{
+			String key = it.next();
+			if(get(key) != null)
+			{
+				if(other.get(key) instanceof JSONObject)
+				{
+					if(get(key) instanceof JSONObject)
+						getObject(key).merge(other.getObject(key));
+					else
+						put(key, other.get(key));
+				}
+				else if(other.get(key) instanceof JSONList)
+				{
+					if(get(key) instanceof JSONList)
+						getList(key).merge(other.getList(key));
+					else
+						put(key, other.get(key));
+				}
+				else
+				{
+					put(key, other.get(key));
+				}				
+			}
+			else
+			{
+				put(key, other.get(key));
+			}
+		}
+	}
+	
 	public void remove(String key)
 	{
 		int dot = key.indexOf('.');

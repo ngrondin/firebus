@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import jdk.nashorn.api.scripting.AbstractJSObject;
+import jdk.nashorn.internal.objects.NativeArray;
 
 public class FirebusJSArray extends AbstractJSObject
 {
@@ -14,9 +15,24 @@ public class FirebusJSArray extends AbstractJSObject
 		list = new ArrayList<Object>();
 	}
 	
+	public FirebusJSArray(NativeArray na)
+	{
+		list = new ArrayList<Object>();
+		for(int i = 0; i < (int)na.getLength(); i++)
+			list.add(na.get(i));
+	}
+	
 	public String getClassName()
 	{
 		return "Array";
+	}
+
+	public Object getMember(String arg0)
+	{
+		if(arg0.equals("length"))
+			return list.size();
+		else
+			return null;
 	}
 
 	public Object getSlot(int arg0)

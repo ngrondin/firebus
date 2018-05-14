@@ -100,7 +100,7 @@ public class HTTPListenerAdapter extends Adapter
 					firebusRequest.setData(baos.toByteArray());
 				}				
 
-				Payload firebusResponse = node.requestService(serviceName, firebusRequest);
+				Payload firebusResponse = node.requestService(serviceName, firebusRequest, 10000);
 				
 				if(firebusResponse != null)
 				{

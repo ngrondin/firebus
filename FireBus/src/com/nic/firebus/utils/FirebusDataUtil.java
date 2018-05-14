@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import jdk.nashorn.api.scripting.JSObject;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import jdk.nashorn.internal.objects.NativeArray;
 
 public class FirebusDataUtil
 {
@@ -19,6 +20,8 @@ public class FirebusDataUtil
 			{
 				String key = it.next();
 				Object childObj = jso.getMember(key);
+				if(childObj instanceof NativeArray)
+					childObj = new FirebusJSArray((NativeArray)childObj);
 				if(childObj instanceof JSObject)
 				{
 					JSObject childJSObject = (JSObject)childObj;
