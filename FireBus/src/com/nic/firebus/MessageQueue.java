@@ -8,13 +8,11 @@ public class MessageQueue
 	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected ArrayList<Message> messages;
 	protected ArrayList<Long[]> processed;
-	//protected ArrayList<Long> processedTime;
 	
 	public MessageQueue()
 	{
 		messages = new ArrayList<Message>();
 		processed = new ArrayList<Long[]>();
-		//processedTime = new ArrayList<Long>();
 	}
 	
 	public void addMessage(Message m)
@@ -39,6 +37,7 @@ public class MessageQueue
 			{
 				logger.fine("Dropped echo message");
 			}
+			this.notify();
 		}
 	}
 	

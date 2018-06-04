@@ -115,7 +115,7 @@ public class DiscoveryManager extends Thread
 			    	if(id != nodeId  &&  net.equals(networkName))
 			    	{
 				    	logger.fine("Received a anouncement from " + id + " on network \"" + net + "\" with address " + address);
-			    		nodeCore.nodeDiscovered(id, address);
+						nodeCore.getDirectory().processDiscoveredNode(id,  address);
 			    	}
 			    }
 			}

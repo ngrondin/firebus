@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 
 import com.nic.firebus.interfaces.CorrelationListener;
 
-public class CorrelationManager 
+public class CorrelationManager extends Thread
 {
 	protected class CorrelationEntry
 	{
@@ -25,6 +25,7 @@ public class CorrelationManager
 	private Logger logger = Logger.getLogger("com.nic.firebus");
 	protected HashMap<Integer, CorrelationEntry> entries;
 	protected NodeCore nodeCore;
+	protected boolean quit;
 	
 	protected static int nextCorrelation = 1;
 	
@@ -32,6 +33,9 @@ public class CorrelationManager
 	{
 		entries = new HashMap<Integer, CorrelationEntry>();
 		nodeCore = nc;
+		quit = false;
+		setName("fbCorrMgr");
+		start();
 	}
 	
 	protected synchronized int getNextCorrelation()
@@ -118,7 +122,7 @@ public class CorrelationManager
 		outMsg.setCorrelation(c);
 		CorrelationEntry e = new CorrelationEntry(outMsg, cl, timeout); 
 		putEntry(c, e);
-		nodeCore.sendMessage(outMsg);
+		nodeCore.forkThenRoute(outMsg);
 		return c;
 	}
 	
@@ -192,5 +196,29 @@ public class CorrelationManager
 				}
 			}
 		}
+	}
+	
+	public void run()
+	{
+		while(!quit)
+		{
+			checkExpiredCalls();
+			try
+			{
+				synchronized(this)
+				{
+					wait(100);
+				}
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void close()
+	{
+		quit = true;
 	}
 }

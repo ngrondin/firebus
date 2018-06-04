@@ -27,6 +27,7 @@ public class FunctionWorker extends Thread
 	
 	public void run()
 	{
+		/*
 		Payload inPayload = inboundMessage.getPayload();
 
 		if(inboundMessage.getType() == Message.MSGTYPE_REQUESTSERVICE  && functionEntry.function instanceof ServiceProvider)
@@ -98,5 +99,6 @@ public class FunctionWorker extends Thread
 			((Consumer)functionEntry.function).consume(inPayload);
 		}
 		functionEntry.runEnded();
+		*/
 	}
 }

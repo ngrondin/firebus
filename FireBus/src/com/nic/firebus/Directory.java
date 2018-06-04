@@ -69,6 +69,7 @@ public class Directory
 		NodeInformation ni = getNodeById(nodeId);
 		if(ni == null)
 		{
+			logger.fine("Node discovered : " + nodeId + " at address " + address);
 			NodeInformation nodeByAddress = getNodeByAddress(address);
 			if(nodeByAddress != null)
 				deleteNode(nodeByAddress);
@@ -78,6 +79,7 @@ public class Directory
 		}
 		else if(!ni.containsAddress(address))
 		{
+			logger.fine("New address discovered for node : " + nodeId + " at address " + address);
 			ni.addAddress(address);
 		}		
 	}

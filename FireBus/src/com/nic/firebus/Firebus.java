@@ -102,7 +102,7 @@ public class Firebus
 	public void publish(String dataname, Payload payload)
 	{
 		logger.info("Publishing");
-		nodeCore.sendMessage(new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_PUBLISH, dataname, payload));
+		nodeCore.forkThenRoute(new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_PUBLISH, dataname, payload));
 	}
 	
 	public void close()

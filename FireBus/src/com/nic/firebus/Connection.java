@@ -40,6 +40,8 @@ public class Connection extends Thread
 	protected int msgPos;
 	protected int msgCRC;
 	protected byte[] msg;
+	protected boolean busySending;
+	protected boolean busyReceiving;
 	
 	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) throws IOException, ConnectionException
 	{
@@ -51,12 +53,14 @@ public class Connection extends Thread
 		secretKey = k;
 		localNodeId = nid;
 		localPort = p;
+		busySending = false;
+		busyReceiving = false;
 		start();
 	}
 	
 	public Connection(Address a, String net, SecretKey k, int nid, int p, ConnectionListener cl) throws UnknownHostException, IOException, ConnectionException
 	{
-		logger.fine("Initiialising connection to " + a);
+		logger.fine("Initialising connection to " + a);
 		
 		remoteAddress = a;
 		listener = cl;
@@ -176,6 +180,7 @@ public class Connection extends Thread
 						msgLen = 0;
 						msgPos = 0;
 						msgState = 1;
+						busyReceiving = true;
 					}
 				}
 				else if(msgState == 1)
@@ -211,6 +216,7 @@ public class Connection extends Thread
 						logger.fine("Received corrupted message from connection " + getId() + " from node id " + remoteNodeId);
 					}
 					msgState = 0;
+					busyReceiving = false;
 				}
 			} 
 			catch (IOException e) 
@@ -220,12 +226,13 @@ public class Connection extends Thread
 		}		
 	}
 	
-	public void sendMessage(Message msg)
+	public synchronized void sendMessage(Message msg)
 	{
 		if(running)
 		{
 			try
 			{
+				busySending = true;
 				byte[] bytes = msg.serialise();
 				os.write(0x7E);
 				os.write(bytes.length & 0x000000FF);
@@ -234,7 +241,8 @@ public class Connection extends Thread
 				os.write((bytes.length >> 24) & 0x000000FF);
 				os.write(bytes);
 				os.write(msg.getCRC());
-				os.flush();
+				//os.flush();
+				busySending = false;
 				logger.fine("Sent message on connection " + getId() + " to remote node " + remoteNodeId);
 			}
 			catch(Exception e)

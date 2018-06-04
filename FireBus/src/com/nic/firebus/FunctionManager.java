@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
+import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.BusFunction;
 import com.nic.firebus.interfaces.Consumer;
@@ -73,7 +74,7 @@ public class FunctionManager
 				logger.fine("Responding to a service information request");
 				Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEINFORMATION, msg.getSubject(), new Payload(si.serialise()));
 				outMsg.setCorrelation(msg.getCorrelation());
-				nodeCore.sendMessage(outMsg);
+				nodeCore.route(outMsg);
 			}
 		}
 	}
@@ -84,24 +85,63 @@ public class FunctionManager
 		logger.fine("Executing Function");
 		String functionName = msg.getSubject();
 		FunctionEntry fe = functions.get(functionName);
+		Payload inPayload = msg.getPayload();
 		if(fe != null)
 		{
 			if(fe.canRunOneMore())
 			{
-				new FunctionWorker(fe, msg, nodeCore);
+				if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE  && fe.function instanceof ServiceProvider)
+				{
+					logger.info("Executing Service Provider (correlation: " + msg.getCorrelation() + ")");
+					Payload returnPayload = null;
+					try
+					{
+						Message progressMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEPROGRESS, msg.getSubject(), null);
+						progressMsg.setCorrelation(msg.getCorrelation());
+						nodeCore.forkThenRoute(progressMsg);
+
+						fe.runStarted();
+						returnPayload = ((ServiceProvider)fe.function).service(inPayload);
+						fe.runEnded();
+						
+						Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
+						responseMsg.setCorrelation(msg.getCorrelation());
+						nodeCore.route(responseMsg);
+					}
+					catch(FunctionErrorException e)
+					{
+						Throwable t = e;
+						String errorMessage = "";
+						while(t != null)
+						{
+							if(errorMessage.length() > 0)
+								errorMessage += " : ";
+							errorMessage += t.getMessage();
+							t = t.getCause();
+						}
+						Message errorMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEERROR, msg.getSubject(), new Payload(errorMessage.getBytes()));
+						errorMsg.setCorrelation(msg.getCorrelation());
+						nodeCore.route(errorMsg);
+					}
+				}
+				else if(msg.getType() == Message.MSGTYPE_PUBLISH  &&  fe.function instanceof Consumer)
+				{
+					logger.info("Executing Consumer");
+					((Consumer)fe.function).consume(inPayload);
+				}			
 			}
 			else
 			{
 				Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEUNAVAILABLE, msg.getSubject(),new Payload(null,  "Maximum concurrent functions running".getBytes()));
 				outMsg.setCorrelation(msg.getCorrelation());
-				nodeCore.sendMessage(outMsg);
+				nodeCore.route(outMsg);
 			}
 		}	
 		else
 		{
 			Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEUNAVAILABLE, msg.getSubject(),new Payload(null,  "No such function registered in this node".getBytes()));
 			outMsg.setCorrelation(msg.getCorrelation());
-			nodeCore.sendMessage(outMsg);
+			nodeCore.route(outMsg);
 		}
 	}
 	
