@@ -45,7 +45,7 @@ public class JSONObject extends JSONEntity
 		int cInt = -1;
 		char c = ' ';
 		int readState = 0; 
-		
+
 		PositionTrackingInputStream bis = null;
 		if(is instanceof PositionTrackingInputStream)
 			bis = (PositionTrackingInputStream)is;
@@ -308,7 +308,6 @@ public class JSONObject extends JSONEntity
 			return null;
 	}
 
-	
 	public boolean getBoolean(String key)
 	{
 		JSONEntity obj = get(key);
@@ -326,8 +325,7 @@ public class JSONObject extends JSONEntity
 		else
 			return null;
 	}
-	
-	
+		
 	public JSONObject getObject(String key)
 	{
 		JSONEntity obj = get(key);

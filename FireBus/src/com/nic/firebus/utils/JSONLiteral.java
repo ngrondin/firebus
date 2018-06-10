@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+//import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JSONLiteral extends JSONEntity
 {
@@ -13,6 +16,10 @@ public class JSONLiteral extends JSONEntity
 	protected Number numberValue;
 	protected Date dateValue;
 	protected int valueType;
+	protected static Pattern datePattern = Pattern.compile("^(?:[1-9]\\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d{1,9})?(?:Z|[+-][01]\\d:[0-5]\\d)$");
+	protected static Pattern numberPattern = Pattern.compile("[-+]?\\d*\\.?\\d+");
+	protected static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); 
+	//protected static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 	
 	static public int TYPE_NULL = 0;
 	static public int TYPE_STRING = 1;
@@ -50,13 +57,13 @@ public class JSONLiteral extends JSONEntity
 	
 	public JSONLiteral(InputStream is) throws JSONException, IOException
 	{
+		StringBuilder sb = null;
 		boolean inString = false;
 		int cInt = -1;
 		char c = ' ';
 		char previousC = ' ';
 		int readState = 0; 
 		boolean hadQuotes = false;
-		valueType = TYPE_STRING;
 
 		PositionTrackingInputStream bis = null;
 		if(is instanceof PositionTrackingInputStream)
@@ -74,7 +81,7 @@ public class JSONLiteral extends JSONEntity
 				if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
 				{
 					bis.reset();
-					stringValue = "";
+					sb = new StringBuilder();
 					readState = 1;
 				}					
 			}
@@ -86,59 +93,79 @@ public class JSONLiteral extends JSONEntity
 					{
 						inString = false;
 						hadQuotes = true;
-						if(stringValue.matches("^(?:[1-9]\\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d{1,9})?(?:Z|[+-][01]\\d:[0-5]\\d)$"))
+						String tempString = sb.toString();
+						Matcher matcher = datePattern.matcher(tempString);
+						if(matcher.matches())		
 						{
-							valueType = TYPE_DATE;
 							try
 							{
-								dateValue = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(stringValue);
+								//dateValue = dateFormatter.parse(stringValue);
+								valueType = TYPE_DATE;
+								dateValue = dateFormat.parse(tempString);
 							} 
 							catch (ParseException e)
 							{
 								throw new JSONException("Error processing date value");
 							}
 						}
+						else
+						{
+							valueType = TYPE_STRING;
+							stringValue = tempString;
+						}
 						break;
 					}
 					else
 					{
-						stringValue += c;
+						sb.append(c);
 					}
 				}
 				else
 				{
 					if(c == '"')
 					{
-						if(stringValue.equals(""))
+						if(sb.length() == 0)
 							inString = true;
 						else
 							throw new JSONException("Illegal character at line " + bis.getLine() + " column " + bis.getColumn());
 					}
 					else if(c == ' ' || c == '\r' || c == '\n' || c == '\t' || c == ',' || c == '}' || c == ']')
 					{
+						String tempString = sb.toString();
 						bis.reset();
 						if(!hadQuotes)
 						{
-							if(stringValue.equalsIgnoreCase("true")  ||  stringValue.equalsIgnoreCase("false"))
+							Matcher numberMatcher = numberPattern.matcher(tempString);
+							if(tempString.equalsIgnoreCase("true")  ||  tempString.equalsIgnoreCase("false"))
 							{
 								valueType = TYPE_BOOLEAN;
-								boolValue = stringValue.equalsIgnoreCase("true") ? true : false;
+								boolValue = tempString.equalsIgnoreCase("true") ? true : false;
 							}
-							else if(stringValue.equalsIgnoreCase("null"))
+							else if(tempString.equalsIgnoreCase("null"))
 							{
 								valueType = TYPE_NULL;
 							}
-							else if(stringValue.matches("[-+]?\\d*\\.?\\d+"))
+							else if(numberMatcher.matches())
 							{
 								valueType = TYPE_NUMBER;
-								numberValue = Double.parseDouble(stringValue);
+								numberValue = Double.parseDouble(tempString);
 							}
+							else
+							{
+								valueType = TYPE_STRING;
+								stringValue = tempString;
+							}
+						}
+						else
+						{
+							valueType = TYPE_STRING;
+							stringValue = tempString;
 						}
 						break;
 					}
 					else
 					{
-						stringValue += c;
+						sb.append(c);
 					}
 				}
 			}

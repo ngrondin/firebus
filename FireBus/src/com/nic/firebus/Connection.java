@@ -40,8 +40,7 @@ public class Connection extends Thread
 	protected int msgPos;
 	protected int msgCRC;
 	protected byte[] msg;
-	protected boolean busySending;
-	protected boolean busyReceiving;
+	protected long sendLock;
 	
 	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) throws IOException, ConnectionException
 	{
@@ -53,8 +52,7 @@ public class Connection extends Thread
 		secretKey = k;
 		localNodeId = nid;
 		localPort = p;
-		busySending = false;
-		busyReceiving = false;
+		sendLock = 0;
 		start();
 	}
 	
@@ -68,6 +66,7 @@ public class Connection extends Thread
 		secretKey = k;
 		localNodeId = nid;
 		localPort = p;
+		sendLock = Thread.currentThread().getId();
 		start();
 	}
 
@@ -91,6 +90,10 @@ public class Connection extends Thread
 		{
 			listener.connectionCreated(this);
 			listening();
+		}
+		else
+		{
+			listener.connectionFailed(this);
 		}
 		listener.connectionClosed(this);
 	}
@@ -173,14 +176,17 @@ public class Connection extends Thread
 			try 
 			{
 				int i = is.read();
-				if(msgState == 0)
+				if(i == -1)
+				{
+					close();
+				}
+				else if(msgState == 0)
 				{
 					if(i == 0x7E)
 					{
 						msgLen = 0;
 						msgPos = 0;
 						msgState = 1;
-						busyReceiving = true;
 					}
 				}
 				else if(msgState == 1)
@@ -216,7 +222,6 @@ public class Connection extends Thread
 						logger.fine("Received corrupted message from connection " + getId() + " from node id " + remoteNodeId);
 					}
 					msgState = 0;
-					busyReceiving = false;
 				}
 			} 
 			catch (IOException e) 
@@ -226,13 +231,31 @@ public class Connection extends Thread
 		}		
 	}
 	
+	public synchronized boolean lock()
+	{
+		if(sendLock == 0)
+		{
+			sendLock = Thread.currentThread().getId();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	public synchronized void releaseLock()
+	{
+		if(sendLock == Thread.currentThread().getId())
+			sendLock = 0;
+	}
+	
 	public synchronized void sendMessage(Message msg)
 	{
-		if(running)
+		if(running  &&  sendLock == Thread.currentThread().getId())
 		{
 			try
 			{
-				busySending = true;
 				byte[] bytes = msg.serialise();
 				os.write(0x7E);
 				os.write(bytes.length & 0x000000FF);
@@ -241,8 +264,7 @@ public class Connection extends Thread
 				os.write((bytes.length >> 24) & 0x000000FF);
 				os.write(bytes);
 				os.write(msg.getCRC());
-				//os.flush();
-				busySending = false;
+				os.flush();
 				logger.fine("Sent message on connection " + getId() + " to remote node " + remoteNodeId);
 			}
 			catch(Exception e)
@@ -260,6 +282,8 @@ public class Connection extends Thread
 			running = false;
 			if(socket != null)
 				socket.close();
+			if(is != null)
+				is.close();
 		} 
 		catch (IOException e) 
 		{

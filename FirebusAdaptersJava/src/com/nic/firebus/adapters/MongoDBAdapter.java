@@ -128,6 +128,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		JSONObject responseJSON = new JSONObject();
 		try
 		{
+			logger.finer("Starting mongo request");
 			JSONObject request = new JSONObject(payload.getString());
 			String objectName = request.getString("object");
 			if(database != null)
@@ -139,7 +140,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					if(request.containsKey("filter"))
 					{
 						JSONObject filter = request.getObject("filter");
-						it = collection.find(Document.parse(filter.toString())).iterator();		
+						Document filterDoc = Document.parse(filter.toString()); 
+						it = collection.find(filterDoc).iterator();		
 					}
 					else if(request.containsKey("aggregation"))
 					{
@@ -160,7 +162,9 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 						while(it.hasNext())
 						{
 							Document doc = it.next();
-							list.add(new JSONObject(doc.toJson()));
+							String str = doc.toJson();
+							JSONObject obj = new JSONObject(str);
+							list.add(obj);
 						}
 						responseJSON.put("result", list);
 						response.setData(responseJSON.toString());

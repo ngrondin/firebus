@@ -41,43 +41,11 @@ public class ThreadManager
 		}
 	}
 	
-	/*
-	public void run()
-	{
-		while(!quit)
-		{
-			try
-			{
-				if(queue.getMessageCount() > 0)
-				{
-					for(int i = 0; i < threadCount; i++)
-					{
-						if(!threads.get(i).isBusy())
-						{
-							Message msg = queue.popNextMessage();
-							threads.get(i).process(msg);
-						}
-					}
-				}
-				else
-				{
-					synchronized(queue)
-					{
-						queue.wait();
-					}
-				}
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-		}
-	}
-	*/
-	/*
+	
 	public void close()
 	{
-		quit = true;
+		for(int i = 0; i < threads.size(); i++)
+			threads.get(i).close();
 	}
-	*/
+	
 }

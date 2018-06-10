@@ -78,6 +78,7 @@ public class NodeCore
 		connectionManager.close();
 		discoveryManager.close();
 		correlationManager.close();
+		threadManager.close();
 		quit = true;
 		synchronized(this)
 		{
@@ -249,7 +250,7 @@ public class NodeCore
 					case Message.MSGTYPE_REQUESTSERVICE:
 						functionManager.executeFunction(msg);
 						break;
-					case Message.MSGTYPE_SERVICEPROGRESS:
+					case Message.MSGTYPE_PROGRESS:
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_SERVICERESPONSE:

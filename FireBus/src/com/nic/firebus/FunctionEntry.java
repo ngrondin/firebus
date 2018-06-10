@@ -22,12 +22,12 @@ public class FunctionEntry
 		function = f;
 	}
 	
-	public void runStarted()
+	public synchronized void runStarted()
 	{
 		currentCount++;
 	}
 	
-	public void runEnded()
+	public synchronized void runEnded()
 	{
 		currentCount--;
 	}

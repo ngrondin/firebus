@@ -8,4 +8,9 @@ public class FunctionErrorException extends Exception
 	{
 		super(m);
 	}
+	
+	public FunctionErrorException(String m, Throwable t)
+	{
+		super(m, t);
+	}
 }

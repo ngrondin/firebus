@@ -129,7 +129,7 @@ public class ServiceRequest extends Thread
 							responsePayload = respMsg.getPayload();
 							break;
 						}
-						else if(respMsg.getType() == Message.MSGTYPE_SERVICEPROGRESS)
+						else if(respMsg.getType() == Message.MSGTYPE_PROGRESS)
 						{
 							respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, requestTimeout);
 						}

@@ -56,6 +56,7 @@ public class FirebusThread extends Thread
 		synchronized(this)
 		{
 			quit = true;
+			notify();
 		}
 	}
 

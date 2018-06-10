@@ -27,7 +27,7 @@ public class Message
 	public static final int MSGTYPE_SERVICERESPONSE = 7;
 	public static final int MSGTYPE_SERVICEUNAVAILABLE = 8;
 	public static final int MSGTYPE_SERVICEERROR = 9;
-	public static final int MSGTYPE_SERVICEPROGRESS = 10;
+	public static final int MSGTYPE_PROGRESS = 10;
 	public static final int MSGTYPE_PUBLISH = 11;
 	public static final int MSGTYPE_REPUBLISH = 12;
 	
@@ -242,7 +242,7 @@ public class Message
 			sb.append("Service Unavailable");
 		else if(type == Message.MSGTYPE_SERVICEERROR)
 			sb.append("Service Error");
-		else if(type == Message.MSGTYPE_SERVICEPROGRESS)
+		else if(type == Message.MSGTYPE_PROGRESS)
 			sb.append("Service In Progress");
 		else if(type == Message.MSGTYPE_PUBLISH)
 			sb.append("Publish");

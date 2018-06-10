@@ -18,7 +18,7 @@ public class UnitTest
 	{
 		try
 		{
-			FileInputStream fis = new FileInputStream("test.txt");
+			FileInputStream fis = new FileInputStream("test.json");
 			JSONObject j = new JSONObject(fis);
 			System.out.println(j.toString());
 		}

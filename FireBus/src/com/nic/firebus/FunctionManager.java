@@ -82,7 +82,6 @@ public class FunctionManager
 	
 	public void executeFunction(Message msg)
 	{
-		logger.fine("Executing Function");
 		String functionName = msg.getSubject();
 		FunctionEntry fe = functions.get(functionName);
 		Payload inPayload = msg.getPayload();
@@ -92,17 +91,16 @@ public class FunctionManager
 			{
 				if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE  && fe.function instanceof ServiceProvider)
 				{
-					logger.info("Executing Service Provider (correlation: " + msg.getCorrelation() + ")");
+					logger.info("Executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
 					Payload returnPayload = null;
+					Message progressMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_PROGRESS, msg.getSubject(), null);
+					progressMsg.setCorrelation(msg.getCorrelation());
+					nodeCore.forkThenRoute(progressMsg);
+					fe.runStarted();
 					try
 					{
-						Message progressMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEPROGRESS, msg.getSubject(), null);
-						progressMsg.setCorrelation(msg.getCorrelation());
-						nodeCore.forkThenRoute(progressMsg);
-
-						fe.runStarted();
 						returnPayload = ((ServiceProvider)fe.function).service(inPayload);
-						fe.runEnded();
+						logger.info("Finished executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
 						
 						Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
 						responseMsg.setCorrelation(msg.getCorrelation());
@@ -123,6 +121,7 @@ public class FunctionManager
 						errorMsg.setCorrelation(msg.getCorrelation());
 						nodeCore.route(errorMsg);
 					}
+					fe.runEnded();
 				}
 				else if(msg.getType() == Message.MSGTYPE_PUBLISH  &&  fe.function instanceof Consumer)
 				{
@@ -132,6 +131,7 @@ public class FunctionManager
 			}
 			else
 			{
+				logger.info("Cannot execute function " + functionName + " as maximum number of thread reached");
 				Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEUNAVAILABLE, msg.getSubject(),new Payload(null,  "Maximum concurrent functions running".getBytes()));
 				outMsg.setCorrelation(msg.getCorrelation());
 				nodeCore.route(outMsg);
@@ -139,6 +139,7 @@ public class FunctionManager
 		}	
 		else
 		{
+			logger.info("Function " + functionName + " does not exist");
 			Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEUNAVAILABLE, msg.getSubject(),new Payload(null,  "No such function registered in this node".getBytes()));
 			outMsg.setCorrelation(msg.getCorrelation());
 			nodeCore.route(outMsg);
