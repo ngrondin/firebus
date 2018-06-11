@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
@@ -14,8 +13,6 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-
-import com.nic.firebus.exceptions.ConnectionException;
 import com.nic.firebus.interfaces.ConnectionListener;
 
 public class Connection extends Thread 
@@ -40,9 +37,11 @@ public class Connection extends Thread
 	protected int msgPos;
 	protected int msgCRC;
 	protected byte[] msg;
-	protected long sendLock;
+	protected long timeMark;
+	protected int byteCount;
+	protected int load;
 	
-	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) throws IOException, ConnectionException
+	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
 		logger.fine("Initialising received connection");
 		
@@ -52,11 +51,10 @@ public class Connection extends Thread
 		secretKey = k;
 		localNodeId = nid;
 		localPort = p;
-		sendLock = 0;
 		start();
 	}
 	
-	public Connection(Address a, String net, SecretKey k, int nid, int p, ConnectionListener cl) throws UnknownHostException, IOException, ConnectionException
+	public Connection(Address a, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
 		logger.fine("Initialising connection to " + a);
 		
@@ -66,7 +64,6 @@ public class Connection extends Thread
 		secretKey = k;
 		localNodeId = nid;
 		localPort = p;
-		sendLock = Thread.currentThread().getId();
 		start();
 	}
 
@@ -81,9 +78,30 @@ public class Connection extends Thread
 		return remoteNodeId;
 	}
 	
+	public int getLoad()
+	{
+		long now = System.currentTimeMillis();
+		long delta = now - timeMark;
+		if(delta > 0)
+			load = (int)(1000 * (long)byteCount / delta);
+		else
+			load = 0;
+		timeMark = now;
+		byteCount = 0;
+		return load;
+	}
+
+	public boolean isReady()
+	{
+		return running;
+	}
+	
 	public void run()
 	{
 		running = false;
+		byteCount = 0;
+		timeMark = System.currentTimeMillis();
+		load = 0;
 		setName("fbConn" + getId());
 		initialise();
 		if(running)
@@ -231,47 +249,26 @@ public class Connection extends Thread
 		}		
 	}
 	
-	public synchronized boolean lock()
-	{
-		if(sendLock == 0)
-		{
-			sendLock = Thread.currentThread().getId();
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	
-	public synchronized void releaseLock()
-	{
-		if(sendLock == Thread.currentThread().getId())
-			sendLock = 0;
-	}
-	
 	public synchronized void sendMessage(Message msg)
 	{
-		if(running  &&  sendLock == Thread.currentThread().getId())
+		try
 		{
-			try
-			{
-				byte[] bytes = msg.serialise();
-				os.write(0x7E);
-				os.write(bytes.length & 0x000000FF);
-				os.write((bytes.length >> 8) & 0x000000FF);
-				os.write((bytes.length >> 16) & 0x000000FF);
-				os.write((bytes.length >> 24) & 0x000000FF);
-				os.write(bytes);
-				os.write(msg.getCRC());
-				os.flush();
-				logger.fine("Sent message on connection " + getId() + " to remote node " + remoteNodeId);
-			}
-			catch(Exception e)
-			{
-				logger.severe(e.getMessage());
-				close();
-			}
+			byte[] bytes = msg.serialise();
+			os.write(0x7E);
+			os.write(bytes.length & 0x000000FF);
+			os.write((bytes.length >> 8) & 0x000000FF);
+			os.write((bytes.length >> 16) & 0x000000FF);
+			os.write((bytes.length >> 24) & 0x000000FF);
+			os.write(bytes);
+			os.write(msg.getCRC());
+			os.flush();
+			byteCount += bytes.length;
+			logger.fine("Sent message on connection " + getId() + " to remote node " + remoteNodeId + "(load: " + load + ")");
+		}
+		catch(Exception e)
+		{
+			logger.severe(e.getMessage());
+			close();
 		}
 	}
 	
@@ -293,6 +290,7 @@ public class Connection extends Thread
 	
 	public String toString()
 	{
-		return "" + getId();
+		return "Connection " + getId() + " to node " + remoteNodeId + " at " + remoteAddress;
 	}
+	
 }

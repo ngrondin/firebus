@@ -61,6 +61,12 @@ public class NodeInformation
 			addresses.add(a);
 	}
 	
+	public void removeAddress(Address a)
+	{
+		if(containsAddress(a))
+			addresses.remove(a);
+	}
+	
 	public void addRepeater(int id)
 	{
 		if(!repeaters.contains(id))
