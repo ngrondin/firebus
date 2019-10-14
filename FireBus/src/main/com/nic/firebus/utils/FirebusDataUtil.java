@@ -36,8 +36,8 @@ public class FirebusDataUtil
 					else if(childJSObject.getClassName().equals("Date")  &&  childJSObject instanceof ScriptObjectMirror)
 					{
 						ScriptObjectMirror jsDate = (ScriptObjectMirror)childJSObject;
-						long timestampLocalTime = (long) (double) jsDate.callMember("getTime"); 
-						int timezoneOffsetMinutes = (int) (double) jsDate.callMember("getTimezoneOffset");
+						long timestampLocalTime = ((Double) jsDate.callMember("getTime")).longValue(); 
+						int timezoneOffsetMinutes = ((Double) jsDate.callMember("getTimezoneOffset")).intValue();
 						retObj.put(key, new Date(timestampLocalTime + timezoneOffsetMinutes * 60 * 1000));
 					}
 				}
@@ -73,8 +73,8 @@ public class FirebusDataUtil
 					else if(childJSObject.getClassName().equals("Date")  &&  childJSObject instanceof ScriptObjectMirror)
 					{
 						ScriptObjectMirror jsDate = (ScriptObjectMirror)childJSObject;
-						long timestampLocalTime = (long) (double) jsDate.callMember("getTime"); 
-						int timezoneOffsetMinutes = (int) (double) jsDate.callMember("getTimezoneOffset");
+						long timestampLocalTime = ((Double) jsDate.callMember("getTime")).longValue(); 
+						int timezoneOffsetMinutes = ((Double) jsDate.callMember("getTimezoneOffset")).intValue();
 						retList.add(new Date(timestampLocalTime + timezoneOffsetMinutes * 60 * 1000));
 					}
 				}

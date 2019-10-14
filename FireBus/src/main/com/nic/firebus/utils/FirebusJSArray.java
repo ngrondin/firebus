@@ -18,7 +18,7 @@ public class FirebusJSArray extends AbstractJSObject
 	public FirebusJSArray(NativeArray na)
 	{
 		list = new ArrayList<Object>();
-		for(int i = 0; i < (int)na.getLength(); i++)
+		for(int i = 0; i < (Integer)na.getLength(); i++)
 			list.add(na.get(i));
 	}
 	
