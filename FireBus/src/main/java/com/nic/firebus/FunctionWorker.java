@@ -6,7 +6,7 @@ import com.nic.firebus.distributables.DistributableService;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataMap;
 
 public class FunctionWorker extends Thread
 {

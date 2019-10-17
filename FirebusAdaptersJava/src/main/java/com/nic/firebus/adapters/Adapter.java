@@ -1,14 +1,14 @@
 package com.nic.firebus.adapters;
 
 import com.nic.firebus.Firebus;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataMap;
 
 public class Adapter 
 {
 	protected Firebus node;
-	protected JSONObject config;
+	protected DataMap config;
 	
-	public Adapter(Firebus n, JSONObject c)
+	public Adapter(Firebus n, DataMap c)
 	{
 		node = n;
 		config = c;

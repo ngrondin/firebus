@@ -10,9 +10,9 @@ import jdk.nashorn.internal.objects.NativeArray;
 public class FirebusDataUtil
 {
 
-	public static JSONObject convertJSObjectToDataObject(JSObject jso)
+	public static DataMap convertJSObjectToDataObject(JSObject jso)
 	{
-		JSONObject retObj = new JSONObject();
+		DataMap retObj = new DataMap();
 		if(jso.getClassName().equals("Object"))
 		{
 			Iterator<String> it = jso.keySet().iterator();
@@ -50,9 +50,9 @@ public class FirebusDataUtil
 		return retObj;
 	}
 	
-	public static JSONList convertJSArrayToDataList(JSObject jso)
+	public static DataList convertJSArrayToDataList(JSObject jso)
 	{
-		JSONList retList = new JSONList();
+		DataList retList = new DataList();
 		if(jso.getClassName().equals("Array"))
 		{
 			Iterator<Object> it = jso.values().iterator();
@@ -88,47 +88,47 @@ public class FirebusDataUtil
 	}
 	
 	
-	public static JSObject convertDataObjectToJSObject(JSONObject dataObject)
+	public static JSObject convertDataObjectToJSObject(DataMap dataObject)
 	{
 		JSObject jso = new FirebusJSObject();
 		Iterator<String> it = dataObject.keySet().iterator();
 		while(it.hasNext())
 		{
 			String key = it.next();
-			JSONEntity childObject = dataObject.get(key);
-			if(childObject instanceof JSONObject)
+			DataEntity childObject = dataObject.get(key);
+			if(childObject instanceof DataMap)
 			{
-				jso.setMember(key, convertDataObjectToJSObject((JSONObject)childObject));
+				jso.setMember(key, convertDataObjectToJSObject((DataMap)childObject));
 			}
-			else if(childObject instanceof JSONList)
+			else if(childObject instanceof DataList)
 			{
-				jso.setMember(key, convertDataListToJSArray((JSONList)childObject));
+				jso.setMember(key, convertDataListToJSArray((DataList)childObject));
 			}
 			else
 			{
-				jso.setMember(key, ((JSONLiteral)childObject).getObject());
+				jso.setMember(key, ((DataLiteral)childObject).getObject());
 			}
 		}
 		return jso;
 	}
 
-	public static JSObject convertDataListToJSArray(JSONList dataList)
+	public static JSObject convertDataListToJSArray(DataList dataList)
 	{
 		JSObject jsa = new FirebusJSArray();
 		for(int i = 0; i < dataList.size(); i++)
 		{
-			JSONEntity childObject = dataList.get(i);
-			if(childObject instanceof JSONObject)
+			DataEntity childObject = dataList.get(i);
+			if(childObject instanceof DataMap)
 			{
-				jsa.setSlot(i, convertDataObjectToJSObject((JSONObject)childObject));
+				jsa.setSlot(i, convertDataObjectToJSObject((DataMap)childObject));
 			}
-			else if(childObject instanceof JSONList)
+			else if(childObject instanceof DataList)
 			{
-				jsa.setSlot(i, convertDataListToJSArray((JSONList)childObject));
+				jsa.setSlot(i, convertDataListToJSArray((DataList)childObject));
 			}
 			else
 			{
-				jsa.setSlot(i, ((JSONLiteral)childObject).getObject());
+				jsa.setSlot(i, ((DataLiteral)childObject).getObject());
 			}		
 		}
 		return jsa;

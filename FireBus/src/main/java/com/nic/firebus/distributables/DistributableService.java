@@ -8,17 +8,17 @@ import java.util.logging.Logger;
 
 import com.nic.firebus.NodeCore;
 import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataMap;
 
 public abstract class DistributableService implements ServiceProvider
 {
 	protected static Properties serviceClasses;
 
 	protected NodeCore nodeCore;
-	protected JSONObject config;
+	protected DataMap config;
 	protected long expiry;
 	
-	public DistributableService(NodeCore nc, JSONObject c)
+	public DistributableService(NodeCore nc, DataMap c)
 	{
 		nodeCore = nc;
 		config = c;
@@ -37,7 +37,7 @@ public abstract class DistributableService implements ServiceProvider
 		return System.currentTimeMillis() > expiry;
 	}
 
-	public static DistributableService instantiate(NodeCore nodeCore, String type, JSONObject config)
+	public static DistributableService instantiate(NodeCore nodeCore, String type, DataMap config)
 	{
 		Logger logger = Logger.getLogger("com.nic.firebus");
 		DistributableService service = null;
@@ -63,7 +63,7 @@ public abstract class DistributableService implements ServiceProvider
 			try
 			{
 				Class<?> c = Class.forName(className);
-				Constructor<?> cons = c.getConstructor(new Class[]{NodeCore.class, JSONObject.class});
+				Constructor<?> cons = c.getConstructor(new Class[]{NodeCore.class, DataMap.class});
 				if(config != null)
 				{
 					service = (DistributableService)cons.newInstance(new Object[]{nodeCore, config});

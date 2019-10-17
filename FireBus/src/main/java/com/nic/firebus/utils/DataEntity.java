@@ -3,12 +3,12 @@ package com.nic.firebus.utils;
 import java.io.IOException;
 import java.io.InputStream;
 
-public abstract class JSONEntity
+public abstract class DataEntity
 {
 	
-	protected JSONEntity readJSONValue(InputStream is) throws IOException, JSONException
+	protected DataEntity readJSONValue(InputStream is) throws IOException, DataException
 	{
-		JSONEntity value = null;				
+		DataEntity value = null;				
 		int cInt = -1;
 		
 		PositionTrackingInputStream bis = null;
@@ -25,11 +25,11 @@ public abstract class JSONEntity
 			{
 				bis.reset();
 				if(c == '{')
-					value = new JSONObject(bis);
+					value = new DataMap(bis);
 				else if(c == '[')
-					value = new JSONList(bis);
+					value = new DataList(bis);
 				else
-					value = new JSONLiteral(bis);
+					value = new DataLiteral(bis);
 				break;
 			}
 			bis.mark(1);
@@ -50,5 +50,5 @@ public abstract class JSONEntity
 		return ret;
 	}
 
-	public abstract JSONEntity getCopy();
+	public abstract DataEntity getCopy();
 }

@@ -6,18 +6,18 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 
-public class JSONList extends JSONEntity
+public class DataList extends DataEntity
 {
-	protected  ArrayList<JSONEntity> list;
+	protected  ArrayList<DataEntity> list;
 	
-	public JSONList()
+	public DataList()
 	{
-		list = new ArrayList<JSONEntity>();
+		list = new ArrayList<DataEntity>();
 	}
 	
-	public JSONList(InputStream is) throws JSONException, IOException
+	public DataList(InputStream is) throws DataException, IOException
 	{
-		list = new ArrayList<JSONEntity>();
+		list = new ArrayList<DataEntity>();
 		int cInt = -1;
 		boolean correctlyClosed = false;
 		char c = ' ';
@@ -42,7 +42,7 @@ public class JSONList extends JSONEntity
 						readState = 1;
 					}
 					else
-						throw new JSONException("Expected '[' at line " + bis.getLine() + " column " + bis.getColumn());
+						throw new DataException("Expected '[' at line " + bis.getLine() + " column " + bis.getColumn());
 				}						
 			}
 			else if(readState == 1) // before first value
@@ -54,12 +54,12 @@ public class JSONList extends JSONEntity
 				}
 				else if(c == ',')
 				{
-					throw new JSONException("Expected value or ']' at line " + bis.getLine() + " column " + bis.getColumn());
+					throw new DataException("Expected value or ']' at line " + bis.getLine() + " column " + bis.getColumn());
 				}
 				else if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
 				{
 					bis.reset();
-					JSONEntity value = readJSONValue(bis);
+					DataEntity value = readJSONValue(bis);
 					if(value != null)
 						list.add(value);
 					readState = 3;
@@ -69,12 +69,12 @@ public class JSONList extends JSONEntity
 			{
 				if(c == ']'  ||  c == ',')
 				{
-					throw new JSONException("Expected value at line " + bis.getLine() + " column " + bis.getColumn());
+					throw new DataException("Expected value at line " + bis.getLine() + " column " + bis.getColumn());
 				}
 				else if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
 				{
 					bis.reset();
-					JSONEntity value = readJSONValue(bis);
+					DataEntity value = readJSONValue(bis);
 					if(value != null)
 						list.add(value);
 					readState = 3;
@@ -92,12 +92,12 @@ public class JSONList extends JSONEntity
 					readState = 2;
 				}
 				else if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
-					throw new JSONException("Expected ',' or ']' at line " + bis.getLine() + " column " + bis.getColumn());				
+					throw new DataException("Expected ',' or ']' at line " + bis.getLine() + " column " + bis.getColumn());				
 			}
 			bis.mark(1);
 		}
 		if(!correctlyClosed)
-			throw new JSONException("Missing ']' as line " + bis.getLine() + " column " + bis.getColumn());
+			throw new DataException("Missing ']' as line " + bis.getLine() + " column " + bis.getColumn());
 
 	}
 	
@@ -121,13 +121,13 @@ public class JSONList extends JSONEntity
 	
 	public void add(Object o)
 	{
-		if(o instanceof JSONEntity)
-			list.add((JSONEntity)o);
+		if(o instanceof DataEntity)
+			list.add((DataEntity)o);
 		else
-			list.add(new JSONLiteral(o));		
+			list.add(new DataLiteral(o));		
 	}
 	
-	public void merge(JSONList other)
+	public void merge(DataList other)
 	{
 		for(int i = 0; i < other.size(); i++)
 		{
@@ -145,9 +145,9 @@ public class JSONList extends JSONEntity
 		list.remove(i);
 	}
 	
-	public JSONEntity get(String key)
+	public DataEntity get(String key)
 	{
-		JSONEntity ret = null;
+		DataEntity ret = null;
 		int dot = key.indexOf('.');
 		if(dot == -1)
 		{
@@ -157,61 +157,61 @@ public class JSONList extends JSONEntity
 		{
 			String root = key.substring(0, dot);
 			String rest = key.substring(dot + 1);
-			JSONEntity obj = list.get(Integer.parseInt(root));
-			if(obj instanceof JSONObject)
-				ret = ((JSONObject)obj).get(rest);
-			else if(obj instanceof JSONList)
-				ret = ((JSONList)obj).get(rest);
+			DataEntity obj = list.get(Integer.parseInt(root));
+			if(obj instanceof DataMap)
+				ret = ((DataMap)obj).get(rest);
+			else if(obj instanceof DataList)
+				ret = ((DataList)obj).get(rest);
 		}
 		return ret;
 	}
 
-	public JSONEntity get(int i)
+	public DataEntity get(int i)
 	{
 		return list.get(i);
 	}
 
 	public String getString(int i)
 	{
-		JSONEntity obj = list.get(i);
-		if(obj != null  &&  obj instanceof JSONLiteral)
-			return ((JSONLiteral)obj).getString();
+		DataEntity obj = list.get(i);
+		if(obj != null  &&  obj instanceof DataLiteral)
+			return ((DataLiteral)obj).getString();
 		else
 			return null;		
 	}
 	
 	public Number getNumber(int i)
 	{
-		JSONEntity obj = list.get(i);
-		if(obj != null  &&  obj instanceof JSONLiteral)
-			return ((JSONLiteral)obj).getNumber();
+		DataEntity obj = list.get(i);
+		if(obj != null  &&  obj instanceof DataLiteral)
+			return ((DataLiteral)obj).getNumber();
 		else
 			return null;
 	}
 
 	public boolean getBoolean(int i)
 	{
-		JSONEntity obj = list.get(i);
-		if(obj != null  &&  obj instanceof JSONLiteral)
-			return ((JSONLiteral)obj).getBoolean();
+		DataEntity obj = list.get(i);
+		if(obj != null  &&  obj instanceof DataLiteral)
+			return ((DataLiteral)obj).getBoolean();
 		else
 			return false;
 	}
 	
-	public JSONObject getObject(int i)
+	public DataMap getObject(int i)
 	{
-		JSONEntity obj = list.get(i);
-		if(obj != null  &&  obj instanceof JSONObject)
-			return (JSONObject)obj;
+		DataEntity obj = list.get(i);
+		if(obj != null  &&  obj instanceof DataMap)
+			return (DataMap)obj;
 		else
 			return null;		
 	}
 	
-	public JSONList getList(int i)
+	public DataList getList(int i)
 	{
-		JSONEntity obj = list.get(i);
-		if(obj != null  &&  obj instanceof JSONList)
-			return (JSONList)obj;
+		DataEntity obj = list.get(i);
+		if(obj != null  &&  obj instanceof DataList)
+			return (DataList)obj;
 		else
 			return null;		
 	}
@@ -239,9 +239,9 @@ public class JSONList extends JSONEntity
 		return sb.toString();
 	}
 	
-	public JSONEntity getCopy()
+	public DataEntity getCopy()
 	{
-		JSONList ret = new JSONList();
+		DataList ret = new DataList();
 		for(int i = 0; i < size(); i++)
 			ret.add(get(i).getCopy());
 		return ret;

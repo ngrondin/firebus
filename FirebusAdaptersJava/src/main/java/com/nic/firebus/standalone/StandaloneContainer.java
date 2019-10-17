@@ -14,15 +14,15 @@ import com.nic.firebus.adapters.Adapter;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.logging.FirebusSimpleFormatter;
-import com.nic.firebus.utils.JSONList;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataList;
+import com.nic.firebus.utils.DataMap;
 
 public class StandaloneContainer
 {
 	private Logger logger = Logger.getLogger("com.nic.firebus.standalone");
 	protected Firebus firebus;
 
-	public StandaloneContainer(JSONObject config)
+	public StandaloneContainer(DataMap config)
 	{
 		Properties adapterClasses = new Properties();
 		try
@@ -36,7 +36,7 @@ public class StandaloneContainer
 		}
 		
 		firebus = new Firebus(config.getString("network"), config.getString("password"));
-		JSONList knownAddresses = config.getList("knownaddresses");
+		DataList knownAddresses = config.getList("knownaddresses");
 		if(knownAddresses != null)
 		{
 			for(int i = 0; i < knownAddresses.size(); i++)
@@ -48,24 +48,24 @@ public class StandaloneContainer
 			}
 		}
 		
-		JSONList adapters = config.getList("adapters");
+		DataList adapters = config.getList("adapters");
 		for(int i = 0; i < adapters.size(); i++)
 		{
 			try 
 			{
 				logger.fine("Adding adapter to container");
-				JSONObject depploymentConfig = adapters.getObject(i); 
+				DataMap depploymentConfig = adapters.getObject(i); 
 				String type = depploymentConfig.getString("type");
 				String serviceName = depploymentConfig.getString("servicename");
 				String consumerName = depploymentConfig.getString("consumername");
-				JSONObject adapterConfig = depploymentConfig.getObject("config");
+				DataMap adapterConfig = depploymentConfig.getObject("config");
 				String className = adapterClasses.getProperty(type);
 				if(className != null)
 				{
 					try
 					{
 						Class<?> c = Class.forName(className);
-						Constructor<?> cons = c.getConstructor(new Class[]{Firebus.class, JSONObject.class});
+						Constructor<?> cons = c.getConstructor(new Class[]{Firebus.class, DataMap.class});
 						if(adapterConfig != null)
 						{
 							logger.fine("Instantiating new adapter of type " + type);
@@ -111,7 +111,7 @@ public class StandaloneContainer
 				logger.addHandler(fh);
 				logger.setLevel(Level.FINEST);
 
-				JSONObject config = new JSONObject(new FileInputStream(args[0]));
+				DataMap config = new DataMap(new FileInputStream(args[0]));
 				new StandaloneContainer(config);
 			} 
 			catch (Exception e)

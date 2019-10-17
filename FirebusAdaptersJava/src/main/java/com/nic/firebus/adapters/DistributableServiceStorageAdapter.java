@@ -11,20 +11,20 @@ import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.utils.JSONException;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataException;
+import com.nic.firebus.utils.DataMap;
 
 public class DistributableServiceStorageAdapter extends Adapter implements ServiceProvider
 {
 	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
-	protected HashMap<String, JSONObject> serviceConfigs;
+	protected HashMap<String, DataMap> serviceConfigs;
 	protected String path;
 
 
-	public DistributableServiceStorageAdapter(Firebus n, JSONObject c)
+	public DistributableServiceStorageAdapter(Firebus n, DataMap c)
 	{
 		super(n, c);
-		serviceConfigs = new HashMap<String, JSONObject>();
+		serviceConfigs = new HashMap<String, DataMap>();
 		path = config.getString("path");
 		if(path == null)
 			path = ".";
@@ -80,14 +80,14 @@ public class DistributableServiceStorageAdapter extends Adapter implements Servi
 					{
 						try
 						{
-							JSONObject functionConfig = new JSONObject(new FileInputStream(list[i]));
+							DataMap functionConfig = new DataMap(new FileInputStream(list[i]));
 							String serviceName = functionConfig.getString("servicename");
 							if(serviceName != null)
 							{
 								serviceConfigs.put(serviceName, functionConfig);
 							}
 						}
-						catch(JSONException e)
+						catch(DataException e)
 						{
 							logger.info("Error reading config file : " + file.getName() + " (" + e.getMessage() + ")");
 						}

@@ -12,14 +12,14 @@ import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataMap;
 
 public class FileAdapter extends Adapter implements ServiceProvider, Consumer
 {
 	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
 	protected String path;
 	
-	public FileAdapter(Firebus n, JSONObject c)
+	public FileAdapter(Firebus n, DataMap c)
 	{
 		super(n, c);
 		path = config.getString("path");

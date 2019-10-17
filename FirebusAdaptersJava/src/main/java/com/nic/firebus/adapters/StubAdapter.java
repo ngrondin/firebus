@@ -7,12 +7,12 @@ import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataMap;
 
 public class StubAdapter extends Adapter implements ServiceProvider
 {
 
-	public StubAdapter(Firebus n, JSONObject c)
+	public StubAdapter(Firebus n, DataMap c)
 	{
 		super(n, c);
 	}
@@ -22,7 +22,7 @@ public class StubAdapter extends Adapter implements ServiceProvider
 		Payload response = new Payload();
 		try
 		{
-			JSONObject request = new JSONObject(payload.getString());
+			DataMap request = new DataMap(payload.getString());
 			if(request.getString("type").equals("random"))
 			{
 				int size = request.getNumber("size").intValue();

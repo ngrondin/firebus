@@ -17,8 +17,8 @@ import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.utils.JSONList;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataList;
+import com.nic.firebus.utils.DataMap;
 
 public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consumer
 {
@@ -26,7 +26,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 	protected MongoClient client;
 	protected MongoDatabase database;
 	
-	public MongoDBAdapter(Firebus n, JSONObject c)
+	public MongoDBAdapter(Firebus n, DataMap c)
 	{
 		super(n, c);
 		connectMongo();
@@ -48,10 +48,10 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 	{
 		try
 		{
-			JSONObject packet = new JSONObject(payload.getString());
+			DataMap packet = new DataMap(payload.getString());
 			String objectName = packet.getString("object");
 			String operation = packet.getString("operation");
-			JSONObject data = packet.getObject("data");
+			DataMap data = packet.getObject("data");
 			if(database != null)
 			{
 				MongoCollection<Document> collection = database.getCollection(objectName);
@@ -125,11 +125,11 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 	public Payload service(Payload payload) throws FunctionErrorException
 	{
 		Payload response = new Payload();
-		JSONObject responseJSON = new JSONObject();
+		DataMap responseJSON = new DataMap();
 		try
 		{
 			logger.finer("Starting mongo request");
-			JSONObject request = new JSONObject(payload.getString());
+			DataMap request = new DataMap(payload.getString());
 			String objectName = request.getString("object");
 			if(database != null)
 			{
@@ -139,13 +139,13 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					Iterator<Document> it = null;
 					if(request.containsKey("filter"))
 					{
-						JSONObject filter = request.getObject("filter");
+						DataMap filter = request.getObject("filter");
 						Document filterDoc = Document.parse(filter.toString()); 
 						it = collection.find(filterDoc).iterator();		
 					}
 					else if(request.containsKey("aggregation"))
 					{
-						JSONList aggregation = request.getList("aggregation");
+						DataList aggregation = request.getList("aggregation");
 						ArrayList<Document> list = new ArrayList<Document>();
 						for(int i = 0; i < aggregation.size(); i++)
 							list.add(Document.parse(aggregation.getObject(i).toString()));
@@ -158,12 +158,12 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					
 					if(it != null)
 					{
-						JSONList list = new JSONList();
+						DataList list = new DataList();
 						while(it.hasNext())
 						{
 							Document doc = it.next();
 							String str = doc.toJson();
-							JSONObject obj = new JSONObject(str);
+							DataMap obj = new DataMap(str);
 							list.add(obj);
 						}
 						responseJSON.put("result", list);

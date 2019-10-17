@@ -11,7 +11,7 @@ import javax.script.ScriptEngineManager;
 import jdk.nashorn.api.scripting.JSObject;
 
 import com.nic.firebus.utils.FirebusDataUtil;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataMap;
 
 
 public class UnitTest
@@ -21,7 +21,7 @@ public class UnitTest
 		try
 		{
 			FileInputStream fis = new FileInputStream("test.json");
-			JSONObject j = new JSONObject(fis);
+			DataMap j = new DataMap(fis);
 			System.out.println(j.toString());
 		}
 		catch(Exception e)

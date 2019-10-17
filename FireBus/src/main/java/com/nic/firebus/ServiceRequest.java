@@ -8,7 +8,7 @@ import com.nic.firebus.exceptions.FunctionTimeoutException;
 import com.nic.firebus.information.NodeInformation;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.ServiceRequestor;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataMap;
 
 public class ServiceRequest extends Thread
 {
@@ -85,7 +85,7 @@ public class ServiceRequest extends Thread
 					if(response != null)
 					{
 						logger.fine("Instantiating distributable service : " + serviceName);
-						JSONObject serviceConfig = new JSONObject(response.getString());
+						DataMap serviceConfig = new DataMap(response.getString());
 						String type = serviceConfig.getString("type");
 						DistributableService newDS = DistributableService.instantiate(nodeCore, type, serviceConfig.getObject("config"));
 						nodeCore.getFunctionManager().addFunction(serviceName, newDS, 10);

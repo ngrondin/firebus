@@ -13,14 +13,14 @@ import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataMap;
 
 public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 {
 	protected String connStr;
 	protected Connection connection;
 	
-	public JDBCAdapter(Firebus n, JSONObject c) throws SQLException
+	public JDBCAdapter(Firebus n, DataMap c) throws SQLException
 	{
 		super(n, c);
 		connectJDBC();

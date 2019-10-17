@@ -11,8 +11,8 @@ import java.util.logging.Logger;
 
 import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
-import com.nic.firebus.utils.JSONList;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataList;
+import com.nic.firebus.utils.DataMap;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -65,7 +65,7 @@ public class HTTPListenerAdapter extends Adapter
 				if(mime == null || (mime != null &&  mime.equals("application/x-www-form-urlencoded")))
 				{
 					String str = "";
-					JSONObject body = new JSONObject();
+					DataMap body = new DataMap();
 					if(query != null)
 					{
 						str = query;
@@ -136,14 +136,14 @@ public class HTTPListenerAdapter extends Adapter
 	
 	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
 	
-	public HTTPListenerAdapter(Firebus n, JSONObject c)
+	public HTTPListenerAdapter(Firebus n, DataMap c)
 	{
 		super(n, c);
 		try
 		{
 			int port = Integer.parseInt(config.getString("port"));
 			HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-			JSONList serviceList = config.getList("services");
+			DataList serviceList = config.getList("services");
 			if(serviceList != null)
 			{
 				for(int i = 0; i < serviceList.size(); i++)

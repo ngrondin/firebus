@@ -14,7 +14,7 @@ import com.nic.firebus.Payload;
 import com.nic.firebus.ServiceRequest;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
-import com.nic.firebus.utils.JSONObject;
+import com.nic.firebus.utils.DataMap;
 
 public class ScriptedService extends DistributableService
 {
@@ -24,7 +24,7 @@ public class ScriptedService extends DistributableService
 	protected Bindings bindings;
 	protected ServiceInformation serviceInformation;
 
-	public ScriptedService(NodeCore nc, JSONObject c)
+	public ScriptedService(NodeCore nc, DataMap c)
 	{
 		super(nc, c);
 		script = c.getString("source");

@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JSONLiteral extends JSONEntity
+public class DataLiteral extends DataEntity
 {
 	protected String stringValue;
 	protected boolean boolValue;
@@ -27,7 +27,7 @@ public class JSONLiteral extends JSONEntity
 	static public int TYPE_BOOLEAN = 3;
 	static public int TYPE_DATE = 4;
 	
-	public JSONLiteral(Object v)
+	public DataLiteral(Object v)
 	{
 		if(v == null)
 		{
@@ -55,7 +55,7 @@ public class JSONLiteral extends JSONEntity
 		}
 	}
 	
-	public JSONLiteral(InputStream is) throws JSONException, IOException
+	public DataLiteral(InputStream is) throws DataException, IOException
 	{
 		StringBuilder sb = null;
 		boolean inString = false;
@@ -105,7 +105,7 @@ public class JSONLiteral extends JSONEntity
 							} 
 							catch (ParseException e)
 							{
-								throw new JSONException("Error processing date value");
+								throw new DataException("Error processing date value");
 							}
 						}
 						else
@@ -127,7 +127,7 @@ public class JSONLiteral extends JSONEntity
 						if(sb.length() == 0)
 							inString = true;
 						else
-							throw new JSONException("Illegal character at line " + bis.getLine() + " column " + bis.getColumn());
+							throw new DataException("Illegal character at line " + bis.getLine() + " column " + bis.getColumn());
 					}
 					else if(c == ' ' || c == '\r' || c == '\n' || c == '\t' || c == ',' || c == '}' || c == ']')
 					{
@@ -263,18 +263,18 @@ public class JSONLiteral extends JSONEntity
 			return getString();
 	}
 	
-	public JSONLiteral getCopy()
+	public DataLiteral getCopy()
 	{
 		if(valueType == TYPE_NULL)
-			return new JSONLiteral((Object)null);
+			return new DataLiteral((Object)null);
 		if(valueType == TYPE_STRING)
-			return new JSONLiteral(new String(stringValue));
+			return new DataLiteral(new String(stringValue));
 		else if(valueType == TYPE_NUMBER)
-			return new JSONLiteral(new Double((Double)numberValue));
+			return new DataLiteral(new Double((Double)numberValue));
 		else if(valueType == TYPE_BOOLEAN)
-			return new JSONLiteral(new Boolean(boolValue));
+			return new DataLiteral(new Boolean(boolValue));
 		else if(valueType == TYPE_DATE)
-			return new JSONLiteral(new Date(dateValue.getTime()));
+			return new DataLiteral(new Date(dateValue.getTime()));
 		return null;
 	}
 }
