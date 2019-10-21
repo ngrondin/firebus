@@ -248,6 +248,14 @@ public class DataLiteral extends DataEntity
 		return valueType;
 	}
 	
+	public boolean equals(Object o)
+	{
+		Object otherObject = o;
+		if(o instanceof DataLiteral)
+			otherObject = ((DataLiteral)o).getObject();
+		return getObject().equals(otherObject);
+	}
+	
 	public String toString()
 	{
 		return toString(0);

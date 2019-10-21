@@ -52,9 +52,13 @@ public class HTTPListenerAdapter extends Adapter
 				{
 					for(int i = 0; i < cookies.size(); i++)
 					{
-						String cookie = cookies.get(i);
-						String[] parts = cookie.split("=");
-						firebusRequest.metadata.put(parts[0], parts[1]);
+						String[] sublist = cookies.get(i).split(";");
+						for(int j = 0; j < sublist.length; j++)
+						{
+							String cookie = sublist[j];
+							String[] parts = cookie.split("=");
+							firebusRequest.metadata.put(parts[0].trim(), parts[1].trim());
+						}
 					}
 				}
 				
