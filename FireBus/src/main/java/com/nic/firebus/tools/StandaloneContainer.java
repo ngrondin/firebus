@@ -1,16 +1,17 @@
-package com.nic.firebus.standalone;
+package com.nic.firebus.tools;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
-import java.util.Properties;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.nic.firebus.Firebus;
-import com.nic.firebus.adapters.Adapter;
+import com.nic.firebus.interfaces.BusFunction;
 import com.nic.firebus.interfaces.Consumer;
 import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.logging.FirebusSimpleFormatter;
@@ -24,17 +25,6 @@ public class StandaloneContainer
 
 	public StandaloneContainer(DataMap config)
 	{
-		Properties adapterClasses = new Properties();
-		try
-		{
-			InputStream is = getClass().getResourceAsStream("/com/nic/firebus/adapters/AdapterClasses.properties");
-			adapterClasses.load(is);
-		}
-		catch(IOException e)
-		{
-			logger.severe(e.getMessage());
-		}
-		
 		firebus = new Firebus(config.getString("network"), config.getString("password"));
 		DataList knownAddresses = config.getList("knownaddresses");
 		if(knownAddresses != null)
@@ -48,37 +38,51 @@ public class StandaloneContainer
 			}
 		}
 		
-		DataList adapters = config.getList("adapters");
-		for(int i = 0; i < adapters.size(); i++)
+		List<Logger> loggers = new ArrayList<Logger>();
+		DataList loggerConfigs = config.getList("loggers");
+		for(int i = 0; i < loggerConfigs.size(); i++)
+		{
+			try
+			{
+				DataMap loggerConfig = loggerConfigs.getObject(i);
+				Logger logger = Logger.getLogger(loggerConfig.getString("name"));
+				Formatter formatter = (Formatter)Class.forName(loggerConfig.getString("formatter")).newInstance();
+				FileHandler fileHandler = new FileHandler(loggerConfig.getString("filename"));
+				fileHandler.setFormatter(formatter);
+				fileHandler.setLevel(Level.parse(loggerConfig.getString("level")));
+				logger.addHandler(fileHandler);
+				logger.setUseParentHandlers(false);
+				logger.setLevel(Level.parse(loggerConfig.getString("level")));
+				loggers.add(logger);
+			}
+			catch(Exception e)
+			{
+				logger.severe("General error when configuring loggers : " + e.getMessage());
+			}
+		}
+		
+		DataList serviceConfigs = config.getList("services");
+		for(int i = 0; i < serviceConfigs.size(); i++)
 		{
 			try 
 			{
-				logger.fine("Adding adapter to container");
-				DataMap depploymentConfig = adapters.getObject(i); 
-				String type = depploymentConfig.getString("type");
-				String serviceName = depploymentConfig.getString("servicename");
-				String consumerName = depploymentConfig.getString("consumername");
-				DataMap adapterConfig = depploymentConfig.getObject("config");
-				String className = adapterClasses.getProperty(type);
-				if(className != null)
+				logger.fine("Adding services to container");
+				DataMap serviceConfig = serviceConfigs.getObject(i); 
+				String className = serviceConfig.getString("class");
+				String name = serviceConfig.getString("name");
+				DataMap deploymentConfig = serviceConfig.getObject("config");
+				if(className != null && name != null)
 				{
 					try
 					{
 						Class<?> c = Class.forName(className);
 						Constructor<?> cons = c.getConstructor(new Class[]{Firebus.class, DataMap.class});
-						if(adapterConfig != null)
-						{
-							logger.fine("Instantiating new adapter of type " + type);
-							Adapter adapter = (Adapter)cons.newInstance(new Object[]{firebus, adapterConfig});
-							if(serviceName != null  &&  adapter instanceof ServiceProvider)
-								firebus.registerServiceProvider(serviceName, ((ServiceProvider)adapter), 10);
-							if(consumerName != null  &&  adapter instanceof Consumer)
-								firebus.registerConsumer(consumerName, ((Consumer)adapter), 10);
-						}
-						else
-						{
-							logger.severe("No configuration has been defined for adapter " + type);
-						}
+						logger.fine("Instantiating service " + name);
+						BusFunction service = (BusFunction)cons.newInstance(new Object[]{firebus, deploymentConfig});
+						if(service instanceof ServiceProvider)
+							firebus.registerServiceProvider(name, ((ServiceProvider)service), 10);
+						if(service instanceof Consumer)
+							firebus.registerConsumer(name, ((Consumer)service), 10);
 					}
 					catch(Exception e)
 					{
@@ -87,7 +91,7 @@ public class StandaloneContainer
 				}
 				else
 				{
-					logger.severe("Adapter of type " + type + " does not have a defined class");
+					logger.severe("No class or name provided for service");
 				}
 			}
 			catch(Exception e)

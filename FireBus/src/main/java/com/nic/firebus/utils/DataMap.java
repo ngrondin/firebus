@@ -247,6 +247,19 @@ public class DataMap extends DataEntity implements Map<String, Object>
 		}
 	}
 	
+	public boolean matches(DataMap filter)
+	{
+		boolean matches = true;
+		Iterator<String> it = filter.keySet().iterator();
+		while(it.hasNext())
+		{
+			String key = it.next();
+			if(!filter.get(key).equals(get(key)))
+				matches = false;
+		}
+		return matches;
+	}
+	
 	public Object remove(Object key)
 	{
 		if(key instanceof String)

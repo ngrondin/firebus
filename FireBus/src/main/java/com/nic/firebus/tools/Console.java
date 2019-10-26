@@ -1,4 +1,4 @@
-package com.nic.firebus.standalone;
+package com.nic.firebus.tools;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;

@@ -2,14 +2,12 @@ package com.nic.firebus.adapters;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
@@ -52,54 +50,35 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			String objectName = packet.getString("object");
 			String operation = packet.getString("operation");
 			DataMap data = packet.getObject("data");
+			DataMap key = packet.getObject("key");
 			if(database != null)
 			{
 				MongoCollection<Document> collection = database.getCollection(objectName);
 				if(collection != null)
 				{
-					if(data != null)
+					if(key != null)
 					{
-						Document incomingDoc = Document.parse(data.toString());
-						Document existingDoc = null;
-						MongoCursor<Document> it = collection.listIndexes().iterator();
-						while(it.hasNext()  &&  existingDoc == null)
-						{
-							Document indexDoc = it.next();
-							Document keyDoc = (Document)indexDoc.get("key");
-							boolean missingField = false;
-							Document findDoc = new Document();
-							Iterator<Entry<String, Object>> it2 = keyDoc.entrySet().iterator();
-							while(it2.hasNext())
-							{
-								Entry<String, Object> indexField = it2.next();
-								String indexFieldName = indexField.getKey();
-								String indexFieldValue = data.getString(indexFieldName);
-								if(indexFieldValue != null)
-									findDoc.append(indexFieldName, indexFieldValue);
-								else
-									missingField = true;
-							}
-							if(!missingField)
-							{
-								existingDoc = collection.find(findDoc).first();
-							}
-							else
-							{
-								findDoc = null;
-							}
-						}
-						
+						Document findDoc = Document.parse(key.toString());
+						Document existingDoc = collection.find(findDoc).first();
+												
 						if(existingDoc != null)
 						{
-							if(operation == null || (operation !=null && operation.equals("insert")) || (operation !=null && operation.equals("update")))
-								collection.updateOne(existingDoc, new Document("$set", incomingDoc));
-							else if(operation != null  && operation.equals("replace"))
-								collection.replaceOne(existingDoc, incomingDoc);
-							else if(operation != null  && operation.equals("delete"))
-								collection.deleteOne(existingDoc);
+							if(data != null)
+							{
+								Document incomingDoc = Document.parse(data.toString());
+								if(operation == null || (operation != null && operation.equals("insert")) || (operation !=null && operation.equals("update")))
+									collection.updateOne(existingDoc, new Document("$set", incomingDoc));
+								else if(operation != null  && operation.equals("delete"))
+									collection.deleteOne(existingDoc);
+							}
 						}
 						else
 						{
+							if(data != null)
+								data.merge(key);
+							else
+								data = key;
+							Document incomingDoc = Document.parse(data.toString());
 							if(operation == null || (operation !=null && operation.equals("insert")) || (operation !=null && operation.equals("update")) || (operation !=null && operation.equals("replace")))
 								collection.insertOne(incomingDoc);
 						}

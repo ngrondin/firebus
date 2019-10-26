@@ -4,20 +4,24 @@
   <artifactId>firebus-adapters</artifactId>
   <version>0.0.1</version>
   <dependencies>
-	  <dependency>
+	<dependency>
 	  	<groupId>com.nic.firebus</groupId>
 	  	<artifactId>firebus-core</artifactId>
 	  	<version>0.0.1</version>
-	  </dependency>
-	  <dependency>
+	</dependency>
+	<dependency>
 		<groupId>org.mongodb</groupId>
 		<artifactId>mongo-java-driver</artifactId>
 		<version>3.11.0</version>
-	  </dependency>
+	</dependency>
+	<dependency>
+	    <groupId>commons-dbcp</groupId>
+	    <artifactId>commons-dbcp</artifactId>
+	    <version>1.4</version>
+	</dependency>
   </dependencies>
 	<build>
 	  <plugins>
-	  
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -33,7 +37,6 @@
 						<mainClass>com.nic.firebus.standalone.Console</mainClass>
 					  </manifest>
 					</archive>
-
 				</configuration>
 				<executions>
 				  <execution>
