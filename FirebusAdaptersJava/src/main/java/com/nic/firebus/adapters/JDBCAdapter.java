@@ -9,7 +9,6 @@ import java.util.Iterator;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
-import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
@@ -25,10 +24,12 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 {
 	protected String connStr;
 	protected BasicDataSource dataSource;
+	protected int pageSize;
 	
-	public JDBCAdapter(Firebus n, DataMap c) throws SQLException
+	public JDBCAdapter(DataMap c) throws SQLException
 	{
-		super(n, c);
+		super(c);
+		pageSize = config.containsKey("pagesize") ? config.getNumber("pagesize").intValue() : 50;
 		connectJDBC();
 	}
 	
@@ -81,7 +82,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		return new ServiceInformation("text/plain", "", "text/json", "{}");
 	}
 
-	private DataList get(DataMap packet)
+	private DataList get(DataMap packet) throws FunctionErrorException
 	{
 		DataList list = new DataList();
 		String objectName = packet.getString("object");
@@ -95,13 +96,13 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	        ResultSet rs1 = null;
 			try
 			{
-				String select = "select * from " + objectName + " where " + where;
+				String select = "select top " + pageSize + " * from " + objectName + " where " + where;
 				conn = dataSource.getConnection();
 		        ps1 = conn.prepareStatement(select);
 		        rs1 = ps1.executeQuery();
 		        ResultSetMetaData rsmd = rs1.getMetaData();
 		        int colCnt = rsmd.getColumnCount();
-		        while(rs1.next())
+		        while(rs1.next()  &&  list.size() < pageSize)
 		        {
 		        	DataMap map = new DataMap();
 		        	for(int i = 1; i <= colCnt; i++)
@@ -111,7 +112,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 			}
 			catch(Exception e)
 			{
-				e.printStackTrace();
+				throw new FunctionErrorException("Error querying the database", e);
 			}
 			finally
 			{
@@ -198,35 +199,41 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	private String getWhere(DataMap filter)
 	{
 		String where = null;
-		Iterator<String> it = filter.keySet().iterator();
-		while(it.hasNext())
+		if(filter != null)
 		{
-			String key = it.next();
-			if(where == null)
-				where = "";
-			else
-				where += " and ";
-			if(filter.get(key) instanceof DataMap)
+			Iterator<String> it = filter.keySet().iterator();
+			while(it.hasNext())
 			{
-				DataMap map = filter.getObject(key);
-				if(map.containsKey("$in"))
+				String key = it.next();
+				if(where == null)
+					where = "";
+				else
+					where += " and ";
+				if(filter.get(key) instanceof DataMap)
 				{
-					DataList list = map.getList("$in");
-					where += key + " in (";
-					for(int i = 0 ; i < list.size(); i++)
+					DataMap map = filter.getObject(key);
+					if(map.containsKey("$in"))
 					{
-						if(i > 0)
-							where += ", ";
-						where += getSQLStringFromObject(list.get(i));
+						DataList list = map.getList("$in");
+						where += key + " in (";
+						for(int i = 0 ; i < list.size(); i++)
+						{
+							if(i > 0)
+								where += ", ";
+							where += getSQLStringFromObject(list.get(i));
+						}
+						where += ")";
 					}
-					where += ")";
+				}
+				else
+				{
+					where += key + " = " + getSQLStringFromObject(filter.get(key)) + "";
 				}
 			}
-			else
-			{
-				where += key + " = " + getSQLStringFromObject(filter.get(key)) + "";
-			}
 		}
+		
+		if(where == null)
+			where = "1=1";
 		return where;
 	}
 	

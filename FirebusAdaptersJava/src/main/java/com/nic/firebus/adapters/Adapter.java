@@ -7,8 +7,13 @@ public class Adapter
 {
 	protected Firebus node;
 	protected DataMap config;
+
+	public Adapter(DataMap c)
+	{
+		config = c;
+	}
 	
-	public Adapter(Firebus n, DataMap c)
+	public Adapter(DataMap c, Firebus n)
 	{
 		node = n;
 		config = c;

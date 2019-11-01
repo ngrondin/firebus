@@ -2,7 +2,6 @@ package com.nic.firebus.adapters;
 
 import java.util.Random;
 
-import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
@@ -12,9 +11,9 @@ import com.nic.firebus.utils.DataMap;
 public class StubAdapter extends Adapter implements ServiceProvider
 {
 
-	public StubAdapter(Firebus n, DataMap c)
+	public StubAdapter(DataMap c)
 	{
-		super(n, c);
+		super(c);
 	}
 
 	public Payload service(Payload payload) throws FunctionErrorException

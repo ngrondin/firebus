@@ -266,7 +266,7 @@ public class DataLiteral extends DataEntity
 		if(valueType == TYPE_NULL)
 			return "null";
 		else if(valueType == TYPE_STRING  ||  valueType == TYPE_DATE)
-			return "\"" + getString() + "\"";
+			return "\"" + getString().replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r") + "\"";
 		else
 			return getString();
 	}

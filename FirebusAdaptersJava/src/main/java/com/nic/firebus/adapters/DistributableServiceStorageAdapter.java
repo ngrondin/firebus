@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
@@ -21,9 +20,9 @@ public class DistributableServiceStorageAdapter extends Adapter implements Servi
 	protected String path;
 
 
-	public DistributableServiceStorageAdapter(Firebus n, DataMap c)
+	public DistributableServiceStorageAdapter(DataMap c)
 	{
-		super(n, c);
+		super(c);
 		serviceConfigs = new HashMap<String, DataMap>();
 		path = config.getString("path");
 		if(path == null)

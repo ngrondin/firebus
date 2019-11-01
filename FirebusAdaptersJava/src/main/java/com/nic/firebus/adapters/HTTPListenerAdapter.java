@@ -140,9 +140,9 @@ public class HTTPListenerAdapter extends Adapter
 	
 	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
 	
-	public HTTPListenerAdapter(Firebus n, DataMap c)
+	public HTTPListenerAdapter(DataMap c, Firebus n)
 	{
-		super(n, c);
+		super(c, n);
 		try
 		{
 			int port = Integer.parseInt(config.getString("port"));

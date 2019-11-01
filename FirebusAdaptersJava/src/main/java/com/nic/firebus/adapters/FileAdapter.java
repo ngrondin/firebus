@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
@@ -19,9 +18,9 @@ public class FileAdapter extends Adapter implements ServiceProvider, Consumer
 	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
 	protected String path;
 	
-	public FileAdapter(Firebus n, DataMap c)
+	public FileAdapter(DataMap c)
 	{
-		super(n, c);
+		super(c);
 		path = config.getString("path");
 	}
 

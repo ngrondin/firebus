@@ -9,7 +9,6 @@ import org.bson.Document;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
@@ -23,10 +22,12 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
 	protected MongoClient client;
 	protected MongoDatabase database;
+	protected int pageSize;
 	
-	public MongoDBAdapter(Firebus n, DataMap c)
+	public MongoDBAdapter(DataMap c)
 	{
-		super(n, c);
+		super(c);
+		pageSize = config.containsKey("pagesize") ? config.getNumber("pagesize").intValue() : 50;
 		connectMongo();
 	}
 
@@ -138,7 +139,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					if(it != null)
 					{
 						DataList list = new DataList();
-						while(it.hasNext())
+						while(it.hasNext() && list.size() < pageSize)
 						{
 							Document doc = it.next();
 							String str = doc.toJson();
