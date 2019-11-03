@@ -5,7 +5,7 @@
   <version>0.0.1</version>
   <name>FirebusHTTPGateway</name>
   <properties>
-    <tomcat.version>8.0.48</tomcat.version>
+    <tomcat.version>8.5.2</tomcat.version>
   </properties>
   <dependencies>
 	<dependency>
@@ -20,13 +20,13 @@
 	</dependency>
 	<dependency>
 	    <groupId>org.apache.tomcat.embed</groupId>
-	    <artifactId>tomcat-embed-jasper</artifactId>
+	    <artifactId>tomcat-embed-logging-juli</artifactId>
 	    <version>${tomcat.version}</version>
 	</dependency>
 	<dependency>
-	    <groupId>org.apache.tomcat.embed</groupId>
-	    <artifactId>tomcat-embed-logging-juli</artifactId>
-	    <version>${tomcat.version}</version>
+	    <groupId>org.apache.httpcomponents</groupId>
+	    <artifactId>httpclient</artifactId>
+	    <version>4.5.2</version>
 	</dependency>	
   </dependencies>
 	<build>
