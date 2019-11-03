@@ -30,7 +30,6 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	{
 		super(c);
 		pageSize = config.containsKey("pagesize") ? config.getNumber("pagesize").intValue() : 50;
-		connectJDBC();
 	}
 	
 	protected void connectJDBC() throws SQLException
@@ -52,10 +51,17 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	{
 		try
 		{
+			if(dataSource == null || (dataSource != null && dataSource.isClosed()))
+				connectJDBC();
+
 			DataMap packet = new DataMap(payload.getString());
 			upsert(packet);
 		}
 		catch(DataException e)
+		{
+			e.printStackTrace();
+		}
+		catch(SQLException e)
 		{
 			e.printStackTrace();
 		}
@@ -65,6 +71,9 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	{
 		try
 		{
+			if(dataSource == null || (dataSource != null && dataSource.isClosed()))
+				connectJDBC();
+
 			DataMap packet = new DataMap(payload.getString());
 			DataList list = get(packet);
 			DataMap result = new DataMap();
@@ -74,6 +83,10 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		catch(DataException e)
 		{
 			throw new FunctionErrorException("Error getting the data", e);
+		}
+		catch(SQLException e)
+		{
+			throw new FunctionErrorException("Error connecting to the data source", e);
 		}
 	}
 
@@ -128,7 +141,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	{
 		String objectName = packet.getString("object");
 		String operation = packet.getString("operation");
-		DataMap filter = packet.getObject("filter");
+		DataMap filter = packet.getObject("key");
 		DataMap data = packet.getObject("data");
 		String where = getWhere(filter);
 		if(where != null && (operation == null || (operation != null && (operation.equals("update") || operation.equals("insert") || operation.equals("upsert")))))
@@ -209,7 +222,19 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 					where = "";
 				else
 					where += " and ";
-				if(filter.get(key) instanceof DataMap)
+				if(key.equals("$or"))
+				{
+					DataList orList = filter.getList(key);
+					where += "(";
+					for(int i = 0; i < orList.size(); i++)
+					{
+						if(i > 0)
+							where += " or ";
+						where += getWhere(orList.getObject(i));
+					}
+					where += ")";
+				}
+				else if(filter.get(key) instanceof DataMap)
 				{
 					DataMap map = filter.getObject(key);
 					if(map.containsKey("$in"))
@@ -223,6 +248,10 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 							where += getSQLStringFromObject(list.get(i));
 						}
 						where += ")";
+					}
+					else if(map.containsKey("$regex"))
+					{
+						where += key + " like '%" + map.getString("$regex") + "%'";
 					}
 				}
 				else
