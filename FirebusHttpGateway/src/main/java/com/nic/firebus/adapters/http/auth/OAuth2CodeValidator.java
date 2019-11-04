@@ -46,6 +46,9 @@ public class OAuth2CodeValidator extends AuthValidationHandler
     	{
         	String code = req.getParameter("code");
         	String originalUrl = req.getParameter("state");
+        	String contextPath = req.getContextPath();
+        	if(contextPath.equals(""))
+        		contextPath = "/";
         	//String validatorUrl = req.getRequestURL().toString();
 			//String validatorPath = req.getRequestURI();
 			//String host = req.getRequestURL().substring(0, (validatorUrl.length() - validatorPath.length()));
@@ -79,7 +82,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
             			if(cookieName != null)
             			{
                 			Cookie cookie = new Cookie(cookieName, respMap.getString("id_token"));
-                			cookie.setPath(req.getServletContext().getContextPath());
+                			cookie.setPath(contextPath);
                 			cookie.setMaxAge(3600);
                 			resp.addCookie(cookie);
             			}
