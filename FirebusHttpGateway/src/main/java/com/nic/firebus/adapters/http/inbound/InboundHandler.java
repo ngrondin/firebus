@@ -11,8 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.adapters.http.Handler;
-import com.nic.firebus.exceptions.FunctionErrorException;
-import com.nic.firebus.exceptions.FunctionTimeoutException;
 import com.nic.firebus.utils.DataException;
 import com.nic.firebus.utils.DataMap;
 
@@ -34,6 +32,7 @@ public abstract class InboundHandler extends Handler
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
 		String token = null;
+		String accept = req.getHeader("accept");
 		if(handlerConfig.containsKey("authentication")  &&  (token = getToken(req)) == null)
 		{
 			DataMap authConfig = handlerConfig.getObject("authentication");
@@ -74,23 +73,14 @@ public abstract class InboundHandler extends Handler
 			        writer.println("<html><title>500</title><body>Inbound process failed</body></html>");
 				}
 			} 
-			catch (FunctionErrorException e) 
-			{
-				resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-		        PrintWriter writer = resp.getWriter();
-		        writer.println("<html><title>500</title><body>Firebus function error : " + e.getMessage() + "</body></html>");
-			} 
-			catch (FunctionTimeoutException e) 
-			{
-				resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-		        PrintWriter writer = resp.getWriter();
-		        writer.println("<html><title>500</title><body>Firebus function timed out</body></html>");
-			}
 			catch (Exception e)
 			{
 				resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		        PrintWriter writer = resp.getWriter();
-		        writer.println("<html><title>500</title><body>General Exception : " + e.getMessage() + "</body></html>");
+				if(accept.contains("application/json"))
+					writer.println("{\r\n\t\"error\" : \"" + e.getMessage().replaceAll("\"", "'").replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n") + "\"\r\n}");
+				if(accept.contains("text/html"))
+					writer.println("<div>" + e.getMessage() + "</div>");
 			}
 		}
 	}	
