@@ -20,6 +20,12 @@ public class DataMap extends DataEntity implements Map<String, Object>
 		attributes = new HashMap<String, DataEntity>();
 	}
 
+	public DataMap(String key, Object value)
+	{
+		attributes = new HashMap<String, DataEntity>();
+		put(key, value);
+	}
+	
 	public DataMap(String s) throws DataException
 	{
 		try

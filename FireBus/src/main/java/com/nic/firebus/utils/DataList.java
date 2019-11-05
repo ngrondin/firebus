@@ -1,5 +1,6 @@
 package com.nic.firebus.utils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,7 +16,24 @@ public class DataList extends DataEntity
 		list = new ArrayList<DataEntity>();
 	}
 	
-	public DataList(InputStream is) throws DataException, IOException
+	public DataList(String s) throws DataException
+	{
+		try
+		{
+			initialise(new ByteArrayInputStream(s.getBytes()));
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public DataList(InputStream is) throws IOException, DataException
+	{
+		initialise(is);
+	}
+	
+	protected void initialise(InputStream is) throws IOException, DataException
 	{
 		list = new ArrayList<DataEntity>();
 		int cInt = -1;
