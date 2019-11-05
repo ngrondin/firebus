@@ -119,7 +119,19 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		        {
 		        	DataMap map = new DataMap();
 		        	for(int i = 1; i <= colCnt; i++)
-		        		map.put(rsmd.getColumnName(i), rs1.getObject(i));
+		        	{
+		        		String colName = rsmd.getColumnName(i);
+		        		Object val = rs1.getObject(i);
+		        		if(val instanceof String)
+		        		{
+		        			String valStr = (String)val;
+		        			if(valStr.startsWith("{") && valStr.endsWith("}"))
+		        				try { val = new DataMap(valStr); } catch(DataException e) {}		        				
+		        			if(valStr.startsWith("[") && valStr.endsWith("]"))
+		        				try { val = new DataList(valStr); } catch(DataException e) {}		        				
+		        		}
+		        		map.put(colName, val);
+		        	}
 		        	list.add(map);
 		        }
 			}

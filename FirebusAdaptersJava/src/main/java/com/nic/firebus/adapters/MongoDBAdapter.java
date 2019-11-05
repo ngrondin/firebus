@@ -69,6 +69,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 								Document incomingDoc = Document.parse(data.toString());
 								if(operation == null || (operation != null && operation.equals("insert")) || (operation !=null && operation.equals("update")))
 									collection.updateOne(existingDoc, new Document("$set", incomingDoc));
+								else if(operation != null  && operation.equals("replace"))
+									collection.replaceOne(existingDoc, incomingDoc);
 								else if(operation != null  && operation.equals("delete"))
 									collection.deleteOne(existingDoc);
 							}
