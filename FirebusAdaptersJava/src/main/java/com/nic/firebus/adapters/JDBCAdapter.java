@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
@@ -22,6 +23,7 @@ import com.nic.firebus.utils.DataMap;
 
 public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 {
+	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
 	protected String connStr;
 	protected BasicDataSource dataSource;
 	protected int pageSize;
@@ -107,9 +109,10 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 			Connection conn = null;
 	        PreparedStatement ps1 = null;
 	        ResultSet rs1 = null;
+	        String select = null;
 			try
 			{
-				String select = "select top " + pageSize + " * from " + objectName + " where " + where;
+				select = "select top " + pageSize + " * from " + objectName + " where " + where;
 				conn = dataSource.getConnection();
 		        ps1 = conn.prepareStatement(select);
 		        rs1 = ps1.executeQuery();
@@ -137,6 +140,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 			}
 			catch(Exception e)
 			{
+				logger.severe("Error querying the database : " + e.getMessage() + " (" + select + ")");
 				throw new FunctionErrorException("Error querying the database", e);
 			}
 			finally
@@ -156,6 +160,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		DataMap filter = packet.getObject("key");
 		DataMap data = packet.getObject("data");
 		String where = getWhere(filter);
+        String sql = "";
 		if(where != null && (operation == null || (operation != null && (operation.equals("update") || operation.equals("insert") || operation.equals("upsert")))))
 		{
 			Connection conn = null;
@@ -170,7 +175,6 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		        rs1 = ps1.executeQuery();
 		        rs1.next();
 		        int count = rs1.getInt(1);
-		        String sql = "";
 		        if(count > 0)
 		        {
 		        	String update = "update " + objectName + " set ";
@@ -209,6 +213,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 			}
 			catch(Exception e)
 			{
+				logger.severe("Error updating the database : " + e.getMessage() + " (" + sql + ")");
 				e.printStackTrace();
 			}
 			finally
