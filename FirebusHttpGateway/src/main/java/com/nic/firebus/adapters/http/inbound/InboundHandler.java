@@ -2,6 +2,7 @@ package com.nic.firebus.adapters.http.inbound;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -17,7 +18,8 @@ import com.nic.firebus.utils.DataMap;
 public abstract class InboundHandler extends Handler 
 {
 	private static final long serialVersionUID = 1L;
-
+	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
+	
 	private Firebus firebus;
 	private String service;
 	private int timeout;
@@ -89,6 +91,7 @@ public abstract class InboundHandler extends Handler
 				} 
 				catch (Exception e)
 				{
+					logger.severe("Error processing inbound : " + e.getMessage());
 					resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			        PrintWriter writer = resp.getWriter();
 					if(accept.contains("application/json"))

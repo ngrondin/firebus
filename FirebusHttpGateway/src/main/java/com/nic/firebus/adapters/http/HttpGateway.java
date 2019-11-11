@@ -1,6 +1,7 @@
 package com.nic.firebus.adapters.http;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
@@ -18,8 +19,9 @@ import com.nic.firebus.interfaces.ServiceProvider;
 import com.nic.firebus.utils.DataList;
 import com.nic.firebus.utils.DataMap;
 
-public class HttpGateway implements ServiceProvider {
-
+public class HttpGateway implements ServiceProvider 
+{
+	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
 	protected Firebus firebus;
 	protected DataMap config;
 	protected Tomcat tomcat;
@@ -78,7 +80,7 @@ public class HttpGateway implements ServiceProvider {
 		} 
         catch (Exception e) 
         {
-			e.printStackTrace();
+        	logger.severe("Error initiating the Http Gateway : " + e.getMessage());
 		}
 	}
 	
