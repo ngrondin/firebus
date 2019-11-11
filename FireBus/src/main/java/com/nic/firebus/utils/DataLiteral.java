@@ -17,7 +17,8 @@ public class DataLiteral extends DataEntity
 	protected Date dateValue;
 	protected int valueType;
 	protected static Pattern datePattern = Pattern.compile("^(?:[1-9]\\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d{1,9})?(?:Z|[+-][01]\\d:[0-5]\\d)$");
-	protected static Pattern numberPattern = Pattern.compile("[-+]?\\d*\\.?\\d+");
+	protected static Pattern doublePattern = Pattern.compile("[-+]?\\d*\\.\\d+");
+	protected static Pattern longPattern = Pattern.compile("[-+]?\\d+");
 	protected static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); 
 	//protected static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 	
@@ -134,7 +135,8 @@ public class DataLiteral extends DataEntity
 						bis.reset();
 						if(!hadQuotes)
 						{
-							Matcher numberMatcher = numberPattern.matcher(tempString);
+							Matcher doubleMatcher = doublePattern.matcher(tempString);
+							Matcher longMatcher = longPattern.matcher(tempString);
 							if(tempString.equalsIgnoreCase("true")  ||  tempString.equalsIgnoreCase("false"))
 							{
 								valueType = TYPE_BOOLEAN;
@@ -144,10 +146,15 @@ public class DataLiteral extends DataEntity
 							{
 								valueType = TYPE_NULL;
 							}
-							else if(numberMatcher.matches())
+							else if(doubleMatcher.matches())
 							{
 								valueType = TYPE_NUMBER;
 								numberValue = Double.parseDouble(tempString);
+							}
+							else if(longMatcher.matches())
+							{
+								valueType = TYPE_NUMBER;
+								numberValue = Long.parseLong(tempString);
 							}
 							else
 							{
@@ -276,8 +283,13 @@ public class DataLiteral extends DataEntity
 			return new DataLiteral((Object)null);
 		if(valueType == TYPE_STRING)
 			return new DataLiteral(new String(stringValue));
-		else if(valueType == TYPE_NUMBER)
-			return new DataLiteral(new Double((Double)numberValue));
+		else if(valueType == TYPE_NUMBER) 
+		{
+			if(numberValue instanceof Double)
+				return new DataLiteral(new Double(numberValue.doubleValue()));
+			else
+				return new DataLiteral(new Long(numberValue.longValue()));
+		}
 		else if(valueType == TYPE_BOOLEAN)
 			return new DataLiteral(new Boolean(boolValue));
 		else if(valueType == TYPE_DATE)
