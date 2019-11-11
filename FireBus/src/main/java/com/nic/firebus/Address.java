@@ -25,7 +25,7 @@ public class Address
 	
 	public boolean equals(Address a)
 	{
-		if(a.getIPAddress().equals(address)  &&  a.getPort() == port)
+		if(a != null && a.getIPAddress() != null && a.getIPAddress().equals(address)  &&  a.getPort() == port)
 			return true;
 		else
 			return false;
