@@ -29,6 +29,8 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 	protected String tokenUrl;
 	protected String clientId;
 	protected String clientSecret;
+	protected String thisUrl;
+	protected String redirectUrl;
 	protected String cookieName;
 
 	public OAuth2CodeValidator(DataMap c) 
@@ -37,6 +39,8 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 		tokenUrl = handlerConfig.getString("tokenurl");
 		clientId = handlerConfig.getString("clientid");
 		clientSecret = handlerConfig.getString("clientsecret");
+		thisUrl = handlerConfig.getString("thisurl");
+		redirectUrl = handlerConfig.getString("redirecturl");
 		cookieName = handlerConfig.getString("cookie");
 	}
 
@@ -45,16 +49,14 @@ public class OAuth2CodeValidator extends AuthValidationHandler
     	if(tokenUrl != null && clientId != null && clientSecret != null)
     	{
         	String code = req.getParameter("code");
-        	String originalUrl = req.getParameter("state");
         	String contextPath = req.getContextPath();
         	if(contextPath.equals(""))
         		contextPath = "/";
-        	//String validatorUrl = req.getRequestURL().toString();
-			//String validatorPath = req.getRequestURI();
-			//String host = req.getRequestURL().substring(0, (validatorUrl.length() - validatorPath.length()));
-        	//String originalPath = originalUrl.substring(host.length());
-        			
-        	if(code != null && originalUrl != null)
+        	String thisUrlResolved = thisUrl != null ? thisUrl : req.getRequestURL().toString();
+        	String redirectUrlResolved = redirectUrl != null ? redirectUrl : "${state}";
+       		redirectUrlResolved = redirectUrlResolved.replace("${state}", req.getParameter("state") != null ? req.getParameter("state") : "");
+        	
+        	if(code != null && redirectUrlResolved != null)
         	{
         		DataMap respMap = null;
         		HttpClient httpclient = HttpClients.createDefault();
@@ -63,7 +65,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
         		params.add(new BasicNameValuePair("code", code));
         		params.add(new BasicNameValuePair("client_id", clientId));
         		params.add(new BasicNameValuePair("client_secret", clientSecret));
-        		params.add(new BasicNameValuePair("redirect_uri", req.getRequestURL().toString()));
+        		params.add(new BasicNameValuePair("redirect_uri", thisUrlResolved));
         		params.add(new BasicNameValuePair("grant_type", "authorization_code"));
         		httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
         		HttpResponse response = httpclient.execute(httppost);
@@ -87,7 +89,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
                 			resp.addCookie(cookie);
             			}
             			resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-            			resp.setHeader("location", originalUrl);
+            			resp.setHeader("location", redirectUrlResolved);
             	        PrintWriter writer = resp.getWriter();
             	        writer.println("<html><title>Redirect</title><body>Loging in</body></html>");
             		}
