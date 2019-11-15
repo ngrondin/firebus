@@ -73,6 +73,11 @@ public class Connection extends Thread
 		return remoteAddress;
 	}
 	
+	public boolean remoteAddressEquals(Address a)
+	{
+		return remoteAddress != null ? (remoteAddress.equals(a)) : false;
+	}
+	
 	public int getRemoteNodeId()
 	{
 		return remoteNodeId;

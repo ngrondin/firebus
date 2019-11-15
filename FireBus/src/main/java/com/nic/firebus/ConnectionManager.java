@@ -132,7 +132,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 					Address a = knownAddresses.get(i);
 					boolean hasConnection = false;
 					for(int j = 0; j < connections.size(); j++)
-						if(connections.get(j).getRemoteAddress().equals(a))
+						if(connections.get(j).remoteAddressEquals(a))
 							hasConnection = true;
 					if(!hasConnection)
 					{
@@ -150,7 +150,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 						boolean hasConnection = false;
 						for(int j = 0; j < connections.size(); j++)
 							for(int k = 0; k < ni.getAddressCount(); k++)
-								if(connections.get(j).getRemoteAddress().equals(ni.getAddress(k)))
+								if(connections.get(j).remoteAddressEquals(ni.getAddress(k)))
 									hasConnection = true;
 						if(!hasConnection)
 						{
