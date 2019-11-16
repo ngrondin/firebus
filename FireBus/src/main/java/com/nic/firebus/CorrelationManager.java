@@ -73,7 +73,7 @@ public class CorrelationManager extends Thread
 			synchronized(entry)
 			{
 				entry.expiry = System.currentTimeMillis() + timeout;
-				entry.progressMessage = null;
+				//entry.progressMessage = null;
 				while(System.currentTimeMillis() < entry.expiry  &&  entry.inboundMessage == null  &&  entry.progressMessage == null)
 				{
 					try
@@ -95,6 +95,7 @@ public class CorrelationManager extends Thread
 				else if(entry.progressMessage != null)
 				{
 					responseMessage = entry.progressMessage;
+					entry.progressMessage = null;
 				}
 				else
 				{
