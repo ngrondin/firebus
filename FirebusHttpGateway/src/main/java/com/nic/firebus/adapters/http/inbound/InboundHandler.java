@@ -18,7 +18,7 @@ import com.nic.firebus.utils.DataMap;
 public abstract class InboundHandler extends Handler 
 {
 	private static final long serialVersionUID = 1L;
-	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
+	private Logger logger = Logger.getLogger("com.nic.firebus.adapters.http");
 	
 	private Firebus firebus;
 	private String service;
@@ -77,7 +77,9 @@ public abstract class InboundHandler extends Handler
 					{
 						if(token != null)
 							fbReq.metadata.put("token", token);
+						logger.finest(fbReq.toString());
 						Payload fbResp = firebus.requestService(service, fbReq, timeout);
+						logger.finest(fbResp.toString());
 						resp.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
 						resp.setHeader("Access-Control-Allow-Credentials", "true");
 						processResponse(resp, fbResp);

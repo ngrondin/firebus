@@ -21,7 +21,7 @@ import com.nic.firebus.utils.DataMap;
 
 public class HttpGateway implements ServiceProvider 
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
+	private Logger logger = Logger.getLogger("com.nic.firebus.adapters.http");
 	protected Firebus firebus;
 	protected DataMap config;
 	protected Tomcat tomcat;
