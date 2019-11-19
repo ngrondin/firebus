@@ -60,6 +60,8 @@ public abstract class InboundHandler extends Handler
 					String resolvedLoginUrl = loginUrl.replace("${host}", host).replace("${path}", path).replace("${currenturl}", currentUrl).replace("${nonce}", nonce);
 					resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
 					resp.setHeader("Location", resolvedLoginUrl);
+					resp.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
+					resp.setHeader("Access-Control-Allow-Credentials", "true");
 				}
 				else
 				{
