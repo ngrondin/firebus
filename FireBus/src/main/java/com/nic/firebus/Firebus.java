@@ -83,7 +83,7 @@ public class Firebus
 
 	public Payload requestService(String serviceName, Payload payload) throws FunctionErrorException, FunctionTimeoutException
 	{
-		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, 2000);
+		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, 10000);
 		return request.execute();
 	}
 
