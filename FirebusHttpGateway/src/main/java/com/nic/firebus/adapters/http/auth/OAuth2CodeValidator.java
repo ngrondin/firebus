@@ -20,6 +20,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 
+import com.nic.firebus.Firebus;
 import com.nic.firebus.utils.DataException;
 import com.nic.firebus.utils.DataMap;
 
@@ -33,9 +34,9 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 	protected String redirectUrl;
 	protected String cookieName;
 
-	public OAuth2CodeValidator(DataMap c) 
+	public OAuth2CodeValidator(DataMap c, Firebus fb) 
 	{
-		super(c);
+		super(c, fb);
 		tokenUrl = handlerConfig.getString("tokenurl");
 		clientId = handlerConfig.getString("clientid");
 		clientSecret = handlerConfig.getString("clientsecret");

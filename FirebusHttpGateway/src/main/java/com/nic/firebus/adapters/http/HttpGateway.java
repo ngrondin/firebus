@@ -10,6 +10,7 @@ import com.nic.firebus.Firebus;
 import com.nic.firebus.Payload;
 import com.nic.firebus.adapters.http.auth.AuthValidationHandler;
 import com.nic.firebus.adapters.http.auth.OAuth2CodeValidator;
+import com.nic.firebus.adapters.http.auth.UserPassValidator;
 import com.nic.firebus.adapters.http.inbound.GetHandler;
 import com.nic.firebus.adapters.http.inbound.InboundHandler;
 import com.nic.firebus.adapters.http.inbound.PostJsonHandler;
@@ -115,7 +116,11 @@ public class HttpGateway implements ServiceProvider
 		String type = authConfig.getString("type").toLowerCase();
 		if(type != null && type.equals("oauth2code"))
 		{
-			return new OAuth2CodeValidator(authConfig);
+			return new OAuth2CodeValidator(authConfig, firebus);
+		}
+		else if(type != null && type.equals("userpassform"))
+		{
+			return new UserPassValidator(authConfig, firebus);
 		}
 		else
 		{

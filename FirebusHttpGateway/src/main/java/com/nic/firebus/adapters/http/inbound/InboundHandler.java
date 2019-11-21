@@ -20,14 +20,12 @@ public abstract class InboundHandler extends Handler
 	private static final long serialVersionUID = 1L;
 	private Logger logger = Logger.getLogger("com.nic.firebus.adapters.http");
 	
-	private Firebus firebus;
 	private String service;
 	private int timeout;
 	
 	public InboundHandler(DataMap c, Firebus f) 
 	{
-		super(c);
-		firebus = f;
+		super(c, f);
 		service = handlerConfig.getString("service");
 		timeout = handlerConfig.containsKey("timeout") ? handlerConfig.getNumber("timeout").intValue() : 10000;
 	}
@@ -37,13 +35,15 @@ public abstract class InboundHandler extends Handler
 	{
 		String token = null;
 		String accept = req.getHeader("accept");
+		resp.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
+		resp.setHeader("Access-Control-Allow-Credentials", "true");
+		resp.setHeader("Cache-Control", "no-cache");
+
 		if(req.getMethod().equals("OPTIONS"))
 		{
 			resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
 			resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
 			resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
-			resp.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
-			resp.setHeader("Access-Control-Allow-Credentials", "true");
 		}
 		else
 		{
@@ -60,8 +60,6 @@ public abstract class InboundHandler extends Handler
 					String resolvedLoginUrl = loginUrl.replace("${host}", host).replace("${path}", path).replace("${currenturl}", currentUrl).replace("${nonce}", nonce);
 					resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
 					resp.setHeader("Location", resolvedLoginUrl);
-					resp.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
-					resp.setHeader("Access-Control-Allow-Credentials", "true");
 				}
 				else
 				{
@@ -82,8 +80,6 @@ public abstract class InboundHandler extends Handler
 						logger.finest(fbReq.toString());
 						Payload fbResp = firebus.requestService(service, fbReq, timeout);
 						logger.finest(fbResp.toString());
-						resp.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
-						resp.setHeader("Access-Control-Allow-Credentials", "true");
 						processResponse(resp, fbResp);
 					}
 					else
