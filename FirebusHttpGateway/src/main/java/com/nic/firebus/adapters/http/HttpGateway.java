@@ -13,6 +13,7 @@ import com.nic.firebus.adapters.http.auth.OAuth2CodeValidator;
 import com.nic.firebus.adapters.http.auth.UserPassValidator;
 import com.nic.firebus.adapters.http.inbound.GetHandler;
 import com.nic.firebus.adapters.http.inbound.InboundHandler;
+import com.nic.firebus.adapters.http.inbound.PostFormHandler;
 import com.nic.firebus.adapters.http.inbound.PostJsonHandler;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
@@ -98,6 +99,10 @@ public class HttpGateway implements ServiceProvider
 			if(contentType.equals("application/json"))
 			{
 				return new PostJsonHandler(inboundConfig, firebus);
+			}
+			else if(contentType.equals("application/x-www-form-urlencoded"))
+			{
+				return new PostFormHandler(inboundConfig, firebus);
 			}
 			else
 			{

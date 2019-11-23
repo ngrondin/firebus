@@ -2,6 +2,7 @@ package com.nic.firebus.adapters.http.inbound;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -12,11 +13,11 @@ import com.nic.firebus.Payload;
 import com.nic.firebus.utils.DataException;
 import com.nic.firebus.utils.DataMap;
 
-public class PostJsonHandler extends InboundHandler 
+public class PostFormHandler extends InboundHandler 
 {
 	private static final long serialVersionUID = 1L;
 
-	public PostJsonHandler(DataMap c, Firebus f) 
+	public PostFormHandler(DataMap c, Firebus f) 
 	{
 		super(c, f);
 	}
@@ -25,7 +26,14 @@ public class PostJsonHandler extends InboundHandler
 	{
 		String path = req.getRequestURI();
 		String shortPath = path.substring(req.getContextPath().length() + req.getServletPath().length());
-		DataMap body = new DataMap(req.getInputStream());
+		DataMap body = new DataMap();
+		Enumeration<String> en = req.getParameterNames();
+		while(en.hasMoreElements())
+		{
+			String key = en.nextElement();
+			String val = req.getParameter(key);
+			body.put(key, val);
+		}
 		Payload payload = new Payload(body.toString());
 		payload.metadata.put("post", shortPath);
 		return payload;
