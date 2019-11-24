@@ -61,24 +61,33 @@ public class UserPassValidator extends AuthValidationHandler
 	    			DataMap fbResp = new DataMap(r.getString());
 	    			if(fbResp != null && fbResp.getList("result") != null)
 	    			{
-	    				DataMap userConfig = fbResp.getList("result").getObject(0);
-	    				String savedPassHash = userConfig.getString(passwordKey);
-	    				MessageDigest digest = MessageDigest.getInstance(hashType);
-	    				byte[] encodedhash = digest.digest(password.getBytes());
-	    				String receivedPassHash = Base64.getEncoder().encodeToString(encodedhash);
-	    				if(receivedPassHash.equals(savedPassHash)) 
+	    				if(fbResp.getList("result").size() > 0)
 	    				{
-	    				    Algorithm algorithm = Algorithm.HMAC256("secret");
-	    				    String token = JWT.create().withIssuer("io.firebus").withClaim("email", username).withExpiresAt(new Date((new Date()).getTime() + 3600000)).sign(algorithm);
-                			Cookie cookie = new Cookie(cookieName, token);
-                			cookie.setPath(contextPath);
-                			cookie.setMaxAge(3600);
-                			resp.addCookie(cookie);
-	            			resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-	            			resp.setHeader("location", redirectUrl);
-	            	        PrintWriter writer = resp.getWriter();
-	            	        writer.println("<html><title>Redirect</title><body>Loging in</body></html>");
-
+		    				DataMap userConfig = fbResp.getList("result").getObject(0);
+		    				String savedPassHash = userConfig.getString(passwordKey);
+		    				MessageDigest digest = MessageDigest.getInstance(hashType);
+		    				byte[] encodedhash = digest.digest(password.getBytes());
+		    				String receivedPassHash = Base64.getEncoder().encodeToString(encodedhash);
+		    				if(receivedPassHash.equals(savedPassHash)) 
+		    				{
+		    				    Algorithm algorithm = Algorithm.HMAC256("secret");
+		    				    String token = JWT.create().withIssuer("io.firebus").withClaim("email", username).withExpiresAt(new Date((new Date()).getTime() + 3600000)).sign(algorithm);
+	                			Cookie cookie = new Cookie(cookieName, token);
+	                			cookie.setPath(contextPath);
+	                			cookie.setMaxAge(3600);
+	                			resp.addCookie(cookie);
+		            			resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
+		            			resp.setHeader("location", redirectUrl);
+		            	        PrintWriter writer = resp.getWriter();
+		            	        writer.println("<html><title>Redirect</title><body>Loging in</body></html>");
+	
+		    				}
+		    				else
+		    				{
+			    				resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			    		        PrintWriter writer = resp.getWriter();
+			    		        writer.println("<html><title>Error</title><body>Unauthorized</body></html>");
+		    				}
 	    				}
 	    				else
 	    				{
