@@ -256,24 +256,32 @@ public class Connection extends Thread
 	
 	public synchronized void sendMessage(Message msg)
 	{
-		try
+		if(running)
 		{
-			byte[] bytes = msg.serialise();
-			os.write(0x7E);
-			os.write(bytes.length & 0x000000FF);
-			os.write((bytes.length >> 8) & 0x000000FF);
-			os.write((bytes.length >> 16) & 0x000000FF);
-			os.write((bytes.length >> 24) & 0x000000FF);
-			os.write(bytes);
-			os.write(msg.getCRC());
-			os.flush();
-			byteCount += bytes.length;
-			logger.fine("Sent message on connection " + getId() + " to remote node " + remoteNodeId + "(load: " + load + ")");
+			try
+			{
+				byte[] bytes = msg.serialise();
+				os.write(0x7E);
+				os.write(bytes.length & 0x000000FF);
+				os.write((bytes.length >> 8) & 0x000000FF);
+				os.write((bytes.length >> 16) & 0x000000FF);
+				os.write((bytes.length >> 24) & 0x000000FF);
+				os.write(bytes);
+				os.write(msg.getCRC());
+				os.flush();
+				byteCount += bytes.length;
+				logger.fine("Sent message on connection " + getId() + " to remote node " + remoteNodeId + "(load: " + load + ")");
+			}
+			catch(Exception e)
+			{
+				logger.severe(e.getMessage());
+				close();
+			}
 		}
-		catch(Exception e)
+		else
 		{
-			logger.severe(e.getMessage());
-			close();
+			if(listener != null)
+				listener.connectionClosed(this);
 		}
 	}
 	
@@ -286,6 +294,8 @@ public class Connection extends Thread
 				socket.close();
 			if(is != null)
 				is.close();
+			if(os != null)
+				os.close();
 		} 
 		catch (IOException e) 
 		{
