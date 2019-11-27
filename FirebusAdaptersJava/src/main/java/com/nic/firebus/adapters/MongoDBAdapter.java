@@ -113,6 +113,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			logger.finer("Starting mongo request");
 			DataMap request = new DataMap(payload.getString());
 			String objectName = request.getString("object");
+			int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
 			if(database != null)
 			{
 				MongoCollection<Document> collection = database.getCollection(objectName);
@@ -141,6 +142,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					if(it != null)
 					{
 						DataList list = new DataList();
+						for(int i = 0; it.hasNext() && i < (page * pageSize); i++)
+							it.next();
 						while(it.hasNext() && list.size() < pageSize)
 						{
 							Document doc = it.next();

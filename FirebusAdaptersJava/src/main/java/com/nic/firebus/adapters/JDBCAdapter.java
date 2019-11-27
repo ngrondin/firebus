@@ -101,6 +101,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	{
 		DataList list = new DataList();
 		String objectName = packet.getString("object");
+		int page = packet.containsKey("page") ? packet.getNumber("page").intValue() : 0;
 		String operation = packet.getString("operation");
 		DataMap filter = packet.getObject("filter");
 		String where = getWhere(filter);
@@ -118,6 +119,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		        rs1 = ps1.executeQuery();
 		        ResultSetMetaData rsmd = rs1.getMetaData();
 		        int colCnt = rsmd.getColumnCount();
+		        for(int i = 0; rs1.next() && i < (page * pageSize); i++);
 		        while(rs1.next()  &&  list.size() < pageSize)
 		        {
 		        	DataMap map = new DataMap();
