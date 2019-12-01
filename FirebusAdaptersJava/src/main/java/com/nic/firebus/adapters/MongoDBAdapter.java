@@ -74,6 +74,11 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 								else if(operation != null  && operation.equals("delete"))
 									collection.deleteOne(existingDoc);
 							}
+							else
+							{
+								if(operation != null  && operation.equals("delete"))
+									collection.deleteOne(existingDoc);
+							}
 						}
 						else
 						{
