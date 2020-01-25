@@ -1,7 +1,7 @@
 package com.nic.firebus.adapters.http.inbound;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -35,8 +35,10 @@ public class PostJsonHandler extends InboundHandler
 	{
 		if(payload.metadata.containsKey("mime"))
 			resp.setHeader("content-type", payload.metadata.get("mime"));
-        PrintWriter writer = resp.getWriter();
-        writer.print(payload.getString());
+		OutputStream os = resp.getOutputStream();
+		os.write(payload.getBytes());
+		os.flush();
+		os.close();
 	}	
 
 }

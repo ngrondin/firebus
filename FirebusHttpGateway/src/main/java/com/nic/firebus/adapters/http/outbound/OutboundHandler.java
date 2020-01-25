@@ -1,0 +1,82 @@
+package com.nic.firebus.adapters.http.outbound;
+
+import java.io.IOException;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletException;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.HttpClients;
+
+import com.nic.firebus.Firebus;
+import com.nic.firebus.Payload;
+import com.nic.firebus.adapters.http.Handler;
+import com.nic.firebus.exceptions.FunctionErrorException;
+import com.nic.firebus.information.ServiceInformation;
+import com.nic.firebus.interfaces.ServiceProvider;
+import com.nic.firebus.utils.DataException;
+import com.nic.firebus.utils.DataMap;
+
+public abstract class OutboundHandler extends Handler implements ServiceProvider {
+	
+	private static final long serialVersionUID = 1L;
+	private Logger logger = Logger.getLogger("com.nic.firebus.adapters.http");
+	
+	protected String service;
+	protected String baseUrl;
+	protected int timeout;
+	protected HttpClient httpClient;
+	
+	public OutboundHandler(DataMap c, Firebus f) 
+	{
+		super(c, f);
+		service = handlerConfig.getString("service");
+		baseUrl = handlerConfig.getString("baseurl");
+		timeout = handlerConfig.containsKey("timeout") ? handlerConfig.getNumber("timeout").intValue() : 10000;
+		httpClient = HttpClients.createDefault();
+	}
+
+	public Payload service(Payload payload) throws FunctionErrorException {
+		Payload fbResponse = null;
+		try 
+		{
+			HttpUriRequest httpRequest = processRequest(payload);
+			if(httpRequest != null)
+			{
+				HttpResponse response = httpClient.execute(httpRequest);
+        		int respStatus = response.getStatusLine().getStatusCode(); 
+        		if(respStatus >= 200 && respStatus < 400)
+        		{
+            		HttpEntity entity = response.getEntity();
+            		if (entity != null) 
+            		{
+            			fbResponse = processResponse(entity);
+						logger.finest(fbResponse.toString());
+            		}
+        		}
+        		else
+        		{
+        			logger.finer("Http error " + respStatus);
+        			throw new FunctionErrorException("Http error " + respStatus);
+        		}
+			}
+		}
+		catch(Exception e) 
+		{
+			throw new FunctionErrorException("Error executing http request", e);
+		}
+		return fbResponse;
+	}
+
+	public ServiceInformation getServiceInformation() {
+		return null;
+	}
+	
+	protected abstract HttpUriRequest processRequest(Payload payload) throws ServletException, IOException, DataException;
+	
+	protected abstract Payload processResponse(HttpEntity response) throws ServletException, IOException, DataException;
+
+}

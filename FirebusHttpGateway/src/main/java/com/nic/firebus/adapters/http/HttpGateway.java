@@ -15,6 +15,8 @@ import com.nic.firebus.adapters.http.inbound.GetHandler;
 import com.nic.firebus.adapters.http.inbound.InboundHandler;
 import com.nic.firebus.adapters.http.inbound.PostFormHandler;
 import com.nic.firebus.adapters.http.inbound.PostJsonHandler;
+import com.nic.firebus.adapters.http.outbound.OutboundHandler;
+import com.nic.firebus.adapters.http.outbound.PostHandler;
 import com.nic.firebus.exceptions.FunctionErrorException;
 import com.nic.firebus.information.ServiceInformation;
 import com.nic.firebus.interfaces.ServiceProvider;
@@ -57,6 +59,21 @@ public class HttpGateway implements ServiceProvider
 		            {
 		            	Tomcat.addServlet(context, name, handler);      
 		            	context.addServletMapping(urlPattern, name);
+		            }
+		        }
+	        }
+
+	        list = config.getList("outbound");
+	        if(list != null)
+	        {
+		        for(int i = 0; i < list.size(); i++)
+		        {
+		        	DataMap outboundConfig = list.getObject(i);
+		        	String name = outboundConfig.getString("service");
+		            OutboundHandler handler = getOutboundHandler(outboundConfig);
+		            if(handler != null)
+		            {
+		        		firebus.registerServiceProvider(name, handler, 10);
 		            }
 		        }
 	        }
@@ -108,6 +125,24 @@ public class HttpGateway implements ServiceProvider
 			{
 				return null;
 			}
+		}
+		else
+		{
+			return null;
+		}
+	}
+	
+	
+	private OutboundHandler getOutboundHandler(DataMap outboundConfig)
+	{
+		String method = outboundConfig.containsKey("method") ? outboundConfig.getString("method").toLowerCase() : "get";
+		if(method.equals("get"))
+		{
+			return null;
+		}
+		else if(method.equals("post"))
+		{
+			return new PostHandler(outboundConfig, firebus);
 		}
 		else
 		{
