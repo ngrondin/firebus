@@ -1,4 +1,4 @@
-package com.nic.firebus.adapters;
+package io.firebus.adapters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -9,13 +9,14 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-import com.nic.firebus.Firebus;
-import com.nic.firebus.Payload;
-import com.nic.firebus.utils.DataList;
-import com.nic.firebus.utils.DataMap;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+
+import io.firebus.Firebus;
+import io.firebus.Payload;
+import io.firebus.utils.DataList;
+import io.firebus.utils.DataMap;
 
 public class HTTPListenerAdapter extends Adapter
 {

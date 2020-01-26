@@ -1,7 +1,7 @@
-package com.nic.firebus.adapters;
+package io.firebus.adapters;
 
-import com.nic.firebus.Firebus;
-import com.nic.firebus.utils.DataMap;
+import io.firebus.Firebus;
+import io.firebus.utils.DataMap;
 
 public class Adapter 
 {

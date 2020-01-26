@@ -1,4 +1,4 @@
-package com.nic.firebus.adapters;
+package io.firebus.adapters;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -9,13 +9,14 @@ import org.bson.Document;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.nic.firebus.Payload;
-import com.nic.firebus.exceptions.FunctionErrorException;
-import com.nic.firebus.information.ServiceInformation;
-import com.nic.firebus.interfaces.Consumer;
-import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.utils.DataList;
-import com.nic.firebus.utils.DataMap;
+
+import io.firebus.Payload;
+import io.firebus.exceptions.FunctionErrorException;
+import io.firebus.information.ServiceInformation;
+import io.firebus.interfaces.Consumer;
+import io.firebus.interfaces.ServiceProvider;
+import io.firebus.utils.DataList;
+import io.firebus.utils.DataMap;
 
 public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consumer
 {

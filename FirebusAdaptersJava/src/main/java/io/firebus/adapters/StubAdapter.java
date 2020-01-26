@@ -1,12 +1,12 @@
-package com.nic.firebus.adapters;
+package io.firebus.adapters;
 
 import java.util.Random;
 
-import com.nic.firebus.Payload;
-import com.nic.firebus.exceptions.FunctionErrorException;
-import com.nic.firebus.information.ServiceInformation;
-import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.utils.DataMap;
+import io.firebus.Payload;
+import io.firebus.exceptions.FunctionErrorException;
+import io.firebus.information.ServiceInformation;
+import io.firebus.interfaces.ServiceProvider;
+import io.firebus.utils.DataMap;
 
 public class StubAdapter extends Adapter implements ServiceProvider
 {

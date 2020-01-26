@@ -1,4 +1,4 @@
-package com.nic.firebus.adapters;
+package io.firebus.adapters;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,16 +10,16 @@ import java.util.logging.Logger;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
-import com.nic.firebus.Payload;
-import com.nic.firebus.exceptions.FunctionErrorException;
-import com.nic.firebus.information.ServiceInformation;
-import com.nic.firebus.interfaces.Consumer;
-import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.utils.DataEntity;
-import com.nic.firebus.utils.DataException;
-import com.nic.firebus.utils.DataList;
-import com.nic.firebus.utils.DataLiteral;
-import com.nic.firebus.utils.DataMap;
+import io.firebus.Payload;
+import io.firebus.exceptions.FunctionErrorException;
+import io.firebus.information.ServiceInformation;
+import io.firebus.interfaces.Consumer;
+import io.firebus.interfaces.ServiceProvider;
+import io.firebus.utils.DataEntity;
+import io.firebus.utils.DataException;
+import io.firebus.utils.DataList;
+import io.firebus.utils.DataLiteral;
+import io.firebus.utils.DataMap;
 
 public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 {
@@ -114,12 +114,13 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 			try
 			{
 				select = "select top " + pageSize + " * from " + objectName + " where " + where;
+				logger.finer(select);
 				conn = dataSource.getConnection();
 		        ps1 = conn.prepareStatement(select);
 		        rs1 = ps1.executeQuery();
 		        ResultSetMetaData rsmd = rs1.getMetaData();
 		        int colCnt = rsmd.getColumnCount();
-		        for(int i = 0; rs1.next() && i < (page * pageSize); i++);
+		        for(int i = 0; i < (page * pageSize); i++, rs1.next());
 		        while(rs1.next()  &&  list.size() < pageSize)
 		        {
 		        	DataMap map = new DataMap();
@@ -210,6 +211,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		        	}
 		        	sql = insert + values + ")";
 		        }
+		        logger.finer(sql);
 		        ps2 = conn.prepareStatement(sql);
 		        ps2.execute();
 			}
