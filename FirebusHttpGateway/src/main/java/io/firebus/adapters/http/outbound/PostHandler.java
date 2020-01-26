@@ -1,7 +1,6 @@
-package com.nic.firebus.adapters.http.outbound;
+package io.firebus.adapters.http.outbound;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.servlet.ServletException;
 
@@ -9,11 +8,12 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.util.EntityUtils;
 
-import com.nic.firebus.Firebus;
-import com.nic.firebus.Payload;
-import com.nic.firebus.utils.DataException;
-import com.nic.firebus.utils.DataMap;
+import io.firebus.Firebus;
+import io.firebus.Payload;
+import io.firebus.utils.DataException;
+import io.firebus.utils.DataMap;
 
 public class PostHandler extends OutboundHandler 
 {
@@ -45,10 +45,9 @@ public class PostHandler extends OutboundHandler
 
 	protected Payload processResponse(HttpEntity response) throws ServletException, IOException, DataException 
 	{
-		InputStream is = response.getContent();
-		byte[] data = new byte[is.available()];
-		is.read(data);
-		Payload payload = new Payload(data);
+		String responseStr = EntityUtils.toString(response);
+		EntityUtils.consume(response);
+		Payload payload = new Payload(responseStr);
 		return payload;
 	}
 

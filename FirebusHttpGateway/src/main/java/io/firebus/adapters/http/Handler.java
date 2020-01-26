@@ -1,10 +1,10 @@
-package com.nic.firebus.adapters.http;
+package io.firebus.adapters.http;
 
 
 import javax.servlet.http.HttpServlet;
 
-import com.nic.firebus.Firebus;
-import com.nic.firebus.utils.DataMap;
+import io.firebus.Firebus;
+import io.firebus.utils.DataMap;
 
 public abstract class Handler extends HttpServlet 
 {

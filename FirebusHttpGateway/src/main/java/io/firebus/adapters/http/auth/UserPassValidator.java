@@ -1,4 +1,4 @@
-package com.nic.firebus.adapters.http.auth;
+package io.firebus.adapters.http.auth;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -13,9 +13,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.nic.firebus.Firebus;
-import com.nic.firebus.Payload;
-import com.nic.firebus.utils.DataMap;
+
+import io.firebus.Firebus;
+import io.firebus.Payload;
+import io.firebus.utils.DataMap;
 
 public class UserPassValidator extends AuthValidationHandler
 {

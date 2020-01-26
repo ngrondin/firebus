@@ -1,4 +1,4 @@
-package com.nic.firebus.adapters.http.inbound;
+package io.firebus.adapters.http.inbound;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -9,11 +9,11 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.nic.firebus.Firebus;
-import com.nic.firebus.Payload;
-import com.nic.firebus.adapters.http.Handler;
-import com.nic.firebus.utils.DataException;
-import com.nic.firebus.utils.DataMap;
+import io.firebus.Firebus;
+import io.firebus.Payload;
+import io.firebus.adapters.http.Handler;
+import io.firebus.utils.DataException;
+import io.firebus.utils.DataMap;
 
 public abstract class InboundHandler extends Handler 
 {

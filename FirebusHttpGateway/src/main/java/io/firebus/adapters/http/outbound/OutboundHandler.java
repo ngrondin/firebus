@@ -1,4 +1,4 @@
-package com.nic.firebus.adapters.http.outbound;
+package io.firebus.adapters.http.outbound;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -8,17 +8,18 @@ import javax.servlet.ServletException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClients;
 
-import com.nic.firebus.Firebus;
-import com.nic.firebus.Payload;
-import com.nic.firebus.adapters.http.Handler;
-import com.nic.firebus.exceptions.FunctionErrorException;
-import com.nic.firebus.information.ServiceInformation;
-import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.utils.DataException;
-import com.nic.firebus.utils.DataMap;
+import io.firebus.Firebus;
+import io.firebus.Payload;
+import io.firebus.adapters.http.Handler;
+import io.firebus.exceptions.FunctionErrorException;
+import io.firebus.information.ServiceInformation;
+import io.firebus.interfaces.ServiceProvider;
+import io.firebus.utils.DataException;
+import io.firebus.utils.DataMap;
 
 public abstract class OutboundHandler extends Handler implements ServiceProvider {
 	

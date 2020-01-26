@@ -1,9 +1,9 @@
-package com.nic.firebus.adapters.http.auth;
+package io.firebus.adapters.http.auth;
 
 
-import com.nic.firebus.Firebus;
-import com.nic.firebus.adapters.http.Handler;
-import com.nic.firebus.utils.DataMap;
+import io.firebus.Firebus;
+import io.firebus.adapters.http.Handler;
+import io.firebus.utils.DataMap;
 
 public abstract class AuthValidationHandler extends Handler
 {

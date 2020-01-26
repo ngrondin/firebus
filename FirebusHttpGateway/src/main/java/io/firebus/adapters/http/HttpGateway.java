@@ -1,4 +1,4 @@
-package com.nic.firebus.adapters.http;
+package io.firebus.adapters.http;
 
 import java.io.File;
 import java.util.logging.Logger;
@@ -6,22 +6,22 @@ import java.util.logging.Logger;
 import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
 
-import com.nic.firebus.Firebus;
-import com.nic.firebus.Payload;
-import com.nic.firebus.adapters.http.auth.AuthValidationHandler;
-import com.nic.firebus.adapters.http.auth.OAuth2CodeValidator;
-import com.nic.firebus.adapters.http.auth.UserPassValidator;
-import com.nic.firebus.adapters.http.inbound.GetHandler;
-import com.nic.firebus.adapters.http.inbound.InboundHandler;
-import com.nic.firebus.adapters.http.inbound.PostFormHandler;
-import com.nic.firebus.adapters.http.inbound.PostJsonHandler;
-import com.nic.firebus.adapters.http.outbound.OutboundHandler;
-import com.nic.firebus.adapters.http.outbound.PostHandler;
-import com.nic.firebus.exceptions.FunctionErrorException;
-import com.nic.firebus.information.ServiceInformation;
-import com.nic.firebus.interfaces.ServiceProvider;
-import com.nic.firebus.utils.DataList;
-import com.nic.firebus.utils.DataMap;
+import io.firebus.Firebus;
+import io.firebus.Payload;
+import io.firebus.adapters.http.auth.AuthValidationHandler;
+import io.firebus.adapters.http.auth.OAuth2CodeValidator;
+import io.firebus.adapters.http.auth.UserPassValidator;
+import io.firebus.adapters.http.inbound.GetHandler;
+import io.firebus.adapters.http.inbound.InboundHandler;
+import io.firebus.adapters.http.inbound.PostFormHandler;
+import io.firebus.adapters.http.inbound.PostJsonHandler;
+import io.firebus.adapters.http.outbound.OutboundHandler;
+import io.firebus.adapters.http.outbound.PostHandler;
+import io.firebus.exceptions.FunctionErrorException;
+import io.firebus.information.ServiceInformation;
+import io.firebus.interfaces.ServiceProvider;
+import io.firebus.utils.DataList;
+import io.firebus.utils.DataMap;
 
 public class HttpGateway implements ServiceProvider 
 {

@@ -1,4 +1,4 @@
-package com.nic.firebus.adapters.http.auth;
+package io.firebus.adapters.http.auth;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,9 +20,9 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 
-import com.nic.firebus.Firebus;
-import com.nic.firebus.utils.DataException;
-import com.nic.firebus.utils.DataMap;
+import io.firebus.Firebus;
+import io.firebus.utils.DataException;
+import io.firebus.utils.DataMap;
 
 public class OAuth2CodeValidator extends AuthValidationHandler
 {

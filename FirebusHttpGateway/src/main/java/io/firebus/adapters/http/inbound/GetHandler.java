@@ -1,4 +1,4 @@
-package com.nic.firebus.adapters.http.inbound;
+package io.firebus.adapters.http.inbound;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,9 +8,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.nic.firebus.Firebus;
-import com.nic.firebus.Payload;
-import com.nic.firebus.utils.DataMap;
+import io.firebus.Firebus;
+import io.firebus.Payload;
+import io.firebus.utils.DataMap;
 
 public class GetHandler extends InboundHandler 
 {
