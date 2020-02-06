@@ -20,7 +20,7 @@ import io.firebus.utils.DataMap;
 
 public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consumer
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
+	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected MongoClient client;
 	protected MongoDatabase database;
 	protected int pageSize;

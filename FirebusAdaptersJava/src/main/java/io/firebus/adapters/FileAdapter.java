@@ -15,7 +15,7 @@ import io.firebus.utils.DataMap;
 
 public class FileAdapter extends Adapter implements ServiceProvider, Consumer
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
+	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected String path;
 	
 	public FileAdapter(DataMap c)

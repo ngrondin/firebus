@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
@@ -23,15 +24,17 @@ import io.firebus.utils.DataMap;
 
 public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
+	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected String connStr;
 	protected BasicDataSource dataSource;
 	protected int pageSize;
+	protected SimpleDateFormat sdf;
 	
 	public JDBCAdapter(DataMap c) throws SQLException
 	{
 		super(c);
 		pageSize = config.containsKey("pagesize") ? config.getNumber("pagesize").intValue() : 50;
+		sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	}
 	
 	protected void connectJDBC() throws SQLException
@@ -77,9 +80,17 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 				connectJDBC();
 
 			DataMap packet = new DataMap(payload.getString());
-			DataList list = get(packet);
 			DataMap result = new DataMap();
-			result.put("result", list);
+			if(packet.containsKey("filter")) 
+			{
+				DataList list = get(packet);
+				result.put("result", list);
+			}
+			else if(packet.containsKey("key"))
+			{
+				upsert(packet);
+				result.put("result", "ok");
+			}
 			return new Payload(null, result.toString().getBytes());
 		}
 		catch(DataException e)
@@ -313,6 +324,14 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 					return "null";
 				else
 					return "'" + valLit.getString().replaceAll("'", "''") + "'";
+			}
+			else if(valLit.getType() == DataLiteral.TYPE_DATE)
+			{
+				return "'" + sdf.format(((DataLiteral) val).getDate()) + "'";
+			}
+			else if(valLit.getType() == DataLiteral.TYPE_NULL)
+			{
+				return "null";
 			}
 			else
 			{

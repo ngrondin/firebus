@@ -139,7 +139,7 @@ public class HTTPListenerAdapter extends Adapter
 		
 	}
 	
-	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
+	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	
 	public HTTPListenerAdapter(DataMap c, Firebus n)
 	{

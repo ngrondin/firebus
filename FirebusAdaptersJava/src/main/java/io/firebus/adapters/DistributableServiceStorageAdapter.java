@@ -15,7 +15,7 @@ import io.firebus.utils.DataMap;
 
 public class DistributableServiceStorageAdapter extends Adapter implements ServiceProvider
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus.adapters");
+	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected HashMap<String, DataMap> serviceConfigs;
 	protected String path;
 
