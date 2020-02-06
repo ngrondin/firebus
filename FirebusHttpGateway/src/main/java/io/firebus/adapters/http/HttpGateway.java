@@ -15,6 +15,7 @@ import io.firebus.adapters.http.inbound.GetHandler;
 import io.firebus.adapters.http.inbound.InboundHandler;
 import io.firebus.adapters.http.inbound.PostFormHandler;
 import io.firebus.adapters.http.inbound.PostJsonHandler;
+import io.firebus.adapters.http.outbound.OutboundGetHandler;
 import io.firebus.adapters.http.outbound.OutboundHandler;
 import io.firebus.adapters.http.outbound.PostHandler;
 import io.firebus.exceptions.FunctionErrorException;
@@ -25,7 +26,7 @@ import io.firebus.utils.DataMap;
 
 public class HttpGateway implements ServiceProvider 
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus.adapters.http");
+	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	protected Firebus firebus;
 	protected DataMap config;
 	protected Tomcat tomcat;
@@ -138,7 +139,7 @@ public class HttpGateway implements ServiceProvider
 		String method = outboundConfig.containsKey("method") ? outboundConfig.getString("method").toLowerCase() : "get";
 		if(method.equals("get"))
 		{
-			return null;
+			return new OutboundGetHandler(outboundConfig, firebus);
 		}
 		else if(method.equals("post"))
 		{

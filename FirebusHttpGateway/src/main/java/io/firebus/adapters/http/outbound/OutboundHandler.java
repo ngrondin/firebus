@@ -24,7 +24,7 @@ import io.firebus.utils.DataMap;
 public abstract class OutboundHandler extends Handler implements ServiceProvider {
 	
 	private static final long serialVersionUID = 1L;
-	private Logger logger = Logger.getLogger("com.nic.firebus.adapters.http");
+	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	
 	protected String service;
 	protected String baseUrl;

@@ -18,7 +18,7 @@ import io.firebus.utils.DataMap;
 public abstract class InboundHandler extends Handler 
 {
 	private static final long serialVersionUID = 1L;
-	private Logger logger = Logger.getLogger("com.nic.firebus.adapters.http");
+	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	
 	private String service;
 	private int timeout;

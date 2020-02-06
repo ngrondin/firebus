@@ -48,7 +48,7 @@
 				<!-- MainClass in mainfest make a executable jar -->
 				<archive>
 				  <manifest>
-					<mainClass>com.nic.firebus.standalone.Console</mainClass>
+					<mainClass>io.firebus.standalone.Console</mainClass>
 				  </manifest>
 				</archive>
 			</configuration>
