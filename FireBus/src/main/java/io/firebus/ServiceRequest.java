@@ -12,7 +12,7 @@ import io.firebus.utils.DataMap;
 
 public class ServiceRequest extends Thread
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus");
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected NodeCore nodeCore;
 	protected String serviceName;
 	protected Payload requestPayload;

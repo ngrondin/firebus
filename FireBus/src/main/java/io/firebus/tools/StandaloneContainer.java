@@ -20,7 +20,7 @@ import io.firebus.utils.DataMap;
 
 public class StandaloneContainer
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus.standalone");
+	private Logger logger = Logger.getLogger("io.firebus.standalone");
 	protected Firebus firebus;
 
 	public StandaloneContainer(DataMap config)
@@ -108,7 +108,7 @@ public class StandaloneContainer
 			try
 			{
 				Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
-				Logger logger = Logger.getLogger("com.nic.firebus");
+				Logger logger = Logger.getLogger("io.firebus");
 				FileHandler fh = new FileHandler("FirebusStandaloneContainer.log");
 				fh.setFormatter(new FirebusSimpleFormatter());
 				fh.setLevel(Level.FINEST);

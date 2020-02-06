@@ -13,7 +13,7 @@ import io.firebus.interfaces.ServiceProvider;
 
 public class FunctionManager
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus");
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected NodeCore nodeCore;
 	protected HashMap<String, FunctionEntry> functions;
 	

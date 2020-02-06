@@ -16,7 +16,7 @@ import io.firebus.interfaces.ConnectionListener;
 
 public class ConnectionManager extends Thread implements ConnectionListener
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus");
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected int nodeId;
 	protected String networkName;
 	protected SecretKey secretKey;

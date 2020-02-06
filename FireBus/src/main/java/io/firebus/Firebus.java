@@ -12,7 +12,7 @@ import io.firebus.interfaces.ServiceRequestor;
 
 public class Firebus
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus");
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected NodeCore nodeCore;
 	
 	public Firebus()

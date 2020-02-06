@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 public class DiscoveryManager extends Thread
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus");
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected boolean quit;
 	protected int nodeId;
 	protected String networkName;

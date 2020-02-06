@@ -18,7 +18,7 @@ import io.firebus.interfaces.ConnectionListener;
 
 public class Connection extends Thread 
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus");
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected Socket socket;
 	protected String networkName;
 	protected SecretKey secretKey;

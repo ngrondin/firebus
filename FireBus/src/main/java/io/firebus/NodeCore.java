@@ -10,7 +10,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class NodeCore
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus");
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected int nodeId;
 	protected boolean quit;
 	protected String networkName;

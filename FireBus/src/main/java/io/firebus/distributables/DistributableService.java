@@ -39,7 +39,7 @@ public abstract class DistributableService implements ServiceProvider
 
 	public static DistributableService instantiate(NodeCore nodeCore, String type, DataMap config)
 	{
-		Logger logger = Logger.getLogger("com.nic.firebus");
+		Logger logger = Logger.getLogger("io.firebus");
 		DistributableService service = null;
 		
 		if(serviceClasses == null)

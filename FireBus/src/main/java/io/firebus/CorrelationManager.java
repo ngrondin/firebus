@@ -23,7 +23,7 @@ public class CorrelationManager extends Thread
 		}
 	};
 	
-	private Logger logger = Logger.getLogger("com.nic.firebus");
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected HashMap<Integer, CorrelationEntry> entries;
 	protected NodeCore nodeCore;
 	protected boolean quit;

@@ -20,7 +20,7 @@ import io.firebus.logging.FirebusSimpleFormatter;
 
 public class Console implements ServiceRequestor
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus");
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected FirebusAdmin firebus;
 	
 	public Console()
@@ -190,7 +190,7 @@ public class Console implements ServiceRequestor
 		try
 		{
 			Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
-			Logger logger = Logger.getLogger("com.nic.firebus");
+			Logger logger = Logger.getLogger("io.firebus");
 			FileHandler fh = new FileHandler("Console.log");
 			fh.setFormatter(new FirebusSimpleFormatter());
 			fh.setLevel(Level.FINER);

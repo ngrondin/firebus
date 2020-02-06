@@ -10,7 +10,7 @@ import io.firebus.utils.DataMap;
 
 public class FunctionWorker extends Thread
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus");
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected FunctionEntry functionEntry;
 	protected Message inboundMessage;
 	protected NodeCore nodeCore;

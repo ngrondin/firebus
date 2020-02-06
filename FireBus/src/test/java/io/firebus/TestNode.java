@@ -27,7 +27,7 @@ public class TestNode
 			FileHandler fh = new FileHandler("TestNode.log");
 			fh.setFormatter(new FirebusSimpleFormatter());
 			fh.setLevel(Level.FINEST);
-			Logger logger = Logger.getLogger("com.nic.firebus");
+			Logger logger = Logger.getLogger("io.firebus");
 			logger.addHandler(fh);
 			logger.setLevel(Level.FINEST);
 		}

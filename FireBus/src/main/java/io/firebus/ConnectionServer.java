@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 public class ConnectionServer extends Thread
 {
-	private Logger logger = Logger.getLogger("com.nic.firebus");
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected ConnectionManager connectionManager;
 	protected boolean quit;
 	protected ServerSocket server;
