@@ -21,12 +21,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 
 import io.firebus.Firebus;
+import io.firebus.adapters.http.AuthValidationHandler;
 import io.firebus.utils.DataException;
 import io.firebus.utils.DataMap;
 
 public class OAuth2CodeValidator extends AuthValidationHandler
 {
-	private static final long serialVersionUID = 1L;
 	protected String tokenUrl;
 	protected String clientId;
 	protected String clientSecret;
@@ -45,7 +45,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 		cookieName = handlerConfig.getString("cookie");
 	}
 
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
+    protected void service(HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
     {
     	if(tokenUrl != null && clientId != null && clientSecret != null)
     	{

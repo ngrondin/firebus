@@ -16,11 +16,11 @@ import com.auth0.jwt.algorithms.Algorithm;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.adapters.http.AuthValidationHandler;
 import io.firebus.utils.DataMap;
 
 public class UserPassValidator extends AuthValidationHandler
 {
-	private static final long serialVersionUID = 1L;
 	protected String dataService;
 	protected String collection;
 	protected String userKey;
@@ -41,7 +41,7 @@ public class UserPassValidator extends AuthValidationHandler
 		cookieName = handlerConfig.containsKey("cookie") ? handlerConfig.getString("cookie") : "token";
 	}
 
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
+    protected void service(HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
     {
     	String contextPath = req.getContextPath();
     	if(contextPath.equals(""))

@@ -1,4 +1,4 @@
-package io.firebus.adapters.http.inbound;
+package io.firebus.adapters.http;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -11,13 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
-import io.firebus.adapters.http.Handler;
 import io.firebus.utils.DataException;
 import io.firebus.utils.DataMap;
 
-public abstract class InboundHandler extends Handler 
+public abstract class InboundHandler extends HttpHandler 
 {
-	private static final long serialVersionUID = 1L;
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	
 	private String service;

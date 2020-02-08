@@ -12,14 +12,12 @@ import org.apache.http.util.EntityUtils;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.adapters.http.OutboundHandler;
 import io.firebus.utils.DataException;
 import io.firebus.utils.DataMap;
 
 public class PostHandler extends OutboundHandler 
 {
-	private static final long serialVersionUID = 1L;
-
-
 	public PostHandler(DataMap c, Firebus f) 
 	{
 		super(c, f);

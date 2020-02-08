@@ -9,13 +9,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.adapters.http.InboundHandler;
 import io.firebus.utils.DataException;
 import io.firebus.utils.DataMap;
 
 public class PostJsonHandler extends InboundHandler 
 {
-	private static final long serialVersionUID = 1L;
-
 	public PostJsonHandler(DataMap c, Firebus f) 
 	{
 		super(c, f);
@@ -24,7 +23,7 @@ public class PostJsonHandler extends InboundHandler
 	protected Payload processRequest(HttpServletRequest req) throws ServletException, IOException, DataException
 	{
 		String path = req.getRequestURI();
-		String shortPath = path.substring(req.getContextPath().length() + req.getServletPath().length());
+		String shortPath = path.substring(req.getContextPath().length() + getHttpHandlerPath().length());
 		DataMap body = new DataMap(req.getInputStream());
 		Payload payload = new Payload(body.toString());
 		payload.metadata.put("post", shortPath);

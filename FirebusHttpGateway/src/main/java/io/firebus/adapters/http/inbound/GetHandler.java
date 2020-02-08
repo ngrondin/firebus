@@ -10,12 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.adapters.http.InboundHandler;
 import io.firebus.utils.DataMap;
 
 public class GetHandler extends InboundHandler 
 {
-	private static final long serialVersionUID = 1L;
-
 	public GetHandler(DataMap c, Firebus f) 
 	{
 		super(c, f);
@@ -25,7 +24,7 @@ public class GetHandler extends InboundHandler
 	{
 		DataMap fbReq = new DataMap();
 		String path = req.getRequestURI();
-		String shortPath = path.substring(req.getContextPath().length() + req.getServletPath().length());
+		String shortPath = path.substring(req.getContextPath().length() + getHttpHandlerPath().length());
 		fbReq.put("get", shortPath);
 		Enumeration<String> en = req.getParameterNames();
 		while(en.hasMoreElements())

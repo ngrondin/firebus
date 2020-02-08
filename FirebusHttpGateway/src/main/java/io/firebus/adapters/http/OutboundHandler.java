@@ -1,4 +1,4 @@
-package io.firebus.adapters.http.outbound;
+package io.firebus.adapters.http;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -14,7 +14,6 @@ import org.apache.http.impl.client.HttpClients;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
-import io.firebus.adapters.http.Handler;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.ServiceProvider;

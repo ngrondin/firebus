@@ -10,13 +10,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.adapters.http.InboundHandler;
 import io.firebus.utils.DataException;
 import io.firebus.utils.DataMap;
 
 public class PostFormHandler extends InboundHandler 
 {
-	private static final long serialVersionUID = 1L;
-
 	public PostFormHandler(DataMap c, Firebus f) 
 	{
 		super(c, f);
@@ -25,7 +24,7 @@ public class PostFormHandler extends InboundHandler
 	protected Payload processRequest(HttpServletRequest req) throws ServletException, IOException, DataException
 	{
 		String path = req.getRequestURI();
-		String shortPath = path.substring(req.getContextPath().length() + req.getServletPath().length());
+		String shortPath = path.substring(req.getContextPath().length() + getHttpHandlerPath().length());
 		DataMap body = new DataMap();
 		Enumeration<String> en = req.getParameterNames();
 		while(en.hasMoreElements())

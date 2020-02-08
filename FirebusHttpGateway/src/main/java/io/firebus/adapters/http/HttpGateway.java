@@ -3,20 +3,21 @@ package io.firebus.adapters.http;
 import java.io.File;
 import java.util.logging.Logger;
 
+import javax.servlet.MultipartConfigElement;
+
 import org.apache.catalina.Context;
+import org.apache.catalina.Wrapper;
 import org.apache.catalina.startup.Tomcat;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
-import io.firebus.adapters.http.auth.AuthValidationHandler;
 import io.firebus.adapters.http.auth.OAuth2CodeValidator;
 import io.firebus.adapters.http.auth.UserPassValidator;
 import io.firebus.adapters.http.inbound.GetHandler;
-import io.firebus.adapters.http.inbound.InboundHandler;
 import io.firebus.adapters.http.inbound.PostFormHandler;
 import io.firebus.adapters.http.inbound.PostJsonHandler;
+import io.firebus.adapters.http.inbound.PostMultiPartHandler;
 import io.firebus.adapters.http.outbound.OutboundGetHandler;
-import io.firebus.adapters.http.outbound.OutboundHandler;
 import io.firebus.adapters.http.outbound.PostHandler;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
@@ -46,6 +47,15 @@ public class HttpGateway implements ServiceProvider
 	        String contextPath = config.containsKey("path") ? config.getString("path") : "/";
 	        String docBase = new File(".").getAbsolutePath();
 	        Context context = tomcat.addContext(contextPath, docBase);
+	        
+	        
+	        MasterHandler masterHandler = new MasterHandler();
+	        Wrapper wrapper = tomcat.addServlet("/", "master", masterHandler);
+	        MultipartConfigElement mpc = new MultipartConfigElement("/", 5000000, 5000000, 0);
+	        wrapper.setMultipartConfigElement(mpc);
+	        context.addServletMapping("/", "master");
+	        
+	        context.setAllowCasualMultipartParsing(true);
 	
 	        DataList list = config.getList("inbound");
 	        if(list != null)
@@ -53,13 +63,16 @@ public class HttpGateway implements ServiceProvider
 		        for(int i = 0; i < list.size(); i++)
 		        {
 		        	DataMap inboundConfig = list.getObject(i);
-		            String name = inboundConfig.getString("service");
+		            //String service = inboundConfig.getString("service");
+		            String method = inboundConfig.getString("method");
+		            //String name = service + "-" + method;
 		            String urlPattern = inboundConfig.getString("path");
 		            InboundHandler handler = getInboundHandler(inboundConfig);
 		            if(handler != null)
 		            {
-		            	Tomcat.addServlet(context, name, handler);      
-		            	context.addServletMapping(urlPattern, name);
+		            	masterHandler.addHttpHandler(urlPattern, method, handler);
+		            	//Tomcat.addServlet(context, name, handler);      
+		            	//context.addServletMapping(urlPattern, name);
 		            }
 		        }
 	        }
@@ -86,12 +99,13 @@ public class HttpGateway implements ServiceProvider
 		        {
 		        	DataMap authConfig = list.getObject(i);
 		            String urlPattern = authConfig.getString("path");
-		            String name = urlPattern;
+		            //String name = urlPattern;
 		            AuthValidationHandler handler = getAuthValidationHandler(authConfig);
 		            if(handler != null)
 		            {
-		            	Tomcat.addServlet(context, name, handler);      
-		            	context.addServletMapping(urlPattern, name);
+		            	masterHandler.addHttpHandler(urlPattern, "get", handler);
+		            	//Tomcat.addServlet(context, name, handler);      
+		            	//context.addServletMapping(urlPattern, name);
 		            }
 		        }
 	        }
@@ -121,6 +135,10 @@ public class HttpGateway implements ServiceProvider
 			else if(contentType.equals("application/x-www-form-urlencoded"))
 			{
 				return new PostFormHandler(inboundConfig, firebus);
+			}
+			else if(contentType.equals("multipart/form-data"))
+			{
+				return new PostMultiPartHandler(inboundConfig, firebus);
 			}
 			else
 			{
