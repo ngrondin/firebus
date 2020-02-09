@@ -6,12 +6,16 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
 import io.firebus.Payload;
+import io.firebus.adapters.jdbc.StatementBuilder;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
@@ -110,59 +114,111 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 
 	private DataList get(DataMap packet) throws FunctionErrorException
 	{
-		DataList list = new DataList();
+		//String operation = packet.getString("operation");
 		String objectName = packet.getString("object");
-		int page = packet.containsKey("page") ? packet.getNumber("page").intValue() : 0;
-		String operation = packet.getString("operation");
 		DataMap filter = packet.getObject("filter");
-		String where = getWhere(filter);
-		if(where != null && (operation == null || operation.equals("get")))
+		int page = packet.containsKey("page") ? packet.getNumber("page").intValue() : 0;
+		
+		StatementBuilder select = new StatementBuilder("select top ");
+		select.append(Integer.toString(pageSize));
+		select.append(" ");
+
+		StatementBuilder tuple = new StatementBuilder();
+		if(packet.containsKey("tuple"))
 		{
-			Connection conn = null;
-	        PreparedStatement ps1 = null;
-	        ResultSet rs1 = null;
-	        String select = null;
-			try
+			for(int i = 0; i < packet.getList("tuple").size(); i++)
 			{
-				select = "select top " + pageSize + " * from " + objectName + " where " + where;
-				logger.finer(select);
-				conn = dataSource.getConnection();
-		        ps1 = conn.prepareStatement(select);
-		        rs1 = ps1.executeQuery();
-		        ResultSetMetaData rsmd = rs1.getMetaData();
-		        int colCnt = rsmd.getColumnCount();
-		        for(int i = 0; i < (page * pageSize); i++, rs1.next());
-		        while(rs1.next()  &&  list.size() < pageSize)
-		        {
-		        	DataMap map = new DataMap();
-		        	for(int i = 1; i <= colCnt; i++)
-		        	{
-		        		String colName = rsmd.getColumnName(i);
-		        		Object val = rs1.getObject(i);
-		        		if(val instanceof String)
-		        		{
-		        			String valStr = (String)val;
-		        			if(valStr.startsWith("{") && valStr.endsWith("}"))
-		        				try { val = new DataMap(valStr); } catch(DataException e) {}		        				
-		        			if(valStr.startsWith("[") && valStr.endsWith("]"))
-		        				try { val = new DataList(valStr); } catch(DataException e) {}		        				
-		        		}
-		        		map.put(colName, val);
-		        	}
-		        	list.add(map);
-		        }
+				if(i > 0)
+					tuple.append(", ");
+				tuple.append(packet.getList("tuple").getString(i));
 			}
-			catch(Exception e)
+		}
+
+		StatementBuilder columns = new StatementBuilder();
+		if(packet.containsKey("metrics"))
+		{
+			for(int i = 0; i < packet.getList("metrics").size(); i++)
 			{
-				logger.severe("Error querying the database : " + e.getMessage() + " (" + select + ")");
-				throw new FunctionErrorException("Error querying the database", e);
+				DataMap metric = packet.getList("metrics").getObject(i);
+				if(i > 0)
+					columns.append(", ");
+				columns.append(metric.getString("function"));
+				columns.append("(");
+				columns.append(metric.getString("field"));
+				columns.append(") as ");
+				columns.append(metric.getString("name"));
 			}
-			finally
-			{
-				if(rs1 != null) try {rs1.close();} catch(Exception e) {}
-				if(ps1 != null) try {ps1.close();} catch(Exception e) {}
-				if(conn != null) try {conn.close();} catch(Exception e) {}
-			}
+		}
+		else
+		{
+			columns.append("*");
+		}
+		
+		if(tuple.getLength() > 0)
+		{
+			select.append(tuple);
+			select.append(", ");
+		}
+		
+		select.append(columns);
+		select.append(" from ");
+		select.append(objectName);
+		select.append(" where ");
+		select.append(getWhere(filter));
+
+		if(tuple.getLength() > 0)
+		{
+			select.append(" group by ");
+			select.append(tuple);
+		}
+		
+		DataList list = new DataList();
+		Connection conn = null;
+        PreparedStatement ps1 = null;
+        ResultSet rs1 = null;
+        long qt = 0;
+        long start = System.currentTimeMillis();
+		try
+		{
+			conn = dataSource.getConnection();
+	        ps1 = conn.prepareStatement(select.toString());
+			setStatementParams(ps1, select);
+	        rs1 = ps1.executeQuery();
+	        ResultSetMetaData rsmd = rs1.getMetaData();
+	        int colCnt = rsmd.getColumnCount();
+	        for(int i = 0; i < (page * pageSize); i++, rs1.next());
+	        while(rs1.next()  &&  list.size() < pageSize)
+	        {
+	        	DataMap map = new DataMap();
+	        	for(int i = 1; i <= colCnt; i++)
+	        	{
+	        		String colName = rsmd.getColumnName(i);
+	        		Object val = rs1.getObject(i);
+	        		if(val instanceof String)
+	        		{
+	        			String valStr = (String)val;
+	        			if(valStr.startsWith("{") && valStr.endsWith("}"))
+	        				try { val = new DataMap(valStr); } catch(DataException e) {}		        				
+	        			if(valStr.startsWith("[") && valStr.endsWith("]"))
+	        				try { val = new DataList(valStr); } catch(DataException e) {}		        				
+	        		}
+	        		map.put(colName, val);
+	        	}
+	        	list.add(map);
+	        }
+	        qt = System.currentTimeMillis() - start;
+			logger.finer("[" + qt + "ms] " + select.toString());
+		}
+		catch(Exception e)
+		{
+			logger.severe("Error querying the database : " + e.getMessage() + " (" + select.toString() + ")");
+			throw new FunctionErrorException("Error querying the database", e);
+		}
+		finally
+		{
+			if(rs1 != null) try {rs1.close();} catch(Exception e) {}
+			if(ps1 != null) try {ps1.close();} catch(Exception e) {}
+			if(conn != null) try {conn.close();} catch(Exception e) {}
 		}
 		return list;
 	}
@@ -173,8 +229,9 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		String operation = packet.getString("operation");
 		DataMap filter = packet.getObject("key");
 		DataMap data = packet.getObject("data");
-		String where = getWhere(filter);
-        String sql = "";
+		
+		StatementBuilder where = getWhere(filter);
+		StatementBuilder sql = null;
 		if(where != null && (operation == null || (operation != null && (operation.equals("update") || operation.equals("insert") || operation.equals("upsert")))))
 		{
 			Connection conn = null;
@@ -183,48 +240,73 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	        ResultSet rs1 = null;
 			try
 			{
-				String select = "select count(*) from " + objectName + " where " + where;
+				StatementBuilder select = new StatementBuilder();
+				select.append("select count(*) from ");
+				select.append(objectName);
+				select.append(" where ");
+				select.append(where);
+		        long qt = 0;
+		        long start = System.currentTimeMillis();
 				conn = dataSource.getConnection();
-		        ps1 = conn.prepareStatement(select);
+		        ps1 = conn.prepareStatement(select.toString());
+				setStatementParams(ps1, select);
 		        rs1 = ps1.executeQuery();
 		        rs1.next();
 		        int count = rs1.getInt(1);
+		        qt = System.currentTimeMillis() - start;
+				logger.finer("[" + qt + "ms] " + select.toString());
 		        if(count > 0)
 		        {
-		        	String update = "update " + objectName + " set ";
+		        	StatementBuilder update = new StatementBuilder();
+		        	update.append("update ");
+		        	update.append(objectName);
+		        	update.append(" set ");
 		        	Iterator<String> it2 = data.keySet().iterator();
 		        	while(it2.hasNext())
 		        	{
 		        		String key = it2.next();
-		        		update += key + " = " + getSQLStringFromObject(data.get(key));
+		        		update.append(key);
+		        		update.append(" = ");
+		        		update.append(data.get(key));
 		        		if(it2.hasNext())
-		        			update += ", ";
+		        			update.append(", ");
 		        	}
-		        	update += " where " + where;
+		        	update.append(" where ");
+		        	update.append(where);
 		        	sql = update;
 		        }
 		        else
 		        {
-		        	String insert = "insert into  " + objectName + " (";
-		        	String values = ") values (";
+		        	StatementBuilder insert = new StatementBuilder();
+		        	insert.append("insert into  ");
+		        	insert.append(objectName);
+		        	insert.append(" (");
+		        	StatementBuilder values = new StatementBuilder();
+		        	values.append(") values (");
 		        	data.merge(filter);
 		        	Iterator<String> it2 = data.keySet().iterator();
 		        	while(it2.hasNext())
 		        	{
 		        		String key = it2.next();
-		        		insert += key;
-		        		values += getSQLStringFromObject(data.get(key));
+		        		insert.append(key);
+		        		values.append(data.get(key));
 		        		if(it2.hasNext())
 		        		{
-		        			insert += ", ";
-		        			values += ", ";
+		        			insert.append(", ");
+		        			values.append(", ");
 		        		}
 		        	}
-		        	sql = insert + values + ")";
+		        	values.append(")");
+		        	insert.append(values);
+		        	sql = insert;
 		        }
-		        logger.finer(sql);
-		        ps2 = conn.prepareStatement(sql);
+		        ps2 = conn.prepareStatement(sql.toString());
+				setStatementParams(ps2, sql);
+		        long et = 0;
+		        start = System.currentTimeMillis();
 		        ps2.execute();
+		        et = System.currentTimeMillis() - start;
+				logger.finer("[" + et + "ms] " + sql.toString());
 			}
 			catch(Exception e)
 			{
@@ -241,9 +323,9 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		}
 	}
 	
-	private String getWhere(DataMap filter)
+	private StatementBuilder getWhere(DataMap filter)
 	{
-		String where = null;
+		StatementBuilder where = null;
 		if(filter != null)
 		{
 			Iterator<String> it = filter.keySet().iterator();
@@ -251,96 +333,109 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 			{
 				String key = it.next();
 				if(where == null)
-					where = "";
+					where = new StatementBuilder();
 				else
-					where += " and ";
+					where.append(" and ");
 				if(key.equals("$or"))
 				{
 					DataList orList = filter.getList(key);
-					where += "(";
+					where.append("(");
 					for(int i = 0; i < orList.size(); i++)
 					{
 						if(i > 0)
-							where += " or ";
-						where += getWhere(orList.getObject(i));
+							where.append(" or ");
+						where.append(getWhere(orList.getObject(i)));
 					}
-					where += ")";
+					where.append(")");
 				}
 				else if(filter.get(key) instanceof DataMap)
 				{
 					DataMap map = filter.getObject(key);
 					if(map.containsKey("$in"))
 					{
+						where.append(key);
+						where.append(" in (");
 						DataList list = map.getList("$in");
-						where += key + " in (";
 						for(int i = 0 ; i < list.size(); i++)
 						{
 							if(i > 0)
-								where += ", ";
-							where += getSQLStringFromObject(list.get(i));
+								where.append(", ");
+							where.append(list.get(i));
+							//where += getSQLStringFromObject(list.get(i));
 						}
-						where += ")";
+						where.append(")");
 					}
 					else if(map.containsKey("$regex"))
 					{
-						where += key + " like '%" + map.getString("$regex") + "%'";
+						where.append(key);
+						where.append(" like ");
+						where.append(new DataLiteral("%" + map.getString("$regex") + "%"));
 					}
 				}
 				else
 				{
-					where += key + " = " + getSQLStringFromObject(filter.get(key)) + "";
+					where.append(key);
+					where.append(" = ");
+					where.append(filter.get(key));
+					where.append("");
 				}
 			}
 		}
 		
 		if(where == null)
-			where = "1=1";
+		{
+			where = new StatementBuilder();
+			where.append("1=1");
+		}
 		return where;
 	}
 	
-	private String getSQLStringFromObject(DataEntity val)
+	
+	public void setStatementParams(PreparedStatement ps, StatementBuilder sb) throws SQLException
 	{
-		if(val == null)
+		List<DataEntity> params = sb.getParams();
+		for(int i = 1; i <= params.size(); i++)
 		{
-			return "null";
-		}
-		else if(val instanceof DataLiteral)
-		{
-			DataLiteral valLit = (DataLiteral)val;
-			if(valLit.getType() == DataLiteral.TYPE_BOOLEAN)
+			DataEntity val = params.get(i - 1);
+			if(val == null)
 			{
-				if(valLit.getBoolean() == true)
-					return "true";
+				ps.setNull(i, java.sql.Types.NULL);
+			}
+			else if(val instanceof DataLiteral)
+			{
+				DataLiteral valLit = (DataLiteral)val;
+				if(valLit.getType() == DataLiteral.TYPE_BOOLEAN)
+				{
+					ps.setBoolean(i, valLit.getBoolean());
+				}
+				else if(valLit.getType() == DataLiteral.TYPE_NUMBER)
+				{
+					if(valLit.getObject() instanceof Integer)
+						ps.setInt(i, valLit.getNumber().intValue());
+					else
+						ps.setDouble(i, valLit.getNumber().doubleValue());
+				}
+				else if(valLit.getType() == DataLiteral.TYPE_STRING)
+				{
+					ps.setString(i, valLit.getString());
+				}
+				else if(valLit.getType() == DataLiteral.TYPE_DATE)
+				{
+					ps.setDate(i, new java.sql.Date(valLit.getDate().getTime()));
+				}
+				else if(valLit.getType() == DataLiteral.TYPE_NULL)
+				{
+					ps.setNull(i, java.sql.Types.NULL);
+				}
 				else
-					return "false";
-			}
-			else if(valLit.getType() == DataLiteral.TYPE_NUMBER)
+				{
+					ps.setString(i, valLit.getString());
+				}
+			} 
+			else 
 			{
-				return valLit.getNumber().toString();
-			}
-			else if(valLit.getType() == DataLiteral.TYPE_STRING)
-			{
-				if(valLit.getString().length() == 0)
-					return "null";
-				else
-					return "'" + valLit.getString().replaceAll("'", "''") + "'";
-			}
-			else if(valLit.getType() == DataLiteral.TYPE_DATE)
-			{
-				return "'" + sdf.format(((DataLiteral) val).getDate()) + "'";
-			}
-			else if(valLit.getType() == DataLiteral.TYPE_NULL)
-			{
-				return "null";
-			}
-			else
-			{
-				return "'" + val.toString() + "'";
-			}
-		} 
-		else 
-		{
-			return "'" + val.toString().replaceAll("'", "''") + "'";
+				ps.setString(i, val.toString());
+			}			
 		}
 	}
 }
