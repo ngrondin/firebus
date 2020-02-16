@@ -306,4 +306,11 @@ public class DataList extends DataEntity
 			}			
 		}
 	}
+	
+	public boolean contains(Object o) {
+		for(int i = 0; i < list.size(); i++)
+			if(list.get(i).toString().equals(o.toString()))
+				return true;
+		return false;
+	}
 }
