@@ -361,7 +361,6 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 							if(i > 0)
 								where.append(", ");
 							where.append(list.get(i));
-							//where += getSQLStringFromObject(list.get(i));
 						}
 						where.append(")");
 					}
@@ -370,6 +369,18 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 						where.append(key);
 						where.append(" like ");
 						where.append(new DataLiteral("%" + map.getString("$regex") + "%"));
+					}
+					else if(map.containsKey("$gt"))
+					{
+						where.append(key);
+						where.append(" > ");
+						where.append(map.get("$gt"));
+					}
+					else if(map.containsKey("$lt"))
+					{
+						where.append(key);
+						where.append(" < ");
+						where.append(map.get("$tt"));
 					}
 				}
 				else
