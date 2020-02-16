@@ -48,31 +48,28 @@ public class HttpGateway implements ServiceProvider
 	        String docBase = new File(".").getAbsolutePath();
 	        Context context = tomcat.addContext(contextPath, docBase);
 	        
-	        
 	        MasterHandler masterHandler = new MasterHandler();
 	        Wrapper wrapper = tomcat.addServlet("/", "master", masterHandler);
 	        MultipartConfigElement mpc = new MultipartConfigElement("/", 5000000, 5000000, 0);
 	        wrapper.setMultipartConfigElement(mpc);
 	        context.addServletMapping("/", "master");
-	        
 	        context.setAllowCasualMultipartParsing(true);
-	
+
+	        if(config.containsKey("rootforward"))
+	        	masterHandler.setRootForward(config.getString("rootforward"));
+	        
 	        DataList list = config.getList("inbound");
 	        if(list != null)
 	        {
 		        for(int i = 0; i < list.size(); i++)
 		        {
 		        	DataMap inboundConfig = list.getObject(i);
-		            //String service = inboundConfig.getString("service");
 		            String method = inboundConfig.getString("method");
-		            //String name = service + "-" + method;
 		            String urlPattern = inboundConfig.getString("path");
 		            InboundHandler handler = getInboundHandler(inboundConfig);
 		            if(handler != null)
 		            {
 		            	masterHandler.addHttpHandler(urlPattern, method, handler);
-		            	//Tomcat.addServlet(context, name, handler);      
-		            	//context.addServletMapping(urlPattern, name);
 		            }
 		        }
 	        }
@@ -99,13 +96,10 @@ public class HttpGateway implements ServiceProvider
 		        {
 		        	DataMap authConfig = list.getObject(i);
 		            String urlPattern = authConfig.getString("path");
-		            //String name = urlPattern;
 		            AuthValidationHandler handler = getAuthValidationHandler(authConfig);
 		            if(handler != null)
 		            {
 		            	masterHandler.addHttpHandler(urlPattern, "get", handler);
-		            	//Tomcat.addServlet(context, name, handler);      
-		            	//context.addServletMapping(urlPattern, name);
 		            }
 		        }
 	        }
