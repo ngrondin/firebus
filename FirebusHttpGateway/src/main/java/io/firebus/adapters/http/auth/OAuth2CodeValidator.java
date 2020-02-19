@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -20,6 +21,11 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
+
 import io.firebus.Firebus;
 import io.firebus.adapters.http.AuthValidationHandler;
 import io.firebus.utils.DataException;
@@ -33,6 +39,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 	protected String thisUrl;
 	protected String redirectUrl;
 	protected String cookieName;
+	protected String jwtsecret;
 
 	public OAuth2CodeValidator(DataMap c, Firebus fb) 
 	{
@@ -43,6 +50,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 		thisUrl = handlerConfig.getString("thisurl");
 		redirectUrl = handlerConfig.getString("redirecturl");
 		cookieName = handlerConfig.getString("cookie");
+		jwtsecret = handlerConfig.getString("jwtsecret");
 	}
 
     protected void service(HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
@@ -82,11 +90,23 @@ public class OAuth2CodeValidator extends AuthValidationHandler
         		{
             		if (respMap != null) 
             		{
+            			DecodedJWT jwt = JWT.decode(respMap.getString("id_token"));
+            			Claim usernameClaim = jwt.getClaim("email");
+            			String username = usernameClaim.asString();
+            			long expiry = 28800000;
+            			
+    				    Algorithm algorithm = Algorithm.HMAC256(jwtsecret);
+    				    String token = JWT.create()
+    				    		.withIssuer("io.firebus.http")
+    				    		.withClaim("email", username)
+    				    		.withExpiresAt(new Date((new Date()).getTime() + expiry))
+    				    		.sign(algorithm);
+
             			if(cookieName != null)
             			{
-                			Cookie cookie = new Cookie(cookieName, respMap.getString("id_token"));
+                			Cookie cookie = new Cookie(cookieName, token);
                 			cookie.setPath(contextPath);
-                			cookie.setMaxAge(3600);
+                			cookie.setMaxAge((int)(expiry / 1000));
                 			resp.addCookie(cookie);
             			}
             			resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
