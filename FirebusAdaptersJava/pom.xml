@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.firebus</groupId>
 	<artifactId>firebus-adapters</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 
 	<name>Firebus Adapters</name>
 	<description>Commons firebus adapters</description>
@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>io.firebus</groupId>
 			<artifactId>firebus-core</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>
