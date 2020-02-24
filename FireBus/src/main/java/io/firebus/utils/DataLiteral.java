@@ -93,7 +93,7 @@ public class DataLiteral extends DataEntity
 					{
 						inString = false;
 						hadQuotes = true;
-						String tempString = sb.toString().replace("\\\\", "\\").replace("\\\"", "\"").replace("\\n", "\n").replace("\\r", "\r").replace("\\t", "\t");
+						String tempString = sb.toString().replace("\\\\", "\\").replace("\\\"", "\"").replace("\\n", "\n").replace("\\r", "\r").replace("\\t", "\t").replace("\\/", "/");
 						Matcher matcher = datePattern.matcher(tempString);
 						if(matcher.matches())		
 						{
@@ -271,7 +271,7 @@ public class DataLiteral extends DataEntity
 		if(valueType == TYPE_NULL)
 			return "null";
 		else if(valueType == TYPE_STRING  ||  valueType == TYPE_DATE)
-			return "\"" + getString().replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\"";
+			return "\"" + getString().replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t").replace("/",  "\\/") + "\"";
 		else
 			return getString();
 	}
