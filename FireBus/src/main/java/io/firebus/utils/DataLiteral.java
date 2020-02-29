@@ -2,8 +2,9 @@ package io.firebus.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 //import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -19,7 +20,7 @@ public class DataLiteral extends DataEntity
 	protected Pattern datePattern = Pattern.compile("^(?:[1-9]\\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d{1,9})?(?:Z|[+-][01]\\d:[0-5]\\d)$");
 	protected Pattern doublePattern = Pattern.compile("[-+]?\\d*\\.\\d+");
 	protected Pattern longPattern = Pattern.compile("[-+]?\\d+");
-	protected SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); 
+	//protected SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); 
 	
 	static public int TYPE_NULL = 0;
 	static public int TYPE_STRING = 1;
@@ -100,7 +101,9 @@ public class DataLiteral extends DataEntity
 							try
 							{
 								valueType = TYPE_DATE;
-								dateValue = dateFormat.parse(tempString);
+								//dateValue = dateFormat.parse(tempString);
+								dateValue = Date.from(ZonedDateTime.parse(tempString).toInstant());
+								
 							} 
 							catch (Exception e)
 							{
@@ -189,7 +192,8 @@ public class DataLiteral extends DataEntity
 		else if(valueType == TYPE_BOOLEAN)
 			return "" + boolValue;
 		else if(valueType == TYPE_DATE)
-			return (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")).format(dateValue);
+			return DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(ZonedDateTime.ofInstant(dateValue.toInstant(), ZoneId.systemDefault()));
+			//return (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")).format(dateValue);
 		return "";
 	}
 
