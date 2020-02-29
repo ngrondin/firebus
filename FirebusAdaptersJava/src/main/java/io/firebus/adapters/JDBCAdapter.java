@@ -432,7 +432,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 				}
 				else if(valLit.getType() == DataLiteral.TYPE_DATE)
 				{
-					ps.setDate(i, new java.sql.Date(valLit.getDate().getTime()));
+					ps.setTimestamp(i, new java.sql.Timestamp(valLit.getDate().getTime()));
 				}
 				else if(valLit.getType() == DataLiteral.TYPE_NULL)
 				{
