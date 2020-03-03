@@ -19,6 +19,7 @@ import io.firebus.adapters.http.inbound.PostJsonHandler;
 import io.firebus.adapters.http.inbound.PostMultiPartHandler;
 import io.firebus.adapters.http.outbound.OutboundGetHandler;
 import io.firebus.adapters.http.outbound.PostHandler;
+import io.firebus.adapters.http.websocket.BasicWebsocketHandler;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.ServiceProvider;
@@ -73,7 +74,7 @@ public class HttpGateway implements ServiceProvider
 		            }
 		        }
 	        }
-
+	        
 	        list = config.getList("outbound");
 	        if(list != null)
 	        {
@@ -82,6 +83,21 @@ public class HttpGateway implements ServiceProvider
 		        	DataMap outboundConfig = list.getObject(i);
 		        	String name = outboundConfig.getString("service");
 		            OutboundHandler handler = getOutboundHandler(outboundConfig);
+		            if(handler != null)
+		            {
+		        		firebus.registerServiceProvider(name, handler, 10);
+		            }
+		        }
+	        }
+
+	        list = config.getList("websockets");
+	        if(list != null)
+	        {
+		        for(int i = 0; i < list.size(); i++)
+		        {
+		        	DataMap wsConfig = list.getObject(i);
+		        	String name = wsConfig.getString("service");
+		            WebsocketHandler handler = getWebsocketHandler(wsConfig);
 		            if(handler != null)
 		            {
 		        		firebus.registerServiceProvider(name, handler, 10);
@@ -163,6 +179,10 @@ public class HttpGateway implements ServiceProvider
 		}
 	}
 	
+	private WebsocketHandler getWebsocketHandler(DataMap wsConfig)
+	{
+		return new BasicWebsocketHandler(wsConfig, firebus);
+	}
 	
 	private AuthValidationHandler getAuthValidationHandler(DataMap authConfig)
 	{

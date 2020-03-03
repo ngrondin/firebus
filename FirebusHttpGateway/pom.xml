@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.firebus</groupId>
 	<artifactId>firebus-http</artifactId>
-	<version>1.0.3</version>
+	<version>${io.firebus.version}</version>
 
 	<name>Firebus Http Gateway</name>
 	<description>Firebus http gateway adapter</description>
@@ -33,12 +33,14 @@
 
 	<properties>
 		<tomcat.version>8.5.2</tomcat.version>
+		<io.firebus.version>1.0.4</io.firebus.version>
 	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>io.firebus</groupId>
 			<artifactId>firebus-core</artifactId>
-			<version>1.0.2</version>
+			<version>${io.firebus.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
@@ -50,6 +52,16 @@
 			<artifactId>tomcat-embed-logging-juli</artifactId>
 			<version>${tomcat.version}</version>
 		</dependency>
+	    <dependency>
+	        <groupId>org.slf4j</groupId>
+	        <artifactId>slf4j-api</artifactId>
+	        <version>1.7.25</version>
+	    </dependency>
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-jdk14</artifactId>
+		    <version>1.7.25</version>
+		</dependency>	    
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
