@@ -19,9 +19,11 @@ import io.firebus.adapters.http.inbound.PostJsonHandler;
 import io.firebus.adapters.http.inbound.PostMultiPartHandler;
 import io.firebus.adapters.http.outbound.OutboundGetHandler;
 import io.firebus.adapters.http.outbound.PostHandler;
-import io.firebus.adapters.http.websocket.BasicWebsocketHandler;
+import io.firebus.adapters.http.websocket.EchoWebsocketHandler;
+import io.firebus.adapters.http.websocket.SignalSubscriberWSHandler;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
+import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.utils.DataList;
 import io.firebus.utils.DataMap;
@@ -55,7 +57,7 @@ public class HttpGateway implements ServiceProvider
 	        wrapper.setMultipartConfigElement(mpc);
 	        context.addServletMapping("/", "master");
 	        context.setAllowCasualMultipartParsing(true);
-
+	        
 	        if(config.containsKey("rootforward"))
 	        	masterHandler.setRootForward(config.getString("rootforward"));
 	        
@@ -96,11 +98,16 @@ public class HttpGateway implements ServiceProvider
 		        for(int i = 0; i < list.size(); i++)
 		        {
 		        	DataMap wsConfig = list.getObject(i);
-		        	String name = wsConfig.getString("service");
+		        	String name = wsConfig.getString("name");
+		            String urlPattern = wsConfig.getString("path");
 		            WebsocketHandler handler = getWebsocketHandler(wsConfig);
 		            if(handler != null)
 		            {
-		        		firebus.registerServiceProvider(name, handler, 10);
+		            	masterHandler.addHttpHandler(urlPattern, "get", handler);
+		            	if(handler instanceof ServiceProvider)
+		            		firebus.registerServiceProvider(name, (ServiceProvider)handler, 10);
+		            	if(handler instanceof Consumer)
+		            		firebus.registerConsumer(name, (Consumer)handler, 10);
 		            }
 		        }
 	        }
@@ -125,6 +132,7 @@ public class HttpGateway implements ServiceProvider
         catch (Exception e) 
         {
         	logger.severe("Error initiating the Http Gateway : " + e.getMessage());
+        	e.printStackTrace();
 		}
 	}
 	
@@ -181,7 +189,20 @@ public class HttpGateway implements ServiceProvider
 	
 	private WebsocketHandler getWebsocketHandler(DataMap wsConfig)
 	{
-		return new BasicWebsocketHandler(wsConfig, firebus);
+		String type = wsConfig.containsKey("type") ? wsConfig.getString("type").toLowerCase() : "echo";
+		if(type.equals("echo")) 
+		{
+			return new EchoWebsocketHandler(wsConfig, firebus);
+		}
+		else if(type.equals("signalsubscriber")) 
+		{
+			return new SignalSubscriberWSHandler(wsConfig, firebus);
+		}
+		else 
+		{
+			return null;
+		}
+		
 	}
 	
 	private AuthValidationHandler getAuthValidationHandler(DataMap authConfig)

@@ -33,7 +33,7 @@
 
 	<properties>
 		<tomcat.version>8.5.2</tomcat.version>
-		<io.firebus.version>1.0.4</io.firebus.version>
+		<io.firebus.version>1.0.5</io.firebus.version>
 	</properties>
 	
 	<dependencies>
@@ -52,6 +52,11 @@
 			<artifactId>tomcat-embed-logging-juli</artifactId>
 			<version>${tomcat.version}</version>
 		</dependency>
+		<dependency>
+		  <groupId>org.apache.tomcat.embed</groupId>
+		  <artifactId>tomcat-embed-websocket</artifactId>
+		  <version>${tomcat.version}</version>
+		</dependency>		
 	    <dependency>
 	        <groupId>org.slf4j</groupId>
 	        <artifactId>slf4j-api</artifactId>
