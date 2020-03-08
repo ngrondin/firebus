@@ -91,7 +91,7 @@ public class FunctionManager
 			{
 				if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE  && fe.function instanceof ServiceProvider)
 				{
-					logger.info("Executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
+					logger.fine("Executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
 					Payload returnPayload = null;
 					Message progressMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_PROGRESS, msg.getSubject(), null);
 					progressMsg.setCorrelation(msg.getCorrelation());
@@ -100,7 +100,7 @@ public class FunctionManager
 					try
 					{
 						returnPayload = ((ServiceProvider)fe.function).service(inPayload);
-						logger.info("Finished executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
+						logger.fine("Finished executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
 						
 						Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
 						responseMsg.setCorrelation(msg.getCorrelation());
@@ -125,7 +125,7 @@ public class FunctionManager
 				}
 				else if(msg.getType() == Message.MSGTYPE_PUBLISH  &&  fe.function instanceof Consumer)
 				{
-					logger.info("Executing Consumer");
+					logger.fine("Executing Consumer");
 					((Consumer)fe.function).consume(inPayload);
 				}			
 			}

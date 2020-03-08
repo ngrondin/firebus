@@ -53,7 +53,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 		jwtsecret = handlerConfig.getString("jwtsecret");
 	}
 
-    protected void service(HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
+    protected void httpService(String tokenStr, HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
     {
     	if(tokenUrl != null && clientId != null && clientSecret != null)
     	{

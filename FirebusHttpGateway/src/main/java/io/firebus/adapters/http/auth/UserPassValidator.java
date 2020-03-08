@@ -41,7 +41,7 @@ public class UserPassValidator extends AuthValidationHandler
 		cookieName = handlerConfig.containsKey("cookie") ? handlerConfig.getString("cookie") : "token";
 	}
 
-    protected void service(HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
+    protected void httpService(String tokenStr, HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
     {
     	String contextPath = req.getContextPath();
     	if(contextPath.equals(""))

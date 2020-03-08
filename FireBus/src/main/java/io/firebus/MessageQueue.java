@@ -20,6 +20,8 @@ public class MessageQueue
 			head = 0;
 		if(head == tail)
 			tail++;
+		if(tail >= messages.length)
+			tail = 0;
 	}
 	
 	public synchronized int getMessageCount()

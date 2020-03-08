@@ -134,7 +134,7 @@ public class NodeCore
 			if(destinationNodeId != nodeId  ||  destinationNodeId == 0)
 				connectionManager.sendMessage(msg);
 		}	
-		logger.fine("Finished Routing Message");
+		logger.finer("Finished Routing Message");
 	}
 	
 	protected void process(Message msg)
@@ -180,13 +180,13 @@ public class NodeCore
 						break;
 				}
 			}
-			logger.fine("Finished Processing Message " + msg.getid());		
+			logger.finer("Finished Processing Message " + msg.getid());		
 		}
 	}
 	
 	protected void processNodeInformationRequest(Message reqMsg)
 	{
-		logger.fine("Responding to a node information request");
+		logger.finer("Responding to a node information request");
 		StringBuilder sb = new StringBuilder();
 		sb.append(connectionManager.getAddressStateString(nodeId));
 		sb.append(functionManager.getFunctionStateString(nodeId));

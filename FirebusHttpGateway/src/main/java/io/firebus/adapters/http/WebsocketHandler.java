@@ -31,7 +31,7 @@ public abstract class WebsocketHandler extends HttpHandler {
 		connections = new HashMap<String, WebsocketConnectionHandler>();
 	}
 
-	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void httpService(String token, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String upgradeHeader = req.getHeader("Upgrade");
 		if(upgradeHeader != null && upgradeHeader.equalsIgnoreCase("websocket") && req.getMethod().equals("GET")) {
 			String key;
@@ -41,7 +41,6 @@ public abstract class WebsocketHandler extends HttpHandler {
 	            return;
 	        }
 
-	        // If we got this far, all is good. Accept the connection.
 	        resp.setHeader("Upgrade", "websocket");
 	        resp.setHeader("Connection", "upgrade");
 	        byte[] digest = ConcurrentMessageDigest.digestSHA1(key.getBytes(StandardCharsets.ISO_8859_1), WS_ACCEPT);

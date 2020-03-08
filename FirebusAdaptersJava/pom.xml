@@ -31,7 +31,7 @@
 	</developers>
 	
 	<properties>
-		<io.firebus.version>1.0.6</io.firebus.version>
+		<io.firebus.version>1.0.7</io.firebus.version>
 	</properties>
 
 	<dependencies>
