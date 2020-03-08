@@ -1,13 +1,18 @@
 package io.firebus;
 
+import java.util.logging.Logger;
+
 public class FirebusThread extends Thread
 {
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected NodeCore nodeCore;
+	protected ThreadManager threadManager;
 	protected boolean quit;
 	protected Message message;
 
-	public FirebusThread(NodeCore c)
+	public FirebusThread(ThreadManager tm, NodeCore c)
 	{
+		threadManager = tm;
 		nodeCore = c;
 		quit = false;
 		setName("fbThread" + getId());
@@ -37,15 +42,19 @@ public class FirebusThread extends Thread
 				if(message != null)
 				{
 					nodeCore.route(message);
-					message = null;
+					message = threadManager.getNextMessage();
 				}
-				synchronized(this)
+				if(message == null) 
 				{
-					wait();
+					synchronized(this)
+					{
+						wait();
+					}
 				}
 			} 
 			catch (Exception e)
 			{
+				logger.severe(e.getMessage());
 				e.printStackTrace();
 			}
 		}

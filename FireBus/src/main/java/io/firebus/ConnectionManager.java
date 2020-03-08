@@ -260,7 +260,8 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		for(int i = 0; i < connections.size(); i++)
 		{
 			Connection c = connections.get(i);
-			c.sendMessage(msg);
+			if(c.getRemoteNodeId() != msg.getOriginatorId())
+				c.sendMessage(msg);
 		}
 	}
 	

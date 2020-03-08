@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.WebConnection;
 
 public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHandler {
+	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	protected String session;
 	protected WebsocketHandler handler;
 	protected WebConnection connection;
@@ -26,6 +28,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 	}
 	
 	public void init(WebConnection c) {
+		setName("fbHttpWebsocket");
 		connection = c;
 		try {
 			is = connection.getInputStream();
@@ -33,7 +36,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 			os.flush();
 			active = true;
 			start();
-			System.out.println("Created connection");
+			logger.fine("Websocket connection created");
 		} catch(IOException e) {
 			active = false;
 		}
@@ -41,6 +44,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 
 	public void destroy() {
 		handler._onClose(session);
+		logger.fine("Websocket connection destroyed");
 	}
 
 	public void run() {

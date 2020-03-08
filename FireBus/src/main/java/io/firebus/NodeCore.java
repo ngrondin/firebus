@@ -14,9 +14,7 @@ public class NodeCore
 	protected int nodeId;
 	protected boolean quit;
 	protected String networkName;
-	protected long lastConnectionMaintenance;
-	//protected MessageQueue queue;
-	//protected MessageQueue outboundQueue;
+
 	protected ConnectionManager connectionManager;
 	protected FunctionManager functionManager;
 	protected Directory directory;
@@ -25,6 +23,7 @@ public class NodeCore
 	protected ThreadManager threadManager;
 	protected ArrayList<Address> knownAddresses;
 	protected Cipher cipher;
+	protected MessageQueue messageHistory;
 	
 	public NodeCore()
 	{
@@ -54,8 +53,6 @@ public class NodeCore
 			nodeId = rnd.nextInt();
 			quit = false;
 			networkName = n;	
-			//queue = new MessageQueue();
-			//outboundQueue = new MessageQueue();
 			directory = new Directory();
 			directory.getOrCreateNodeInformation(nodeId);
 			connectionManager = new ConnectionManager(this, nodeId, networkName,  new SecretKeySpec(pw.getBytes(), "AES"), port);
@@ -63,9 +60,7 @@ public class NodeCore
 			functionManager = new FunctionManager(this);
 			correlationManager = new CorrelationManager(this);
 			threadManager = new ThreadManager(this);
-			//knownAddresses = new ArrayList<Address>();
-						
-			//start();			
+			messageHistory = new MessageQueue(256);
 		}
 		catch(Exception e)
 		{
@@ -111,6 +106,11 @@ public class NodeCore
 		return correlationManager;
 	}
 	
+	public ThreadManager getThreadManager() 
+	{
+		return threadManager;
+	}
+	
 	public void addKnownNodeAddress(String a, int p)
 	{
 		connectionManager.addKnownNodeAddress(a, p);
@@ -118,16 +118,16 @@ public class NodeCore
 	
 	protected void forkThenRoute(Message msg)
 	{
-		threadManager.startThread(msg);
+		threadManager.process(msg);
 	}
 	
 	protected void route(Message msg)
 	{
-		if(msg != null)
+		if(msg != null && !messageHistory.checkIfContainsOrAdd(msg))
 		{
-			logger.finer("\"****Routing**************\r\n" + msg + "\"");
+			logger.finest("\"****Routing**************\r\n" + msg + "\"");
 			int destinationNodeId = msg.getDestinationId();
-			
+						
 			if(destinationNodeId == nodeId  ||  destinationNodeId == 0)
 				process(msg);
 
@@ -141,7 +141,7 @@ public class NodeCore
 	{
 		if(msg != null)
 		{
-			logger.fine("Processing Message " + msg.getid());		
+			logger.finest("Processing Message " + msg.getid());		
 			if(msg.getDestinationId() == 0  ||  msg.getDestinationId() == nodeId)
 			{
 				switch(msg.getType())

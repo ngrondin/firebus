@@ -250,6 +250,7 @@ public class Connection extends Thread
 			} 
 			catch (IOException e) 
 			{
+				logger.severe("IOException on connection listener : " + e.getMessage());
 				close();
 			}
 		}		
@@ -271,11 +272,11 @@ public class Connection extends Thread
 				os.write(msg.getCRC());
 				os.flush();
 				byteCount += bytes.length;
-				logger.fine("Sent message on connection " + getId() + " to remote node " + remoteNodeId + "(load: " + load + ")");
+				logger.finer("Sent message on connection " + getId() + " to remote node " + remoteNodeId + "(load: " + load + ")");
 			}
 			catch(Exception e)
 			{
-				logger.severe(e.getMessage());
+				logger.severe("Exception on connection while sending message : " + e.getMessage());
 				close();
 			}
 		}

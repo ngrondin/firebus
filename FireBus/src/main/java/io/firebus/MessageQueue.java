@@ -1,65 +1,56 @@
 package io.firebus;
 
-import java.util.ArrayList;
-import java.util.logging.Logger;
-
 public class MessageQueue
 {
-	private Logger logger = Logger.getLogger("io.firebus");
-	protected ArrayList<Message> messages;
-	protected ArrayList<Long[]> processed;
+	protected Message[] messages;
+	protected int head;
+	protected int tail;
 	
-	public MessageQueue()
+	public MessageQueue(int size)
 	{
-		messages = new ArrayList<Message>();
-		processed = new ArrayList<Long[]>();
+		messages = new Message[size];
+		head = 0;
+		tail = 0;
 	}
 	
-	public void addMessage(Message m)
+	public synchronized void addMessage(Message m)
 	{
-		synchronized(this)
-		{
-			long ct = System.currentTimeMillis();
-			while(processed.size() > 0  &&  processed.get(0)[0] < ct - 60000)
-				processed.remove(0);
-			
-			long id = (((long)m.getOriginatorId()) << 32) | ((long)m.getid());
-			boolean isEcho = false;
-			for(int i = 0; i < processed.size(); i++)
-				if(processed.get(i)[1] == id) isEcho = true;
-			
-			if(isEcho == false)
-			{
-				messages.add(m);
-				processed.add(new Long[]{ct, id});
-			}
-			else
-			{
-				logger.fine("Dropped echo message");
-			}
-			this.notify();
+		messages[head++] = m;
+		if(head >= messages.length)
+			head = 0;
+		if(head == tail)
+			tail++;
+	}
+	
+	public synchronized int getMessageCount()
+	{
+		return (((head + messages.length) - tail) % messages.length);
+	}
+	
+	public synchronized boolean checkIfContainsOrAdd(Message msg)
+	{
+		int p = tail;
+		while(p != head) {
+			if(messages[p].getOriginatorId() == msg.getOriginatorId() && messages[p].getid() == msg.getid())
+				return true;
+			p++;
+			if(p >= messages.length)
+				p = 0;
 		}
+		addMessage(msg);
+		return false;
 	}
 	
-	public int getMessageCount()
+	public synchronized Message popNextMessage()
 	{
-		return messages.size();
-	}
-	
-	public Message popNextMessage()
-	{
-		synchronized(this)
-		{
-			Message msg = null;
-			if(messages.size() > 0)
-			{
-				msg = messages.get(0);
-				messages.remove(0);
-			}
+		if(head == tail) {
+			return null;
+		} else {
+			Message msg = messages[tail++];
+			if(tail >= messages.length)
+				tail = 0;
 			return msg;
 		}
-	}
-
-	
+	}	
 	
 }

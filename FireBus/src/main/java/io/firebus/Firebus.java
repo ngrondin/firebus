@@ -39,6 +39,11 @@ public class Firebus
 	{
 		nodeCore = nc;
 	}
+	
+	public void setThreadCount(int tc)
+	{
+		nodeCore.getThreadManager().setThreadCount(tc);
+	}
 
 	public void addKnownNodeAddress(String a, int p)
 	{
