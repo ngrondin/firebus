@@ -1,7 +1,6 @@
 package io.firebus.tools;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,12 @@ public class StandaloneContainer
 
 	public StandaloneContainer(DataMap config)
 	{
-		firebus = new Firebus(config.getString("network"), config.getString("password"));
+		if(config.containsKey("network") && config.containsKey("password")) {
+			firebus = new Firebus(config.getString("network"), config.getString("password"));
+		} else {
+			firebus = new Firebus();
+		}
+		
 		DataList knownAddresses = config.getList("knownaddresses");
 		if(knownAddresses != null)
 		{
@@ -40,63 +44,69 @@ public class StandaloneContainer
 		
 		List<Logger> loggers = new ArrayList<Logger>();
 		DataList loggerConfigs = config.getList("loggers");
-		for(int i = 0; i < loggerConfigs.size(); i++)
+		if(loggerConfigs != null) 
 		{
-			try
+			for(int i = 0; i < loggerConfigs.size(); i++)
 			{
-				DataMap loggerConfig = loggerConfigs.getObject(i);
-				Logger logger = Logger.getLogger(loggerConfig.getString("name"));
-				Formatter formatter = (Formatter)Class.forName(loggerConfig.getString("formatter")).newInstance();
-				FileHandler fileHandler = new FileHandler(loggerConfig.getString("filename"));
-				fileHandler.setFormatter(formatter);
-				fileHandler.setLevel(Level.parse(loggerConfig.getString("level")));
-				logger.addHandler(fileHandler);
-				logger.setUseParentHandlers(false);
-				logger.setLevel(Level.parse(loggerConfig.getString("level")));
-				loggers.add(logger);
-			}
-			catch(Exception e)
-			{
-				logger.severe("General error when configuring loggers : " + e.getMessage());
+				try
+				{
+					DataMap loggerConfig = loggerConfigs.getObject(i);
+					Logger logger = Logger.getLogger(loggerConfig.getString("name"));
+					Formatter formatter = (Formatter)Class.forName(loggerConfig.getString("formatter")).newInstance();
+					FileHandler fileHandler = new FileHandler(loggerConfig.getString("filename"));
+					fileHandler.setFormatter(formatter);
+					fileHandler.setLevel(Level.parse(loggerConfig.getString("level")));
+					logger.addHandler(fileHandler);
+					logger.setUseParentHandlers(false);
+					logger.setLevel(Level.parse(loggerConfig.getString("level")));
+					loggers.add(logger);
+				}
+				catch(Exception e)
+				{
+					logger.severe("General error when configuring loggers : " + e.getMessage());
+				}
 			}
 		}
 		
 		DataList serviceConfigs = config.getList("services");
-		for(int i = 0; i < serviceConfigs.size(); i++)
+		if(serviceConfigs != null)
 		{
-			try 
+			for(int i = 0; i < serviceConfigs.size(); i++)
 			{
-				logger.fine("Adding services to container");
-				DataMap serviceConfig = serviceConfigs.getObject(i); 
-				String className = serviceConfig.getString("class");
-				String name = serviceConfig.getString("name");
-				DataMap deploymentConfig = serviceConfig.getObject("config");
-				if(className != null && name != null)
+				try 
 				{
-					try
+					logger.fine("Adding services to container");
+					DataMap serviceConfig = serviceConfigs.getObject(i); 
+					String className = serviceConfig.getString("class");
+					String name = serviceConfig.getString("name");
+					DataMap deploymentConfig = serviceConfig.getObject("config");
+					if(className != null && name != null)
 					{
-						Class<?> c = Class.forName(className);
-						Constructor<?> cons = c.getConstructor(new Class[]{Firebus.class, DataMap.class});
-						logger.fine("Instantiating service " + name);
-						BusFunction service = (BusFunction)cons.newInstance(new Object[]{firebus, deploymentConfig});
-						if(service instanceof ServiceProvider)
-							firebus.registerServiceProvider(name, ((ServiceProvider)service), 10);
-						if(service instanceof Consumer)
-							firebus.registerConsumer(name, ((Consumer)service), 10);
+						try
+						{
+							Class<?> c = Class.forName(className);
+							Constructor<?> cons = c.getConstructor(new Class[]{Firebus.class, DataMap.class});
+							logger.fine("Instantiating service " + name);
+							BusFunction service = (BusFunction)cons.newInstance(new Object[]{firebus, deploymentConfig});
+							if(service instanceof ServiceProvider)
+								firebus.registerServiceProvider(name, ((ServiceProvider)service), 10);
+							if(service instanceof Consumer)
+								firebus.registerConsumer(name, ((Consumer)service), 10);
+						}
+						catch(Exception e)
+						{
+							logger.severe("Class " + className + " cannot be found in the classpath");
+						}
 					}
-					catch(Exception e)
+					else
 					{
-						logger.severe("Class " + className + " cannot be found in the classpath");
+						logger.severe("No class or name provided for service");
 					}
 				}
-				else
+				catch(Exception e)
 				{
-					logger.severe("No class or name provided for service");
+					logger.severe("General error message when instantiating a new adapter: " + e.getMessage());
 				}
-			}
-			catch(Exception e)
-			{
-				logger.severe("General error message when instantiating a new adapter: " + e.getMessage());
 			}
 		}
 	}

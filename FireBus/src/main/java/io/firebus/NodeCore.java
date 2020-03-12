@@ -1,11 +1,14 @@
 package io.firebus;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+
+import io.firebus.discovery.DefaultDiscoveryAgent;
 
 
 public class NodeCore
@@ -18,29 +21,29 @@ public class NodeCore
 	protected ConnectionManager connectionManager;
 	protected FunctionManager functionManager;
 	protected Directory directory;
-	protected DiscoveryManager discoveryManager;
+	protected List<DiscoveryAgent> discoveryAgents;
 	protected CorrelationManager correlationManager;
 	protected ThreadManager threadManager;
 	protected ArrayList<Address> knownAddresses;
 	protected Cipher cipher;
 	protected MessageQueue messageHistory;
 	
-	public NodeCore()
+	protected NodeCore()
 	{
 		initialise(0, "firebus", "firebuspassword0");
 	}
 	
-	public NodeCore(int p)
+	protected NodeCore(int p)
 	{
 		initialise(p, "firebus", "firebuspassword0");
 	}
 
-	public NodeCore(String network, String password)
+	protected NodeCore(String network, String password)
 	{
 		initialise(0, network, password);
 	}
 
-	public NodeCore(int p, String network, String password)
+	protected NodeCore(int p, String network, String password)
 	{
 		initialise(p, network, password);
 	}
@@ -56,11 +59,12 @@ public class NodeCore
 			directory = new Directory();
 			directory.getOrCreateNodeInformation(nodeId);
 			connectionManager = new ConnectionManager(this, nodeId, networkName,  new SecretKeySpec(pw.getBytes(), "AES"), port);
-			discoveryManager = new DiscoveryManager(this, nodeId, networkName, connectionManager.getPort());
 			functionManager = new FunctionManager(this);
 			correlationManager = new CorrelationManager(this);
 			threadManager = new ThreadManager(this);
 			messageHistory = new MessageQueue(256);
+			discoveryAgents = new ArrayList<DiscoveryAgent>();
+			discoveryAgents.add(new DefaultDiscoveryAgent(this));
 		}
 		catch(Exception e)
 		{
@@ -71,9 +75,10 @@ public class NodeCore
 	public void close()
 	{
 		connectionManager.close();
-		discoveryManager.close();
 		correlationManager.close();
 		threadManager.close();
+		for(DiscoveryAgent agent : discoveryAgents)
+			agent.close();
 		quit = true;
 		synchronized(this)
 		{
@@ -101,6 +106,11 @@ public class NodeCore
 		return functionManager;
 	}
 	
+	public ConnectionManager getConnectionManager()
+	{
+		return connectionManager;
+	}
+	
 	public CorrelationManager getCorrelationManager()
 	{
 		return correlationManager;
@@ -114,6 +124,12 @@ public class NodeCore
 	public void addKnownNodeAddress(String a, int p)
 	{
 		connectionManager.addKnownNodeAddress(a, p);
+	}
+	
+	public void addDiscoveryAgent(DiscoveryAgent agent)
+	{
+		agent.setNodeCore(this);
+		discoveryAgents.add(agent);
 	}
 	
 	protected void forkThenRoute(Message msg)
@@ -176,7 +192,8 @@ public class NodeCore
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_PUBLISH:
-						functionManager.executeFunction(msg);
+						if(functionManager.hasFunction(msg.getSubject()))
+							functionManager.executeFunction(msg);
 						break;
 				}
 			}

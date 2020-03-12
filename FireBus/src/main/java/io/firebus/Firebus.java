@@ -50,6 +50,11 @@ public class Firebus
 		nodeCore.addKnownNodeAddress(a, p);
 	}
 	
+	public void addDiscoveryAgent(DiscoveryAgent a)
+	{
+		nodeCore.addDiscoveryAgent(a);
+	}
+	
 	public void registerServiceProvider(String serviceName, ServiceProvider serviceProvider, int maxConcurrent)
 	{
 		nodeCore.getFunctionManager().addFunction(serviceName, serviceProvider, maxConcurrent);

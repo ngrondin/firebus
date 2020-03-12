@@ -1,13 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>io.firebus</groupId>
-	<artifactId>firebus-http</artifactId>
-	<version>${io.firebus.version}</version>
-
-	<name>Firebus Http Gateway</name>
-	<description>Firebus http gateway adapter</description>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.firebus</groupId>
+  <artifactId>firebus-kubernetes</artifactId>
+  <version>${io.firebus.version}</version>
+  
+  	<name>Firebus Kubernetes Components</name>
+	<description>Firebus Kubernetes Components</description>
 	<url>https://github.com/ngrondin/firebus</url>
 
 	<licenses>
@@ -43,36 +41,12 @@
 			<version>${io.firebus.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.tomcat.embed</groupId>
-			<artifactId>tomcat-embed-core</artifactId>
-			<version>${tomcat.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tomcat.embed</groupId>
-			<artifactId>tomcat-embed-logging-juli</artifactId>
-			<version>${tomcat.version}</version>
-		</dependency>
-	    <dependency>
-	        <groupId>org.slf4j</groupId>
-	        <artifactId>slf4j-api</artifactId>
-	        <version>1.7.25</version>
-	    </dependency>
-		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>slf4j-jdk14</artifactId>
-		    <version>1.7.25</version>
-		</dependency>	    
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.auth0</groupId>
-			<artifactId>java-jwt</artifactId>
-			<version>3.8.3</version>
+		    <groupId>io.kubernetes</groupId>
+		    <artifactId>client-java</artifactId>
+		    <version>7.0.0</version>
 		</dependency>
 	</dependencies>
+	
 	<profiles>
 		<profile>
 			<id>local</id>

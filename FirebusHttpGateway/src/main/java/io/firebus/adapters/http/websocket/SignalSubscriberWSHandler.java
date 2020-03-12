@@ -9,7 +9,6 @@ import java.util.Map;
 import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.adapters.http.WebsocketHandler;
-import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.utils.DataException;

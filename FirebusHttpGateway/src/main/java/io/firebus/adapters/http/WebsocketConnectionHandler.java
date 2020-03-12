@@ -140,7 +140,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 		}
 	}
 	
-	private void send(byte[] msg, int op) {
+	private synchronized void send(byte[] msg, int op) {
 		int len = msg != null ? msg.length : 0;
 		int lenSize = (len <= 125 ? 0 : (len <= 65535 ? 2 : 8));
 		try {

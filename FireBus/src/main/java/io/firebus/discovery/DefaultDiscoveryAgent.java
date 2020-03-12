@@ -1,4 +1,4 @@
-package io.firebus;
+package io.firebus.discovery;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -7,32 +7,36 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.logging.Logger;
 
-public class DiscoveryManager extends Thread
+import io.firebus.Address;
+import io.firebus.DiscoveryAgent;
+import io.firebus.NodeCore;
+
+public class DefaultDiscoveryAgent extends DiscoveryAgent
 {
-	private Logger logger = Logger.getLogger("io.firebus");
+	private Logger logger;
 	protected boolean quit;
 	protected int nodeId;
 	protected String networkName;
 	protected int connectionsPort;
-	//protected Address address;
 	protected long lastRequestSent;
-	protected NodeCore nodeCore;
 	protected MulticastSocket socket;
-	//protected InetAddress multicastGroup;
 	protected InetAddress discoveryAddress;
 	protected int discoveryPort;
 
-	
-	public DiscoveryManager(NodeCore nc, int id, String n, int p)
+	public DefaultDiscoveryAgent(NodeCore nc)
 	{
-		nodeCore = nc;
-		nodeId = id;
-		networkName = n;
-		connectionsPort = p;
+		super(nc);
+	}
+	
+	public void init()
+	{
+		logger = Logger.getLogger("io.firebus");
+		nodeId = nodeCore.getNodeId();
+		networkName = nodeCore.getNetworkName();
+		connectionsPort = nodeCore.getConnectionManager().getPort();
 		quit = false;
 		try
 		{
@@ -49,6 +53,7 @@ public class DiscoveryManager extends Thread
 	            	try
 	            	{
 	            		socket.joinGroup(new InetSocketAddress(discoveryAddress, discoveryPort), xface);
+	            		logger.info(xface.getName() + " joined the discovery address group");
 	            	}
 	            	catch(Exception e)
 	            	{
@@ -56,16 +61,13 @@ public class DiscoveryManager extends Thread
 	            	}
                 }
 	        }	
-	        
-			//socket.joinGroup(discoveryAddress);
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 		}
 
-		setName("fbDiscoveryMgr");
-		start();
+		setName("fbDefaultDiscoveryAgent");
 	}
 	
 	public void close()
@@ -114,7 +116,7 @@ public class DiscoveryManager extends Thread
 			    	Address address = new Address(ad, port);
 			    	if(id != nodeId  &&  net.equals(networkName))
 			    	{
-				    	logger.fine("Received a anouncement from " + id + " on network \"" + net + "\" with address " + address);
+				    	logger.fine("Received an anouncement from " + id + " on network \"" + net + "\" with address " + address);
 						nodeCore.getDirectory().processDiscoveredNode(id,  address);
 			    	}
 			    }
@@ -127,22 +129,24 @@ public class DiscoveryManager extends Thread
 		socket.close();
 	}
 	
-	public void sendDiscoveryRequest()
+	protected void sendDiscoveryRequest()
 	{
 		long currentTime = System.currentTimeMillis();
 		if(currentTime > (lastRequestSent + 10000))
 		{
 			try 
 			{
-				String val = "Firebus discovery request from " + nodeId + " " + networkName;
+				String message = "Firebus discovery request from " + nodeId + " " + networkName;
 				Enumeration<NetworkInterface> ifs =  NetworkInterface.getNetworkInterfaces();
 		        while (ifs.hasMoreElements()) 
 		        {
 		            NetworkInterface xface = ifs.nextElement();
 		            if(!xface.isLoopback()  &&  xface.isUp())
-						multicastSend(val, xface);
+		            {
+						multicastSend(message, xface);
+				    	logger.fine("Sent a discovery request on " + xface.getName());
+		            }
 		        }
-		    	logger.fine("Sent a discovery request");
 	        }
 	        catch (IOException e) 
 			{
@@ -153,15 +157,21 @@ public class DiscoveryManager extends Thread
 		}
 	}
 	
-	public void sendAdvertisement(InetAddress addr)
+	protected void sendAdvertisement(InetAddress remoteAddress)
 	{
 		try 
 		{
-			InetAddress localAddress = getLocalAddressForRemoteConnection(addr);
+	    	DatagramSocket sock = new DatagramSocket();
+	        sock.connect(remoteAddress, discoveryPort);
+	        InetAddress localAddress = sock.getLocalAddress();
+	        sock.disconnect();
+	        sock.close();
+	        
 			NetworkInterface iface = NetworkInterface.getByInetAddress(localAddress);
-			String val = "Firebus anouncement from " + nodeId + " " + networkName + " " + localAddress.getHostAddress()+ " " + connectionsPort;
-			multicastSend(val, iface);
-	    	logger.fine("Sent a discovery anouncement for node " + nodeId + " on network \"" + networkName + "\" at address " + localAddress.getHostAddress()+ " " + connectionsPort + " via NIC " + iface.getName());
+			String message = "Firebus anouncement from " + nodeId + " " + networkName + " " + localAddress.getHostAddress()+ " " + connectionsPort;
+			multicastSend(message, iface);
+
+	    	logger.fine("Sent a discovery anouncement for node " + nodeId + " on network \"" + networkName + "\" at address " + localAddress.getHostAddress() + " " + connectionsPort + " via NIC " + iface.getName());
 		}
         catch (IOException e) 
 		{
@@ -176,37 +186,6 @@ public class DiscoveryManager extends Thread
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, discoveryAddress, discoveryPort);
     	socket.setNetworkInterface(xface);
     	socket.send(packet);
-		
-		/*
-		Enumeration<NetworkInterface> ifs =  NetworkInterface.getNetworkInterfaces();
-        while (ifs.hasMoreElements()) 
-        {
-            NetworkInterface xface = ifs.nextElement();
-            if(!xface.isLoopback()  &&  xface.isUp())
-            {
-            	socket.setNetworkInterface(xface);
-            	socket.send(packet);
-            }
-        }
-        */
 	}
 	
-    private InetAddress getLocalAddressForRemoteConnection(InetAddress remoteAddress) 
-    {      
-    	try
-    	{
-	    	DatagramSocket sock = new DatagramSocket();
-	        sock.connect(remoteAddress, discoveryPort);
-	        InetAddress localAddress = sock.getLocalAddress();
-	        sock.disconnect();
-	        sock.close();
-	        sock = null;
-	        return localAddress;
-    	}
-    	catch(SocketException e)
-    	{
-    		e.printStackTrace();
-    		return null;
-    	}
-    }
 }
