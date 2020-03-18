@@ -73,7 +73,6 @@ public class CorrelationManager extends Thread
 			synchronized(entry)
 			{
 				entry.expiry = System.currentTimeMillis() + timeout;
-				//entry.progressMessage = null;
 				while(System.currentTimeMillis() < entry.expiry  &&  entry.inboundMessage == null  &&  entry.progressMessage == null)
 				{
 					try
@@ -89,7 +88,7 @@ public class CorrelationManager extends Thread
 				if(entry.inboundMessage != null)
 				{
 					responseMessage = entry.inboundMessage;
-					logger.finest("Removing correlation entry " + correlationId + " as response received");
+					logger.finer("Removing correlation entry " + correlationId + " as response received");
 					removeEntry(correlationId);	
 				}
 				else if(entry.progressMessage != null)
@@ -99,7 +98,7 @@ public class CorrelationManager extends Thread
 				}
 				else
 				{
-					logger.finest("Removing correlation entry " + correlationId + " as timed out");
+					logger.finer("Removing correlation entry " + correlationId + " as timed out");
 					removeEntry(correlationId);	
 				}
 			}
@@ -162,7 +161,7 @@ public class CorrelationManager extends Thread
 			}
 			else
 			{
-				logger.severe("No entry found for correlated response " + correlationId);
+				logger.fine("No entry found for correlated response " + correlationId);
 			}
 		}
 	}
@@ -184,17 +183,6 @@ public class CorrelationManager extends Thread
 						if(entry.correlationListener != null)
 						{
 							entry.correlationListener.correlationTimedout(entry.outboundMessage);
-							/*
-							final CorrelationListener cl = entry.correlationListener;
-							final Message m = entry.outboundMessage;
-							Thread t = new Thread(new Runnable() {
-							    public void run() 
-							    {
-							    	cl.correlationTimedout(m);
-							    }
-							});	
-							t.start();
-							*/
 							removeEntry(ids[i]);
 						}
 						else

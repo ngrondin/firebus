@@ -64,6 +64,7 @@ public class NodeCore
 			messageHistory = new MessageQueue(256);
 			discoveryAgents = new ArrayList<DiscoveryAgent>();
 			discoveryAgents.add(new DefaultDiscoveryAgent(this));
+			logger.info("Initialised firebus node " + nodeId + " on " + networkName);
 		}
 		catch(Exception e)
 		{

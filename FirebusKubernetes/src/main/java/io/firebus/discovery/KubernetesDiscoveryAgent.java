@@ -31,6 +31,10 @@ public class KubernetesDiscoveryAgent extends DiscoveryAgent {
 	}
 	
 	public void run() {
+		V1PodList podList = null;
+		V1Pod self = null;
+		String namespace = null;
+		
 		try {
 	        localAddresses = new ArrayList<InetAddress>();
 			Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
@@ -51,9 +55,7 @@ public class KubernetesDiscoveryAgent extends DiscoveryAgent {
 	        Configuration.setDefaultApiClient(client);
 	        api = new CoreV1Api();
 	        
-	        V1Pod self = null;
-			String namespace = null;
-	        V1PodList podList = api.listPodForAllNamespaces(null, null, null, null, null, null, null, null, null);
+	        podList = api.listPodForAllNamespaces(null, null, null, null, null, null, null, null, null);
 	        for (V1Pod pod : podList.getItems()) {
 	        	String podIp = pod.getStatus().getPodIP();
 	        	if(podIp != null) {
@@ -61,43 +63,48 @@ public class KubernetesDiscoveryAgent extends DiscoveryAgent {
 		        		if(addr != null && podIp.equals(addr.getHostAddress())) {
 		        			self = pod;
 		        			namespace = pod.getMetadata().getNamespace();
-		        			String labelValue = nodeCore.getConnectionManager().getPort() + "." + nodeCore.getNodeId() + "." + nodeCore.getNetworkName();
+		        			String labelValue = nodeCore.getConnectionManager().getPort() + "." + nodeCore.getNetworkName() + "." + nodeCore.getNodeId();
 		                	String jsonPatchStr = "[{\"op\":\"add\",\"path\":\"/metadata/labels/io.firebus\",\"value\":\"" + labelValue + "\"}]";
 	                		api.patchNamespacedPod(pod.getMetadata().getName(), namespace, new V1Patch(jsonPatchStr), null, null, null, null);
 		        		}
 		        	}
 	        	}
 	        }
+		} catch(Exception e) {
+			logger.severe("Error while trying to publish coordinates : " + e.getMessage());
+		}
 
-	        active = true;
 
+        active = true;
+		try {
 	        while(active) {
-	        	for(V1Pod pod: podList.getItems()) {
-	        		if(namespace == null || pod.getMetadata().getNamespace().equals(namespace)) {
-	        			if(pod.getMetadata().getLabels().containsKey("io.firebus") && pod.getStatus().getPodIP() != null && pod != self) {
-	        				String podIp = pod.getStatus().getPodIP();
-	        				String labelValue = pod.getMetadata().getLabels().get("io.firebus");
-	        				if(labelValue.indexOf(".") > -1) {
-	        					String[] parts = labelValue.split(".");
+	        	if(podList != null) {
+		        	for(V1Pod pod: podList.getItems()) {
+		        		if(namespace == null || pod.getMetadata().getNamespace().equals(namespace)) {
+		        			if(pod.getMetadata().getLabels().containsKey("io.firebus") && pod.getStatus().getPodIP() != null && pod != self) {
+		        				String podIp = pod.getStatus().getPodIP();
+		        				String labelValue = pod.getMetadata().getLabels().get("io.firebus");
+	        					String[] parts = labelValue.split("\\.");
 	        					int port = Integer.parseInt(parts[0]);
-	        					String nodeId = parts[1];
-	        					String network = parts[2];
+	        					String network = parts.length >= 2 ? parts[1] : null;
+	        					String nodeId = parts.length >= 3 ? parts[2] : null;
 	        					Address address = new Address(podIp, port);
-	        					if(nodeCore.getNetworkName().equals(network)) {
-			        				logger.fine("Found firebus node " + nodeId + " on " + pod.getMetadata().getName());
-	        						nodeCore.getDirectory().processDiscoveredNode(port, address);
+		        				logger.fine("Found firebus node on " + pod.getMetadata().getName() + " : port " + port + " network " + network + (nodeId != null ? " nodeid " + nodeId : "" ));
+	        					if(nodeCore.getNetworkName().equals(network) || network == null) {
+	        						if(nodeId != null) {
+		        						nodeCore.getDirectory().processDiscoveredNode(port, address);
+	        						} else {
+			        					nodeCore.addKnownNodeAddress(podIp, port);
+	        						}
 	        					}
-	        				} else {
-		        				logger.fine("Found a pod hosting a firebus node on " + pod.getMetadata().getName());
-	        					nodeCore.addKnownNodeAddress(podIp, Integer.parseInt(labelValue));
-	        				}
-	        			}
-	        		}
-		        } 
-		        sleep(300000);
+		        			}
+		        		}
+			        } 
+			        sleep(300000);
+	        	}
 			}
 		} catch(Exception e) {
-			logger.severe("Error while executing the Kubernetes discovery agent : " + e.getMessage());
+			logger.severe("Error while looking for other nodes : " + e.getMessage());
 		}
 	}
 

@@ -53,11 +53,11 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 	            	try
 	            	{
 	            		socket.joinGroup(new InetSocketAddress(discoveryAddress, discoveryPort), xface);
-	            		logger.info(xface.getName() + " joined the discovery address group");
+	            		logger.fine(xface.getName() + " joined the discovery address group");
 	            	}
 	            	catch(Exception e)
 	            	{
-	            		logger.info(xface.getName() + " could not join discovery address group");
+	            		logger.severe(xface.getName() + " could not join discovery address group");
 	            	}
                 }
 	        }	

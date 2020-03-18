@@ -59,14 +59,14 @@ public class ServiceRequest extends Thread
 	
 	public Payload execute() throws FunctionErrorException, FunctionTimeoutException
 	{
-		logger.info("Requesting Service");
+		logger.fine("Requesting Service");
 		Payload responsePayload = null;
 		while(responsePayload == null  &&  System.currentTimeMillis() < expiry)
 		{
 			NodeInformation ni = nodeCore.getDirectory().findServiceProvider(serviceName);
 			if(ni == null)
 			{
-				logger.fine("Broadcasting Service Information Request Message");
+				logger.finer("Broadcasting Service Information Request Message");
 				Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, serviceName, null);
 				Message respMsg = nodeCore.getCorrelationManager().sendRequestAndWait(findMsg, subTimeout);
 				if(respMsg != null)
@@ -79,23 +79,23 @@ public class ServiceRequest extends Thread
 			{
 				try
 				{
-					logger.fine("Trying to retreive distributable service");
+					logger.finer("Trying to retreive distributable service");
 					ServiceRequest request = new ServiceRequest(nodeCore, "firebus_distributable_services_source", new Payload(serviceName.getBytes()), subTimeout * 2);
 					Payload response = request.execute();
 					if(response != null)
 					{
-						logger.fine("Instantiating distributable service : " + serviceName);
+						logger.finer("Instantiating distributable service : " + serviceName);
 						DataMap serviceConfig = new DataMap(response.getString());
 						String type = serviceConfig.getString("type");
 						DistributableService newDS = DistributableService.instantiate(nodeCore, type, serviceConfig.getObject("config"));
 						nodeCore.getFunctionManager().addFunction(serviceName, newDS, 10);
 						ni = nodeCore.getDirectory().getNodeById(nodeCore.getNodeId());
 						ni.addServiceInformation(serviceName, new ServiceInformation(serviceName));						
-						logger.fine("Instantiated distributable service : " + serviceName);
+						logger.finer("Instantiated distributable service : " + serviceName);
 					}
 					else
 					{
-						logger.fine("No response received from 'firebus_distributable_services_source' ");
+						logger.finer("No response received from 'firebus_distributable_services_source' ");
 					}
 				}
 				catch(Exception e)
@@ -106,7 +106,7 @@ public class ServiceRequest extends Thread
 
 			if(ni != null)
 			{
-				logger.fine("Sending service request message to " + ni.getNodeId());
+				logger.finer("Sending service request message to " + ni.getNodeId());
 				Message reqMsg = new Message(ni.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
 				int correlation = nodeCore.getCorrelationManager().sendRequest(reqMsg, subTimeout);
 				Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
