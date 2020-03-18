@@ -44,7 +44,7 @@ public class Connection extends Thread
 	
 	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
-		logger.fine("Initialising received connection");
+		logger.info("Initialising received connection from " + s.getRemoteSocketAddress());
 		
 		socket = s;
 		listener = cl;
@@ -57,7 +57,7 @@ public class Connection extends Thread
 	
 	public Connection(Address a, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
-		logger.fine("Initialising connection to " + a);
+		logger.info("Initialising connection to " + a);
 		
 		remoteAddress = a;
 		listener = cl;

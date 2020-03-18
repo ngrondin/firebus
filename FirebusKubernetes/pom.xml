@@ -31,7 +31,7 @@
 
 	<properties>
 		<tomcat.version>8.5.2</tomcat.version>
-		<io.firebus.version>1.0.8</io.firebus.version>
+		<io.firebus.version>1.0.9</io.firebus.version>
 	</properties>
 	
 	<dependencies>
@@ -43,7 +43,7 @@
 		<dependency>
 		    <groupId>io.kubernetes</groupId>
 		    <artifactId>client-java</artifactId>
-		    <version>7.0.0</version>
+		    <version>8.0.0</version>
 		</dependency>
 	</dependencies>
 	

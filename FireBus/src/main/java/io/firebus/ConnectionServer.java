@@ -52,7 +52,6 @@ public class ConnectionServer extends Thread
 				while(!quit)
 				{
 					Socket socket = server.accept();
-					logger.info("Accepted New Connection");
 					connectionManager.socketReceived(socket, port);
 				}
 			} 

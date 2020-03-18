@@ -198,11 +198,16 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	
 	public void connectionFailed(Connection c)
 	{
-		logger.info("Connection " + c.getId() + " failed. removing address from node");
 		Address a = c.getRemoteAddress();
-		NodeInformation ni = nodeCore.getDirectory().getNodeByAddress(a); 
-		if(ni != null)
-			ni.removeAddress(a);
+		if(a != null)
+		{
+			logger.info("Connection " + c.getId() + " failed. Removing address " + a + " from node");
+			NodeInformation ni = nodeCore.getDirectory().getNodeByAddress(a); 
+			if(ni != null)
+				ni.removeAddress(a);
+			if(knownAddresses.contains(a))
+				knownAddresses.remove(a);
+		}
 	}
 	
 	public void messageReceived(Message m, Connection c)

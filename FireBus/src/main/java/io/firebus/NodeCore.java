@@ -24,7 +24,6 @@ public class NodeCore
 	protected List<DiscoveryAgent> discoveryAgents;
 	protected CorrelationManager correlationManager;
 	protected ThreadManager threadManager;
-	protected ArrayList<Address> knownAddresses;
 	protected Cipher cipher;
 	protected MessageQueue messageHistory;
 	
@@ -53,7 +52,7 @@ public class NodeCore
 		try
 		{
 			Random rnd = new Random();
-			nodeId = rnd.nextInt();
+			nodeId = rnd.nextInt(2147483647);
 			quit = false;
 			networkName = n;	
 			directory = new Directory();
