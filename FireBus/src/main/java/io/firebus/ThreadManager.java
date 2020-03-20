@@ -49,13 +49,13 @@ public class ThreadManager
 		}
 		else
 		{
-			queue.addMessage(msg);
+			queue.push(msg);
 		}
 	}
 	
 	public Message getNextMessage()
 	{
-		return queue.popNextMessage();
+		return queue.pop();
 	}
 	
 	

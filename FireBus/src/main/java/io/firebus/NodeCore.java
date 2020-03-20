@@ -25,7 +25,7 @@ public class NodeCore
 	protected CorrelationManager correlationManager;
 	protected ThreadManager threadManager;
 	protected Cipher cipher;
-	protected MessageQueue messageHistory;
+	protected HistoryQueue historyQueue;
 	
 	protected NodeCore()
 	{
@@ -61,7 +61,7 @@ public class NodeCore
 			functionManager = new FunctionManager(this);
 			correlationManager = new CorrelationManager(this);
 			threadManager = new ThreadManager(this);
-			messageHistory = new MessageQueue(256);
+			historyQueue = new HistoryQueue(256);
 			discoveryAgents = new ArrayList<DiscoveryAgent>();
 			discoveryAgents.add(new DefaultDiscoveryAgent(this));
 			logger.info("Initialised firebus node " + nodeId + " on " + networkName);
@@ -139,7 +139,8 @@ public class NodeCore
 	
 	protected void route(Message msg)
 	{
-		if(msg != null && !messageHistory.checkIfContainsOrAdd(msg))
+		long msgUID = (msg.getOriginatorId() << 32) + msg.getid();
+		if(msg != null && historyQueue.check(msgUID))
 		{
 			logger.finest("\"****Routing**************\r\n" + msg + "\"");
 			int destinationNodeId = msg.getDestinationId();

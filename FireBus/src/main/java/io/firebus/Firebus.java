@@ -111,7 +111,7 @@ public class Firebus
 	
 	public void publish(String dataname, Payload payload)
 	{
-		logger.info("Publishing");
+		logger.finer("Publishing");
 		nodeCore.forkThenRoute(new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_PUBLISH, dataname, payload));
 	}
 	

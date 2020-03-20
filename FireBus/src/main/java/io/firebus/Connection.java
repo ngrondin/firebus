@@ -44,7 +44,7 @@ public class Connection extends Thread
 	
 	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
-		logger.info("Initialising received connection from " + s.getRemoteSocketAddress());
+		logger.fine("Initialising received connection from " + s.getRemoteSocketAddress());
 		
 		socket = s;
 		listener = cl;
@@ -57,7 +57,7 @@ public class Connection extends Thread
 	
 	public Connection(Address a, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
-		logger.info("Initialising connection to " + a);
+		logger.fine("Initialising connection to " + a);
 		
 		remoteAddress = a;
 		listener = cl;
@@ -173,7 +173,7 @@ public class Connection extends Thread
 						}
 					}
 
-					logger.info("Established connection " + getId() + " with node " + remoteNodeId + " at address " + remoteAddress);
+					logger.fine("Established connection " + getId() + " with node " + remoteNodeId + " at address " + remoteAddress);
 					running = true;
 				}
 				else
@@ -188,7 +188,7 @@ public class Connection extends Thread
 		}
 		catch(Exception e)
 		{
-			logger.fine(e.getMessage());
+			logger.severe(e.getMessage());
 		}		
 	}
 	

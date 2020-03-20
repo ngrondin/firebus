@@ -13,7 +13,7 @@ public class MessageQueue
 		tail = 0;
 	}
 	
-	public synchronized void addMessage(Message m)
+	public synchronized void push(Message m)
 	{
 		messages[head++] = m;
 		if(head >= messages.length)
@@ -29,21 +29,8 @@ public class MessageQueue
 		return (((head + messages.length) - tail) % messages.length);
 	}
 	
-	public synchronized boolean checkIfContainsOrAdd(Message msg)
-	{
-		int p = tail;
-		while(p != head) {
-			if(messages[p].getOriginatorId() == msg.getOriginatorId() && messages[p].getid() == msg.getid())
-				return true;
-			p++;
-			if(p >= messages.length)
-				p = 0;
-		}
-		addMessage(msg);
-		return false;
-	}
 	
-	public synchronized Message popNextMessage()
+	public synchronized Message pop()
 	{
 		if(head == tail) {
 			return null;

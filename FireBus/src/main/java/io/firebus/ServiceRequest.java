@@ -59,7 +59,7 @@ public class ServiceRequest extends Thread
 	
 	public Payload execute() throws FunctionErrorException, FunctionTimeoutException
 	{
-		logger.fine("Requesting Service");
+		logger.finer("Requesting Service");
 		Payload responsePayload = null;
 		while(responsePayload == null  &&  System.currentTimeMillis() < expiry)
 		{
@@ -136,7 +136,7 @@ public class ServiceRequest extends Thread
 						
 						if(System.currentTimeMillis() > expiry)
 						{
-							logger.info("Service request " + serviceName + " has timed out while executing");
+							logger.fine("Service request " + serviceName + " has timed out while executing");
 							throw new FunctionTimeoutException("Service " + serviceName + " timed out while executing");
 						}
 					}

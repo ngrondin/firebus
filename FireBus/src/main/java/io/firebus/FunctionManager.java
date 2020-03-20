@@ -71,7 +71,7 @@ public class FunctionManager
 				ServiceInformation si =  ((ServiceProvider)f).getServiceInformation();
 				if(si == null)
 					si = new ServiceInformation(functionName);
-				logger.fine("Responding to a service information request");
+				logger.finer("Responding to a service information request");
 				Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEINFORMATION, msg.getSubject(), new Payload(si.serialise()));
 				outMsg.setCorrelation(msg.getCorrelation());
 				nodeCore.route(outMsg);
@@ -91,7 +91,7 @@ public class FunctionManager
 			{
 				if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE  && fe.function instanceof ServiceProvider)
 				{
-					logger.fine("Executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
+					logger.finer("Executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
 					Payload returnPayload = null;
 					Message progressMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_PROGRESS, msg.getSubject(), null);
 					progressMsg.setCorrelation(msg.getCorrelation());
@@ -100,7 +100,7 @@ public class FunctionManager
 					try
 					{
 						returnPayload = ((ServiceProvider)fe.function).service(inPayload);
-						logger.fine("Finished executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
+						logger.finer("Finished executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
 						
 						Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
 						responseMsg.setCorrelation(msg.getCorrelation());
@@ -125,7 +125,7 @@ public class FunctionManager
 				}
 				else if(msg.getType() == Message.MSGTYPE_PUBLISH  &&  fe.function instanceof Consumer)
 				{
-					logger.fine("Executing Consumer");
+					logger.finer("Executing Consumer");
 					((Consumer)fe.function).consume(inPayload);
 				}			
 			}
@@ -139,7 +139,7 @@ public class FunctionManager
 		}	
 		else
 		{
-			logger.info("Function " + functionName + " does not exist");
+			logger.fine("Function " + functionName + " does not exist");
 			Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEUNAVAILABLE, msg.getSubject(),new Payload(null,  "No such function registered in this node".getBytes()));
 			outMsg.setCorrelation(msg.getCorrelation());
 			nodeCore.route(outMsg);

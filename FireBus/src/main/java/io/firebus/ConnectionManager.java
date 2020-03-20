@@ -136,7 +136,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 							hasConnection = true;
 					if(!hasConnection)
 					{
-						logger.info("Creating new connection from known address");
+						logger.fine("Creating new connection from known address");
 						createConnection(a);
 					}
 				}
@@ -154,7 +154,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 									hasConnection = true;
 						if(!hasConnection)
 						{
-							logger.info("Creating new connection to maintain minimum node connectivity");
+							logger.fine("Creating new connection to maintain minimum node connectivity");
 							createConnection(ni.getAddress(0));
 							connectedNodeCount++;
 						}
@@ -164,7 +164,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 				for(int i = 0; i < connections.size(); i++)
 					if(connections.get(i).getLoad() > maxConnectionLoad)
 					{
-						logger.info("Creating new connection to spread traffic to node " + connections.get(i).getRemoteNodeId());
+						logger.fine("Creating new connection to spread traffic to node " + connections.get(i).getRemoteNodeId());
 						createConnection(connections.get(i).getRemoteAddress());
 					}
 
@@ -201,7 +201,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		Address a = c.getRemoteAddress();
 		if(a != null)
 		{
-			logger.info("Connection " + c.getId() + " failed. Removing address " + a + " from node");
+			logger.fine("Connection " + c.getId() + " failed. Removing address " + a + " from node");
 			NodeInformation ni = nodeCore.getDirectory().getNodeByAddress(a); 
 			if(ni != null)
 				ni.removeAddress(a);
@@ -216,7 +216,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		int connectedId = c.getRemoteNodeId();
 		if(originatorId != nodeId)
 		{
-			logger.fine("Received message from node " + c.getRemoteNodeId());
+			logger.finest("Received message from node " + c.getRemoteNodeId());
 			if(connectedId != originatorId)
 			{
 				NodeInformation originatorNode = nodeCore.getDirectory().getOrCreateNodeInformation(originatorId);
@@ -226,13 +226,13 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		}
 		else
 		{
-			logger.fine("Blocked message from self");
+			logger.finest("Blocked message from self");
 		}
 	}
 
 	public void connectionClosed(Connection c)
 	{
-		logger.info("Connection " + c.getId() + " Closed");
+		logger.fine("Connection " + c.getId() + " Closed");
 		connections.remove(c);
 	}
 	
@@ -261,7 +261,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	
 	protected void broadcastToAllConnections(Message msg)
 	{
-		logger.fine("Broadcasting message to all connections");
+		logger.finer("Broadcasting message to all connections");
 		for(int i = 0; i < connections.size(); i++)
 		{
 			Connection c = connections.get(i);

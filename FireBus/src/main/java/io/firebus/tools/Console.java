@@ -23,9 +23,15 @@ public class Console implements ServiceRequestor
 	private Logger logger = Logger.getLogger("io.firebus");
 	protected FirebusAdmin firebus;
 	
-	public Console()
+	public Console(String[] args)
 	{
-		firebus = new FirebusAdmin();
+		if(args.length == 0) {
+			firebus = new FirebusAdmin();
+		} else if(args.length == 1) {
+			firebus = new FirebusAdmin(args[0], "firebuspassword0");
+		} else if(args.length >- 2) {
+			firebus = new FirebusAdmin(args[0], args[1]);
+		}
 	}
 	public void run()
 	{
@@ -202,7 +208,7 @@ public class Console implements ServiceRequestor
 			e.printStackTrace();
 		}
 		
-		Console c = new Console();
+		Console c = new Console(args);
 		c.run();
 	}
 
