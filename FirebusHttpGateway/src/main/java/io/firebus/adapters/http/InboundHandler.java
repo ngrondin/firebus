@@ -55,9 +55,9 @@ public abstract class InboundHandler extends HttpHandler
 			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	        PrintWriter writer = resp.getWriter();
 			String accept = req.getHeader("accept");
-			if(accept.contains("application/json"))
+			if(accept != null && accept.contains("application/json"))
 				writer.println("{\r\n\t\"error\" : \"" + e.getMessage().replaceAll("\"", "'").replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n") + "\"\r\n}");
-			if(accept.contains("text/html"))
+			else
 				writer.println("<div>" + e.getMessage() + "</div>");
 		}
 	}	
