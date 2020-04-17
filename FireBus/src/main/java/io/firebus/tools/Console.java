@@ -1,10 +1,13 @@
 package io.firebus.tools;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Iterator;
+import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,6 +39,19 @@ public class Console implements ServiceRequestor
 	public void run()
 	{
 		boolean quit = false;
+		Properties headers = new Properties();
+		File headerFile = new File("ConsoleHeaders.properties");
+		if(headerFile.exists()) 
+		{
+			try 
+			{
+				headers.load(new FileInputStream(headerFile));
+			}
+			catch(Exception e)
+			{ 
+				System.out.println("Error loading headers : " + e.getMessage());
+			}
+		}
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		while(!quit)
 		{
@@ -92,7 +108,14 @@ public class Console implements ServiceRequestor
 					
 					if(payload == null)
 					{
-						payload = new Payload(new byte[0]);
+						payload = new Payload();
+					}
+					
+					Iterator<Object> it = headers.keySet().iterator();
+					while(it.hasNext())
+					{
+						String key = (String)it.next();
+						payload.metadata.put(key, headers.getProperty(key));
 					}
 
 					if(command.equals("req") && functionName != null)

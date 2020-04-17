@@ -20,17 +20,17 @@ public class Directory
 		nodes = new ArrayList<NodeInformation>();
 	}
 	
-	public int getNodeCount()
+	public synchronized int getNodeCount()
 	{
 		return nodes.size();
 	}
 	
-	public NodeInformation getNode(int index)
+	public synchronized NodeInformation getNode(int index)
 	{
 		return nodes.get(index);
 	}
 	
-	public NodeInformation getNodeById(int id)
+	public synchronized NodeInformation getNodeById(int id)
 	{
 		if(id != 0)
 			for(int i = 0; i < nodes.size(); i++)
@@ -39,7 +39,7 @@ public class Directory
 		return null;
 	}
 	
-	public NodeInformation getNodeByAddress(Address a)
+	public synchronized NodeInformation getNodeByAddress(Address a)
 	{
 		for(int i = 0; i < nodes.size(); i++)
 			if(nodes.get(i).containsAddress(a))
@@ -47,13 +47,13 @@ public class Directory
 		return null;
 	}
 
-	public void deleteNode(NodeInformation n)
+	public synchronized void deleteNode(NodeInformation n)
 	{
 		logger.fine("Deleting Node from Directory");
 		nodes.remove(n);
 	}
 	
-	public NodeInformation getOrCreateNodeInformation(int nodeId)
+	public synchronized NodeInformation getOrCreateNodeInformation(int nodeId)
 	{
 		NodeInformation ni = getNodeById(nodeId);
 		if(ni == null)
@@ -64,7 +64,7 @@ public class Directory
 		return ni;
 	}
 	
-	public void processDiscoveredNode(int nodeId, Address address)
+	public synchronized void processDiscoveredNode(int nodeId, Address address)
 	{
 		NodeInformation ni = getNodeById(nodeId);
 		if(ni == null)
@@ -84,7 +84,7 @@ public class Directory
 		}		
 	}
 	
-	public void processNodeInformation(String ad)
+	public synchronized void processNodeInformation(String ad)
 	{
 		BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(ad.getBytes())));
 		String line;
@@ -138,7 +138,7 @@ public class Directory
 	}
 
 	
-	public void processServiceInformation(int nodeId, String serviceName, byte[] payoad)
+	public synchronized void processServiceInformation(int nodeId, String serviceName, byte[] payoad)
 	{
 		NodeInformation ni = getOrCreateNodeInformation(nodeId);
 		ServiceInformation si = ni.getServiceInformation(serviceName);
@@ -150,7 +150,7 @@ public class Directory
 		si.deserialise(payoad);
 	}
 	
-	public NodeInformation findServiceProvider(String name)
+	public synchronized NodeInformation findServiceProvider(String name)
 	{
 		NodeInformation bestNode = null;
 		int bestNodeRating = 0;
