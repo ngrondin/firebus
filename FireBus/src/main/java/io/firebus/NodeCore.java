@@ -151,7 +151,7 @@ public class NodeCore
 			if(destinationNodeId != nodeId  ||  destinationNodeId == 0)
 				connectionManager.sendMessage(msg);
 		}	
-		logger.finer("Finished Routing Message");
+		logger.finer("Finished Routing Message " + msg.getid());
 	}
 	
 	protected void process(Message msg)

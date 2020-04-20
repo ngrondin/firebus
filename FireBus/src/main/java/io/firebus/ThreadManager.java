@@ -24,7 +24,7 @@ public class ThreadManager
 		threadCount = tc;
 	}
 	
-	public void process(Message msg)
+	public synchronized void process(Message msg)
 	{
 		FirebusThread thread = null;
 		for(int i = 0; i < threads.size(); i++)
@@ -53,7 +53,7 @@ public class ThreadManager
 		}
 	}
 	
-	public Message getNextMessage()
+	public synchronized Message getNextMessage()
 	{
 		return queue.pop();
 	}

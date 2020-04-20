@@ -20,17 +20,17 @@ public class Directory
 		nodes = new ArrayList<NodeInformation>();
 	}
 	
-	public synchronized int getNodeCount()
+	public int getNodeCount()
 	{
 		return nodes.size();
 	}
 	
-	public synchronized NodeInformation getNode(int index)
+	public NodeInformation getNode(int index)
 	{
 		return nodes.get(index);
 	}
 	
-	public synchronized NodeInformation getNodeById(int id)
+	public NodeInformation getNodeById(int id)
 	{
 		if(id != 0)
 			for(int i = 0; i < nodes.size(); i++)
@@ -39,7 +39,7 @@ public class Directory
 		return null;
 	}
 	
-	public synchronized NodeInformation getNodeByAddress(Address a)
+	public NodeInformation getNodeByAddress(Address a)
 	{
 		for(int i = 0; i < nodes.size(); i++)
 			if(nodes.get(i).containsAddress(a))
@@ -150,7 +150,7 @@ public class Directory
 		si.deserialise(payoad);
 	}
 	
-	public synchronized NodeInformation findServiceProvider(String name)
+	public NodeInformation findServiceProvider(String name)
 	{
 		NodeInformation bestNode = null;
 		int bestNodeRating = 0;

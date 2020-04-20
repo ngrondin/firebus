@@ -184,8 +184,11 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 	{
 		byte[] buf = value.getBytes();
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, discoveryAddress, discoveryPort);
-    	socket.setNetworkInterface(xface);
-    	socket.send(packet);
+		if(!socket.isClosed()) 
+		{
+	    	socket.setNetworkInterface(xface);
+	    	socket.send(packet);
+		}
 	}
 	
 }

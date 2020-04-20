@@ -38,7 +38,7 @@ public class Message
 	public Message(int d, int o, int t, String s, Payload p)
 	{
 		version = MESSAGE_VERSION;
-		messageId = nextId++;
+		messageId = getNextId();
 		destinationId = d;
 		originatorId = o;
 		flags = 0;
@@ -64,6 +64,11 @@ public class Message
 		correlation = c;
 		subject = s;
 		payload = p;
+	}
+	
+	private static synchronized int getNextId() 
+	{
+		return nextId++;
 	}
 	
 	public Message repeat()

@@ -100,7 +100,7 @@ public class ServiceRequest extends Thread
 				}
 				catch(Exception e)
 				{
-					logger.severe("General error when refreshing the source of a distributable function : " + e.getMessage());
+					logger.finer("General error when refreshing the source of a distributable function : " + e.getMessage());
 				}
 			}
 
@@ -136,8 +136,9 @@ public class ServiceRequest extends Thread
 						
 						if(System.currentTimeMillis() > expiry)
 						{
-							logger.fine("Service request " + serviceName + " has timed out while executing");
-							throw new FunctionTimeoutException("Service " + serviceName + " timed out while executing");
+							String str = "Service request " + serviceName + " has timed out while executing (corr: " + reqMsg.getCorrelation() + ")"; 
+							logger.fine(str);
+							throw new FunctionTimeoutException(str);
 						}
 					}
 				}
