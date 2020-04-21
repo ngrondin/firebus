@@ -25,17 +25,28 @@ public class Console implements ServiceRequestor
 {
 	private Logger logger = Logger.getLogger("io.firebus");
 	protected FirebusAdmin firebus;
+	protected String command;
 	
 	public Console(String[] args)
 	{
-		if(args.length == 0) {
+		for(int i = 0; i < args.length; i++) {
+			String swt = args[i];
+			if(swt.equals("-fb") && args.length > i + 1) {
+				String param = args[++i];
+				String[] parts = param.split("/");
+				firebus = new FirebusAdmin(parts[0], parts[1]);
+			}
+			if(swt.equals("-c") && args.length > i + 1) {
+				command = args[++i];
+			}
+		}
+		
+		if(firebus == null) 
+		{
 			firebus = new FirebusAdmin();
-		} else if(args.length == 1) {
-			firebus = new FirebusAdmin(args[0], "firebuspassword0");
-		} else if(args.length >- 2) {
-			firebus = new FirebusAdmin(args[0], args[1]);
 		}
 	}
+	
 	public void run()
 	{
 		boolean quit = false;
@@ -52,134 +63,154 @@ public class Console implements ServiceRequestor
 				System.out.println("Error loading headers : " + e.getMessage());
 			}
 		}
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		while(!quit)
+		if(command != null) 
 		{
 			try
 			{
-				System.out.print("> ");
-				String in = br.readLine();
-				String[] parts = in.split(" ");
-				String command = parts[0];
-				
-				if(command.equals("req") || command.equals("pub") || command.equals("si"))
+				execute(headers, command);
+			}
+			catch(IOException e)
+			{
+				System.err.println("Error executing command : " + e.getMessage());
+			}
+		}
+		else
+		{
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			while(!quit)
+			{
+				try
 				{
-					String functionName = "";
-					Payload payload = null;
-					String inputFileName = null;
-					if(parts.length > 1)
+					System.out.print("> ");
+					String in = br.readLine();
+					quit = execute(headers, in);
+				}
+				catch(Exception e)
+				{
+					logger.severe(e.getMessage());
+				}
+			}
+		}
+		firebus.close();
+	}
+	
+	protected boolean execute(Properties headers, String in) throws IOException 
+	{
+		boolean ret = false;
+		String[] parts = in.split(" ");
+		String command = parts[0];
+		
+		if(command.equals("req") || command.equals("pub") || command.equals("si"))
+		{
+			String functionName = "";
+			Payload payload = null;
+			String inputFileName = null;
+			if(parts.length > 1)
+			{
+				functionName = parts[1];
+				if(parts.length > 2)
+				{
+					inputFileName = getSwitchValue(parts, "if");
+					int dataStart = command.length() + functionName.length() + 2;
+					for(int i = 2; i < parts.length; i+=2)
 					{
-						functionName = parts[1];
-						if(parts.length > 2)
-						{
-							inputFileName = getSwitchValue(parts, "if");
-							int dataStart = command.length() + functionName.length() + 2;
-							for(int i = 2; i < parts.length; i+=2)
-							{
-								if(parts[i].startsWith("-"))
-									dataStart += parts[i].length() + parts[i + 1].length() + 2;
-								else
-									break;
-							}
-							
-							if(dataStart < in.length())
-							{
-								payload = new Payload(in.substring(dataStart).getBytes());
-							}
-							
-							if(payload == null  &&  inputFileName != null)
-							{
-								try
-								{
-									FileInputStream fis = new FileInputStream(inputFileName);
-									byte[] data = new byte[fis.available()];
-									fis.read(data);
-									fis.close();
-									payload = new Payload(data);
-									payload.metadata.put("filename", inputFileName);
-								}
-								catch(IOException e)
-								{
-									logger.severe(e.getMessage());
-								}
-							}
-						}
+						if(parts[i].startsWith("-"))
+							dataStart += parts[i].length() + parts[i + 1].length() + 2;
+						else
+							break;
 					}
 					
-					if(payload == null)
+					if(dataStart < in.length())
 					{
-						payload = new Payload();
+						payload = new Payload(in.substring(dataStart).getBytes());
 					}
 					
-					Iterator<Object> it = headers.keySet().iterator();
-					while(it.hasNext())
-					{
-						String key = (String)it.next();
-						payload.metadata.put(key, headers.getProperty(key));
-					}
-
-					if(command.equals("req") && functionName != null)
+					if(payload == null  &&  inputFileName != null)
 					{
 						try
 						{
-							Payload response = firebus.requestService(functionName, payload, 2000);
-							if(response.metadata.containsKey("filename"))
-							{
-								String fileName = response.metadata.get("filename");
-								FileOutputStream fos = new FileOutputStream(fileName);
-								fos.write(response.data);
-								fos.close();
-								System.out.println("Received file " + fileName);
-							}
-							else
-							{
-								System.out.println(response.getString());
-							}
+							FileInputStream fis = new FileInputStream(inputFileName);
+							byte[] data = new byte[fis.available()];
+							fis.read(data);
+							fis.close();
+							payload = new Payload(data);
+							payload.metadata.put("filename", inputFileName);
 						}
-						catch (FunctionErrorException e)
+						catch(IOException e)
 						{
-							System.out.println("Function error: " + e.getMessage());
-						}
-						catch (FunctionTimeoutException e)
-						{
-							System.out.println("Request has timed out: " + e.getMessage());
+							logger.severe(e.getMessage());
 						}
 					}
-					else if(command.equals("pub") && functionName != null)
-					{
-						firebus.publish(functionName, payload);
-					}
-					else if(command.equals("si")  &&  functionName != null)
-					{
-						ServiceInformation si = firebus.getServiceInformation(functionName);
-						if(si != null)
-							System.out.println(si);
-					}
 				}
-				else if(command.equals("ni"))
-				{
-					int nodeId = Integer.parseInt(parts[1]);
-					NodeInformation ni = firebus.getNodeInformation(nodeId);
-					System.out.println(ni);
-				}
-				else if(command.equals("dir"))
-				{
-					NodeInformation[] nis = firebus.getNodeList();
-					for(int i = 0; i < nis.length; i++)
-						System.out.println(nis[i]);
-				}
-				else if(command.equals("exit"))
-				{
-					firebus.close();
-					quit = true;
-				}
-			}
-			catch(Exception e)
-			{
-				logger.severe(e.getMessage());
 			}
 			
+			if(payload == null)
+			{
+				payload = new Payload();
+			}
+			
+			Iterator<Object> it = headers.keySet().iterator();
+			while(it.hasNext())
+			{
+				String key = (String)it.next();
+				payload.metadata.put(key, headers.getProperty(key));
+			}
+
+			if(command.equals("req") && functionName != null)
+			{
+				try
+				{
+					Payload response = firebus.requestService(functionName, payload, 10000);
+					if(response.metadata.containsKey("filename"))
+					{
+						String fileName = response.metadata.get("filename");
+						FileOutputStream fos = new FileOutputStream(fileName);
+						fos.write(response.data);
+						fos.close();
+						System.out.println("Received file " + fileName);
+					}
+					else
+					{
+						System.out.println(response.getString());
+					}
+				}
+				catch (FunctionErrorException e)
+				{
+					System.out.println("Function error: " + e.getMessage());
+				}
+				catch (FunctionTimeoutException e)
+				{
+					System.out.println("Request has timed out: " + e.getMessage());
+				}
+			}
+			else if(command.equals("pub") && functionName != null)
+			{
+				firebus.publish(functionName, payload);
+			}
+			else if(command.equals("si")  &&  functionName != null)
+			{
+				ServiceInformation si = firebus.getServiceInformation(functionName);
+				if(si != null)
+					System.out.println(si);
+			}
 		}
+		else if(command.equals("ni"))
+		{
+			int nodeId = Integer.parseInt(parts[1]);
+			NodeInformation ni = firebus.getNodeInformation(nodeId);
+			System.out.println(ni);
+		}
+		else if(command.equals("dir"))
+		{
+			NodeInformation[] nis = firebus.getNodeList();
+			for(int i = 0; i < nis.length; i++)
+				System.out.println(nis[i]);
+		}
+		else if(command.equals("exit"))
+		{
+			ret = true;
+		}
+		return ret;
 	}
 	
 	protected String getSwitchValue(String[] parts, String sw)
@@ -232,6 +263,7 @@ public class Console implements ServiceRequestor
 		}
 		
 		Console c = new Console(args);
+		//try { Thread.sleep(5000); } catch(Exception e) {}
 		c.run();
 	}
 
