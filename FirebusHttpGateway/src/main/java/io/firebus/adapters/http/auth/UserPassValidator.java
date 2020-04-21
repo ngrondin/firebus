@@ -26,6 +26,7 @@ public class UserPassValidator extends AuthValidationHandler
 	protected String userKey;
 	protected String passwordKey;
 	protected String hashType;
+	protected String jwtSecret;
 	protected String redirectUrl;
 	protected String cookieName;
 
@@ -37,6 +38,7 @@ public class UserPassValidator extends AuthValidationHandler
 		userKey = handlerConfig.containsKey("userkey") ? handlerConfig.getString("userkey") : "username";
 		passwordKey = handlerConfig.containsKey("passwordkey") ? handlerConfig.getString("passwordkey") : "passwordhash";
 		hashType = handlerConfig.containsKey("hash") ? handlerConfig.getString("hash") : "SHA-256";
+		jwtSecret = handlerConfig.getString("jwtsecret");
 		redirectUrl = handlerConfig.getString("redirecturl");
 		cookieName = handlerConfig.containsKey("cookie") ? handlerConfig.getString("cookie") : "token";
 	}
@@ -49,6 +51,9 @@ public class UserPassValidator extends AuthValidationHandler
 
     	String username = req.getParameter("username");
     	String password = req.getParameter("password");
+    	String redirectUrlResolved = redirectUrl != null ? redirectUrl : "${state}";
+   		redirectUrlResolved = redirectUrlResolved.replace("${state}", req.getParameter("state") != null ? req.getParameter("state") : "");
+
     	if(firebus != null)
     	{
     		if(username != null && password != null)
@@ -71,16 +76,20 @@ public class UserPassValidator extends AuthValidationHandler
 		    				String receivedPassHash = Base64.getEncoder().encodeToString(encodedhash);
 		    				if(receivedPassHash.equals(savedPassHash)) 
 		    				{
-		    				    Algorithm algorithm = Algorithm.HMAC256("secret");
-		    				    String token = JWT.create().withIssuer("io.firebus").withClaim("email", username).withExpiresAt(new Date((new Date()).getTime() + 3600000)).sign(algorithm);
+		            			long expiry = 28800000;
+		    				    Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
+		    				    String token = JWT.create()
+		    				    		.withIssuer("io.firebus.http")
+		    				    		.withClaim("email", username)
+		    				    		.withExpiresAt(new Date((new Date()).getTime() + expiry))
+		    				    		.sign(algorithm);
 	                			Cookie cookie = new Cookie(cookieName, token);
 	                			cookie.setPath(contextPath);
 	                			cookie.setMaxAge(3600);
 	                			resp.addCookie(cookie);
-		            			resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-		            			resp.setHeader("location", redirectUrl);
+		            			resp.setStatus(HttpServletResponse.SC_OK);
 		            	        PrintWriter writer = resp.getWriter();
-		            	        writer.println("<html><title>Redirect</title><body>Loging in</body></html>");
+		            	        writer.println("<html><head><title>Redirect</title></head><meta http-equiv=\"refresh\" content=\"0; url = '" + redirectUrlResolved + "'\"><body>Loging in</body></html>");
 	
 		    				}
 		    				else

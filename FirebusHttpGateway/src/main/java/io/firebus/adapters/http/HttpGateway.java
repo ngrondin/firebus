@@ -118,11 +118,12 @@ public class HttpGateway implements ServiceProvider
 		        for(int i = 0; i < list.size(); i++)
 		        {
 		        	DataMap authConfig = list.getObject(i);
+		            String method = authConfig.getString("method");
 		            String urlPattern = authConfig.getString("path");
 		            AuthValidationHandler handler = getAuthValidationHandler(authConfig);
 		            if(handler != null)
 		            {
-		            	masterHandler.addHttpHandler(urlPattern, "get", handler);
+		            	masterHandler.addHttpHandler(urlPattern, method, handler);
 		            }
 		        }
 	        }
