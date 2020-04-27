@@ -61,6 +61,7 @@ public class ServiceRequest extends Thread
 	{
 		logger.finer("Requesting Service");
 		Payload responsePayload = null;
+		NodeInformation lastRequestedNode = null;
 		while(responsePayload == null  &&  System.currentTimeMillis() < expiry)
 		{
 			NodeInformation ni = nodeCore.getDirectory().findServiceProvider(serviceName);
@@ -106,6 +107,9 @@ public class ServiceRequest extends Thread
 
 			if(ni != null)
 			{
+				if(ni == lastRequestedNode) 
+					try{ Thread.sleep(1000);} catch(Exception e) {}
+
 				logger.finer("Sending service request message to " + ni.getNodeId());
 				Message reqMsg = new Message(ni.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
 				int correlation = nodeCore.getCorrelationManager().sendRequest(reqMsg, subTimeout);
@@ -121,7 +125,9 @@ public class ServiceRequest extends Thread
 						}
 						else if(respMsg.getType() == Message.MSGTYPE_SERVICEUNAVAILABLE)
 						{
+							logger.fine("Service " + serviceName + " on node " + ni.getNodeId() + " has responded as unavailable");
 							ni.getServiceInformation(serviceName).reduceRating();
+							lastRequestedNode = ni;
 							break;
 						} 
 						else if(respMsg.getType() == Message.MSGTYPE_SERVICERESPONSE)
@@ -144,7 +150,10 @@ public class ServiceRequest extends Thread
 				}
 				else
 				{
-					nodeCore.getDirectory().deleteNode(ni);
+					logger.fine("Service " + serviceName + " on node " + ni.getNodeId() + " has not responded to a service request (corr: " + reqMsg.getCorrelation() + ")");
+					ni.getServiceInformation(serviceName).reduceRating();
+					lastRequestedNode = ni;
+					//nodeCore.getDirectory().deleteNode(ni);
 				}
 			}			
 		}

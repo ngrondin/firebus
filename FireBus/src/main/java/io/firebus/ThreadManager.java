@@ -24,6 +24,11 @@ public class ThreadManager
 		threadCount = tc;
 	}
 	
+	public int getThreadCount()
+	{
+		return threadCount;
+	}
+	
 	public synchronized void process(Message msg)
 	{
 		FirebusThread thread = null;

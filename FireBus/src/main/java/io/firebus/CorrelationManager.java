@@ -161,7 +161,8 @@ public class CorrelationManager extends Thread
 			}
 			else
 			{
-				logger.fine("No entry found for correlated response " + correlationId);
+				String typeStr = (inMsg.getType() == Message.MSGTYPE_PROGRESS ? "progress" : (inMsg.getType() == Message.MSGTYPE_SERVICERESPONSE ? "final" : "other"));
+				logger.fine("No correlation entry found for " + typeStr + " response from service " + inMsg.getSubject() + " (corr: " + correlationId + ")");
 			}
 		}
 	}

@@ -16,11 +16,13 @@ public class FunctionManager
 	private Logger logger = Logger.getLogger("io.firebus");
 	protected NodeCore nodeCore;
 	protected HashMap<String, FunctionEntry> functions;
+	protected int totalExecutionCount;
 	
 	public FunctionManager(NodeCore nc)
 	{
 		nodeCore = nc;
 		functions = new HashMap<String, FunctionEntry>();
+		totalExecutionCount = 0;
 	}
 	
 	public void addFunction(String functionName, BusFunction f, int mc)
@@ -78,7 +80,21 @@ public class FunctionManager
 			}
 		}
 	}
+	
+	protected boolean canRunOneMore()
+	{
+		return totalExecutionCount < nodeCore.getThreadManager().getThreadCount() - 2;
+	}
 
+	protected synchronized void increaseTotalExecutionCount()
+	{
+		totalExecutionCount++;
+	}
+	
+	protected synchronized void decreaseTotalExecutionCount()
+	{
+		totalExecutionCount--;
+	}
 	
 	public void executeFunction(Message msg)
 	{
@@ -87,7 +103,7 @@ public class FunctionManager
 		Payload inPayload = msg.getPayload();
 		if(fe != null)
 		{
-			if(fe.canRunOneMore())
+			if(fe.canRunOneMore() && this.canRunOneMore())
 			{
 				if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE  && fe.function instanceof ServiceProvider)
 				{
@@ -97,6 +113,7 @@ public class FunctionManager
 					progressMsg.setCorrelation(msg.getCorrelation());
 					nodeCore.forkThenRoute(progressMsg);
 					fe.runStarted();
+					increaseTotalExecutionCount();
 					try
 					{
 						returnPayload = ((ServiceProvider)fe.function).service(inPayload);
@@ -121,6 +138,7 @@ public class FunctionManager
 						errorMsg.setCorrelation(msg.getCorrelation());
 						nodeCore.route(errorMsg);
 					}
+					decreaseTotalExecutionCount();
 					fe.runEnded();
 				}
 				else if(msg.getType() == Message.MSGTYPE_PUBLISH  &&  fe.function instanceof Consumer)
@@ -131,7 +149,7 @@ public class FunctionManager
 			}
 			else
 			{
-				logger.info("Cannot execute function " + functionName + " as maximum number of thread reached");
+				logger.info("Cannot execute function " + functionName + " as maximum number of executions reached (" + totalExecutionCount + ")");
 				Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICEUNAVAILABLE, msg.getSubject(),new Payload(null,  "Maximum concurrent functions running".getBytes()));
 				outMsg.setCorrelation(msg.getCorrelation());
 				nodeCore.route(outMsg);
