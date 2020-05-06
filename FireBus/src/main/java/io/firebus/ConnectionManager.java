@@ -191,12 +191,13 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	}
 
 
-	public void connectionCreated(Connection c)
+	public synchronized void connectionCreated(Connection c)
 	{
+		connections.add(c);
 		nodeCore.getDirectory().processDiscoveredNode(c.getRemoteNodeId(),  c.getRemoteAddress());
 	}
 	
-	public void connectionFailed(Connection c)
+	public synchronized void connectionFailed(Connection c)
 	{
 		Address a = c.getRemoteAddress();
 		if(a != null)
@@ -230,11 +231,13 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		}
 	}
 
-	public void connectionClosed(Connection c)
+	public synchronized void connectionClosed(Connection c)
 	{
 		logger.fine("Connection " + c.getId() + " Closed");
 		connections.remove(c);
 	}
+	
+	
 	
 	protected Connection getConnectionForNode(NodeInformation ni)
 	{
@@ -250,12 +253,10 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	}
 	
 	
-	protected Connection createConnection(Address a) 
+	protected void createConnection(Address a) 
 	{
 		logger.fine("Creating new connection");
-		Connection c = new Connection(a, networkName, secretKey, nodeId, connectionServer.getPort(), this);
-		connections.add(c);
-		return c;
+		new Connection(a, networkName, secretKey, nodeId, connectionServer.getPort(), this);
 	}
 	
 	

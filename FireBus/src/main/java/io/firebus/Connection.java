@@ -18,7 +18,15 @@ import io.firebus.interfaces.ConnectionListener;
 
 public class Connection extends Thread 
 {
+	public static int STATE_NEW = 0;
+	public static int STATE_INITIALIZING = 1;
+	public static int STATE_INITIALIZED = 2;
+	public static int STATE_ACTIVE = 3;
+	public static int STATE_CLOSING = 4;
+	public static int STATE_DEAD = 5;
+	
 	private Logger logger = Logger.getLogger("io.firebus");
+	protected int state;
 	protected Socket socket;
 	protected String networkName;
 	protected SecretKey secretKey;
@@ -32,7 +40,6 @@ public class Connection extends Thread
 	protected IvParameterSpec IV;
 	protected Cipher encryptionCipher;
 	protected Cipher decryptionCipher;
-	protected boolean running;
 	protected int msgState;
 	protected int msgLen;
 	protected int msgPos;
@@ -45,26 +52,28 @@ public class Connection extends Thread
 	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
 		logger.fine("Initialising received connection from " + s.getRemoteSocketAddress());
-		
+		state = STATE_NEW;
 		socket = s;
 		listener = cl;
 		networkName = net;
 		secretKey = k;
 		localNodeId = nid;
 		localPort = p;
+		setName("fbConn" + getId());
 		start();
 	}
 	
 	public Connection(Address a, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
 		logger.fine("Initialising connection to " + a);
-		
+		state = STATE_NEW;
 		remoteAddress = a;
 		listener = cl;
 		networkName = net;
 		secretKey = k;
 		localNodeId = nid;
 		localPort = p;
+		setName("fbConn" + getId());
 		start();
 	}
 
@@ -99,18 +108,16 @@ public class Connection extends Thread
 
 	public boolean isReady()
 	{
-		return running;
+		return state == STATE_ACTIVE;
 	}
 	
 	public void run()
 	{
-		running = false;
 		byteCount = 0;
 		timeMark = System.currentTimeMillis();
 		load = 0;
-		setName("fbConn" + getId());
 		initialise();
-		if(running)
+		if(state == STATE_INITIALIZED)
 		{
 			listener.connectionCreated(this);
 			listening();
@@ -120,12 +127,14 @@ public class Connection extends Thread
 			listener.connectionFailed(this);
 		}
 		listener.connectionClosed(this);
+		state = STATE_DEAD;
 	}
 	
 	protected void initialise()
 	{
 		try
 		{
+			state = STATE_INITIALIZING;
 			if(socket == null  &&  remoteAddress != null)
 				socket = new Socket(remoteAddress.getIPAddress(), remoteAddress.getPort());
 
@@ -174,11 +183,12 @@ public class Connection extends Thread
 					}
 
 					logger.fine("Established connection " + getId() + " with node " + remoteNodeId + " at address " + remoteAddress);
-					running = true;
+					state = STATE_INITIALIZED;
 				}
 				else
 				{
 					logger.fine("Firebus network mismatch");
+					close();
 				}
 			}
 			else
@@ -189,13 +199,15 @@ public class Connection extends Thread
 		catch(Exception e)
 		{
 			logger.severe(e.getMessage());
+			close();
 		}		
 	}
 	
 	protected void listening()
 	{
+		state = STATE_ACTIVE;
 		msgState = 0;
-		while(running)
+		while(state == STATE_ACTIVE)
 		{
 			try 
 			{
@@ -250,15 +262,18 @@ public class Connection extends Thread
 			} 
 			catch (IOException e) 
 			{
-				logger.severe("IOException on connection listener : " + e.getMessage());
-				close();
+				if(state == STATE_ACTIVE) 
+				{
+					logger.severe("IOException on connection listener : " + e.getMessage());
+					close();
+				}
 			}
 		}		
 	}
 	
 	public synchronized void sendMessage(Message msg)
 	{
-		if(running)
+		if(state == STATE_ACTIVE)
 		{
 			try
 			{
@@ -280,18 +295,13 @@ public class Connection extends Thread
 				close();
 			}
 		}
-		else
-		{
-			if(listener != null)
-				listener.connectionClosed(this);
-		}
 	}
 	
 	public void close()
 	{
 		try 
 		{
-			running = false;
+			state = STATE_CLOSING;
 			if(socket != null)
 				socket.close();
 			if(is != null)

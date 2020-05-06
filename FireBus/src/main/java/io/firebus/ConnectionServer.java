@@ -57,7 +57,8 @@ public class ConnectionServer extends Thread
 			} 
 			catch (Exception e) 
 			{
-				logger.severe(e.getMessage());
+				if(!quit)
+					logger.severe(e.getMessage());
 			}
 		}		
 	}

@@ -123,7 +123,8 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 			}
 			catch (IOException e) 
 			{
-				logger.severe(e.getMessage());
+				if(!quit)
+					logger.severe(e.getMessage());
 			}
 		}
 		socket.close();
