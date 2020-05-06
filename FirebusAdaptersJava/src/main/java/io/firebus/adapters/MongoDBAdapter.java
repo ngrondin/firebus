@@ -66,7 +66,12 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		{
 			logger.finer("Starting mongo request");
 			DataMap request = new DataMap(payload.getString());
-			if(request.containsKey("filter")) 
+			if(request.containsKey("tuple")) 
+			{
+				DataList list = aggregate(request);
+				responseJSON.put("result", list);
+			}
+			else if(request.containsKey("filter")) 
 			{
 				DataList list = get(request);
 				responseJSON.put("result", list);
@@ -98,48 +103,101 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			if(collection != null)
 			{
 				Iterator<Document> it = null;
+				Document filterDoc = null;
 				if(request.containsKey("filter"))
-				{
-					DataMap filter = request.getObject("filter");
-					Document filterDoc = Document.parse(filter.toString()); 
-					it = collection.find(filterDoc).iterator();		
-				}
-				else if(request.containsKey("aggregation"))
-				{
-					DataList aggregation = request.getList("aggregation");
-					ArrayList<Document> list = new ArrayList<Document>();
-					for(int i = 0; i < aggregation.size(); i++)
-						list.add(Document.parse(aggregation.getObject(i).toString()));
-					it = collection.aggregate(list).iterator();
-				}
+					filterDoc = Document.parse(request.getObject("filter").toString()); 
 				else
-				{
-					it = collection.find(new Document()).iterator();		
-				}
-				
-				if(it != null)
-				{
-					responseList = new DataList();
-					for(int i = 0; it.hasNext() && i < (page * pageSize); i++)
-						it.next();
-					while(it.hasNext() && responseList.size() < pageSize)
-					{
-						Document doc = it.next();
-						String str = doc.toJson();
-						DataMap obj = new DataMap(str);
-						responseList.add(obj);
-					}
-				}
+					filterDoc = new Document();
+				it = collection.find(filterDoc).iterator();		
+				responseList = retieveDocuments(it, page);
 			}
 			else
 			{
-				throw new FunctionErrorException("No collection exists by this namel");
+				throw new FunctionErrorException("No collection exists by this name");
 			}
 		}
 		else
 		{
 			throw new FunctionErrorException("Database as not been specificied in the configuration");
 		}	
+		return responseList;
+	}
+	
+	private DataList aggregate(DataMap request) throws FunctionErrorException, DataException
+	{
+		DataList responseList = null;
+		String objectName = request.getString("object");
+		int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
+		if(database != null)
+		{
+			MongoCollection<Document> collection = database.getCollection(objectName);
+			if(collection != null)
+			{
+				Iterator<Document> it = null;
+				ArrayList<Document> pipeline = new ArrayList<Document>();
+				if(request.containsKey("filter"))
+				{
+					DataMap match = new DataMap("$match", request.getObject("filter"));
+					pipeline.add(Document.parse(match.toString()));
+				}
+					
+				DataMap group = new DataMap();
+				DataMap groupKeys = new DataMap();
+				DataList tuple = request.getList("tuple");
+				for(int i = 0; i < tuple.size(); i++)
+					groupKeys.put(tuple.getString(i), "$" + tuple.getString(i));
+				group.put("_id", groupKeys);
+				DataList metrics = request.getList("metrics");
+				for(int i = 0; i < metrics.size(); i++) 
+				{
+					DataMap metric = metrics.getObject(i);
+					String function = metric.getString("function");
+					if(function.equals("count")) 
+						group.put(metric.getString("name"), new DataMap("$sum", 1));
+					else
+						group.put(metric.getString("name"), new DataMap("$" + function, "$" + metric.getString("field")));
+				}
+				DataMap groupContainer = new DataMap("$group", group);
+				pipeline.add(Document.parse(groupContainer.toString()));
+				
+				it = collection.aggregate(pipeline).iterator();
+				responseList = retieveDocuments(it, page);
+				for(int i = 0; i < responseList.size(); i++)
+				{
+					DataMap item = responseList.getObject(i);
+					for(int j = 0; j < tuple.size(); j++)
+						item.put(tuple.getString(j), item.getString("_id." + tuple.getString(j)));
+					item.remove("_id");
+				}
+			}
+			else
+			{
+				throw new FunctionErrorException("No collection exists by this name");
+			}
+		}
+		else
+		{
+			throw new FunctionErrorException("Database as not been specificied in the configuration");
+		}	
+		return responseList;
+	}
+	
+	private DataList retieveDocuments(Iterator<Document> it, int page) throws DataException
+	{
+		DataList responseList = null;
+		if(it != null)
+		{
+			responseList = new DataList();
+			for(int i = 0; it.hasNext() && i < (page * pageSize); i++)
+				it.next();
+			while(it.hasNext() && responseList.size() < pageSize)
+			{
+				Document doc = it.next();
+				String str = doc.toJson();
+				DataMap obj = new DataMap(str);
+				responseList.add(obj);
+			}
+		}
 		return responseList;
 	}
 	
