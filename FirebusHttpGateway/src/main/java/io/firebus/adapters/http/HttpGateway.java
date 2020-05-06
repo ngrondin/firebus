@@ -53,7 +53,7 @@ public class HttpGateway implements ServiceProvider
 	        
 	        MasterHandler masterHandler = new MasterHandler();
 	        Wrapper wrapper = tomcat.addServlet("/", "master", masterHandler);
-	        MultipartConfigElement mpc = new MultipartConfigElement("/", 5000000, 5000000, 0);
+	        MultipartConfigElement mpc = new MultipartConfigElement(docBase, 5000000, 5000000, 0);
 	        wrapper.setMultipartConfigElement(mpc);
 	        context.addServletMapping("/", "master");
 	        context.setAllowCasualMultipartParsing(true);
