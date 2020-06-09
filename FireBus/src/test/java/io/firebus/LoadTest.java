@@ -25,7 +25,7 @@ public class LoadTest {
 		public void run() {
 			for(int i = 0; i < count; i++) {
 				try {
-					firebus.requestService("service", new Payload("request"));
+					Payload resp = firebus.requestService("service", new Payload("request"));
 				} catch(Exception e) {
 					e.printStackTrace();
 				}

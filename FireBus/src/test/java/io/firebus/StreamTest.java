@@ -42,16 +42,23 @@ public class StreamTest {
 						streamEndpoint.send(new Payload("Here's a response to : " + payload.getString()));
 					}
 
-					public void streamTimeout(StreamEndpoint streamEndpoint) {
-						System.out.println("Provider end : Stream has timed out");
-					}					
+					public void streamClosed(StreamEndpoint streamEndpoint) {
+						System.out.println("Requestor end: Stream has timed out");
+					}
+					
+					public int getStreamIdleTimeout() {
+						return 10000;
+					}
 				});
 			}
 
 			public StreamInformation getStreamInformation() {
 				return null;
 			}
-			
+
+			public int getStreamIdleTimeout() {
+				return 10000;
+			}
 		}, 10);
 		
 		try {
@@ -61,10 +68,13 @@ public class StreamTest {
 					System.out.println("Requestor end: received : " + payload.getString());
 				}
 
-				public void streamTimeout(StreamEndpoint streamEndpoint) {
+				public int getStreamIdleTimeout() {
+					return 10000;
+				}
+
+				public void streamClosed(StreamEndpoint streamEndpoint) {
 					System.out.println("Requestor end: Stream has timed out");
 				}
-				
 			});
 			System.out.println("Stream established");
 			//Thread.sleep(1000);

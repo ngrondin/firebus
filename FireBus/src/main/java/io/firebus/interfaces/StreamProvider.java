@@ -9,5 +9,7 @@ public interface StreamProvider extends BusFunction
 {
 	public void acceptStream(Payload payload, StreamEndpoint streamEndpoint) throws FunctionErrorException;
 	
+	public int getStreamIdleTimeout();
+	
 	public StreamInformation getStreamInformation();
 }

@@ -32,15 +32,32 @@ public class StreamEndpoint implements CorrelationListener {
 		msg.setCorrelation(remoteCorrelationId);
 		nodeCore.forkThenRoute(msg);
 	}
+	
+	public void close()
+	{
+		Message msg = new Message(otherNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMEND, streamName, null);
+		msg.setCorrelation(remoteCorrelationId);
+		nodeCore.forkThenRoute(msg);
+		nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
+	}
 
 	public void correlatedResponseReceived(Message outMsg, Message inMsg) {
-		if(streamHandler != null)
+		if(inMsg.getType() == Message.MSGTYPE_STREAMEND) {
+			nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
+			if(streamHandler != null)
+				streamHandler.streamClosed(this);
+		} else if(streamHandler != null) {
 			streamHandler.receiveStreamData(inMsg.getPayload(), this);
+		}
 	}
 
 	public void correlationTimedout(Message outMsg) {
 		if(streamHandler != null)
-			streamHandler.streamTimeout(this);
+			streamHandler.streamClosed(this);
 		
+	}
+	
+	public String toString() {
+		return otherNodeId + "." + remoteCorrelationId + " -> " + nodeCore.getNodeId() + "." + localCorrelationId;
 	}
 }

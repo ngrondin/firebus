@@ -14,7 +14,6 @@ public class StreamRequest extends Thread
 	protected NodeCore nodeCore;
 	protected String streamName;
 	protected Payload requestPayload;
-	protected int requestTimeout;
 	protected int subTimeout;
 	protected long expiry;
 	protected StreamRequestor requestor;
@@ -25,10 +24,9 @@ public class StreamRequest extends Thread
 		nodeCore = nc;
 		streamName = sn;
 		requestPayload = p;
-		requestTimeout = t;
 		errorMessage = null;
-		subTimeout = 500;
-		expiry = System.currentTimeMillis() + requestTimeout;
+		subTimeout = t;
+		expiry = System.currentTimeMillis() + subTimeout;
 	}
 	
 	public void initiate(StreamRequestor r)
@@ -90,9 +88,11 @@ public class StreamRequest extends Thread
 						} 
 						else if(respMsg.getType() == Message.MSGTYPE_STREAMACCEPT)
 						{
-							int remoteCorrelation = ByteBuffer.wrap(respMsg.getPayload().getBytes()).getInt();
+							ByteBuffer bb = ByteBuffer.wrap(respMsg.getPayload().getBytes());
+							int remoteCorrelation = bb.getInt();
+							long idleTimeout = bb.getLong();
 							streamEndpoint = new StreamEndpoint(nodeCore, streamName, correlation, remoteCorrelation, ni.getNodeId());
-							nodeCore.getCorrelationManager().setListenerOnEntry(correlation, streamEndpoint, 30000);
+							nodeCore.getCorrelationManager().setListenerOnEntry(correlation, streamEndpoint, idleTimeout);
 							break;
 						}
 						

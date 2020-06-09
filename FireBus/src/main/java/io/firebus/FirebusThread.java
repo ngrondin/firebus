@@ -8,20 +8,17 @@ public class FirebusThread extends Thread
 	protected NodeCore nodeCore;
 	protected ThreadManager threadManager;
 	protected boolean quit;
-	protected Message message;
+	protected boolean ready;
 
 	public FirebusThread(ThreadManager tm, NodeCore c)
 	{
 		threadManager = tm;
 		nodeCore = c;
 		quit = false;
+		ready = false;
 		setName("fbThread" + getId());
 	}
 	
-	public boolean isBusy()
-	{
-		return (message != null);
-	}
 		
 	public void run()
 	{
@@ -29,7 +26,7 @@ public class FirebusThread extends Thread
 		{
 			try
 			{
-				message = threadManager.getNextMessage();
+				Message message = threadManager.getNextMessage();
 				if(message != null)
 				{
 					nodeCore.route(message);
@@ -38,8 +35,13 @@ public class FirebusThread extends Thread
 				{
 					synchronized(this)
 					{
-						if(!quit)
+						if(!quit) 
+						{
+							ready = true;
 							wait();
+							ready = false;
+							logger.finest("Thread " + getId() + " has just woken up");
+						}
 					}
 				}
 			} 

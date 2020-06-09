@@ -7,6 +7,6 @@ public interface StreamHandler extends BusFunction
 {
 	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint);
 	
-	public void streamTimeout(StreamEndpoint streamEndpoint);
+	public void streamClosed(StreamEndpoint streamEndpoint);
 	
 }

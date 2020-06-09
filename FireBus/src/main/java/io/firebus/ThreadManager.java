@@ -2,9 +2,12 @@ package io.firebus;
 
 import java.lang.Thread.State;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class ThreadManager
 {
+	private static Logger logger = Logger.getLogger("io.firebus");
+	
 	protected NodeCore nodeCore;
 	protected MessageQueue queue;
 	protected boolean quit;
@@ -33,16 +36,18 @@ public class ThreadManager
 	public synchronized void process(Message msg)
 	{
 		queue.push(msg);
+		logger.finest("Dropped message " + msg.getid() + " in thread queue (depth: " + queue.getMessageCount() + ")");
 		
 		FirebusThread thread = null;
 		for(int i = 0; i < threads.size(); i++)
 		{
 			FirebusThread t = threads.get(i);
 			State s = t.getState();
-			if(s == State.WAITING || s == State.TIMED_WAITING)
+			if(s == State.WAITING && t.ready)
 			{
 				thread = t;
 				synchronized(thread) {
+					logger.finest("Notifying thread " + thread.getId() + " to start");
 					thread.notify();
 				}
 				break;
@@ -54,6 +59,7 @@ public class ThreadManager
 			thread = new FirebusThread(this, nodeCore);
 			threads.add(thread);
 			thread.start();
+			logger.finest("Added thread " + thread.getId() + " ");
 		}
 
 	}

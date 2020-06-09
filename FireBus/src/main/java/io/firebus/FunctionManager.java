@@ -134,8 +134,9 @@ public class FunctionManager
 				else if(msg.getType() == Message.MSGTYPE_REQUESTSTREAM  && fe.function instanceof StreamProvider)
 				{
 					logger.finer("Executing Stream Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
-					int localCorrelationId = nodeCore.getCorrelationManager().createEntry(30000);
 					StreamProvider streamProvider = (StreamProvider)fe.function;
+					long idleTimeout = streamProvider.getStreamIdleTimeout();
+					int localCorrelationId = nodeCore.getCorrelationManager().createEntry(idleTimeout);
 					StreamEndpoint streamEndpoint = new StreamEndpoint(nodeCore, functionName, localCorrelationId, msg.getCorrelation(), msg.getOriginatorId());
 					fe.runStarted();
 					increaseTotalExecutionCount();
@@ -144,8 +145,11 @@ public class FunctionManager
 						streamProvider.acceptStream(inPayload, streamEndpoint);
 						logger.finer("Accepted stream " + functionName + " (correlation: " + msg.getCorrelation() + ")");
 						
-						nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, 30000);
-						Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), new Payload(ByteBuffer.allocate(10).putInt(localCorrelationId).array()));
+						ByteBuffer bb = ByteBuffer.allocate(12);
+						bb.putInt(localCorrelationId);
+						bb.putLong(idleTimeout);
+						nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, idleTimeout);
+						Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), new Payload(bb.array()));
 						responseMsg.setCorrelation(msg.getCorrelation());
 						nodeCore.route(responseMsg);
 					}
