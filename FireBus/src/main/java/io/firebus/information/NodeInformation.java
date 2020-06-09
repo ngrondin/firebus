@@ -12,8 +12,7 @@ public class NodeInformation
 	protected int nodeId;
 	protected ArrayList<Address> addresses;
 	protected ArrayList<Integer> repeaters;
-	protected HashMap<String, ServiceInformation> services;
-	protected HashMap<String, ConsumerInformation> consumers;
+	protected HashMap<String, FunctionInformation> functions;
 	protected long lastSentDiscovery;
 	protected long lastUpdated;
 	protected boolean unconnectable;
@@ -29,8 +28,7 @@ public class NodeInformation
 	{
 		addresses = new ArrayList<Address>();
 		repeaters = new ArrayList<Integer>();
-		services = new HashMap<String, ServiceInformation>();
-		consumers = new HashMap<String, ConsumerInformation>();
+		functions = new HashMap<String, FunctionInformation>();
 		unconnectable = false;
 		unresponsive = false;
 	}
@@ -73,16 +71,10 @@ public class NodeInformation
 			repeaters.add(id);
 	}
 	
-	public void addServiceInformation(String sn, ServiceInformation si)
+	public void addFunctionInformation(String fn, FunctionInformation si)
 	{
-		if(!services.containsKey(sn))
-			services.put(sn, si);
-	}
-
-	public void addConsumerInformation(String cn, ConsumerInformation ci)
-	{
-		if(!consumers.containsKey(cn))
-			consumers.put(cn, ci);
+		if(!functions.containsKey(fn))
+			functions.put(fn, si);
 	}
 
 	public int getNodeId()
@@ -126,14 +118,9 @@ public class NodeInformation
 		return 0;
 	}
 	
-	public ServiceInformation getServiceInformation(String sn)
+	public FunctionInformation getFunctionInformation(String sn)
 	{
-		return services.get(sn);
-	}
-	
-	public ConsumerInformation getConsumerInformation(String cn)
-	{
-		return consumers.get(cn);
+		return functions.get(sn);
 	}
 	
 	public boolean isUnconnectable()
@@ -155,12 +142,9 @@ public class NodeInformation
 			sb.append("Address   : " + addresses.get(i) + "\r\n");
 		for(int i = 0; i < repeaters.size(); i++)
 			sb.append("Repeater  : " + repeaters.get(i) + "\r\n");
-		Iterator<String> it = services.keySet().iterator();
+		Iterator<String> it = functions.keySet().iterator();
 		while(it.hasNext())
-			sb.append("Service   : " + it.next() + "\r\n");
-		it = consumers.keySet().iterator();
-		while(it.hasNext())
-			sb.append("Consumers : " + it.next() + "\r\n");
+			sb.append("Function   : " + it.next() + "\r\n");
 		return sb.toString();
 	}
 

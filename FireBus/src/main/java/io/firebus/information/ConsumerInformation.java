@@ -9,4 +9,14 @@ public class ConsumerInformation extends FunctionInformation
 	{
 	}
 
+	public byte[] serialise() 
+	{
+		return null;
+	}
+
+	public void deserialise(byte[] bytes) 
+	{
+		
+	}
+
 }

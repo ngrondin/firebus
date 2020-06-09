@@ -2,6 +2,30 @@ package io.firebus.information;
 
 public abstract class FunctionInformation
 {
+	protected boolean fullInformation;
+	protected int rating;
 
+	public abstract byte[] serialise();
+	
+	public abstract void deserialise(byte[] bytes);
 
+	public int getRating()
+	{
+		return rating;
+	}
+	
+	public boolean hasFullInformation()
+	{
+		return fullInformation;
+	}
+	
+	public void reduceRating()
+	{
+		rating--;
+	}
+	
+	public void increaseRating()
+	{
+		rating++;
+	}
 }

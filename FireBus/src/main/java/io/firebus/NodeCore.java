@@ -150,7 +150,7 @@ public class NodeCore
 
 			if(destinationNodeId != nodeId  ||  destinationNodeId == 0)
 				connectionManager.sendMessage(msg);
-		}	
+		}
 		logger.finer("Finished Routing Message " + msg.getid());
 	}
 	
@@ -173,8 +173,8 @@ public class NodeCore
 					case Message.MSGTYPE_GETFUNCTIONINFORMATION:
 						functionManager.processServiceInformationRequest(msg);
 						break;
-					case Message.MSGTYPE_SERVICEINFORMATION:
-						directory.processServiceInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload().data);
+					case Message.MSGTYPE_FUNCTIONINFORMATION:
+						directory.processFunctionInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload().data);
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_REQUESTSERVICE:
@@ -189,12 +189,27 @@ public class NodeCore
 					case Message.MSGTYPE_SERVICEERROR:
 						correlationManager.receiveResponse(msg);
 						break;
-					case Message.MSGTYPE_SERVICEUNAVAILABLE:
+					case Message.MSGTYPE_FUNCTIONUNAVAILABLE:
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_PUBLISH:
 						if(functionManager.hasFunction(msg.getSubject()))
 							functionManager.executeFunction(msg);
+						break;
+					case Message.MSGTYPE_REQUESTSTREAM:
+						functionManager.executeFunction(msg);
+						break;
+					case Message.MSGTYPE_STREAMACCEPT:
+						correlationManager.receiveResponse(msg);
+						break;
+					case Message.MSGTYPE_STREAMERROR:
+						correlationManager.receiveResponse(msg);
+						break;
+					case Message.MSGTYPE_STREAMDATA:
+						correlationManager.receiveResponse(msg);
+						break;
+					case Message.MSGTYPE_STREAMEND:
+						correlationManager.receiveResponse(msg);
 						break;
 				}
 			}

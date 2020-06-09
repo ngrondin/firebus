@@ -1,5 +1,6 @@
 package io.firebus;
 
+import java.lang.Thread.State;
 import java.util.ArrayList;
 
 public class ThreadManager
@@ -31,31 +32,30 @@ public class ThreadManager
 	
 	public synchronized void process(Message msg)
 	{
+		queue.push(msg);
+		
 		FirebusThread thread = null;
 		for(int i = 0; i < threads.size(); i++)
 		{
 			FirebusThread t = threads.get(i);
-			if(!t.isBusy())
+			State s = t.getState();
+			if(s == State.WAITING || s == State.TIMED_WAITING)
 			{
 				thread = t;
+				synchronized(thread) {
+					thread.notify();
+				}
 				break;
 			}
 		}
 		
-		if(thread == null && threads.size() < threadCount)
+		if(thread == null && threads.size() < threadCount && !quit)
 		{
 			thread = new FirebusThread(this, nodeCore);
 			threads.add(thread);
+			thread.start();
 		}
-		
-		if(thread != null) 
-		{
-			thread.process(msg);
-		}
-		else
-		{
-			queue.push(msg);
-		}
+
 	}
 	
 	public synchronized Message getNextMessage()
@@ -66,6 +66,7 @@ public class ThreadManager
 	
 	public void close()
 	{
+		quit = true;
 		for(int i = 0; i < threads.size(); i++)
 			threads.get(i).close();
 	}

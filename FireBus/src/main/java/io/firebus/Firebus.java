@@ -4,11 +4,12 @@ import java.util.logging.Logger;
 
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
+import io.firebus.information.FunctionInformation;
 import io.firebus.information.NodeInformation;
-import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.ServiceRequestor;
+import io.firebus.interfaces.StreamProvider;
 
 public class Firebus
 {
@@ -59,6 +60,11 @@ public class Firebus
 	{
 		nodeCore.getFunctionManager().addFunction(serviceName, serviceProvider, maxConcurrent);
 	}
+
+	public void registerStreamProvider(String streamName, StreamProvider streamProvider, int maxConcurrent)
+	{
+		nodeCore.getFunctionManager().addFunction(streamName, streamProvider, maxConcurrent);
+	}
 	
 	public void registerConsumer(String consumerName, Consumer consumer, int maxConcurrent)
 	{
@@ -69,23 +75,23 @@ public class Firebus
 	{
 		logger.fine("Sending Node Information Request Message");
 		Message queryMsg = new Message(nodeId, nodeCore.getNodeId(), Message.MSGTYPE_QUERYNODE, null, null);
-		Message respMsg = nodeCore.getCorrelationManager().sendRequestAndWait(queryMsg, 2000);
+		Message respMsg = nodeCore.getCorrelationManager().sendAndWait(queryMsg, 2000);
 		if(respMsg != null)
 			return nodeCore.getDirectory().getNodeById(nodeId);
 		return null;
 	}
 	
-	public ServiceInformation getServiceInformation(String serviceName)
+	public FunctionInformation getFunctionInformation(String name)
 	{
-		ServiceInformation si = null;
-		NodeInformation ni = nodeCore.getDirectory().findServiceProvider(serviceName);
+		FunctionInformation si = null;
+		NodeInformation ni = nodeCore.getDirectory().findFunction(name);
 		if(ni == null)
 		{
 			logger.fine("Broadcasting Service Information Request Message");
-			Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, serviceName, null);
-			Message respMsg = nodeCore.getCorrelationManager().sendRequestAndWait(findMsg, 2000);
+			Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, name, null);
+			Message respMsg = nodeCore.getCorrelationManager().sendAndWait(findMsg, 2000);
 			if(respMsg != null)
-				si = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId()).getServiceInformation(serviceName);
+				si = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId()).getFunctionInformation(name);
 		}
 
 		return si;
@@ -109,6 +115,12 @@ public class Firebus
 		request.execute(requestor);
 	}
 	
+	public StreamEndpoint requestStream(String streamName, Payload payload, int timeout) throws FunctionErrorException, FunctionTimeoutException
+	{
+		StreamRequest stream = new StreamRequest(nodeCore, streamName, payload, timeout);
+		return stream.initiate();
+	}
+
 	public void publish(String dataname, Payload payload)
 	{
 		logger.finer("Publishing");

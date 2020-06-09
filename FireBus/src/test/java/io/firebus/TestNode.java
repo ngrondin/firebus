@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
+import io.firebus.information.FunctionInformation;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
@@ -55,7 +56,7 @@ public class TestNode
 							String[] parts = in.split(" ");
 							if(parts[0].equals("info"))
 							{
-								ServiceInformation si = n.getServiceInformation(functionName);
+								FunctionInformation si = n.getFunctionInformation(functionName);
 								if(si != null)
 									System.out.println(si.toString());
 							}

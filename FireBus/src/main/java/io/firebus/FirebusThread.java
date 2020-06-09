@@ -16,39 +16,30 @@ public class FirebusThread extends Thread
 		nodeCore = c;
 		quit = false;
 		setName("fbThread" + getId());
-		start();
 	}
 	
 	public boolean isBusy()
 	{
 		return (message != null);
 	}
-	
-	public void process(Message m)
-	{
-		message = m;
-		synchronized(this)
-		{
-			this.notify();
-		}
-	}
-	
+		
 	public void run()
 	{
 		while(!quit)
 		{
 			try
 			{
+				message = threadManager.getNextMessage();
 				if(message != null)
 				{
 					nodeCore.route(message);
-					message = threadManager.getNextMessage();
 				}
-				if(message == null) 
+				else
 				{
 					synchronized(this)
 					{
-						wait();
+						if(!quit)
+							wait();
 					}
 				}
 			} 

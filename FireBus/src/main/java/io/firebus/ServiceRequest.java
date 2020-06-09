@@ -2,13 +2,10 @@ package io.firebus;
 
 import java.util.logging.Logger;
 
-import io.firebus.distributables.DistributableService;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.information.NodeInformation;
-import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.ServiceRequestor;
-import io.firebus.utils.DataMap;
 
 public class ServiceRequest extends Thread
 {
@@ -64,47 +61,7 @@ public class ServiceRequest extends Thread
 		NodeInformation lastRequestedNode = null;
 		while(responsePayload == null  &&  System.currentTimeMillis() < expiry)
 		{
-			NodeInformation ni = nodeCore.getDirectory().findServiceProvider(serviceName);
-			if(ni == null)
-			{
-				logger.finer("Broadcasting Service Information Request Message");
-				Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, serviceName, null);
-				Message respMsg = nodeCore.getCorrelationManager().sendRequestAndWait(findMsg, subTimeout);
-				if(respMsg != null)
-				{
-					ni = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId());
-				}
-			}
-			
-			if(ni == null  &&  !serviceName.equals("firebus_distributable_services_source"))
-			{
-				try
-				{
-					logger.finer("Trying to retreive distributable service");
-					ServiceRequest request = new ServiceRequest(nodeCore, "firebus_distributable_services_source", new Payload(serviceName.getBytes()), subTimeout * 2);
-					Payload response = request.execute();
-					if(response != null)
-					{
-						logger.finer("Instantiating distributable service : " + serviceName);
-						DataMap serviceConfig = new DataMap(response.getString());
-						String type = serviceConfig.getString("type");
-						DistributableService newDS = DistributableService.instantiate(nodeCore, type, serviceConfig.getObject("config"));
-						nodeCore.getFunctionManager().addFunction(serviceName, newDS, 10);
-						ni = nodeCore.getDirectory().getNodeById(nodeCore.getNodeId());
-						ni.addServiceInformation(serviceName, new ServiceInformation(serviceName));						
-						logger.finer("Instantiated distributable service : " + serviceName);
-					}
-					else
-					{
-						logger.finer("No response received from 'firebus_distributable_services_source' ");
-					}
-				}
-				catch(Exception e)
-				{
-					logger.finer("General error when refreshing the source of a distributable function : " + e.getMessage());
-				}
-			}
-
+			NodeInformation ni = FunctionFinder.findFunction(nodeCore, serviceName); 
 			if(ni != null)
 			{
 				if(ni == lastRequestedNode) 
@@ -112,7 +69,7 @@ public class ServiceRequest extends Thread
 
 				logger.finer("Sending service request message to " + ni.getNodeId());
 				Message reqMsg = new Message(ni.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
-				int correlation = nodeCore.getCorrelationManager().sendRequest(reqMsg, subTimeout);
+				int correlation = nodeCore.getCorrelationManager().send(reqMsg, subTimeout);
 				Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
 				if(respMsg != null)
 				{
@@ -123,10 +80,10 @@ public class ServiceRequest extends Thread
 							errorMessage = respMsg.getPayload().getString();
 							throw new FunctionErrorException(errorMessage);
 						}
-						else if(respMsg.getType() == Message.MSGTYPE_SERVICEUNAVAILABLE)
+						else if(respMsg.getType() == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
 						{
 							logger.fine("Service " + serviceName + " on node " + ni.getNodeId() + " has responded as unavailable");
-							ni.getServiceInformation(serviceName).reduceRating();
+							ni.getFunctionInformation(serviceName).reduceRating();
 							lastRequestedNode = ni;
 							break;
 						} 
@@ -151,10 +108,11 @@ public class ServiceRequest extends Thread
 				else
 				{
 					logger.fine("Service " + serviceName + " on node " + ni.getNodeId() + " has not responded to a service request (corr: " + reqMsg.getCorrelation() + ")");
-					ni.getServiceInformation(serviceName).reduceRating();
+					ni.getFunctionInformation(serviceName).reduceRating();
 					lastRequestedNode = ni;
 					//nodeCore.getDirectory().deleteNode(ni);
 				}
+				nodeCore.getCorrelationManager().removeEntry(correlation);
 			}			
 		}
 		

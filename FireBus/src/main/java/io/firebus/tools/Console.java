@@ -16,6 +16,7 @@ import io.firebus.FirebusAdmin;
 import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
+import io.firebus.information.FunctionInformation;
 import io.firebus.information.NodeInformation;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.ServiceRequestor;
@@ -189,7 +190,7 @@ public class Console implements ServiceRequestor
 			}
 			else if(command.equals("si")  &&  functionName != null)
 			{
-				ServiceInformation si = firebus.getServiceInformation(functionName);
+				FunctionInformation si = firebus.getFunctionInformation(functionName);
 				if(si != null)
 					System.out.println(si);
 			}

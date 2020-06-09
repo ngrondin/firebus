@@ -22,16 +22,22 @@ public class Message
 	public static final int MSGTYPE_QUERYNODE = 1;
 	public static final int MSGTYPE_NODEINFORMATION = 2;
 	public static final int MSGTYPE_GETFUNCTIONINFORMATION = 4;
-	public static final int MSGTYPE_SERVICEINFORMATION = 5;
+	public static final int MSGTYPE_FUNCTIONINFORMATION = 5;
 	public static final int MSGTYPE_REQUESTSERVICE = 6;
 	public static final int MSGTYPE_SERVICERESPONSE = 7;
-	public static final int MSGTYPE_SERVICEUNAVAILABLE = 8;
+	public static final int MSGTYPE_FUNCTIONUNAVAILABLE = 8;
 	public static final int MSGTYPE_SERVICEERROR = 9;
 	public static final int MSGTYPE_PROGRESS = 10;
 	public static final int MSGTYPE_PUBLISH = 11;
 	public static final int MSGTYPE_REPUBLISH = 12;
+	public static final int MSGTYPE_REQUESTSTREAM = 14;
+	public static final int MSGTYPE_STREAMACCEPT = 15;
+	public static final int MSGTYPE_STREAMERROR = 16;
+	public static final int MSGTYPE_STREAMDATA = 17;
+	public static final int MSGTYPE_STREAMEND = 18;
 	
-	protected static final short  MESSAGE_VERSION = 2;
+	
+	protected static final short  MESSAGE_VERSION = 3;
 	
 	protected static int nextId = 0;
 	
@@ -237,13 +243,13 @@ public class Message
 			sb.append("Node Information");
 		else if(type == Message.MSGTYPE_GETFUNCTIONINFORMATION)
 			sb.append("Get Function Information");
-		else if(type == Message.MSGTYPE_SERVICEINFORMATION)
+		else if(type == Message.MSGTYPE_FUNCTIONINFORMATION)
 			sb.append("Function Information");
 		else if(type == Message.MSGTYPE_REQUESTSERVICE)
 			sb.append("Request Service");
 		else if(type == Message.MSGTYPE_SERVICERESPONSE)
 			sb.append("Service Response");
-		else if(type == Message.MSGTYPE_SERVICEUNAVAILABLE)
+		else if(type == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
 			sb.append("Service Unavailable");
 		else if(type == Message.MSGTYPE_SERVICEERROR)
 			sb.append("Service Error");
@@ -253,6 +259,16 @@ public class Message
 			sb.append("Publish");
 		else if(type == Message.MSGTYPE_REPUBLISH)
 			sb.append("Republish");
+		else if(type == Message.MSGTYPE_REQUESTSTREAM)
+			sb.append("Stream Request");
+		else if(type == Message.MSGTYPE_STREAMACCEPT)
+			sb.append("Stream Accept");
+		else if(type == Message.MSGTYPE_STREAMERROR)
+			sb.append("Stream Error");
+		else if(type == Message.MSGTYPE_STREAMDATA)
+			sb.append("Stream Data");
+		else if(type == Message.MSGTYPE_STREAMEND)
+			sb.append("Stream End");
 		sb.append("\r\n");
 		sb.append("Correlaton   : " + correlation + "\r\n");
 		sb.append("Subject      : ");

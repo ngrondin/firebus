@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import io.firebus.information.ConsumerInformation;
+import io.firebus.information.FunctionInformation;
 import io.firebus.information.NodeInformation;
 import io.firebus.information.ServiceInformation;
+import io.firebus.information.StreamInformation;
 
 public class Directory 
 {
@@ -112,21 +114,16 @@ public class Directory
 				else if(parts[1].equals("f"))
 				{
 					String functionType = parts[2];
-					if(functionType.equals("s"))
-					{
-						String serviceName = parts[3];
-						ServiceInformation si = ni.getServiceInformation(serviceName);
-						if(si == null)
-							si = new ServiceInformation(serviceName);
-						ni.addServiceInformation(serviceName, si);
-					}
-					else if(functionType.equals("c"))
-					{
-						String consumerName = parts[3];
-						ConsumerInformation ci = ni.getConsumerInformation(consumerName);
-						if(ci == null)
-							ci = new ConsumerInformation(consumerName);
-						ni.addConsumerInformation(consumerName, ci);
+					String name = parts[3];
+					FunctionInformation fi = ni.getFunctionInformation(name);
+					if(fi == null) {
+						if(functionType.equals("s"))
+							fi = new ServiceInformation(name);
+						else if(functionType.equals("t"))
+							fi = new StreamInformation(name);
+						else if(functionType.equals("c"))
+							fi = new ConsumerInformation(name);
+						ni.addFunctionInformation(name, fi);
 					}
 				}
 			}
@@ -138,35 +135,41 @@ public class Directory
 	}
 
 	
-	public synchronized void processServiceInformation(int nodeId, String serviceName, byte[] payoad)
+	public synchronized void processFunctionInformation(int nodeId, String functionName, byte[] payload)
 	{
 		NodeInformation ni = getOrCreateNodeInformation(nodeId);
-		ServiceInformation si = ni.getServiceInformation(serviceName);
-		if(si == null)
+		FunctionInformation fi = ni.getFunctionInformation(functionName);
+		if(fi == null)
 		{
-			si = new ServiceInformation(serviceName);
-			ni.addServiceInformation(serviceName, si);
+			char type = (char)payload[0];
+			if(type == 's')
+				fi = new ServiceInformation(functionName);
+			else if(type == 't')
+				fi = new StreamInformation(functionName);
+			else if(type == 'c')
+				fi = new ConsumerInformation(functionName);
+			ni.addFunctionInformation(functionName, fi);
 		}
-		si.deserialise(payoad);
+		fi.deserialise(payload);
 	}
+
 	
-	public NodeInformation findServiceProvider(String name)
+	public NodeInformation findFunction(String name)
 	{
 		NodeInformation bestNode = null;
 		int bestNodeRating = 0;
 		for(int i = 0; i < nodes.size(); i++)
 		{
 			NodeInformation ni = nodes.get(i);
-			ServiceInformation si = ni.getServiceInformation(name);
-			if(si != null  &&  !ni.isUnresponsive()  &&  si.getRating() > bestNodeRating)
+			FunctionInformation fi = ni.getFunctionInformation(name);
+			if(fi != null  &&  !ni.isUnresponsive()  &&  fi.getRating() > bestNodeRating)
 			{
 				bestNode = ni;
-				bestNodeRating = si.getRating();
+				bestNodeRating = fi.getRating();
 			}
 		}
 		return bestNode;
 	}
-
 
 	public String getDirectoryStateString(int nodeId)
 	{

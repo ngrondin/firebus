@@ -3,20 +3,22 @@ package io.firebus.information;
 import java.nio.ByteBuffer;
 
 
-public class ServiceInformation extends FunctionInformation
+public class StreamInformation extends FunctionInformation
 {
+	protected boolean fullInformation;
 	protected String requestMimeType;
 	protected String requestContract;
 	protected String responseMimeType;
 	protected String responseContract;
+	protected int rating;
 	
-	public ServiceInformation(String sn)
+	public StreamInformation(String sn)
 	{
 		fullInformation = false;
 		rating = 100;
 	}
 	
-	public ServiceInformation(String rqmt, String rqc, String rpmt, String rpc)
+	public StreamInformation(String rqmt, String rqc, String rpmt, String rpc)
 	{
 		requestMimeType = rqmt;
 		requestContract = rqc;
@@ -46,7 +48,25 @@ public class ServiceInformation extends FunctionInformation
 		return responseContract;
 	}
 	
-
+	public int getRating()
+	{
+		return rating;
+	}
+	
+	public boolean hasFullInformation()
+	{
+		return fullInformation;
+	}
+	
+	public void reduceRating()
+	{
+		rating--;
+	}
+	
+	public void increaseRating()
+	{
+		rating++;
+	}
 	
 	public byte[] serialise()
 	{
@@ -60,8 +80,8 @@ public class ServiceInformation extends FunctionInformation
 		if(responseContract != null)
 			len += responseContract.length();
 		ByteBuffer bb = ByteBuffer.allocate(len);
-
-		bb.put((byte)'s');
+		
+		bb.put((byte)'t');
 		if(requestMimeType != null)
 		{
 			bb.put((byte)requestMimeType.length());
