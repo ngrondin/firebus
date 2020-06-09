@@ -21,6 +21,7 @@ import io.firebus.adapters.http.outbound.OutboundGetHandler;
 import io.firebus.adapters.http.outbound.PostHandler;
 import io.firebus.adapters.http.websocket.EchoWebsocketHandler;
 import io.firebus.adapters.http.websocket.SignalSubscriberWSHandler;
+import io.firebus.adapters.http.websocket.StreamGatewayWSHandler;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
@@ -198,6 +199,10 @@ public class HttpGateway implements ServiceProvider
 		else if(type.equals("signalsubscriber")) 
 		{
 			return new SignalSubscriberWSHandler(wsConfig, firebus);
+		}
+		else if(type.equals("stream"))
+		{
+			return new StreamGatewayWSHandler(wsConfig, firebus);
 		}
 		else 
 		{
