@@ -41,9 +41,16 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 			active = false;
 		}
 	}
-
+	
 	public void destroy() {
 		handler._onClose(session);
+		active = false;
+		try {
+			is.close();
+			os.close();
+		} catch(Exception e) {
+			
+		}
 		logger.fine("Websocket connection destroyed");
 	}
 
@@ -129,7 +136,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 					}
 				}
 			}
-		} catch(IOException e) {
+		} catch(Exception e) {
 			active = false;
 		} finally {
 			try {
@@ -159,7 +166,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 			for(int i = 0; i < len; i++)
 				os.write(msg[i]);
 			os.flush();
-		} catch(IOException e) {
+		} catch(Exception e) {
 			active = false;
 		}
 	}

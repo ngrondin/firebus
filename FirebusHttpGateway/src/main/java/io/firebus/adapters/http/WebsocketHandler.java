@@ -15,6 +15,8 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.apache.tomcat.util.security.ConcurrentMessageDigest;
 
 import io.firebus.Firebus;
+import io.firebus.exceptions.FunctionErrorException;
+import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.utils.DataMap;
 
 public abstract class WebsocketHandler extends HttpHandler {
@@ -52,12 +54,20 @@ public abstract class WebsocketHandler extends HttpHandler {
 	        wsHandler.setHandler(this);
 	        wsHandler.setSessionId(sessionId);
 	        connections.put(sessionId, wsHandler);
-	        onOpen(sessionId);
+	        try {
+	        	onOpen(sessionId, token);
+	        } catch(Exception e) {
+	        	throw new ServletException("Error opening session", e);
+	        }
 		}
 	}
 	
 	public void _onClose(String session) {
-		onClose(session);
+		try {
+			onClose(session);
+		} catch(Exception e) {
+			logger.severe("Error closing session: " + e.getMessage());
+		}
 		connections.remove(session);
 	}
 	
@@ -71,9 +81,14 @@ public abstract class WebsocketHandler extends HttpHandler {
 		connection.sendBinaryMessage(bytes);
 	}
 	
-	protected abstract void onOpen(String session);
-	protected abstract void onStringMessage(String session, String msg);
-	protected abstract void onBinaryMessage(String session, byte[] msg);
-	protected abstract void onClose(String session);
+	public void close(String session) {
+		WebsocketConnectionHandler connection = connections.get(session);
+		connection.destroy();
+	}
+	
+	protected abstract void onOpen(String session, String token) throws FunctionErrorException, FunctionTimeoutException;
+	protected abstract void onStringMessage(String session, String msg) throws FunctionErrorException, FunctionTimeoutException;
+	protected abstract void onBinaryMessage(String session, byte[] msg) throws FunctionErrorException, FunctionTimeoutException;
+	protected abstract void onClose(String session) throws FunctionErrorException, FunctionTimeoutException;
 
 }
