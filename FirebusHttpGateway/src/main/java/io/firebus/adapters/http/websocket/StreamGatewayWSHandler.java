@@ -19,7 +19,7 @@ public class StreamGatewayWSHandler extends WebsocketHandler implements StreamHa
 	
 	public StreamGatewayWSHandler(DataMap c, Firebus f) {
 		super(c, f);
-		streamName = c.getString("stream");
+		streamName = c.getString("service");
 		sessionToStream = new HashMap<String, StreamEndpoint>();
 		streamToSession = new HashMap<StreamEndpoint, String>();
 	}
@@ -28,6 +28,7 @@ public class StreamGatewayWSHandler extends WebsocketHandler implements StreamHa
 		Payload payload = new Payload();
 		payload.metadata.put("token", token);
 		StreamEndpoint streamEndpoint = firebus.requestStream(streamName, payload, 10000);
+		streamEndpoint.setHandler(this);
 		sessionToStream.put(session, streamEndpoint);
 		streamToSession.put(streamEndpoint, session);
 	}
@@ -44,15 +45,16 @@ public class StreamGatewayWSHandler extends WebsocketHandler implements StreamHa
 
 	protected void onClose(String session) {
 		StreamEndpoint sep = sessionToStream.get(session);
+		sep.close();
 		sessionToStream.remove(session);
 		streamToSession.remove(sep);
 	}
 
 	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
-		sendBinaryMessage(streamToSession.get(streamEndpoint), payload.getBytes());
+		this.sendStringMessage(streamToSession.get(streamEndpoint), payload.getString());
 	}
 
-	public void streamTimeout(StreamEndpoint streamEndpoint) {
+	public void streamClosed(StreamEndpoint streamEndpoint) {
 		close(streamToSession.get(streamEndpoint));
 	}
 
