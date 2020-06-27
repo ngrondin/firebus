@@ -77,14 +77,13 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 						op = read & 0x0f;
 					} else if(fp == 1) {
 						mask = (read >> 7) * 0x01;
-						len = read & 0x7F;
 						if((read & 0x7F) <= 125) {
 							len = read & 0x7F;
 							lenSize = 0;
 							fp = 9;
-						} else if(len == 126) {
+						} else if((read & 0x7F) == 126) {
 							lenSize = 2;
-						} else if(len == 127) {
+						} else if((read & 0x7F) == 127) {
 							lenSize = 8;
 						}
 					} else if(fp >= 2 && fp < 10) {

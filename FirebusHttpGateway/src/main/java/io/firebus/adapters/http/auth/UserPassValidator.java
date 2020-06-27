@@ -27,6 +27,7 @@ public class UserPassValidator extends AuthValidationHandler
 	protected String passwordKey;
 	protected String hashType;
 	protected String jwtSecret;
+	protected String jwtissuer;
 	protected String redirectUrl;
 	protected String cookieName;
 
@@ -39,6 +40,7 @@ public class UserPassValidator extends AuthValidationHandler
 		passwordKey = handlerConfig.containsKey("passwordkey") ? handlerConfig.getString("passwordkey") : "passwordhash";
 		hashType = handlerConfig.containsKey("hash") ? handlerConfig.getString("hash") : "SHA-256";
 		jwtSecret = handlerConfig.getString("jwtsecret");
+		jwtissuer = handlerConfig.getString("jwtissuer");
 		redirectUrl = handlerConfig.getString("redirecturl");
 		cookieName = handlerConfig.containsKey("cookie") ? handlerConfig.getString("cookie") : "token";
 	}
@@ -79,7 +81,7 @@ public class UserPassValidator extends AuthValidationHandler
 		            			long expiry = 28800000;
 		    				    Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
 		    				    String token = JWT.create()
-		    				    		.withIssuer("io.firebus.http")
+		    				    		.withIssuer(jwtissuer)
 		    				    		.withClaim("email", username)
 		    				    		.withExpiresAt(new Date((new Date()).getTime() + expiry))
 		    				    		.sign(algorithm);

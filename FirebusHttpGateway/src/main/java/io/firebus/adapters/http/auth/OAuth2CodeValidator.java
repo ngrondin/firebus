@@ -40,6 +40,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 	protected String redirectUrl;
 	protected String cookieName;
 	protected String jwtsecret;
+	protected String jwtissuer;
 
 	public OAuth2CodeValidator(DataMap c, Firebus fb) 
 	{
@@ -51,6 +52,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 		redirectUrl = handlerConfig.getString("redirecturl");
 		cookieName = handlerConfig.getString("cookie");
 		jwtsecret = handlerConfig.getString("jwtsecret");
+		jwtissuer = handlerConfig.getString("jwtissuer");
 	}
 
     protected void httpService(String tokenStr, HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
@@ -97,7 +99,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
             			
     				    Algorithm algorithm = Algorithm.HMAC256(jwtsecret);
     				    String token = JWT.create()
-    				    		.withIssuer("io.firebus.http")
+    				    		.withIssuer(jwtissuer)
     				    		.withClaim("email", username)
     				    		.withExpiresAt(new Date((new Date()).getTime() + expiry))
     				    		.sign(algorithm);
