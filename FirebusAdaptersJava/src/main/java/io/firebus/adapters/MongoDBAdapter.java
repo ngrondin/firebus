@@ -144,8 +144,22 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				DataMap group = new DataMap();
 				DataMap groupKeys = new DataMap();
 				DataList tuple = request.getList("tuple");
-				for(int i = 0; i < tuple.size(); i++)
-					groupKeys.put(tuple.getString(i), "$" + tuple.getString(i));
+				for(int i = 0; i < tuple.size(); i++) 
+				{
+					String key = null;
+					Number interval = null;
+					Object source = null;
+					if(tuple.get(i) instanceof DataMap) {
+						key = tuple.getObject(i).getString("attribute");
+						interval = tuple.getObject(i).getNumber("interval");
+						source = new DataMap("{$dateToString:{date:{$toDate:{$subtract:[{$toLong:{$toDate:\"$" + key + "\"}},{$mod:[{$toLong:{$toDate:\"$" + key + "\"}}," + interval + "]}]}}}}");
+					} else {
+						key = tuple.getString(i);
+						source = "$" + key;
+					}
+					if(source != null)
+						groupKeys.put(key, source);
+				}
 				group.put("_id", groupKeys);
 				DataList metrics = request.getList("metrics");
 				for(int i = 0; i < metrics.size(); i++) 
@@ -166,7 +180,15 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				{
 					DataMap item = responseList.getObject(i);
 					for(int j = 0; j < tuple.size(); j++)
-						item.put(tuple.getString(j), item.getString("_id." + tuple.getString(j)));
+					{
+						String key = null;
+						if(tuple.get(j) instanceof DataMap) {
+							key = tuple.getObject(j).getString("attribute");
+						} else {
+							key = tuple.getString(j);
+						}
+						item.put(key, item.getString("_id." + key));
+					}
 					item.remove("_id");
 				}
 			}
