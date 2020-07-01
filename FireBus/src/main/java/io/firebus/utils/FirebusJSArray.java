@@ -1,12 +1,8 @@
 package io.firebus.utils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
-import jdk.nashorn.api.scripting.AbstractJSObject;
-import jdk.nashorn.internal.objects.NativeArray;
-
-public class FirebusJSArray extends AbstractJSObject
+public class FirebusJSArray //extends AbstractJSObject
 {
 	protected ArrayList<Object> list;
 	
@@ -14,8 +10,8 @@ public class FirebusJSArray extends AbstractJSObject
 	{
 		list = new ArrayList<Object>();
 	}
-	
-	public FirebusJSArray(NativeArray na)
+/*	
+	public FirebusJSArray(ScriptObject na)
 	{
 		list = new ArrayList<Object>();
 		for(int i = 0; i < (Integer)na.getLength(); i++)
@@ -59,5 +55,6 @@ public class FirebusJSArray extends AbstractJSObject
 	{
 		return list;
 	}
+	*/
 
 }

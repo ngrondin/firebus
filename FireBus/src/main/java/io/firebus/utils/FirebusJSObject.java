@@ -1,11 +1,9 @@
 package io.firebus.utils;
 
 import java.util.HashMap;
-import java.util.Set;
 
-import jdk.nashorn.api.scripting.AbstractJSObject;
 
-public class FirebusJSObject extends AbstractJSObject
+public class FirebusJSObject //extends AbstractJSObject
 {
 	protected HashMap<String, Object> map;
 
@@ -13,7 +11,7 @@ public class FirebusJSObject extends AbstractJSObject
 	{
 		map = new HashMap<String, Object>();
 	}
-	
+	/*
 	public String getClassName()
 	{
 		return "Object";
@@ -43,4 +41,5 @@ public class FirebusJSObject extends AbstractJSObject
 	{
 		map.put(arg0, arg1);		
 	}
+	*/
 }

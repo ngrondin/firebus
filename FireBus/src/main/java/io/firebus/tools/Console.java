@@ -18,7 +18,6 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.information.FunctionInformation;
 import io.firebus.information.NodeInformation;
-import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.ServiceRequestor;
 import io.firebus.logging.FirebusSimpleFormatter;
 

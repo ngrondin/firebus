@@ -1,15 +1,9 @@
 package io.firebus.utils;
 
-import java.util.Date;
-import java.util.Iterator;
-
-import jdk.nashorn.api.scripting.JSObject;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
-import jdk.nashorn.internal.objects.NativeArray;
 
 public class FirebusDataUtil
 {
-
+/*
 	public static DataMap convertJSObjectToDataObject(JSObject jso)
 	{
 		DataMap retObj = new DataMap();
@@ -140,5 +134,5 @@ public class FirebusDataUtil
 		}
 		return jsa;
 	}
-	
+	*/
 }
