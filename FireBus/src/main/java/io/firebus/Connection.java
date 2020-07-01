@@ -250,7 +250,7 @@ public class Connection extends Thread
 					if(i == msgCRC)
 					{
 						Message message = Message.deserialise(msg);
-						if(listener != null)
+						if(listener != null && message != null)
 							listener.messageReceived(message, this);
 					}
 					else
