@@ -42,11 +42,14 @@ public class HttpGateway implements ServiceProvider
 		
         try 
         {
+	        int port = config.containsKey("port") ? Integer.parseInt(config.getString("port")) : 80; 
 	        tomcat = new Tomcat();
 	        tomcat.setBaseDir("temp");
+	        tomcat.getConnector().setPort(port);
+	        tomcat.getConnector().setAttribute("compression", "on");
+	        tomcat.getConnector().setAttribute("compressableMimeType", "text/html,text/xml,text/plain,application/json");
 	        
-	        int port = config.containsKey("port") ? Integer.parseInt(config.getString("port")) : 80; 
-	        tomcat.setPort(port);
+	        //tomcat.setPort(port);
 	         
 	        String contextPath = config.containsKey("path") ? config.getString("path") : "/";
 	        String docBase = new File(".").getAbsolutePath();
@@ -58,7 +61,6 @@ public class HttpGateway implements ServiceProvider
 	        wrapper.setMultipartConfigElement(mpc);
 	        context.addServletMapping("/", "master");
 	        context.setAllowCasualMultipartParsing(true);
-	        
 	        if(config.containsKey("rootforward"))
 	        	masterHandler.setRootForward(config.getString("rootforward"));
 	        

@@ -24,12 +24,12 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected MongoClient client;
 	protected MongoDatabase database;
-	protected int pageSize;
+	//protected int pageSize;
 	
 	public MongoDBAdapter(DataMap c)
 	{
 		super(c);
-		pageSize = config.containsKey("pagesize") ? config.getNumber("pagesize").intValue() : 50;
+		//pageSize = config.containsKey("pagesize") ? config.getNumber("pagesize").intValue() : 50;
 		connectMongo();
 	}
 
@@ -97,6 +97,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		DataList responseList = null;
 		String objectName = request.getString("object");
 		int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
+		int pageSize = request.containsKey("pagesize") ? request.getNumber("pagesize").intValue() : 50;
 		if(database != null)
 		{
 			MongoCollection<Document> collection = database.getCollection(objectName);
@@ -108,8 +109,16 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					filterDoc = Document.parse(request.getObject("filter").toString()); 
 				else
 					filterDoc = new Document();
-				it = collection.find(filterDoc).iterator();		
-				responseList = retieveDocuments(it, page);
+				Document sortDoc = new Document();
+				if(request.containsKey("sort")) {
+					DataMap sortItem = null;
+					int i = 0;
+					while((sortItem = request.getObject("sort").getObject("" + i++)) != null) {
+						sortDoc.append(sortItem.getString("attribute"), sortItem.getNumber("dir").intValue());
+					}
+				} 
+				it = collection.find(filterDoc).sort(sortDoc).skip(page * pageSize).iterator();		
+				responseList = retieveDocuments(it, pageSize);
 			}
 			else
 			{
@@ -128,6 +137,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		DataList responseList = null;
 		String objectName = request.getString("object");
 		int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
+		int pageSize = request.containsKey("pagesize") ? request.getNumber("pagesize").intValue() : 50;
 		if(database != null)
 		{
 			MongoCollection<Document> collection = database.getCollection(objectName);
@@ -175,7 +185,9 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				pipeline.add(Document.parse(groupContainer.toString()));
 				
 				it = collection.aggregate(pipeline).iterator();
-				responseList = retieveDocuments(it, page);
+				for(int i = 0; i < (page * pageSize); i++)
+					it.next();
+				responseList = retieveDocuments(it, pageSize);
 				for(int i = 0; i < responseList.size(); i++)
 				{
 					DataMap item = responseList.getObject(i);
@@ -204,15 +216,13 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		return responseList;
 	}
 	
-	private DataList retieveDocuments(Iterator<Document> it, int page) throws DataException
+	private DataList retieveDocuments(Iterator<Document> it, int count) throws DataException
 	{
 		DataList responseList = null;
 		if(it != null)
 		{
 			responseList = new DataList();
-			for(int i = 0; it.hasNext() && i < (page * pageSize); i++)
-				it.next();
-			while(it.hasNext() && responseList.size() < pageSize)
+			while(it.hasNext() && responseList.size() < count)
 			{
 				Document doc = it.next();
 				String str = doc.toJson();
