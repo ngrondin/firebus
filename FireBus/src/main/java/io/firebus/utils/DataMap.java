@@ -189,7 +189,7 @@ public class DataMap extends DataEntity implements Map<String, Object>
 			val = (DataEntity)value;
 		else
 			val = new DataLiteral(value);
-
+		
 		int dot = key.indexOf('.');
 		if(dot == -1)
 		{
@@ -209,7 +209,7 @@ public class DataMap extends DataEntity implements Map<String, Object>
 			{
 				attributes.put(key, val);
 			}
-		}		
+		}
 		return val;
 	}
 	
