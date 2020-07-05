@@ -120,6 +120,10 @@ public class Connection extends Thread
 		if(state == STATE_INITIALIZED)
 		{
 			listener.connectionCreated(this);
+			state = STATE_ACTIVE;
+			synchronized(this) {
+				notifyAll();
+			}			
 			listening();
 		}
 		else
@@ -205,7 +209,6 @@ public class Connection extends Thread
 	
 	protected void listening()
 	{
-		state = STATE_ACTIVE;
 		msgState = 0;
 		while(state == STATE_ACTIVE)
 		{
@@ -273,6 +276,10 @@ public class Connection extends Thread
 	
 	public synchronized void sendMessage(Message msg)
 	{
+		while(state == STATE_NEW || state == STATE_INITIALIZING || state == STATE_INITIALIZED) {
+			try { wait();} catch(Exception e) {}
+		}
+		
 		if(state == STATE_ACTIVE)
 		{
 			try

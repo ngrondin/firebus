@@ -57,67 +57,36 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		start();		
 	}
 
-	public void addKnownNodeAddress(String a, int p)
-	{
-		Address address = new Address(a, p);
-		knownAddresses.add(address);
-		synchronized(this)
-		{
-			this.notify();
-		}
-	}
+	/********* Getters ***********/
 	
 	public int getPort()
 	{
 		return connectionServer.getPort();
 	}
 	
-	public void sendMessage(Message msg)
+	public int getConnectedNodeCount()
 	{
-		int destinationNodeId = msg.getDestinationId();
-		Connection c = null;
-		if(destinationNodeId != 0)
-		{
-			NodeInformation ni = nodeCore.getDirectory().getNodeById(destinationNodeId);
-			if(ni != null)
-			{
-				c = getConnectionForNode(ni);
-				if(c == null)
-				{
-					int rpt = ni.getRandomRepeater();
-					if(rpt != 0)
-					{
-						ni = nodeCore.getDirectory().getNodeById(rpt);
-						c = getConnectionForNode(ni);
-					}
-				}							
-			}
-		}
-
-		if(c != null)
-		{
-			c.sendMessage(msg);
-		}
-		else
-		{
-			broadcastToAllConnections(msg);
-		}
+		ArrayList<Integer> connectedNodeIds = new ArrayList<Integer>();
+		for(int i = 0; i < connections.size(); i++)
+			if(!connectedNodeIds.contains(connections.get(i).getRemoteNodeId()))
+					connectedNodeIds.add(connections.get(i).getRemoteNodeId());
+		return connectedNodeIds.size();
 	}
 	
-	public void close()
+	public Address getAddress()
 	{
 		try
 		{
-			quit = true;
-			connectionServer.close();
-			for(int i = connections.size() - 1; i >= 0; i--)
-				connections.get(i).close();
-		}
-		catch(Exception e)
+			return new Address(InetAddress.getLocalHost().getHostAddress(), connectionServer.getPort());
+		} 
+		catch (UnknownHostException e)
 		{
-			logger.severe(e.getMessage());
+			return null;
 		}
 	}
+	
+	
+	/******* Management Loop ************/
 	
 	public void run()
 	{
@@ -160,14 +129,17 @@ public class ConnectionManager extends Thread implements ConnectionListener
 						}
 					}
 				}
-				
+
+				/*
 				for(int i = 0; i < connections.size(); i++)
+				{
 					if(connections.get(i).getLoad() > maxConnectionLoad)
 					{
 						logger.fine("Creating new connection to spread traffic to node " + connections.get(i).getRemoteNodeId());
 						createConnection(connections.get(i).getRemoteAddress());
 					}
-
+				}
+				*/
 				sleep(500);
 			} 
 			catch (Exception e) 
@@ -176,6 +148,8 @@ public class ConnectionManager extends Thread implements ConnectionListener
 			}
 		}
 	}
+	
+	/********* Event Handlers **********/
 	
 	public void socketReceived(Socket socket, int port)
 	{
@@ -193,7 +167,6 @@ public class ConnectionManager extends Thread implements ConnectionListener
 
 	public synchronized void connectionCreated(Connection c)
 	{
-		connections.add(c);
 		nodeCore.getDirectory().processDiscoveredNode(c.getRemoteNodeId(),  c.getRemoteAddress());
 	}
 	
@@ -238,8 +211,58 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	}
 	
 	
+	/********* Execution Services **********/
 	
-	protected Connection getConnectionForNode(NodeInformation ni)
+	public void addKnownNodeAddress(String a, int p)
+	{
+		Address address = new Address(a, p);
+		knownAddresses.add(address);
+	}	
+	
+	public void sendMessage(Message msg)
+	{
+		int destinationNodeId = msg.getDestinationId();
+		Connection c = null;
+		if(destinationNodeId != 0)
+		{
+			NodeInformation ni = nodeCore.getDirectory().getNodeById(destinationNodeId);
+			if(ni != null)
+				c = getOrCreateConnectionForNode(ni);
+		}
+
+		if(c != null)
+		{
+			c.sendMessage(msg);
+		}
+		else
+		{
+			broadcastToAllConnections(msg);
+		}
+	}
+	
+	protected Connection getOrCreateConnectionForNode(NodeInformation ni) 
+	{
+		Connection c = getExistingConnectionForNode(ni);
+		if(c == null)
+		{
+			if(ni.getAddressCount() > 0)
+				for(int i = 0; i < ni.getAddressCount() && c == null; i++)
+					c = createConnection(ni.getAddress(i));
+				
+			if(c == null) 
+			{
+				int rpt = ni.getRandomRepeater();
+				if(rpt != 0)
+				{
+					ni = nodeCore.getDirectory().getNodeById(rpt);
+					c = getOrCreateConnectionForNode(ni);
+				}
+			}
+		}
+		return c;
+	}
+	
+	protected Connection getExistingConnectionForNode(NodeInformation ni)
 	{
 		ArrayList<Connection> cons = new ArrayList<Connection>();
 		for(int i = 0; i < connections.size(); i++)
@@ -253,10 +276,12 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	}
 	
 	
-	protected void createConnection(Address a) 
+	protected Connection createConnection(Address a) 
 	{
 		logger.fine("Creating new connection");
-		new Connection(a, networkName, secretKey, nodeId, connectionServer.getPort(), this);
+		Connection c = new Connection(a, networkName, secretKey, nodeId, connectionServer.getPort(), this);
+		connections.add(c);
+		return c;
 	}
 	
 	
@@ -271,27 +296,24 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		}
 	}
 	
-	public int getConnectedNodeCount()
-	{
-		ArrayList<Integer> connectedNodeIds = new ArrayList<Integer>();
-		for(int i = 0; i < connections.size(); i++)
-			if(!connectedNodeIds.contains(connections.get(i).getRemoteNodeId()))
-					connectedNodeIds.add(connections.get(i).getRemoteNodeId());
-		return connectedNodeIds.size();
-	}
-	
-	public Address getAddress()
+	public void close()
 	{
 		try
 		{
-			return new Address(InetAddress.getLocalHost().getHostAddress(), connectionServer.getPort());
-		} 
-		catch (UnknownHostException e)
+			quit = true;
+			connectionServer.close();
+			for(int i = connections.size() - 1; i >= 0; i--)
+				connections.get(i).close();
+		}
+		catch(Exception e)
 		{
-			return null;
+			logger.severe(e.getMessage());
 		}
 	}
 	
+	
+
+	/******** Printers *********/
 	
 	public String getAddressStateString(int nodeId)
 	{
