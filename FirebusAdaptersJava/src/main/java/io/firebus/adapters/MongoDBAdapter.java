@@ -179,7 +179,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					if(function.equals("count")) 
 						group.put(metric.getString("name"), new DataMap("$sum", 1));
 					else
-						group.put(metric.getString("name"), new DataMap("$" + function, "$" + metric.getString("field")));
+						group.put(metric.getString("name"), new DataMap("$" + function, "$" + metric.getString("attribute")));
 				}
 				DataMap groupContainer = new DataMap("$group", group);
 				pipeline.add(Document.parse(groupContainer.toString()));
