@@ -17,6 +17,7 @@ import io.firebus.adapters.http.inbound.GetHandler;
 import io.firebus.adapters.http.inbound.PostFormHandler;
 import io.firebus.adapters.http.inbound.PostJsonHandler;
 import io.firebus.adapters.http.inbound.PostMultiPartHandler;
+import io.firebus.adapters.http.outbound.GeneralOutboundHandler;
 import io.firebus.adapters.http.outbound.OutboundGetHandler;
 import io.firebus.adapters.http.outbound.PostHandler;
 import io.firebus.adapters.http.websocket.EchoWebsocketHandler;
@@ -176,18 +177,18 @@ public class HttpGateway implements ServiceProvider
 	
 	private OutboundHandler getOutboundHandler(DataMap outboundConfig)
 	{
-		String method = outboundConfig.containsKey("method") ? outboundConfig.getString("method").toLowerCase() : "get";
-		if(method.equals("get"))
+		String method = outboundConfig.getString("method");
+		if(method != null && method.toLowerCase().equals("get"))
 		{
 			return new OutboundGetHandler(outboundConfig, firebus);
 		}
-		else if(method.equals("post"))
+		else if(method != null && method.toLowerCase().equals("post"))
 		{
 			return new PostHandler(outboundConfig, firebus);
 		}
 		else
 		{
-			return null;
+			return new GeneralOutboundHandler(outboundConfig, firebus);
 		}
 	}
 	

@@ -8,7 +8,6 @@ import javax.servlet.ServletException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClients;
 
@@ -22,7 +21,7 @@ import io.firebus.utils.DataMap;
 
 public abstract class OutboundHandler extends Handler implements ServiceProvider {
 	
-	private static final long serialVersionUID = 1L;
+	//private static final long serialVersionUID = 1L;
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	
 	protected String service;
