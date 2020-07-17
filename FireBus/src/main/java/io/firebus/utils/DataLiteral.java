@@ -2,9 +2,8 @@ package io.firebus.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.ZoneId;
+//import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 //import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -192,7 +191,8 @@ public class DataLiteral extends DataEntity
 		else if(valueType == TYPE_BOOLEAN)
 			return "" + boolValue;
 		else if(valueType == TYPE_DATE)
-			return DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(ZonedDateTime.ofInstant(dateValue.toInstant(), ZoneId.systemDefault()));
+			return dateValue.toInstant().toString();
+			//return DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(ZonedDateTime.ofInstant(dateValue.toInstant(), ZoneId.systemDefault()));
 			//return (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")).format(dateValue);
 		return "";
 	}
@@ -267,15 +267,17 @@ public class DataLiteral extends DataEntity
 	
 	public String toString()
 	{
-		return toString(0);
+		return toString(0, false);
 	}
 
-	public String toString(int indent)
+	public String toString(int indent, boolean flat)
 	{
 		if(valueType == TYPE_NULL)
 			return "null";
-		else if(valueType == TYPE_STRING  ||  valueType == TYPE_DATE)
+		else if(valueType == TYPE_STRING)
 			return "\"" + getString().replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t").replace("/",  "\\/") + "\"";
+		else if(valueType == TYPE_DATE)
+			return "\"" + getString() + "\"";
 		else
 			return getString();
 	}

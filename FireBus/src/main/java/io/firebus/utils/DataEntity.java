@@ -40,7 +40,7 @@ public abstract class DataEntity
 	
 	public abstract String toString();
 	
-	public abstract String toString(int indent);
+	public abstract String toString(int indent, boolean flat);
 	
 	protected String indentString(int indent)
 	{

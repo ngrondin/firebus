@@ -447,29 +447,33 @@ public class DataMap extends DataEntity implements Map<String, Object>
 	
 	public String toString()
 	{
-		return toString(0);
+		return toString(0, false);
 	}
 
-	public String toString(int indent)
+	public String toString(int indent, boolean flat)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append('{');
-		sb.append("\r\n");
-		Iterator<String> it = attributes.keySet().iterator();
+		if(!flat)
+			sb.append("\r\n");
+		Iterator<Entry<String, DataEntity>> it = attributes.entrySet().iterator();
 		while(it.hasNext())
 		{
-			String valueName = it.next();
-			sb.append(indentString(indent + 1));
+			Entry<String, DataEntity> entry = it.next();
+			if(!flat)
+				sb.append(indentString(indent + 1));
 			sb.append('"');
-			sb.append(valueName);
+			sb.append(entry.getKey());
 			sb.append('"');
 			sb.append(':');
-			sb.append(attributes.get(valueName).toString(indent + 1));
+			sb.append(entry.getValue().toString(indent + 1, flat));
 			if(it.hasNext())
 				sb.append(',');
-			sb.append("\r\n");
+			if(!flat)
+				sb.append("\r\n");
 		}
-		sb.append(indentString(indent));
+		if(!flat)
+			sb.append(indentString(indent));
 		sb.append('}');
 		return sb.toString();
 	}

@@ -244,23 +244,27 @@ public class DataList extends DataEntity
 	
 	public String toString()
 	{
-		return toString(0);
+		return toString(0, false);
 	}
 
-	public String toString(int indent)
+	public String toString(int indent, boolean flat)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append('[');
-		sb.append("\r\n");
+		if(!flat)
+			sb.append("\r\n");
 		for(int i = 0; i < list.size(); i++)
 		{
-			sb.append(indentString(indent + 1));
-			sb.append(list.get(i).toString(indent + 1));
+			if(!flat)
+				sb.append(indentString(indent + 1));
+			sb.append(list.get(i).toString(indent + 1, flat));
 			if(i < list.size() - 1)
 				sb.append(',');
-			sb.append("\r\n");
+			if(!flat)			
+				sb.append("\r\n");
 		}
-		sb.append(indentString(indent));
+		if(!flat)
+			sb.append(indentString(indent));
 		sb.append(']');
 		return sb.toString();
 	}

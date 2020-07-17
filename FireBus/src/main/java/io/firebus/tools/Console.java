@@ -206,6 +206,12 @@ public class Console implements ServiceRequestor
 			for(int i = 0; i < nis.length; i++)
 				System.out.println(nis[i]);
 		}
+		else if(command.equals("aa"))
+		{
+			String address = parts[1];
+			int port = Integer.valueOf(parts[2]);
+			firebus.addKnownNodeAddress(address, port);
+		}
 		else if(command.equals("exit"))
 		{
 			ret = true;
