@@ -1,12 +1,15 @@
 package io.firebus;
 
+import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
+import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.spec.PBEKeySpec;
 
 import io.firebus.discovery.DefaultDiscoveryAgent;
 
@@ -26,6 +29,8 @@ public class NodeCore
 	protected ThreadManager threadManager;
 	protected Cipher cipher;
 	protected HistoryQueue historyQueue;
+	
+	protected byte[] salt = {(byte)98, (byte)17, (byte)213, (byte)33, (byte)198, (byte)234, (byte)38, (byte)87, (byte)251, (byte)194, (byte)67, (byte)71, (byte)9, (byte)54, (byte)201, (byte)12};
 	
 	protected NodeCore()
 	{
@@ -52,12 +57,17 @@ public class NodeCore
 		try
 		{
 			Random rnd = new Random();
+			SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+			KeySpec spec = new PBEKeySpec(pw.toCharArray(), salt, 65536, 256);
+			byte[] keyBytes = f.generateSecret(spec).getEncoded();
+			SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");
+
 			nodeId = rnd.nextInt(2147483647);
 			quit = false;
 			networkName = n;	
 			directory = new Directory();
 			directory.getOrCreateNodeInformation(nodeId);
-			connectionManager = new ConnectionManager(this, nodeId, networkName,  new SecretKeySpec(pw.getBytes(), "AES"), port);
+			connectionManager = new ConnectionManager(this, nodeId, networkName, key, port);
 			functionManager = new FunctionManager(this);
 			correlationManager = new CorrelationManager(this);
 			threadManager = new ThreadManager(this);
@@ -225,7 +235,7 @@ public class NodeCore
 		sb.append(functionManager.getFunctionStateString(nodeId));
 		sb.append(directory.getDirectoryStateString(nodeId));
 		Message msg = new Message(reqMsg.getOriginatorId(), nodeId, Message.MSGTYPE_NODEINFORMATION, null, new Payload(null, sb.toString().getBytes()));
-		msg.setCorrelation(reqMsg.getCorrelation());
+		msg.setCorrelation(reqMsg.getCorrelation(), 0);
 		route(msg);
 	}
 	

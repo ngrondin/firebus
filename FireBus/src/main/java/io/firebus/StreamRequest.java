@@ -91,7 +91,7 @@ public class StreamRequest extends Thread
 							ByteBuffer bb = ByteBuffer.wrap(respMsg.getPayload().getBytes());
 							int remoteCorrelation = bb.getInt();
 							long idleTimeout = bb.getLong();
-							streamEndpoint = new StreamEndpoint(nodeCore, streamName, correlation, remoteCorrelation, ni.getNodeId());
+							streamEndpoint = new StreamEndpoint(nodeCore, streamName, correlation, remoteCorrelation, 0, ni.getNodeId());
 							nodeCore.getCorrelationManager().setListenerOnEntry(correlation, streamEndpoint, idleTimeout);
 							break;
 						}

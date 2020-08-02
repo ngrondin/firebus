@@ -10,33 +10,43 @@ public class StreamEndpoint implements CorrelationListener {
 	protected String streamName;
 	protected int localCorrelationId;
 	protected int remoteCorrelationId;
-	protected int otherNodeId;
+	protected int remoteCorrelationSequence;
+	protected int remoteNodeId;
+	protected MessageQueue inQueue;
 	
-	protected StreamEndpoint(NodeCore nc, String sn, int lc, int rc, int oni)
+	protected StreamEndpoint(NodeCore nc, String sn, int lc, int rc, int rcs, int rni)
 	{
 		nodeCore = nc;
 		streamName = sn;
 		localCorrelationId = lc;
 		remoteCorrelationId = rc;
-		otherNodeId = oni;
+		remoteCorrelationSequence = rcs;
+		remoteNodeId = rni;
+		inQueue = new MessageQueue(100);
 	}
 	
 	public void setHandler(StreamHandler sh)
 	{
 		streamHandler = sh;
+		while(inQueue.getMessageCount() > 0) {
+			Message inMsg = inQueue.pop();
+			streamHandler.receiveStreamData(inMsg.getPayload(), this);
+		}
 	}
 	
 	public void send(Payload payload)
 	{
-		Message msg = new Message(otherNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMDATA, streamName, payload);
-		msg.setCorrelation(remoteCorrelationId);
+		Message msg = new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMDATA, streamName, payload);
+		msg.setCorrelation(remoteCorrelationId, remoteCorrelationSequence);
+		remoteCorrelationSequence++;
 		nodeCore.forkThenRoute(msg);
 	}
 	
 	public void close()
 	{
-		Message msg = new Message(otherNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMEND, streamName, null);
-		msg.setCorrelation(remoteCorrelationId);
+		Message msg = new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMEND, streamName, null);
+		msg.setCorrelation(remoteCorrelationId, remoteCorrelationSequence);
+		remoteCorrelationSequence++;
 		nodeCore.forkThenRoute(msg);
 		nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
 	}
@@ -48,7 +58,10 @@ public class StreamEndpoint implements CorrelationListener {
 				streamHandler.streamClosed(this);
 		} else if(streamHandler != null) {
 			streamHandler.receiveStreamData(inMsg.getPayload(), this);
+		} else {
+			inQueue.push(inMsg);
 		}
+		//System.out.println("sep: " + (inMsg.getPayload() != null ? inMsg.getPayload().getString() : "payload null"));
 	}
 
 	public void correlationTimedout(Message outMsg) {
@@ -58,6 +71,6 @@ public class StreamEndpoint implements CorrelationListener {
 	}
 	
 	public String toString() {
-		return otherNodeId + "." + remoteCorrelationId + " -> " + nodeCore.getNodeId() + "." + localCorrelationId;
+		return remoteNodeId + "." + remoteCorrelationId + " -> " + nodeCore.getNodeId() + "." + localCorrelationId;
 	}
 }

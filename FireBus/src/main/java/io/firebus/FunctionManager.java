@@ -77,7 +77,7 @@ public class FunctionManager
 				fi = f instanceof ServiceProvider ? new ServiceInformation(functionName) : (f instanceof StreamProvider ? new StreamInformation(functionName) : null);
 			logger.finer("Responding to a function information request");
 			Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_FUNCTIONINFORMATION, msg.getSubject(), new Payload(fi.serialise()));
-			outMsg.setCorrelation(msg.getCorrelation());
+			outMsg.setCorrelation(msg.getCorrelation(), 0);
 			nodeCore.route(outMsg);
 		}
 	}
@@ -111,7 +111,7 @@ public class FunctionManager
 					logger.finer("Executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
 					Payload returnPayload = null;
 					Message progressMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_PROGRESS, msg.getSubject(), null);
-					progressMsg.setCorrelation(msg.getCorrelation());
+					progressMsg.setCorrelation(msg.getCorrelation(), 0);
 					nodeCore.forkThenRoute(progressMsg);
 					fe.runStarted();
 					increaseTotalExecutionCount();
@@ -121,12 +121,12 @@ public class FunctionManager
 						logger.finer("Finished executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
 						
 						Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
-						responseMsg.setCorrelation(msg.getCorrelation());
+						responseMsg.setCorrelation(msg.getCorrelation(), 1);
 						nodeCore.route(responseMsg);
 					}
 					catch(FunctionErrorException e)
 					{
-						sendError(e, msg.getOriginatorId(), Message.MSGTYPE_SERVICEERROR,  msg.getSubject(), msg.getCorrelation());
+						sendError(e, msg.getOriginatorId(), Message.MSGTYPE_SERVICEERROR,  msg.getSubject(), msg.getCorrelation(), 1);
 					}
 					decreaseTotalExecutionCount();
 					fe.runEnded();
@@ -137,7 +137,7 @@ public class FunctionManager
 					StreamProvider streamProvider = (StreamProvider)fe.function;
 					long idleTimeout = streamProvider.getStreamIdleTimeout();
 					int localCorrelationId = nodeCore.getCorrelationManager().createEntry(idleTimeout);
-					StreamEndpoint streamEndpoint = new StreamEndpoint(nodeCore, functionName, localCorrelationId, msg.getCorrelation(), msg.getOriginatorId());
+					StreamEndpoint streamEndpoint = new StreamEndpoint(nodeCore, functionName, localCorrelationId, msg.getCorrelation(), 1, msg.getOriginatorId());
 					fe.runStarted();
 					increaseTotalExecutionCount();
 					try
@@ -150,12 +150,12 @@ public class FunctionManager
 						bb.putLong(idleTimeout);
 						nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, idleTimeout);
 						Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), new Payload(bb.array()));
-						responseMsg.setCorrelation(msg.getCorrelation());
+						responseMsg.setCorrelation(msg.getCorrelation(), 0);
 						nodeCore.route(responseMsg);
 					}
 					catch(FunctionErrorException e)
 					{
-						sendError(e, msg.getOriginatorId(), Message.MSGTYPE_STREAMERROR,  msg.getSubject(), msg.getCorrelation());
+						sendError(e, msg.getOriginatorId(), Message.MSGTYPE_STREAMERROR,  msg.getSubject(), msg.getCorrelation(), 1);
 					}
 					decreaseTotalExecutionCount();
 					fe.runEnded();
@@ -170,7 +170,7 @@ public class FunctionManager
 			{
 				logger.info("Cannot execute function " + functionName + " as maximum number of executions reached (" + totalExecutionCount + ")");
 				Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(),new Payload(null,  "Maximum concurrent functions running".getBytes()));
-				outMsg.setCorrelation(msg.getCorrelation());
+				outMsg.setCorrelation(msg.getCorrelation(), 0);
 				nodeCore.route(outMsg);
 			}
 		}	
@@ -178,13 +178,13 @@ public class FunctionManager
 		{
 			logger.fine("Function " + functionName + " does not exist");
 			Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(),new Payload(null,  "No such function registered in this node".getBytes()));
-			outMsg.setCorrelation(msg.getCorrelation());
+			outMsg.setCorrelation(msg.getCorrelation(), 0);
 			nodeCore.route(outMsg);
 		}
 	}
 	
 	
-	protected void sendError(Throwable t, int dest, int msgType, String subject, int corr)
+	protected void sendError(Throwable t, int dest, int msgType, String subject, int corr, int corrSeq)
 	{
 		String errorMessage = "";
 		while(t != null)
@@ -195,7 +195,7 @@ public class FunctionManager
 			t = t.getCause();
 		}
 		Message errorMsg = new Message(dest, nodeCore.getNodeId(), msgType, subject, new Payload(errorMessage.getBytes()));
-		errorMsg.setCorrelation(corr);
+		errorMsg.setCorrelation(corr, corrSeq);
 		nodeCore.route(errorMsg);		
 	}
 

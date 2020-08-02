@@ -58,7 +58,8 @@ public class DataLiteral extends DataEntity
 	public DataLiteral(InputStream is) throws DataException, IOException
 	{
 		StringBuilder sb = null;
-		boolean inString = false;
+		boolean inQuotes = false;
+		boolean escaping = false;
 		int cInt = -1;
 		char c = ' ';
 		char previousC = ' ';
@@ -87,13 +88,13 @@ public class DataLiteral extends DataEntity
 			}
 			else if(readState == 1) // In value
 			{
-				if(inString)
+				if(inQuotes)
 				{
-					if(c == '"'  &&  previousC != '\\')
+					if(c == '"'  &&  !escaping)
 					{
-						inString = false;
+						inQuotes = false;
 						hadQuotes = true;
-						String tempString = sb.toString().replace("\\\\", "\\").replace("\\\"", "\"").replace("\\n", "\n").replace("\\r", "\r").replace("\\t", "\t").replace("\\/", "/");
+						String tempString = sb.toString();
 						Matcher matcher = datePattern.matcher(tempString);
 						if(matcher.matches())		
 						{
@@ -118,7 +119,24 @@ public class DataLiteral extends DataEntity
 					}
 					else
 					{
-						sb.append(c);
+						if(escaping)
+						{
+							if(c == '\\') sb.append('\\');
+							else if(c == 'n') sb.append('\n');
+							else if(c == 'r') sb.append('\r');
+							else if(c == 't') sb.append('\t');
+							else if(c == '/') sb.append('/');
+							else if(c == '\"') sb.append('\"');
+							escaping = false;
+						}
+						else if(c == '\\')
+						{
+							escaping = true;
+						}
+						else
+						{
+							sb.append(c);
+						}
 					}
 				}
 				else
@@ -126,7 +144,7 @@ public class DataLiteral extends DataEntity
 					if(c == '"')
 					{
 						if(sb.length() == 0)
-							inString = true;
+							inQuotes = true;
 						else
 							throw new DataException("Illegal character at line " + bis.getLine() + " column " + bis.getColumn());
 					}

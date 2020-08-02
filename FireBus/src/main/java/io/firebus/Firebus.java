@@ -71,6 +71,11 @@ public class Firebus
 		nodeCore.getFunctionManager().addFunction(consumerName, consumer, maxConcurrent);
 	}
 	
+	public boolean hasRegisteredFunction(String name) 
+	{
+		return nodeCore.getFunctionManager().hasFunction(name);
+	}
+	
 	public NodeInformation getNodeInformation(int nodeId)
 	{
 		logger.fine("Sending Node Information Request Message");

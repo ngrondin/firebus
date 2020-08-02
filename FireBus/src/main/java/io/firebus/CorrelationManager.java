@@ -7,22 +7,6 @@ import io.firebus.interfaces.CorrelationListener;
 
 public class CorrelationManager extends Thread
 {
-	protected class CorrelationEntry
-	{
-		protected Message outboundMessage;
-		protected MessageQueue inboundMessages;
-		protected CorrelationListener correlationListener;
-		protected long timeout;
-		protected long expiry;
-		
-		public CorrelationEntry(long to)
-		{
-			timeout = to;
-			expiry = System.currentTimeMillis() + to;
-			inboundMessages = new MessageQueue(10);
-		}		
-	};
-	
 	private Logger logger = Logger.getLogger("io.firebus");
 	protected HashMap<Integer, CorrelationEntry> entries;
 	protected NodeCore nodeCore;
@@ -75,13 +59,7 @@ public class CorrelationManager extends Thread
 		{
 			synchronized(entry)
 			{
-				entry.timeout = timeout;
-				entry.expiry = System.currentTimeMillis() + timeout;
-				entry.correlationListener = cl;
-				while(entry.inboundMessages.getMessageCount() > 0) 
-				{
-					entry.correlationListener.correlatedResponseReceived(entry.outboundMessage, entry.inboundMessages.pop());
-				}				
+				entry.setListener(cl, timeout);
 			}
 		}
 		else
@@ -101,7 +79,7 @@ public class CorrelationManager extends Thread
 			{
 				entry.timeout = timeout;
 				entry.expiry = System.currentTimeMillis() + timeout;
-				while(System.currentTimeMillis() < entry.expiry  &&  entry.inboundMessages.getMessageCount() == 0)
+				while(System.currentTimeMillis() < entry.expiry  &&  (message = entry.popNext()) == null)
 				{
 					try
 					{
@@ -111,11 +89,6 @@ public class CorrelationManager extends Thread
 					{
 						logger.severe("Correlation wait was interrupted : " + e.getMessage());
 					}
-				}
-			
-				if(entry.inboundMessages.getMessageCount() > 0)
-				{
-					message = entry.inboundMessages.pop();
 				}
 			}
 		}
@@ -143,7 +116,7 @@ public class CorrelationManager extends Thread
 		CorrelationEntry entry = getEntry(c);
 		entry.outboundMessage = outMsg;
 		entry.correlationListener = cl;
-		outMsg.setCorrelation(c);
+		outMsg.setCorrelation(c, 0);
 		nodeCore.forkThenRoute(outMsg);
 		return c;
 	}
@@ -153,6 +126,7 @@ public class CorrelationManager extends Thread
 	public void receiveResponse(Message inMsg)
 	{
 		int correlationId = inMsg.getCorrelation();
+		int correlationSequence = inMsg.getCorrelationSequence();
 		if(correlationId != 0)
 		{
 			CorrelationEntry entry = getEntry(correlationId);
@@ -160,16 +134,8 @@ public class CorrelationManager extends Thread
 			{
 				synchronized(entry)
 				{
-					logger.finer("Received Correlated message " + correlationId);
-					if(entry.correlationListener == null)
-					{
-						entry.inboundMessages.push(inMsg);
-					}
-					else
-					{
-						entry.correlationListener.correlatedResponseReceived(entry.outboundMessage, inMsg);
-					}
-					entry.expiry = System.currentTimeMillis() + entry.timeout;
+					logger.finer("Received Correlated message " + correlationId + " sequence " + correlationSequence);
+					entry.push(inMsg);
 					entry.notify();
 				}
 			}
@@ -180,6 +146,8 @@ public class CorrelationManager extends Thread
 			}
 		}
 	}
+	
+
 	
 	public void checkExpiredCalls()
 	{
@@ -198,12 +166,12 @@ public class CorrelationManager extends Thread
 						if(entry.correlationListener != null)
 						{
 							entry.correlationListener.correlationTimedout(entry.outboundMessage);
-							removeEntry(ids[i]);
 						}
 						else
 						{
 							entry.notify();
 						}					
+						removeEntry(ids[i]);
 					}
 				}
 			}

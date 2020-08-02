@@ -75,7 +75,7 @@ public class SRTest {
 		
 		try {
 			Payload resp = firebus.requestService("firstservice", new Payload("Nicolas"));
-			System.out.println("Respionse is : " + resp.getString());
+			System.out.println("Response is : " + resp.getString());
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

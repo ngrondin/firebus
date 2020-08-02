@@ -43,7 +43,7 @@ public class StreamTest {
 					}
 
 					public void streamClosed(StreamEndpoint streamEndpoint) {
-						System.out.println("Requestor end: Stream has timed out");
+						System.out.println("Provider end: Stream has been closed");
 					}
 					
 					public int getStreamIdleTimeout() {
@@ -73,7 +73,7 @@ public class StreamTest {
 				}
 
 				public void streamClosed(StreamEndpoint streamEndpoint) {
-					System.out.println("Requestor end: Stream has timed out");
+					System.out.println("Requestor end: Stream has been closed");
 				}
 			});
 			System.out.println("Stream established");
@@ -82,6 +82,7 @@ public class StreamTest {
 			//Thread.sleep(1000);
 			streamEndpoint.send(new Payload("Nicolas Again"));
 			Thread.sleep(1000);
+			streamEndpoint.close();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

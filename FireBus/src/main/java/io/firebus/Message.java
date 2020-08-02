@@ -15,6 +15,7 @@ public class Message
 	protected int repeatsLeft;
 	protected int type;
 	protected int correlation;
+	protected int correlationSequence;
 	protected String subject;
 	protected Payload payload;
 
@@ -37,7 +38,7 @@ public class Message
 	public static final int MSGTYPE_STREAMEND = 18;
 	
 	
-	protected static final short  MESSAGE_VERSION = 3;
+	protected static final short  MESSAGE_VERSION = 4;
 	
 	protected static int nextId = 0;
 	
@@ -52,12 +53,13 @@ public class Message
 		repeatsLeft = 10;
 		type = t;
 		correlation = 0;
+		correlationSequence = 0;
 		subject = s;
 		payload = p;
 	}
 	
 
-	private Message(int i, int d, int o, int f, int rc, int rl, int t, int c, String s, Payload p)
+	private Message(int i, int d, int o, int f, int rc, int rl, int t, int c, int cs, String s, Payload p)
 	{
 		version = MESSAGE_VERSION;
 		messageId = i;
@@ -68,6 +70,7 @@ public class Message
 		repeatsLeft = rl;
 		type = t;
 		correlation = c;
+		correlationSequence = cs;
 		subject = s;
 		payload = p;
 	}
@@ -79,7 +82,7 @@ public class Message
 	
 	public Message repeat()
 	{
-		Message msg = new Message(messageId, destinationId, originatorId, flags, repeatCount + 1, repeatsLeft - 1, type, correlation, subject, payload);
+		Message msg = new Message(messageId, destinationId, originatorId, flags, repeatCount + 1, repeatsLeft - 1, type, correlation, correlationSequence, subject, payload);
 		return msg;
 	}
 	
@@ -97,13 +100,14 @@ public class Message
 			int repeatsLeft = bb.get();
 			int type = bb.get();
 			int correlation = bb.getInt();
+			int correlationSequence = bb.getInt();
 			int subjectLen = bb.getInt();
 			String subject = new String(encodedMessage, bb.position(), subjectLen);
 			bb.position(bb.position() + subjectLen);
 			byte[] payloadBytes = new byte[bb.remaining()];
 			bb.get(payloadBytes);
 			Payload payload = Payload.deserialise(payloadBytes);
-			return new Message(messageId, destinationId, originatorId, flags, repeatCount, repeatsLeft, type, correlation, subject, payload);			
+			return new Message(messageId, destinationId, originatorId, flags, repeatCount, repeatsLeft, type, correlation, correlationSequence, subject, payload);			
 		}
 		else
 		{
@@ -116,7 +120,7 @@ public class Message
 		byte[] payloadBytes = null;
 		if(payload != null)
 			payloadBytes = payload.serialise();
-		int len = 29;
+		int len = 33;
 		if(subject != null)
 			len += subject.length();
 		if(payloadBytes != null)
@@ -131,6 +135,7 @@ public class Message
 		bb.put((byte)repeatsLeft);
 		bb.put((byte)type);
 		bb.putInt(correlation);
+		bb.putInt(correlationSequence);
 		if(subject != null)
 		{
 			bb.putInt(subject.length());
@@ -154,9 +159,15 @@ public class Message
 		repeatsLeft = rl;
 	}
 	
-	public void setCorrelation(int c)
+	public void setCorrelation(int c, int s)
 	{
 		correlation = c;
+		correlationSequence = s;
+	}
+	
+	public void setCorrelationSequence(int s)
+	{
+		correlationSequence = s;
 	}
 	
 	public int getid()
@@ -189,6 +200,11 @@ public class Message
 		return correlation;
 	}
 	
+	public int getCorrelationSequence()
+	{
+		return correlationSequence;
+	}
+	
 	public int getRepeatCount()
 	{
 		return repeatCount;
@@ -209,14 +225,7 @@ public class Message
 	{
 		return payload;
 	}
-/*
-	public byte[] getEncodedMessage()
-	{
-		if(!encoded)
-			encode();
-		return encodedMessage;
-	}
-	*/
+
 	public int getCRC()
 	{
 		int crc = 0;
@@ -270,7 +279,8 @@ public class Message
 		else if(type == Message.MSGTYPE_STREAMEND)
 			sb.append("Stream End");
 		sb.append("\r\n");
-		sb.append("Correlaton   : " + correlation + "\r\n");
+		sb.append("Correlation  : " + correlation + "\r\n");
+		sb.append("Corr. Seq.   : " + correlationSequence + "\r\n");
 		sb.append("Subject      : ");
 		if(subject != null)
 			sb.append(subject);
