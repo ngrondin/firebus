@@ -82,7 +82,7 @@ public class StreamRequest extends Thread
 						else if(respMsg.getType() == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
 						{
 							logger.fine("Stream " + streamName + " on node " + ni.getNodeId() + " has responded as unavailable");
-							ni.getFunctionInformation(streamName).reduceRating();
+							ni.getFunctionInformation(streamName).reduceRating(1);
 							lastRequestedNode = ni;
 							break;
 						} 
@@ -93,6 +93,7 @@ public class StreamRequest extends Thread
 							long idleTimeout = bb.getLong();
 							streamEndpoint = new StreamEndpoint(nodeCore, streamName, correlation, remoteCorrelation, 0, ni.getNodeId());
 							nodeCore.getCorrelationManager().setListenerOnEntry(correlation, streamEndpoint, idleTimeout);
+							ni.getFunctionInformation(streamName).resetRating();
 							break;
 						}
 						
@@ -100,6 +101,7 @@ public class StreamRequest extends Thread
 						{
 							String str = "Stream request " + streamName + " has timed out while executing (corr: " + reqMsg.getCorrelation() + ")"; 
 							logger.fine(str);
+							ni.getFunctionInformation(streamName).reduceRating(1);
 							throw new FunctionTimeoutException(str);
 						}
 					}
@@ -107,9 +109,8 @@ public class StreamRequest extends Thread
 				else
 				{
 					logger.fine("Stream " + streamName + " on node " + ni.getNodeId() + " has not responded to a stream request (corr: " + reqMsg.getCorrelation() + ")");
-					ni.getFunctionInformation(streamName).reduceRating();
+					ni.getFunctionInformation(streamName).reduceRating(3);
 					lastRequestedNode = ni;
-					//nodeCore.getDirectory().deleteNode(ni);
 				}
 			}			
 		}

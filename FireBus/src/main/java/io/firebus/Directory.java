@@ -103,6 +103,7 @@ public class Directory
 					nodes.add(ni);
 				}
 				ni.setLastUpdatedTime(System.currentTimeMillis());
+				ni.resetRating();
 				if(parts[1].equals("a"))
 				{
 					Address a = new Address(parts[2], Integer.parseInt(parts[3]));
@@ -138,6 +139,7 @@ public class Directory
 	public synchronized void processFunctionInformation(int nodeId, String functionName, byte[] payload)
 	{
 		NodeInformation ni = getOrCreateNodeInformation(nodeId);
+		ni.resetRating();
 		FunctionInformation fi = ni.getFunctionInformation(functionName);
 		if(fi == null)
 		{
@@ -157,15 +159,23 @@ public class Directory
 	public NodeInformation findFunction(String name)
 	{
 		NodeInformation bestNode = null;
-		int bestNodeRating = 0;
+		int bestNodeRating = -100000;
 		for(int i = 0; i < nodes.size(); i++)
 		{
 			NodeInformation ni = nodes.get(i);
 			FunctionInformation fi = ni.getFunctionInformation(name);
-			if(fi != null  &&  !ni.isUnresponsive()  &&  fi.getRating() > bestNodeRating)
-			{
-				bestNode = ni;
-				bestNodeRating = fi.getRating();
+			if(fi != null) {
+				if(fi.getRating() > -10) {
+					if(fi.getRating() > bestNodeRating) {
+						bestNode = ni;
+						bestNodeRating = fi.getRating();
+					}
+				} else {
+					ni.removeFunctionInformation(name);
+					ni.reduceRating(2);
+					if(ni.getFunctionCount() == 0 || ni.getRating() < -5) 
+						deleteNode(ni);
+				}
 			}
 		}
 		return bestNode;

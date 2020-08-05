@@ -19,13 +19,13 @@ public abstract class FunctionInformation
 		return fullInformation;
 	}
 	
-	public void reduceRating()
+	public void reduceRating(int i)
 	{
-		rating--;
+		rating -= i;
 	}
 	
-	public void increaseRating()
+	public void resetRating()
 	{
-		rating++;
+		rating = 0;
 	}
 }

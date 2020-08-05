@@ -8,6 +8,9 @@ import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import io.firebus.exceptions.FunctionErrorException;
+import io.firebus.information.ServiceInformation;
+import io.firebus.interfaces.ServiceProvider;
 import io.firebus.utils.DataMap;
 import io.firebus.utils.FirebusDataUtil;
 import jdk.nashorn.api.scripting.JSObject;
@@ -19,9 +22,17 @@ public class UnitTest
 	{
 		try
 		{
-			FileInputStream fis = new FileInputStream("test.json");
-			DataMap j = new DataMap(fis);
-			System.out.println(j.toString());
+			Firebus firebus = new Firebus();
+			firebus.registerServiceProvider("test", new ServiceProvider() {
+				public Payload service(Payload payload) throws FunctionErrorException {
+					return new Payload("allo");
+				}
+
+				public ServiceInformation getServiceInformation() {
+					return null;
+				}
+				
+			}, 10);
 		}
 		catch(Exception e)
 		{

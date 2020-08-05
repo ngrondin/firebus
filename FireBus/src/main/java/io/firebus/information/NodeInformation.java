@@ -15,6 +15,7 @@ public class NodeInformation
 	protected HashMap<String, FunctionInformation> functions;
 	protected long lastSentDiscovery;
 	protected long lastUpdated;
+	protected int rating;
 	protected boolean unconnectable;
 	protected boolean unresponsive;
 
@@ -31,6 +32,7 @@ public class NodeInformation
 		functions = new HashMap<String, FunctionInformation>();
 		unconnectable = false;
 		unresponsive = false;
+		rating = 0;
 	}
 
 	public void setLastDiscoverySentTime(long t)
@@ -75,6 +77,17 @@ public class NodeInformation
 	{
 		if(!functions.containsKey(fn))
 			functions.put(fn, si);
+	}
+	
+	public int getFunctionCount()
+	{
+		return functions.size();
+	}
+
+	public void removeFunctionInformation(String fn)
+	{
+		if(functions.containsKey(fn))
+			functions.remove(fn);
 	}
 
 	public int getNodeId()
@@ -132,19 +145,34 @@ public class NodeInformation
 	{
 		return unresponsive;
 	}
+	
+	public void reduceRating(int r) {
+		rating -= r;
+	}
+	
+	public void resetRating() {
+		rating = 0;
+	}
+	
+	public int getRating() {
+		return rating;
+	}
 
 
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("Id        : " + nodeId + "\r\n");
+		sb.append("Id        : " + nodeId + "   [" + getRating() + "]\r\n");
+		sb.append("Rating    : " + getRating() + "\r\n");
 		for(int i = 0; i < addresses.size(); i++)
 			sb.append("Address   : " + addresses.get(i) + "\r\n");
 		for(int i = 0; i < repeaters.size(); i++)
 			sb.append("Repeater  : " + repeaters.get(i) + "\r\n");
 		Iterator<String> it = functions.keySet().iterator();
-		while(it.hasNext())
-			sb.append("Function   : " + it.next() + "\r\n");
+		while(it.hasNext()) {
+			String fn = it.next();
+			sb.append("Function   : " + fn + "   [" + functions.get(fn).getRating() + "]\r\n");
+		}
 		return sb.toString();
 	}
 

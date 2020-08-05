@@ -83,13 +83,14 @@ public class ServiceRequest extends Thread
 						else if(respMsg.getType() == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
 						{
 							logger.fine("Service " + serviceName + " on node " + ni.getNodeId() + " has responded as unavailable");
-							ni.getFunctionInformation(serviceName).reduceRating();
+							ni.getFunctionInformation(serviceName).reduceRating(1);
 							lastRequestedNode = ni;
 							break;
 						} 
 						else if(respMsg.getType() == Message.MSGTYPE_SERVICERESPONSE)
 						{
 							responsePayload = respMsg.getPayload();
+							ni.getFunctionInformation(serviceName).resetRating();
 							break;
 						}
 						else if(respMsg.getType() == Message.MSGTYPE_PROGRESS)
@@ -101,6 +102,7 @@ public class ServiceRequest extends Thread
 						{
 							String str = "Service request " + serviceName + " has timed out while executing (corr: " + reqMsg.getCorrelation() + ")"; 
 							logger.fine(str);
+							ni.getFunctionInformation(serviceName).reduceRating(1);
 							throw new FunctionTimeoutException(str);
 						}
 					}
@@ -108,9 +110,8 @@ public class ServiceRequest extends Thread
 				else
 				{
 					logger.fine("Service " + serviceName + " on node " + ni.getNodeId() + " has not responded to a service request (corr: " + reqMsg.getCorrelation() + ")");
-					ni.getFunctionInformation(serviceName).reduceRating();
+					ni.getFunctionInformation(serviceName).reduceRating(3);
 					lastRequestedNode = ni;
-					//nodeCore.getDirectory().deleteNode(ni);
 				}
 				nodeCore.getCorrelationManager().removeEntry(correlation);
 			}			
