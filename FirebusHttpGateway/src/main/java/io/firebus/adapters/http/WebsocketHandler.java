@@ -83,7 +83,8 @@ public abstract class WebsocketHandler extends HttpHandler {
 	
 	public void close(String session) {
 		WebsocketConnectionHandler connection = connections.get(session);
-		connection.destroy();
+		if(connection != null)
+			connection.destroy();
 	}
 	
 	protected abstract void onOpen(String session, String token) throws FunctionErrorException, FunctionTimeoutException;
