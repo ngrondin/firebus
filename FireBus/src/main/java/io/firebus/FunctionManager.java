@@ -11,7 +11,6 @@ import io.firebus.information.ServiceInformation;
 import io.firebus.information.StreamInformation;
 import io.firebus.interfaces.BusFunction;
 import io.firebus.interfaces.Consumer;
-import io.firebus.interfaces.Publisher;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.StreamProvider;
 
@@ -40,6 +39,13 @@ public class FunctionManager
 		}
 	}
 	
+	public void removeFunction(String functionName)
+	{
+		logger.fine("Adding function to node : " + functionName);
+		if(functions.containsKey(functionName))
+			functions.remove(functionName);
+	}
+	
 	public boolean hasFunction(String n)
 	{
 		return functions.containsKey(n);
@@ -57,8 +63,8 @@ public class FunctionManager
 			{
 				if(f instanceof ServiceProvider)
 					sb.append(nodeId + ",f,s," + functionName + "\r\n");
-				if(f instanceof Publisher)
-					sb.append(nodeId + ",f,p," + functionName + "\r\n");
+				if(f instanceof StreamProvider)
+					sb.append(nodeId + ",f,t," + functionName + "\r\n");
 				if(f instanceof Consumer)
 					sb.append(nodeId + ",f,c," + functionName + "\r\n");
 			}
@@ -76,7 +82,7 @@ public class FunctionManager
 			if(fi == null)
 				fi = f instanceof ServiceProvider ? new ServiceInformation(functionName) : (f instanceof StreamProvider ? new StreamInformation(functionName) : null);
 			logger.finer("Responding to a function information request");
-			Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_FUNCTIONINFORMATION, msg.getSubject(), new Payload(fi.serialise()));
+			Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_FUNCTIONINFORMATION, msg.getSubject(), new Payload(fi != null ? fi.serialise() : null));
 			outMsg.setCorrelation(msg.getCorrelation(), 0);
 			nodeCore.route(outMsg);
 		}

@@ -23,6 +23,7 @@ public class MasterHandler extends HttpServlet
 	public MasterHandler()
 	{
 		handlerMap = new ArrayList<HttpHandlerEntry>();
+		rootForward = null;
 	}
 	
 	public void addHttpHandler(String path, String method, HttpHandler handler)
@@ -46,59 +47,52 @@ public class MasterHandler extends HttpServlet
 		String path = req.getRequestURI();
 		String method = req.getMethod();
 		
-		if(path.equals("/"))
+		if(path.equals("/") && rootForward != null)
+			path = rootForward;
+
+		HttpHandler selected = null;
+		for(int i = 0; i < handlerMap.size() && selected == null; i++) 
 		{
-			resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-			resp.setHeader("location", rootForward);
-	        PrintWriter writer = resp.getWriter();
-	        writer.println("<html><title>Redirect</title><body>redirecting</body></html>");
-		}
-		else
-		{
-			HttpHandler selected = null;
-			for(int i = 0; i < handlerMap.size() && selected == null; i++) 
+			HttpHandlerEntry entry = handlerMap.get(i);
+			boolean match = true;
+			if(entry.method.equalsIgnoreCase(method))
 			{
-				HttpHandlerEntry entry = handlerMap.get(i);
-				boolean match = true;
-				if(entry.method.equalsIgnoreCase(method))
+				if(entry.path.endsWith("/*")) 
 				{
-					if(entry.path.endsWith("/*")) 
-					{
-						String shortEntryPath = entry.path.substring(0, entry.path.length() - 2);
-						if(path.startsWith(shortEntryPath + "/") || path.equals(shortEntryPath))
-							match = true;
-						else
-							match = false;
-					}
+					String shortEntryPath = entry.path.substring(0, entry.path.length() - 2);
+					if(path.startsWith(shortEntryPath + "/") || path.equals(shortEntryPath))
+						match = true;
 					else
-					{
-						if(entry.path.equals(path))
-							match = true;
-						else
-							match = false;
-					}
+						match = false;
 				}
 				else
 				{
-					match = false;
+					if(entry.path.equals(path))
+						match = true;
+					else
+						match = false;
 				}
-				if(match)
-					selected = entry.handler;
-			}
-			if(selected != null)
-			{
-				selected.service(req, resp);
-			}
-			else if(defaultHandler != null)
-			{
-				defaultHandler.service(req, resp);
 			}
 			else
 			{
-				resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-		        PrintWriter writer = resp.getWriter();
-				writer.println("No mapping, fool.");
-			}			
+				match = false;
+			}
+			if(match)
+				selected = entry.handler;
 		}
+		if(selected != null)
+		{
+			selected.service(req, resp);
+		}
+		else if(defaultHandler != null)
+		{
+			defaultHandler.service(req, resp);
+		}
+		else
+		{
+			resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+	        PrintWriter writer = resp.getWriter();
+			writer.println("No mapping, fool.");
+		}			
 	}	
 }

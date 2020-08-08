@@ -28,4 +28,6 @@ public abstract class FunctionInformation
 	{
 		rating = 0;
 	}
+	
+	public abstract String toString();
 }

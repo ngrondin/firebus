@@ -60,15 +60,30 @@ public class Firebus
 	{
 		nodeCore.getFunctionManager().addFunction(serviceName, serviceProvider, maxConcurrent);
 	}
-
+	
+	public void deregisterServiceProvider(String serviceName) 
+	{
+		nodeCore.getFunctionManager().removeFunction(serviceName);
+	}
+	
 	public void registerStreamProvider(String streamName, StreamProvider streamProvider, int maxConcurrent)
 	{
 		nodeCore.getFunctionManager().addFunction(streamName, streamProvider, maxConcurrent);
 	}
 	
+	public void deregisterStreamProvider(String streamName) 
+	{
+		nodeCore.getFunctionManager().removeFunction(streamName);
+	}
+	
 	public void registerConsumer(String consumerName, Consumer consumer, int maxConcurrent)
 	{
 		nodeCore.getFunctionManager().addFunction(consumerName, consumer, maxConcurrent);
+	}
+	
+	public void deregisterConsumer(String consumerName) 
+	{
+		nodeCore.getFunctionManager().removeFunction(consumerName);
 	}
 	
 	public boolean hasRegisteredFunction(String name) 

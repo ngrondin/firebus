@@ -48,7 +48,7 @@ public class HttpGateway implements ServiceProvider
 	        tomcat.setBaseDir("temp");
 	        tomcat.getConnector().setPort(port);
 	        tomcat.getConnector().setAttribute("compression", "on");
-	        tomcat.getConnector().setAttribute("compressableMimeType", "text/html,text/xml,text/plain,application/json");
+	        tomcat.getConnector().setAttribute("compressableMimeType", "text/html,text/xml,text/plain,application/json,application/javascript");
 	        
 	        //tomcat.setPort(port);
 	         

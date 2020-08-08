@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 
 public class StreamInformation extends FunctionInformation
 {
+	protected String serviceName;
 	protected boolean fullInformation;
 	protected String requestMimeType;
 	protected String requestContract;
@@ -14,8 +15,9 @@ public class StreamInformation extends FunctionInformation
 	
 	public StreamInformation(String sn)
 	{
+		serviceName = sn;
 		fullInformation = false;
-		rating = 100;
+		rating = 0;
 	}
 	
 	public StreamInformation(String rqmt, String rqc, String rpmt, String rpc)
@@ -148,8 +150,8 @@ public class StreamInformation extends FunctionInformation
 		fullInformation = true;
 	}
 
-	public String toString()
+	public String toString() 
 	{
-		return requestMimeType + "\r\n" + requestContract + "\r\n" + responseMimeType + "\r\n" + responseContract + "\r\n"; 
+		return "Stream   : " + serviceName;
 	}
 }

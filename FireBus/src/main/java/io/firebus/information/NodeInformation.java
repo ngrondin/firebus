@@ -162,16 +162,16 @@ public class NodeInformation
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("Id        : " + nodeId + "   [" + getRating() + "]\r\n");
-		sb.append("Rating    : " + getRating() + "\r\n");
+		sb.append("Id         : " + nodeId + "   [" + getRating() + "]\r\n");
 		for(int i = 0; i < addresses.size(); i++)
-			sb.append("Address   : " + addresses.get(i) + "\r\n");
+			sb.append("Address    : " + addresses.get(i) + "\r\n");
 		for(int i = 0; i < repeaters.size(); i++)
-			sb.append("Repeater  : " + repeaters.get(i) + "\r\n");
+			sb.append("Repeater   : " + repeaters.get(i) + "\r\n");
 		Iterator<String> it = functions.keySet().iterator();
 		while(it.hasNext()) {
 			String fn = it.next();
-			sb.append("Function   : " + fn + "   [" + functions.get(fn).getRating() + "]\r\n");
+			FunctionInformation fi = functions.get(fn);
+			sb.append("Function   : " + fi + "\r\n");
 		}
 		return sb.toString();
 	}

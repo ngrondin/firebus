@@ -26,17 +26,21 @@ public class ConnectionServer extends Thread
 			{
 				try
 				{
+					logger.fine("Starting connection server on " + port);
 					server = new ServerSocket(port);
 					successfulBind = true;
 				}
 				catch(Exception e)	
 				{	
+					logger.fine("Port " + port + " was already used");
 					port++;
 				}			
 			}
 		}
 		else
 		{
+			port = p;
+			logger.fine("Starting connection server on " + port);
 			server = new ServerSocket(port);
 		}		
 		setName("fbConnServer");

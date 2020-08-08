@@ -24,7 +24,8 @@ public class GetHandler extends InboundHandler
 	{
 		DataMap fbReq = new DataMap();
 		String path = req.getRequestURI();
-		String shortPath = path.substring(req.getContextPath().length() + getHttpHandlerPath().length());
+		int handlerPathLen = req.getContextPath().length() + getHttpHandlerPath().length();
+		String shortPath = handlerPathLen <= path.length() ? path.substring(handlerPathLen) : "/";
 		fbReq.put("get", shortPath);
 		Enumeration<String> en = req.getParameterNames();
 		while(en.hasMoreElements())

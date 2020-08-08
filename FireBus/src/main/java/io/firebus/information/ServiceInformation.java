@@ -9,9 +9,11 @@ public class ServiceInformation extends FunctionInformation
 	protected String requestContract;
 	protected String responseMimeType;
 	protected String responseContract;
+	protected String serviceName;
 	
 	public ServiceInformation(String sn)
 	{
+		serviceName = sn;
 		fullInformation = false;
 		rating = 0;
 	}
@@ -130,6 +132,6 @@ public class ServiceInformation extends FunctionInformation
 
 	public String toString()
 	{
-		return requestMimeType + "\r\n" + requestContract + "\r\n" + responseMimeType + "\r\n" + responseContract + "\r\n"; 
+		return "Service  : " + serviceName;
 	}
 }
