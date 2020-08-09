@@ -20,7 +20,7 @@ public class CorrelationEntry {
 	
 	public void setListener(CorrelationListener cl, long to)
 	{
-		to = timeout;
+		timeout = to;
 		expiry = System.currentTimeMillis() + timeout;
 		correlationListener = cl;
 		drainInboundQueue();
