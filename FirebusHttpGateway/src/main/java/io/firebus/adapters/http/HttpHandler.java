@@ -35,7 +35,6 @@ public abstract class HttpHandler extends Handler
 	
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
-		String token = null;
 		resp.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
 		resp.setHeader("Access-Control-Allow-Credentials", "true");
 		resp.setHeader("Cache-Control", "no-cache");
@@ -52,11 +51,11 @@ public abstract class HttpHandler extends Handler
 			if(securityHandler != null)
 				allowed = securityHandler.checkHttpRequest(req, resp);
 			if(allowed)
-				httpService(token, req, resp);
+				httpService(req, resp);
 		}		
 	}
 	
-	protected abstract void httpService(String token, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException;
+	protected abstract void httpService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException;
 	
 
 }

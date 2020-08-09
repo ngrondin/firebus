@@ -28,7 +28,7 @@ public abstract class InboundHandler extends HttpHandler
 	}
 	
 	
-	protected void httpService(String token, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
+	protected void httpService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
 		try 
 		{

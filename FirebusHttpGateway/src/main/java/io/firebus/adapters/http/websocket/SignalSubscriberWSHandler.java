@@ -27,7 +27,7 @@ public class SignalSubscriberWSHandler extends WebsocketHandler implements Consu
 		return null;
 	}
 
-	protected void onOpen(String session, String token) {
+	protected void onOpen(String session, Payload payload) {
 		List<String> list = new ArrayList<String>();
 		subscriptions.put(session, list);
 	}

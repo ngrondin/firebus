@@ -24,9 +24,7 @@ public class StreamGatewayWSHandler extends WebsocketHandler implements StreamHa
 		streamToSession = new HashMap<StreamEndpoint, String>();
 	}
 
-	protected void onOpen(String session, String token) throws FunctionErrorException, FunctionTimeoutException {
-		Payload payload = new Payload();
-		payload.metadata.put("token", token);
+	protected void onOpen(String session, Payload payload) throws FunctionErrorException, FunctionTimeoutException {
 		StreamEndpoint streamEndpoint = firebus.requestStream(streamName, payload, 10000);
 		streamEndpoint.setHandler(this);
 		sessionToStream.put(session, streamEndpoint);

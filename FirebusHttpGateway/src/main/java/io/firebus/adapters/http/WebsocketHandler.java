@@ -15,6 +15,7 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.apache.tomcat.util.security.ConcurrentMessageDigest;
 
 import io.firebus.Firebus;
+import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.utils.DataMap;
@@ -33,7 +34,7 @@ public abstract class WebsocketHandler extends HttpHandler {
 		connections = new HashMap<String, WebsocketConnectionHandler>();
 	}
 
-	protected void httpService(String token, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void httpService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String upgradeHeader = req.getHeader("Upgrade");
 		if(upgradeHeader != null && upgradeHeader.equalsIgnoreCase("websocket") && req.getMethod().equals("GET")) {
 			String key;
@@ -55,7 +56,10 @@ public abstract class WebsocketHandler extends HttpHandler {
 	        wsHandler.setSessionId(sessionId);
 	        connections.put(sessionId, wsHandler);
 	        try {
-	        	onOpen(sessionId, token);
+	        	Payload payload = new Payload();
+	        	if(securityHandler != null)
+	        		securityHandler.enrichFirebusRequest(req, payload);
+	        	onOpen(sessionId, payload);
 	        } catch(Exception e) {
 	        	throw new ServletException("Error opening session", e);
 	        }
@@ -87,7 +91,7 @@ public abstract class WebsocketHandler extends HttpHandler {
 			connection.destroy();
 	}
 	
-	protected abstract void onOpen(String session, String token) throws FunctionErrorException, FunctionTimeoutException;
+	protected abstract void onOpen(String session, Payload payload) throws FunctionErrorException, FunctionTimeoutException;
 	protected abstract void onStringMessage(String session, String msg) throws FunctionErrorException, FunctionTimeoutException;
 	protected abstract void onBinaryMessage(String session, byte[] msg) throws FunctionErrorException, FunctionTimeoutException;
 	protected abstract void onClose(String session) throws FunctionErrorException, FunctionTimeoutException;

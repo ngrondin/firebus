@@ -14,7 +14,7 @@ public class EchoWebsocketHandler extends WebsocketHandler {
 		super(c, f);
 	}
 
-	protected void onOpen(String session, String token) {
+	protected void onOpen(String session, Payload payload) {
 		// TODO Auto-generated method stub
 		
 	}
