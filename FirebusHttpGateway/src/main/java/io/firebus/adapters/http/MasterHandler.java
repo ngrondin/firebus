@@ -55,7 +55,7 @@ public class MasterHandler extends HttpServlet
 		{
 			HttpHandlerEntry entry = handlerMap.get(i);
 			boolean match = true;
-			if(entry.method.equalsIgnoreCase(method))
+			if(entry.method == null || (entry.method != null && entry.method.equalsIgnoreCase(method)))
 			{
 				if(entry.path.endsWith("/*")) 
 				{

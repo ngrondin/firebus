@@ -35,8 +35,8 @@ public abstract class InboundHandler extends HttpHandler
 			Payload fbReq = processRequest(req);
 			if(fbReq != null)
 			{
-				if(token != null)
-					fbReq.metadata.put("token", token);
+				if(securityHandler != null)
+					securityHandler.enrichFirebusRequest(req, fbReq);
 				logger.finest(fbReq.toString());
 				Payload fbResp = firebus.requestService(service, fbReq, timeout);
 				logger.finest(fbResp.toString());

@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,7 +20,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
@@ -33,10 +30,10 @@ import io.firebus.utils.DataMap;
 
 public class OAuth2CodeValidator extends AuthValidationHandler
 {
+	protected String loginUrl;
 	protected String tokenUrl;
 	protected String clientId;
 	protected String clientSecret;
-	protected String thisUrl;
 	protected String redirectUrl;
 	protected String cookieName;
 	protected String jwtsecret;
@@ -45,10 +42,10 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 	public OAuth2CodeValidator(DataMap c, Firebus fb) 
 	{
 		super(c, fb);
+		loginUrl = handlerConfig.getString("loginurl");
 		tokenUrl = handlerConfig.getString("tokenurl");
 		clientId = handlerConfig.getString("clientid");
 		clientSecret = handlerConfig.getString("clientsecret");
-		thisUrl = handlerConfig.getString("thisurl");
 		redirectUrl = handlerConfig.getString("redirecturl");
 		cookieName = handlerConfig.getString("cookie");
 		jwtsecret = handlerConfig.getString("jwtsecret");
@@ -63,7 +60,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
         	String contextPath = req.getContextPath();
         	if(contextPath.equals(""))
         		contextPath = "/";
-        	String thisUrlResolved = thisUrl != null ? thisUrl : req.getRequestURL().toString();
+        	//String thisUrlResolved = thisUrl != null ? thisUrl : req.getRequestURL().toString();
         	String redirectUrlResolved = redirectUrl != null ? redirectUrl : "${state}";
        		redirectUrlResolved = redirectUrlResolved.replace("${state}", req.getParameter("state") != null ? req.getParameter("state") : "");
         	
@@ -76,7 +73,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
         		params.add(new BasicNameValuePair("code", code));
         		params.add(new BasicNameValuePair("client_id", clientId));
         		params.add(new BasicNameValuePair("client_secret", clientSecret));
-        		params.add(new BasicNameValuePair("redirect_uri", thisUrlResolved));
+        		params.add(new BasicNameValuePair("redirect_uri", publicHost + path));
         		params.add(new BasicNameValuePair("grant_type", "authorization_code"));
         		httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
         		HttpResponse response = httpclient.execute(httppost);
@@ -95,24 +92,9 @@ public class OAuth2CodeValidator extends AuthValidationHandler
             			DecodedJWT jwt = JWT.decode(respMap.getString("id_token"));
             			Claim usernameClaim = jwt.getClaim("email");
             			String username = usernameClaim.asString();
-            			long expiry = 28800000;
-            			
-    				    Algorithm algorithm = Algorithm.HMAC256(jwtsecret);
-    				    String token = JWT.create()
-    				    		.withIssuer(jwtissuer)
-    				    		.withClaim("email", username)
-    				    		.withExpiresAt(new Date((new Date()).getTime() + expiry))
-    				    		.sign(algorithm);
-
-            			if(cookieName != null)
-            			{
-                			Cookie cookie = new Cookie(cookieName, token);
-                			cookie.setPath(contextPath);
-                			cookie.setMaxAge((int)(expiry / 1000));
-                			resp.addCookie(cookie);
-            			}
+            			_securityHandler.enrichAuthResponse(username, resp);
             			resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-            			resp.setHeader("location", redirectUrlResolved);
+            			resp.setHeader("location", redirectUrlResolved);		
             	        PrintWriter writer = resp.getWriter();
             	        writer.println("<html><title>Redirect</title><body>Loging in</body></html>");
             		}
@@ -146,5 +128,10 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 	        PrintWriter writer = resp.getWriter();
 	        writer.println("<html><title>Error</title><body>Authentication configuration missing</body></html>");
     	}
-    }	
+    }
+
+	public String getLoginURL(String originalPath) {
+		String url = loginUrl + "?client_id=" + clientId + "&response_type=code&scope=openid%20email&redirect_uri=" + publicHost + path + "&state=" + publicHost + originalPath + "&nonce=123";
+		return url;
+	}	
 }

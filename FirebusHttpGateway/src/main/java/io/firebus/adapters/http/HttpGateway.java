@@ -1,6 +1,10 @@
 package io.firebus.adapters.http;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.MultipartConfigElement;
@@ -20,6 +24,7 @@ import io.firebus.adapters.http.inbound.PostMultiPartHandler;
 import io.firebus.adapters.http.outbound.GeneralOutboundHandler;
 import io.firebus.adapters.http.outbound.OutboundGetHandler;
 import io.firebus.adapters.http.outbound.PostHandler;
+import io.firebus.adapters.http.security.JWTCookie;
 import io.firebus.adapters.http.websocket.EchoWebsocketHandler;
 import io.firebus.adapters.http.websocket.SignalSubscriberWSHandler;
 import io.firebus.adapters.http.websocket.StreamGatewayWSHandler;
@@ -64,8 +69,50 @@ public class HttpGateway implements ServiceProvider
 	        context.setAllowCasualMultipartParsing(true);
 	        if(config.containsKey("rootforward"))
 	        	masterHandler.setRootForward(config.getString("rootforward"));
+	        String publicHost = config.getString("publichost");
 	        
-	        DataList list = config.getList("inbound");
+	        DataList list = config.getList("security");
+	        Map<String, SecurityHandler> securityHandlers = new HashMap<String, SecurityHandler>();
+	        if(list != null)
+	        {
+		        for(int i = 0; i < list.size(); i++)
+		        {
+		        	DataMap securityConfig = list.getObject(i);
+		        	String name = securityConfig.getString("name");
+		            SecurityHandler handler = getSecurityHandler(securityConfig);
+		            if(handler != null)
+		            	securityHandlers.put(name, handler);
+		        }
+	        }
+	        
+
+	        list = config.getList("authvalidation");
+	        List<AuthValidationHandler> authValidationHanders = new ArrayList<AuthValidationHandler>();
+	        if(list != null)
+	        {
+		        for(int i = 0; i < list.size(); i++)
+		        {
+		        	DataMap authConfig = list.getObject(i);
+		            String method = authConfig.getString("method");
+		            String urlPattern = authConfig.getString("path");
+		            String security = authConfig.getString("security");
+		            AuthValidationHandler handler = getAuthValidationHandler(authConfig);
+		            if(handler != null) {
+		            	if(security != null) {
+		            		SecurityHandler securityHandler = securityHandlers.get(security); 
+		            		handler.setSecurityHandler(securityHandler);
+		            		securityHandler.addAuthValidationHandler(handler);		            		
+		            	}
+		            	if(publicHost != null)
+		            		handler.setPublicHost(publicHost);
+		            	masterHandler.addHttpHandler(urlPattern, method, handler);
+		            	authValidationHanders.add(handler);
+		            }
+		        }
+	        }
+
+
+	        list = config.getList("inbound");
 	        if(list != null)
 	        {
 		        for(int i = 0; i < list.size(); i++)
@@ -73,14 +120,39 @@ public class HttpGateway implements ServiceProvider
 		        	DataMap inboundConfig = list.getObject(i);
 		            String method = inboundConfig.getString("method");
 		            String urlPattern = inboundConfig.getString("path");
+		            String security = inboundConfig.getString("security");
 		            InboundHandler handler = getInboundHandler(inboundConfig);
-		            if(handler != null)
-		            {
+		            if(handler != null) {
+		            	if(security != null)
+		            		handler.setSecurityHandler(securityHandlers.get(security));
 		            	masterHandler.addHttpHandler(urlPattern, method, handler);
 		            }
 		        }
 	        }
 	        
+	        list = config.getList("websockets");
+	        if(list != null)
+	        {
+		        for(int i = 0; i < list.size(); i++)
+		        {
+		        	DataMap wsConfig = list.getObject(i);
+		        	String name = wsConfig.getString("name");
+		            String urlPattern = wsConfig.getString("path");
+		            String security = wsConfig.getString("security");
+		            WebsocketHandler handler = getWebsocketHandler(wsConfig);
+		            if(handler != null)
+		            {
+		            	if(security != null)
+		            		handler.setSecurityHandler(securityHandlers.get(security));
+		            	masterHandler.addHttpHandler(urlPattern, "get", handler);
+		            	if(handler instanceof ServiceProvider)
+		            		firebus.registerServiceProvider(name, (ServiceProvider)handler, 10);
+		            	else if(handler instanceof Consumer)
+		            		firebus.registerConsumer(name, (Consumer)handler, 10);
+		            }
+		        }
+	        }
+
 	        list = config.getList("outbound");
 	        if(list != null)
 	        {
@@ -90,45 +162,7 @@ public class HttpGateway implements ServiceProvider
 		        	String name = outboundConfig.getString("service");
 		            OutboundHandler handler = getOutboundHandler(outboundConfig);
 		            if(handler != null)
-		            {
 		        		firebus.registerServiceProvider(name, handler, 10);
-		            }
-		        }
-	        }
-
-	        list = config.getList("websockets");
-	        if(list != null)
-	        {
-		        for(int i = 0; i < list.size(); i++)
-		        {
-		        	DataMap wsConfig = list.getObject(i);
-		        	String name = wsConfig.getString("name");
-		            String urlPattern = wsConfig.getString("path");
-		            WebsocketHandler handler = getWebsocketHandler(wsConfig);
-		            if(handler != null)
-		            {
-		            	masterHandler.addHttpHandler(urlPattern, "get", handler);
-		            	if(handler instanceof ServiceProvider)
-		            		firebus.registerServiceProvider(name, (ServiceProvider)handler, 10);
-		            	if(handler instanceof Consumer)
-		            		firebus.registerConsumer(name, (Consumer)handler, 10);
-		            }
-		        }
-	        }
-
-	        list = config.getList("authvalidation");
-	        if(list != null)
-	        {
-		        for(int i = 0; i < list.size(); i++)
-		        {
-		        	DataMap authConfig = list.getObject(i);
-		            String method = authConfig.getString("method");
-		            String urlPattern = authConfig.getString("path");
-		            AuthValidationHandler handler = getAuthValidationHandler(authConfig);
-		            if(handler != null)
-		            {
-		            	masterHandler.addHttpHandler(urlPattern, method, handler);
-		            }
 		        }
 	        }
 
@@ -138,6 +172,19 @@ public class HttpGateway implements ServiceProvider
         {
         	logger.severe("Error initiating the Http Gateway : " + e.getMessage());
         	e.printStackTrace();
+		}
+	}
+
+	private SecurityHandler getSecurityHandler(DataMap securityConfig)
+	{
+		String type = securityConfig.containsKey("type") ? securityConfig.getString("type").toLowerCase() : "jwtcookie";
+		if(type.equals("jwtcookie"))
+		{
+			return new JWTCookie(securityConfig);
+		}
+		else
+		{
+			return null;
 		}
 	}
 	

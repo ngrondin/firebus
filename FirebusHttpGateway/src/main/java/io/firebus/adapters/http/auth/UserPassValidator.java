@@ -4,15 +4,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.util.Base64;
-import java.util.Date;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
@@ -21,26 +16,24 @@ import io.firebus.utils.DataMap;
 
 public class UserPassValidator extends AuthValidationHandler
 {
+	protected String loginUrl;
 	protected String dataService;
 	protected String collection;
 	protected String userKey;
 	protected String passwordKey;
 	protected String hashType;
-	protected String jwtSecret;
-	protected String jwtissuer;
 	protected String redirectUrl;
 	protected String cookieName;
 
 	public UserPassValidator(DataMap c, Firebus fb) 
 	{
 		super(c, fb);
+		loginUrl = handlerConfig.getString("loginurl");
 		dataService = handlerConfig.getString("dataservice");
 		collection = handlerConfig.containsKey("collection") ? handlerConfig.getString("collection") : "user";
 		userKey = handlerConfig.containsKey("userkey") ? handlerConfig.getString("userkey") : "username";
 		passwordKey = handlerConfig.containsKey("passwordkey") ? handlerConfig.getString("passwordkey") : "passwordhash";
 		hashType = handlerConfig.containsKey("hash") ? handlerConfig.getString("hash") : "SHA-256";
-		jwtSecret = handlerConfig.getString("jwtsecret");
-		jwtissuer = handlerConfig.getString("jwtissuer");
 		redirectUrl = handlerConfig.getString("redirecturl");
 		cookieName = handlerConfig.containsKey("cookie") ? handlerConfig.getString("cookie") : "token";
 	}
@@ -78,17 +71,7 @@ public class UserPassValidator extends AuthValidationHandler
 		    				String receivedPassHash = Base64.getEncoder().encodeToString(encodedhash);
 		    				if(receivedPassHash.equals(savedPassHash)) 
 		    				{
-		            			long expiry = 28800000;
-		    				    Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
-		    				    String token = JWT.create()
-		    				    		.withIssuer(jwtissuer)
-		    				    		.withClaim("email", username)
-		    				    		.withExpiresAt(new Date((new Date()).getTime() + expiry))
-		    				    		.sign(algorithm);
-	                			Cookie cookie = new Cookie(cookieName, token);
-	                			cookie.setPath(contextPath);
-	                			cookie.setMaxAge(3600);
-	                			resp.addCookie(cookie);
+		    					_securityHandler.enrichAuthResponse(username, resp);
 		            			resp.setStatus(HttpServletResponse.SC_OK);
 		            	        PrintWriter writer = resp.getWriter();
 		            	        writer.println("<html><head><title>Redirect</title></head><meta http-equiv=\"refresh\" content=\"0; url = '" + redirectUrlResolved + "'\"><body>Loging in</body></html>");
@@ -136,4 +119,10 @@ public class UserPassValidator extends AuthValidationHandler
 	        writer.println("<html><title>Error</title><body>Firebus not configured on the handler</body></html>");
     	}
     }	
+    
+	public String getLoginURL(String originalPath) {
+		String url = loginUrl + "?redirect=" + publicHost + path + "&state=" + publicHost + originalPath;
+		return url;
+	}	
+
 }
