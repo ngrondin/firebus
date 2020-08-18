@@ -33,7 +33,7 @@ public abstract class SecurityHandler {
 		if(accept.contains("text/html") || accept.contains("*/*")) {
 			if(authValidationHandlers.size() > 1) {
 		        PrintWriter writer = resp.getWriter();
-		        writer.println("<html><head><title>Login</title><style>");
+		        writer.println("<html><head><title>Login</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><style>");
 		        writer.println("body{}");
 		        writer.println(".main{position:fixed; top:50%; left: 50%; transform: translate(-50%, -50%); font-family:sans-serif; font-size:larger; border:1px solid lightgrey; padding:15px; border-radius:5px;}");
 		        writer.println(".title{color:grey; padding:5px;}");

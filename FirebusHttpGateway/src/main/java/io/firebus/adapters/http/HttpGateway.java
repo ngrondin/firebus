@@ -15,6 +15,7 @@ import org.apache.catalina.startup.Tomcat;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.adapters.http.auth.NoValidator;
 import io.firebus.adapters.http.auth.OAuth2CodeValidator;
 import io.firebus.adapters.http.auth.UserPassValidator;
 import io.firebus.adapters.http.inbound.GetHandler;
@@ -271,6 +272,10 @@ public class HttpGateway implements ServiceProvider
 		else if(type != null && type.equals("userpassform"))
 		{
 			return new UserPassValidator(authConfig, firebus);
+		}
+		else if(type != null && type.equals("novalidation"))
+		{
+			return new NoValidator(authConfig, firebus);
 		}
 		else
 		{
