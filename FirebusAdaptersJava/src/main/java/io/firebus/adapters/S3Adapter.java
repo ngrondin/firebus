@@ -88,7 +88,8 @@ public class S3Adapter extends Adapter implements ServiceProvider, Consumer {
 		catch(Exception e)
 		{
 			throw new FunctionErrorException(e.getMessage());
-		}	}
+		}	
+	}
 
 	public ServiceInformation getServiceInformation() {
 		return null;
