@@ -219,6 +219,8 @@ public class DataLiteral extends DataEntity
 	{
 		if(valueType == TYPE_BOOLEAN)
 			return boolValue;
+		else if(valueType == TYPE_STRING)
+			return stringValue.equalsIgnoreCase("true");
 		return false;
 	}
 	
