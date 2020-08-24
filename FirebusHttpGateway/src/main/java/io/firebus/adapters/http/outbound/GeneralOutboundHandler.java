@@ -1,6 +1,7 @@
 package io.firebus.adapters.http.outbound;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import javax.servlet.ServletException;
 
@@ -29,22 +30,30 @@ public class GeneralOutboundHandler extends OutboundHandler {
 		DataMap request = new DataMap(payload.getString());
 		String url = (this.baseUrl != null && request.containsKey("path") ? baseUrl + "/" + request.getString("path") : request.getString("url"));
 		String method = request.getString("method");
-		
+		HttpUriRequest httpRequest = null;
 		if(method.equals("post")) 
 		{
-			HttpPost httppost = new HttpPost(url);
-			httppost.setEntity(new ByteArrayEntity(request.get("body").toString().getBytes()));
-			return httppost;
+			httpRequest = new HttpPost(url);
+			((HttpPost)httpRequest).setEntity(new ByteArrayEntity(request.get("body").toString().getBytes()));
 		}
 		else if(method.equals("get"))
 		{
-			HttpGet httpget = new HttpGet(url);
-			return httpget;			
+			httpRequest = new HttpGet(url);
 		}
-		else
-		{
-			return null;
+		if(request.containsKey("cookie")) {
+			String cookie = "";
+			Iterator<String> it = request.getObject("cookie").keySet().iterator();
+			while(it.hasNext()) {
+				String key = it.next();
+				cookie = cookie + key + "=" + request.getObject("cookie").getString(key) + (it.hasNext() ? ";" : "");
+			}
+			httpRequest.setHeader("Cookie", cookie);
 		}
+		if(request.containsKey("authorization")) {
+			String authorization = request.getString("authorization");
+			httpRequest.setHeader("Authorization", authorization);
+		}
+		return httpRequest;
 	}
 
 	@Override
