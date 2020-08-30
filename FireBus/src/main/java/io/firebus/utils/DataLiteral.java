@@ -62,7 +62,7 @@ public class DataLiteral extends DataEntity
 		boolean escaping = false;
 		int cInt = -1;
 		char c = ' ';
-		char previousC = ' ';
+		//char previousC = ' ';
 		int readState = 0; 
 		boolean hadQuotes = false;
 
@@ -75,7 +75,7 @@ public class DataLiteral extends DataEntity
 		bis.mark(1);
 		while((cInt = bis.read()) != -1)
 		{
-			previousC = c;
+			//previousC = c;
 			c = (char)cInt;
 			if(readState == 0) // Before value
 			{

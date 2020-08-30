@@ -11,8 +11,6 @@ public class DataFilter {
 	}
 	
 	public boolean apply(DataMap data) {
-		System.out.println("Filtering : " + data.toString());
-		System.out.println("With : " + filter.toString());
 		return recursiveApply(filter, data);
 	}
 	
