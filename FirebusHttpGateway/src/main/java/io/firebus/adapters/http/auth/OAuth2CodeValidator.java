@@ -35,9 +35,6 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 	protected String clientId;
 	protected String clientSecret;
 	protected String redirectUrl;
-	protected String cookieName;
-	protected String jwtsecret;
-	protected String jwtissuer;
 
 	public OAuth2CodeValidator(DataMap c, Firebus fb) 
 	{
@@ -47,9 +44,6 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 		clientId = handlerConfig.getString("clientid");
 		clientSecret = handlerConfig.getString("clientsecret");
 		redirectUrl = handlerConfig.getString("redirecturl");
-		cookieName = handlerConfig.getString("cookie");
-		jwtsecret = handlerConfig.getString("jwtsecret");
-		jwtissuer = handlerConfig.getString("jwtissuer");
 	}
 
     protected void httpService(HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
@@ -60,7 +54,6 @@ public class OAuth2CodeValidator extends AuthValidationHandler
         	String contextPath = req.getContextPath();
         	if(contextPath.equals(""))
         		contextPath = "/";
-        	//String thisUrlResolved = thisUrl != null ? thisUrl : req.getRequestURL().toString();
         	String redirectUrlResolved = redirectUrl != null ? redirectUrl : "${state}";
        		redirectUrlResolved = redirectUrlResolved.replace("${state}", req.getParameter("state") != null ? req.getParameter("state") : "");
         	

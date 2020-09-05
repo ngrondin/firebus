@@ -3,6 +3,7 @@ package io.firebus.utils;
 
 public class FirebusDataUtil
 {
+
 /*
 	public static DataMap convertJSObjectToDataObject(JSObject jso)
 	{
