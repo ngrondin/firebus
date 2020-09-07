@@ -38,12 +38,13 @@ public abstract class SecurityHandler {
 		        writer.println(".main{position:fixed; top:50%; left: 50%; transform: translate(-50%, -50%); font-family:sans-serif; font-size:larger; border:1px solid lightgrey; padding:15px; border-radius:5px;}");
 		        writer.println(".title{color:grey; padding:5px;}");
 		        writer.println(".option{display:flex; flex-direction:row; align-items:center;padding:5px;}");
+		        writer.println("a{display:flex; flex-direction:row; align-items:center;}");
 		        writer.println("a:link {color:black; text-decoration:none;} a:visited  {color:black; text-decoration:none;} a:hover {color:black; text-decoration:none;} a:active {color:black; text-decoration:none;}");
 		        writer.println("img {padding-right:10px;}");
 		        writer.println("</style></head>");
 		        writer.println("<body><div class=\"main\"><div class=\"title\">Select an identity provider</div>");
 		        for(AuthValidationHandler avh: authValidationHandlers) {
-			        writer.println("<div class=\"option\"><div><img src=\"" + avh.getIcon() + "\"></div><div><a href=\"" + avh.getLoginURL(path) + "\">" + avh.getLabel() + "</a></div></div>");
+			        writer.println("<div class=\"option\"><a href=\"" + avh.getLoginURL(path) + "\"><img src=\"" + avh.getIcon() + "\"><div>" + avh.getLabel() + "</div></a></div>");
 		        }
 		        writer.println("</div></body></html>");
 			} else if(authValidationHandlers.size() == 1) {
