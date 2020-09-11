@@ -294,12 +294,28 @@ public class DataLiteral extends DataEntity
 	{
 		if(valueType == TYPE_NULL)
 			return "null";
-		else if(valueType == TYPE_STRING)
-			return "\"" + getString().replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t").replace("/",  "\\/") + "\"";
-		else if(valueType == TYPE_DATE)
+		else if(valueType == TYPE_STRING) {
+			return "\"" + escape(getString()) + "\"";
+			//return "\"" + getString().replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t").replace("/",  "\\/") + "\"";
+		} else if(valueType == TYPE_DATE)
 			return "\"" + getString() + "\"";
 		else
 			return getString();
+	}
+	
+	protected String escape(String s) {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if(c == '\\') sb.append("\\\\");
+			else if(c == '\"') sb.append("\\\"");
+			else if(c == '\n') sb.append("\\n");
+			else if(c == '\r') sb.append("\\r");
+			else if(c == '\t') sb.append("\\t");
+			else if(c == '/') sb.append("\\/");
+			else sb.append(c);
+		}
+		return sb.toString();
 	}
 	
 	public DataLiteral getCopy()
