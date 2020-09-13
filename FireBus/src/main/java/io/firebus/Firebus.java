@@ -91,6 +91,11 @@ public class Firebus
 		return nodeCore.getFunctionManager().hasFunction(name);
 	}
 	
+	public boolean hasConnections()
+	{
+		return nodeCore.getConnectionManager().getConnectedNodeCount() > 0;
+	}
+	
 	public NodeInformation getNodeInformation(int nodeId)
 	{
 		logger.fine("Sending Node Information Request Message");
