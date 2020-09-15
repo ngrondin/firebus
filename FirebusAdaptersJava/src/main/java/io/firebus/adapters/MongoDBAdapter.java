@@ -64,8 +64,9 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		DataMap responseJSON = new DataMap();
 		try
 		{
-			logger.finer("Starting mongo request");
+			long start = System.currentTimeMillis();
 			DataMap request = new DataMap(payload.getString());
+			logger.finer("Starting mongo request : " + request.toString(0, true));
 			if(request.containsKey("tuple")) 
 			{
 				DataList list = aggregate(request);
@@ -82,7 +83,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				responseJSON.put("result", "ok");
 			}
 			response = new Payload(null, responseJSON.toString().getBytes());
-
+			logger.finer("Returning mongo response in " + (System.currentTimeMillis() - start) + "ms");
 		}
 		catch(Exception e)
 		{
