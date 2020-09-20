@@ -86,7 +86,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
             			Claim usernameClaim = jwt.getClaim("email");
             			String username = usernameClaim.asString();
             			_securityHandler.enrichAuthResponse(username, resp);
-            			resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
+            			resp.setStatus(HttpServletResponse.SC_SEE_OTHER);
             			resp.setHeader("location", redirectUrlResolved);		
             	        PrintWriter writer = resp.getWriter();
             	        writer.println("<html><title>Redirect</title><body>Loging in</body></html>");

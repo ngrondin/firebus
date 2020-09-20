@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +40,7 @@ import io.firebus.utils.DataMap;
 
 //TODO: Can all be generalised into the oAuth2CodeValidator
 public class AppleValidator extends AuthValidationHandler {
+	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	protected String loginUrl;
 	protected String tokenUrl;
 	protected String clientId;
@@ -79,8 +81,9 @@ public class AppleValidator extends AuthValidationHandler {
 		    		.withExpiresAt(new Date((new Date()).getTime() + expiry))
 		    		.sign(algorithm);
 		} catch(Exception e) {
-		
+			logger.severe("Error generating the Apple client secret: " + e.getMessage());
 		}	
+		logger.info("Apple client secret is : " + clientSecret);
 		return clientSecret;
 	}
 	
@@ -140,7 +143,7 @@ public class AppleValidator extends AuthValidationHandler {
 	            			Claim usernameClaim = jwt.getClaim("email");
 	            			String username = usernameClaim.asString();
 	            			_securityHandler.enrichAuthResponse(username, resp);
-	            			resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
+	            			resp.setStatus(HttpServletResponse.SC_SEE_OTHER);
 	            			resp.setHeader("location", redirectUrlResolved);		
 	            	        PrintWriter writer = resp.getWriter();
 	            	        writer.println("<html><title>Redirect</title><body>Loging in</body></html>");
