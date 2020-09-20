@@ -35,7 +35,9 @@ public class MessageQueue
 		if(head == tail) {
 			return null;
 		} else {
-			Message msg = messages[tail++];
+			Message msg = messages[tail];
+			messages[tail] = null;
+			tail++;
 			if(tail >= messages.length)
 				tail = 0;
 			return msg;

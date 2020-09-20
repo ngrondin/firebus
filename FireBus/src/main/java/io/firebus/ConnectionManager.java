@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import javax.crypto.SecretKey;
 
+import io.firebus.information.KnownAddressInformation;
 import io.firebus.information.NodeInformation;
 import io.firebus.interfaces.ConnectionListener;
 
@@ -24,7 +25,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	protected NodeCore nodeCore;
 	protected ConnectionServer connectionServer;
 	protected ArrayList<Connection> connections;
-	protected ArrayList<Address> knownAddresses;
+	protected ArrayList<KnownAddressInformation> knownAddresses;
 	protected int minimumConnectedNodeCount;
 	protected int maxConnectionLoad;
 	protected Random rnd;
@@ -43,7 +44,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	protected void initialise(NodeCore nc, int nid, String n, SecretKey k, int p) throws IOException 
 	{
 		connections = new ArrayList<Connection>();
-		knownAddresses = new ArrayList<Address>();
+		knownAddresses = new ArrayList<KnownAddressInformation>();
 		nodeCore = nc;
 		nodeId = nid;
 		networkName = n;
@@ -98,15 +99,15 @@ public class ConnectionManager extends Thread implements ConnectionListener
 				
 				for(int i = 0; i < knownAddresses.size(); i++)
 				{
-					Address a = knownAddresses.get(i);
+					KnownAddressInformation kai = knownAddresses.get(i);
 					boolean hasConnection = false;
 					for(int j = 0; j < connections.size(); j++)
-						if(connections.get(j).remoteAddressEquals(a))
+						if(connections.get(j).remoteAddressEquals(kai.getAddress()))
 							hasConnection = true;
-					if(!hasConnection)
+					if(!hasConnection && kai.isDueToTry())
 					{
 						logger.fine("Creating new connection from known address");
-						createConnection(a);
+						createConnection(kai.getAddress());
 					}
 				}
 				
@@ -175,12 +176,15 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		Address a = c.getRemoteAddress();
 		if(a != null)
 		{
-			logger.fine("Connection " + c.getId() + " failed. Removing address " + a + " from node");
+			logger.fine("Connection " + c.getId() + " failed.");
 			NodeInformation ni = nodeCore.getDirectory().getNodeByAddress(a); 
-			if(ni != null)
+			if(ni != null) {
+				logger.finer("Removing address " + a + " from node");
 				ni.removeAddress(a);
-			if(knownAddresses.contains(a))
-				knownAddresses.remove(a);
+			}
+			for(KnownAddressInformation kai: knownAddresses) 
+				if(kai.getAddress().equals(a))
+					kai.connectionFailed();
 		}
 	}
 	
@@ -216,7 +220,8 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	public void addKnownNodeAddress(String a, int p)
 	{
 		Address address = new Address(a, p);
-		knownAddresses.add(address);
+		KnownAddressInformation kai = new KnownAddressInformation(address);
+		knownAddresses.add(kai);
 	}	
 	
 	public void sendMessage(Message msg)
