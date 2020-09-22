@@ -44,7 +44,7 @@ public class AppleValidator extends AuthValidationHandler {
 	protected String loginUrl;
 	protected String tokenUrl;
 	protected String clientId;
-	protected String clientSecret;
+	//protected String clientSecret;
 	protected String keyId;
 	protected String privateKey;
 	protected String redirectUrl;
@@ -56,7 +56,7 @@ public class AppleValidator extends AuthValidationHandler {
 		clientId = handlerConfig.getString("clientid");
 		keyId = handlerConfig.getString("keyid");
 		privateKey = handlerConfig.getString("privatekey");
-		clientSecret = getClientSecret(clientId);
+		//clientSecret = getClientSecret(clientId);
 		redirectUrl = handlerConfig.getString("redirecturl");
 	}
 	
@@ -90,7 +90,7 @@ public class AppleValidator extends AuthValidationHandler {
 	
     protected void httpService(HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
     {
-    	if(tokenUrl != null && clientId != null && clientSecret != null)
+    	if(tokenUrl != null && clientId != null)
     	{
     		try {
 	    		InputStream is = req.getInputStream();
@@ -121,7 +121,7 @@ public class AppleValidator extends AuthValidationHandler {
 	        		List<NameValuePair> params = new ArrayList<NameValuePair>(2);
 	        		params.add(new BasicNameValuePair("code", code));
 	        		params.add(new BasicNameValuePair("client_id", clientId));
-	        		params.add(new BasicNameValuePair("client_secret", clientSecret));
+	        		params.add(new BasicNameValuePair("client_secret", getClientSecret(clientId)));
 	        		params.add(new BasicNameValuePair("redirect_uri", publicHost + path));
 	        		params.add(new BasicNameValuePair("grant_type", "authorization_code"));
 	        		httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
