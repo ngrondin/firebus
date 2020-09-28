@@ -1,5 +1,6 @@
 package io.firebus.adapters;
 
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -24,13 +25,17 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected MongoClient client;
 	protected MongoDatabase database;
-	//protected int pageSize;
+	protected DataMap queryColumns;	
+	protected long lastWriteOfQueryColumns;
 	
 	public MongoDBAdapter(DataMap c)
 	{
 		super(c);
-		//pageSize = config.containsKey("pagesize") ? config.getNumber("pagesize").intValue() : 50;
 		connectMongo();
+		if(config.getBoolean("writecolumns")) {
+			queryColumns = new DataMap();
+			lastWriteOfQueryColumns = 0;
+		}
 	}
 
 	protected void connectMongo()
@@ -106,10 +111,13 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			{
 				Iterator<Document> it = null;
 				Document filterDoc = null;
-				if(request.containsKey("filter"))
-					filterDoc = Document.parse(request.getObject("filter").toString()); 
-				else
+				if(request.containsKey("filter")) {
+					DataMap filter = request.getObject("filter");
+					recordQuery(objectName, filter);
+					filterDoc = Document.parse(filter.toString());					
+				} else {
 					filterDoc = new Document();
+				}
 				Document sortDoc = new Document();
 				if(request.containsKey("sort")) {
 					DataMap sortItem = null;
@@ -288,6 +296,43 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		else
 		{
 			logger.severe("Database as not been specificied in the configuration");
+		}
+	}
+	
+	protected void recordQuery(String object, DataMap filter) {
+		if(queryColumns != null) {
+			DataMap cols = queryColumns.getObject(object);
+			if(cols == null) {
+				cols = new DataMap();
+				queryColumns.put(object, cols);
+			}
+			Iterator<String> ki = filter.keySet().iterator();
+			while(ki.hasNext()) {
+				String col = ki.next();
+				if(col.equals("$or")) {
+					DataList list = filter.getList("$or");
+					for(int i = 0; i < list.size(); i++) 
+						recordQuery(object, list.getObject(i));
+				} else {
+					if(!cols.containsKey(col)) {
+						cols.put(col, 1);
+					} else {
+						int cnt = cols.getNumber(col).intValue() + 1;
+						cols.put(col, cnt);
+					}
+				}
+			}	
+			long now = System.currentTimeMillis();
+			if(now > lastWriteOfQueryColumns + 60000) {
+				try {
+					FileOutputStream fos = new FileOutputStream("mongo_columns.json");
+					fos.write(queryColumns.toString().getBytes());
+					fos.close();
+				} catch(Exception e) {
+					logger.severe(e.getMessage());
+				}
+				lastWriteOfQueryColumns = now;
+			}
 		}
 	}
 
