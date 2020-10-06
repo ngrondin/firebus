@@ -282,7 +282,13 @@ public class DataLiteral extends DataEntity
 		Object otherObject = o;
 		if(o instanceof DataLiteral)
 			otherObject = ((DataLiteral)o).getObject();
-		return getObject().equals(otherObject);
+		Object thisObject = getObject();
+		if(thisObject == null && otherObject == null)
+			return true;
+		else if(thisObject != null && otherObject != null && thisObject.equals(otherObject))
+			return true;
+		else
+			return false;
 	}
 	
 	public String toString()
