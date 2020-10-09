@@ -10,8 +10,10 @@ import javax.servlet.ServletException;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.message.BasicNameValuePair;
@@ -36,11 +38,15 @@ public class GeneralOutboundHandler extends OutboundHandler {
 		String url = (this.baseUrl != null && request.containsKey("path") ? baseUrl + "/" + request.getString("path") : request.getString("url"));
 		String method = request.getString("method");
 		HttpUriRequest httpRequest = null;
-		if(method.equals("post")) 
+		if(method.equals("post") || method.equals("put")) 
 		{
-			HttpPost httpPost = new HttpPost(url);
+			HttpEntityEnclosingRequestBase entityRequest = null;
+			if(method.equals("post"))
+				entityRequest = new HttpPost(url);
+			else if(method.equals("put"))
+				entityRequest = new HttpPut(url);
 			if(request.containsKey("body")) {
-				httpPost.setEntity(new ByteArrayEntity(request.get("body").toString().getBytes()));
+				entityRequest.setEntity(new ByteArrayEntity(request.get("body").toString().getBytes()));
 			} else if(request.containsKey("form")) {
 				List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 				Iterator<String> it = request.getObject("form").keySet().iterator();
@@ -48,10 +54,10 @@ public class GeneralOutboundHandler extends OutboundHandler {
 					String key = it.next();
 					formParams.add(new BasicNameValuePair(key, request.getObject("form").getString(key)));
 				}				
-				httpPost.setEntity(new UrlEncodedFormEntity(formParams, "UTF-8"));
+				entityRequest.setEntity(new UrlEncodedFormEntity(formParams, "UTF-8"));
 			}
-			httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded");
-			httpRequest = httpPost;
+			entityRequest.setHeader("Content-Type", "application/x-www-form-urlencoded");
+			httpRequest = entityRequest;
 		}
 		else if(method.equals("get"))
 		{

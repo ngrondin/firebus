@@ -42,6 +42,7 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
 		Payload fbResponse = null;
 		try 
 		{
+			logger.finest("Processing outbound request " + payload.toString());
 			HttpUriRequest httpRequest = processRequest(payload);
 			if(httpRequest != null)
 			{
@@ -58,8 +59,9 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
         		}
         		else
         		{
-        			logger.finer("Http error " + respStatus);
-        			throw new FunctionErrorException("Http error " + respStatus);
+        			logger.severe("Http error " + respStatus + " on request " + httpRequest.toString() + " " + httpRequest.getAllHeaders() + "");
+        			logger.severe("Input was " + payload.toString());
+        			throw new FunctionErrorException("Http error " + respStatus + " on request " + httpRequest.toString() + " " + httpRequest.getAllHeaders() + " ");
         		}
 			}
 		}
