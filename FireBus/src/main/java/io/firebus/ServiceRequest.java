@@ -57,9 +57,10 @@ public class ServiceRequest extends Thread
 	public Payload execute() throws FunctionErrorException, FunctionTimeoutException
 	{
 		logger.finer("Requesting Service");
+		boolean responseReceived = false;
 		Payload responsePayload = null;
 		NodeInformation lastRequestedNode = null;
-		while(responsePayload == null  &&  System.currentTimeMillis() < expiry)
+		while(responseReceived == false  &&  System.currentTimeMillis() < expiry)
 		{
 			NodeInformation ni = FunctionFinder.findFunction(nodeCore, serviceName); 
 			if(ni != null)
@@ -89,6 +90,7 @@ public class ServiceRequest extends Thread
 						} 
 						else if(respMsg.getType() == Message.MSGTYPE_SERVICERESPONSE)
 						{
+							responseReceived = true;
 							responsePayload = respMsg.getPayload();
 							ni.getFunctionInformation(serviceName).resetRating();
 							break;
@@ -117,7 +119,7 @@ public class ServiceRequest extends Thread
 			}			
 		}
 		
-		if(responsePayload != null)
+		if(responseReceived)
 			return responsePayload;
 		else
 			throw new FunctionTimeoutException("Service " + serviceName + " could not be found");
