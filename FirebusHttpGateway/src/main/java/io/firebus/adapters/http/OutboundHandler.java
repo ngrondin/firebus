@@ -10,6 +10,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
@@ -48,26 +49,25 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
 			{
 				HttpResponse response = httpClient.execute(httpRequest);
         		int respStatus = response.getStatusLine().getStatusCode(); 
+        		HttpEntity entity = response.getEntity();
         		if(respStatus >= 200 && respStatus < 400)
         		{
-            		HttpEntity entity = response.getEntity();
-            		if (entity != null) 
-            		{
-            			fbResponse = processResponse(entity);
-						logger.finest(fbResponse.toString());
-            		}
+        			fbResponse = processResponse(entity);
+					logger.finest(fbResponse.toString());
         		}
         		else
         		{
-        			logger.severe("Http error " + respStatus + " on request " + httpRequest.toString() + " " + httpRequest.getAllHeaders() + "");
+        			String responseStr = EntityUtils.toString(entity).replaceAll("\r", "").replaceAll("\n", "").replaceAll("\t", "");
+        			String errorMsg = "Http error " + respStatus + " on request " + httpRequest.toString() + " with response " + responseStr + " ";
+        			logger.severe(errorMsg);
         			logger.severe("Input was " + payload.toString());
-        			throw new FunctionErrorException("Http error " + respStatus + " on request " + httpRequest.toString() + " " + httpRequest.getAllHeaders() + " ");
+        			throw new FunctionErrorException(errorMsg);
         		}
 			}
 		}
-		catch(Exception e) 
+		catch(IOException | DataException | ServletException e) 
 		{
-			throw new FunctionErrorException("Error executing http request", e);
+			throw new FunctionErrorException("Error in outbound handler", e);
 		}
 		return fbResponse;
 	}
