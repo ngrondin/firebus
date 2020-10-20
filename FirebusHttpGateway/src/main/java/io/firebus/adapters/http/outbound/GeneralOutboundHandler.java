@@ -12,6 +12,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -38,13 +39,15 @@ public class GeneralOutboundHandler extends OutboundHandler {
 		String url = (this.baseUrl != null && request.containsKey("path") ? baseUrl + "/" + request.getString("path") : request.getString("url"));
 		String method = request.getString("method");
 		HttpUriRequest httpRequest = null;
-		if(method.equals("post") || method.equals("put")) 
+		if(method.equals("post") || method.equals("put") || method.equals("patch")) 
 		{
 			HttpEntityEnclosingRequestBase entityRequest = null;
 			if(method.equals("post"))
 				entityRequest = new HttpPost(url);
 			else if(method.equals("put"))
 				entityRequest = new HttpPut(url);
+			else if(method.equals("patch"))
+				entityRequest = new HttpPatch(url);
 			if(request.containsKey("body")) {
 				entityRequest.setEntity(new ByteArrayEntity(request.get("body").toString().getBytes()));
 			} else if(request.containsKey("form")) {
