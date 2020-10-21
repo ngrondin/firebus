@@ -92,7 +92,7 @@ public class MasterHandler extends HttpServlet
 		{
 			resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
 	        PrintWriter writer = resp.getWriter();
-			writer.println("No mapping, fool.");
+			writer.println("No mapping.");
 		}			
 	}	
 }
