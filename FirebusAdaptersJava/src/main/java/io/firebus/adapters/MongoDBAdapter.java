@@ -6,6 +6,9 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 import org.bson.Document;
+import org.bson.json.Converter;
+import org.bson.json.JsonWriterSettings;
+import org.bson.json.StrictJsonWriter;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -27,10 +30,17 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 	protected MongoDatabase database;
 	protected DataMap queryColumns;	
 	protected long lastWriteOfQueryColumns;
+	protected JsonWriterSettings jsonWritterSettings;
 	
 	public MongoDBAdapter(DataMap c)
 	{
 		super(c);
+		jsonWritterSettings = JsonWriterSettings.builder()
+		         .int64Converter(new Converter<Long>() {
+					public void convert(Long value, StrictJsonWriter writer) {
+						writer.writeNumber(value.toString());
+					}})
+		         .build();
 		connectMongo();
 		if(config.getBoolean("writecolumns")) {
 			queryColumns = new DataMap();
@@ -234,7 +244,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			while(it.hasNext() && responseList.size() < count)
 			{
 				Document doc = it.next();
-				String str = doc.toJson();
+				String str = doc.toJson(jsonWritterSettings);
 				DataMap obj = new DataMap(str);
 				responseList.add(obj);
 			}
