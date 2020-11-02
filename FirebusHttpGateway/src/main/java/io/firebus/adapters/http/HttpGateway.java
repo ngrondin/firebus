@@ -57,8 +57,6 @@ public class HttpGateway implements ServiceProvider
 	        tomcat.getConnector().setAttribute("compression", "on");
 	        tomcat.getConnector().setAttribute("compressableMimeType", "text/html,text/xml,text/plain,application/json,application/javascript");
 	        
-	        //tomcat.setPort(port);
-	         
 	        String contextPath = config.containsKey("path") ? config.getString("path") : "/";
 	        String docBase = new File(".").getAbsolutePath();
 	        Context context = tomcat.addContext(contextPath, docBase);
