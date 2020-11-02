@@ -291,7 +291,10 @@ public class Connection extends Thread
 				os.write((bytes.length >> 16) & 0x000000FF);
 				os.write((bytes.length >> 24) & 0x000000FF);
 				os.write(bytes);
-				os.write(msg.getCRC());
+				int crc = 0;
+				for(int i = 0; i < bytes.length; i++)
+					crc = (crc ^ bytes[i]) & 0x00FF;
+				os.write(crc);
 				os.flush();
 				byteCount += bytes.length;
 				logger.finer("Sent message on connection " + getId() + " to remote node " + remoteNodeId + "(load: " + load + ")");

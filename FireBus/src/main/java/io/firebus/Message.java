@@ -226,7 +226,7 @@ public class Message
 		return payload;
 	}
 
-	public int getCRC()
+	/*public int getCRC()
 	{
 		int crc = 0;
 		byte[] b = serialise();
@@ -235,7 +235,7 @@ public class Message
 			crc = (crc ^ b[i]) & 0x00FF;
 		}
 		return crc;
-	}
+	}*/
 
 	public String toString()
 	{
