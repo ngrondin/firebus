@@ -35,6 +35,7 @@ public class PostFormHandler extends InboundHandler
 		}
 		Payload payload = new Payload(body.toString());
 		payload.metadata.put("post", shortPath);
+		payload.metadata.put("mime", "application/json");
 		return payload;
 	}
 

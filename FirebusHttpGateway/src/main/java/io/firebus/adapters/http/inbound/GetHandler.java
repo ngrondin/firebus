@@ -34,6 +34,7 @@ public class GetHandler extends InboundHandler
 			fbReq.put(paramName, req.getParameter(paramName));
 		}
 		Payload payload = new Payload(fbReq.toString().getBytes());
+		payload.metadata.put("mime", "application/json");
 		return payload;
 	}
 
