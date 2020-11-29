@@ -218,7 +218,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 						} else {
 							key = tuple.getString(j);
 						}
-						item.put(key, item.getString("_id." + key));
+						item.put(key, item.get("_id." + key));
 					}
 					item.remove("_id");
 				}

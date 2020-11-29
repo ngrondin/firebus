@@ -6,10 +6,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.commons.dbcp.BasicDataSource;
@@ -353,16 +351,20 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 					DataMap map = filter.getObject(key);
 					if(map.containsKey("$in"))
 					{
-						where.append(key);
-						where.append(" in (");
 						DataList list = map.getList("$in");
-						for(int i = 0 ; i < list.size(); i++)
-						{
-							if(i > 0)
-								where.append(", ");
-							where.append(list.get(i));
+						if(list.size() > 0) {
+							where.append(key);
+							where.append(" in (");
+							for(int i = 0 ; i < list.size(); i++)
+							{
+								if(i > 0)
+									where.append(", ");
+								where.append(list.get(i));
+							}
+							where.append(")");
+						} else {
+							where.append("0=1");
 						}
-						where.append(")");
 					}
 					else if(map.containsKey("$regex"))
 					{
