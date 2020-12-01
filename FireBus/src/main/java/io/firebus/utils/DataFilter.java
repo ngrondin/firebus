@@ -112,6 +112,15 @@ public class DataFilter {
 						} else {
 							ret = false;
 						}
+					} else if(fValObj.containsKey("$regex")) {
+						DataEntity fSubVal = fValObj.get("$regex");
+						if(fSubVal instanceof DataLiteral && dVal instanceof DataLiteral && ((DataLiteral)dVal).getType() != DataLiteral.TYPE_NULL) {
+							String regexStr = "(.*)" + ((DataLiteral)fSubVal).getString() + "(.*)";
+							String str = ((DataLiteral)dVal).getString(); 
+							ret = str.matches(regexStr);
+						} else {
+							ret = false;
+						}
 					} 
 				} else if(fVal instanceof DataLiteral) {
 					if(!valuesAreEqual(fVal, dVal)) {
