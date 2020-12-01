@@ -10,6 +10,7 @@ import javax.servlet.ServletException;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPatch;
@@ -66,6 +67,10 @@ public class GeneralOutboundHandler extends OutboundHandler {
 		{
 			httpRequest = new HttpGet(url);
 		}
+		else if(method.equals("delete"))
+		{
+			httpRequest = new HttpDelete(url);
+		}
 		
 		if(request.containsKey("cookie")) {
 			String cookie = "";
@@ -92,10 +97,14 @@ public class GeneralOutboundHandler extends OutboundHandler {
 
 	@Override
 	protected Payload processResponse(HttpEntity response) throws ServletException, IOException, DataException {
-		String responseStr = EntityUtils.toString(response);
-		EntityUtils.consume(response);
-		Payload payload = new Payload(responseStr);
-		return payload;
+		if(response != null) {
+			String responseStr = EntityUtils.toString(response);
+			EntityUtils.consume(response);
+			Payload payload = new Payload(responseStr);
+			return payload;
+		} else {
+			return new Payload(new DataMap("result", "response empty").toString());
+		}
 	}
 
 }
