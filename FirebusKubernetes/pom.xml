@@ -31,7 +31,7 @@
 
 	<properties>
 		<tomcat.version>8.5.2</tomcat.version>
-		<io.firebus.version>1.1.5</io.firebus.version>
+		<io.firebus.version>1.1.6</io.firebus.version>
 	</properties>
 	
 	<dependencies>
