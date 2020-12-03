@@ -93,4 +93,12 @@ public class JWTCookie extends SecurityHandler {
 			resp.addCookie(cookie);
 		}		
 	}
+
+	public void enrichLogoutResponse(HttpServletResponse resp) {
+		Cookie cookie = new Cookie(cookieName, "");
+		cookie.setPath("/");
+		cookie.setMaxAge(0);
+		resp.addCookie(cookie);
+		
+	}
 }

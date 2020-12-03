@@ -64,4 +64,6 @@ public abstract class SecurityHandler {
 	public abstract void enrichFirebusRequest(HttpServletRequest req, Payload payload) throws ServletException, IOException;
 	
 	public abstract void enrichAuthResponse(String username, HttpServletResponse resp) throws ServletException, IOException;
+	
+	public abstract void enrichLogoutResponse(HttpServletResponse resp);
 }

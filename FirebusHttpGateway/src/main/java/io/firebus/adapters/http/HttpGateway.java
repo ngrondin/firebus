@@ -72,7 +72,8 @@ public class HttpGateway implements ServiceProvider
 	        String publicHost = config.getString("publichost");
 	        
 	        DataList list = config.getList("security");
-	        Map<String, SecurityHandler> securityHandlers = new HashMap<String, SecurityHandler>();
+	        Map<String, SecurityHandler> securityHandlerMap = new HashMap<String, SecurityHandler>();
+	        List<SecurityHandler> securityHandlerList = new ArrayList<SecurityHandler>();
 	        if(list != null)
 	        {
 		        for(int i = 0; i < list.size(); i++)
@@ -80,11 +81,16 @@ public class HttpGateway implements ServiceProvider
 		        	DataMap securityConfig = list.getObject(i);
 		        	String name = securityConfig.getString("name");
 		            SecurityHandler handler = getSecurityHandler(securityConfig);
-		            if(handler != null)
-		            	securityHandlers.put(name, handler);
+		            if(handler != null) {
+		            	securityHandlerMap.put(name, handler);
+		            	securityHandlerList.add(handler);
+		            }
 		        }
 	        }
 	        
+	        LogoutHandler logoutHandler = new LogoutHandler(new DataMap(), firebus);
+	        logoutHandler.setSecuritytHandlers(securityHandlerList);
+	        masterHandler.setLogouHander(logoutHandler);
 
 	        list = config.getList("authvalidation");
 	        List<AuthValidationHandler> authValidationHanders = new ArrayList<AuthValidationHandler>();
@@ -99,7 +105,7 @@ public class HttpGateway implements ServiceProvider
 		            AuthValidationHandler handler = getAuthValidationHandler(authConfig);
 		            if(handler != null) {
 		            	if(security != null) {
-		            		SecurityHandler securityHandler = securityHandlers.get(security); 
+		            		SecurityHandler securityHandler = securityHandlerMap.get(security); 
 		            		handler.setSecurityHandler(securityHandler);
 		            		securityHandler.addAuthValidationHandler(handler);		            		
 		            	}
@@ -124,7 +130,7 @@ public class HttpGateway implements ServiceProvider
 		            InboundHandler handler = getInboundHandler(inboundConfig);
 		            if(handler != null) {
 		            	if(security != null)
-		            		handler.setSecurityHandler(securityHandlers.get(security));
+		            		handler.setSecurityHandler(securityHandlerMap.get(security));
 		            	masterHandler.addHttpHandler(urlPattern, method, handler);
 		            }
 		        }
@@ -143,7 +149,7 @@ public class HttpGateway implements ServiceProvider
 		            if(handler != null)
 		            {
 		            	if(security != null)
-		            		handler.setSecurityHandler(securityHandlers.get(security));
+		            		handler.setSecurityHandler(securityHandlerMap.get(security));
 		            	masterHandler.addHttpHandler(urlPattern, "get", handler);
 		            	if(handler instanceof ServiceProvider)
 		            		firebus.registerServiceProvider(name, (ServiceProvider)handler, 10);

@@ -18,6 +18,7 @@ public class MasterHandler extends HttpServlet
 	
 	protected List<HttpHandlerEntry> handlerMap; 
 	protected HttpHandler defaultHandler;
+	protected HttpHandler logoutHandler;
 	protected String rootForward;
 
 	public MasterHandler()
@@ -36,6 +37,11 @@ public class MasterHandler extends HttpServlet
 		defaultHandler = dh;
 	}
 	
+	public void setLogouHander(HttpHandler lh)
+	{
+		logoutHandler = lh;
+	}
+	
 	public void setRootForward(String path)
 	{
 		rootForward = path;
@@ -51,35 +57,43 @@ public class MasterHandler extends HttpServlet
 			path = rootForward;
 
 		HttpHandler selected = null;
-		for(int i = 0; i < handlerMap.size() && selected == null; i++) 
+		if(path.equals("/logout")) 
 		{
-			HttpHandlerEntry entry = handlerMap.get(i);
-			boolean match = true;
-			if(entry.method == null || (entry.method != null && entry.method.equalsIgnoreCase(method)))
+			selected = logoutHandler;
+		}
+		else 
+		{
+			for(int i = 0; i < handlerMap.size() && selected == null; i++) 
 			{
-				if(entry.path.endsWith("/*")) 
+				HttpHandlerEntry entry = handlerMap.get(i);
+				boolean match = true;
+				if(entry.method == null || (entry.method != null && entry.method.equalsIgnoreCase(method)))
 				{
-					String shortEntryPath = entry.path.substring(0, entry.path.length() - 2);
-					if(path.startsWith(shortEntryPath + "/") || path.equals(shortEntryPath))
-						match = true;
+					if(entry.path.endsWith("/*")) 
+					{
+						String shortEntryPath = entry.path.substring(0, entry.path.length() - 2);
+						if(path.startsWith(shortEntryPath + "/") || path.equals(shortEntryPath))
+							match = true;
+						else
+							match = false;
+					}
 					else
-						match = false;
+					{
+						if(entry.path.equals(path))
+							match = true;
+						else
+							match = false;
+					}
 				}
 				else
 				{
-					if(entry.path.equals(path))
-						match = true;
-					else
-						match = false;
+					match = false;
 				}
-			}
-			else
-			{
-				match = false;
-			}
-			if(match)
-				selected = entry.handler;
+				if(match)
+					selected = entry.handler;
+			}			
 		}
+
 		if(selected != null)
 		{
 			selected.service(req, resp);
