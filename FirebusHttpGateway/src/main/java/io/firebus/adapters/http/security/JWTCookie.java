@@ -29,7 +29,11 @@ public class JWTCookie extends SecurityHandler {
 		fbMetadataName = config.getString("fbmetaname");
 		jwtSecret = config.getString("jwtsecret");
 		jwtIssuer = config.getString("jwtissuer");
-		timeout = 3600000;
+		if(config.containsKey("timeout")) {
+			timeout = config.getNumber("timeout").longValue();
+		} else {
+			timeout = 3600000;
+		}
 	}
 
 	public boolean checkHttpRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -74,20 +78,18 @@ public class JWTCookie extends SecurityHandler {
 	
 	protected void setToken(String username, HttpServletResponse resp)
 	{
-		long expiry = 28800000;
-		
 	    Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
 	    String token = JWT.create()
 	    		.withIssuer(jwtIssuer)
 	    		.withClaim("email", username)
-	    		.withExpiresAt(new Date((new Date()).getTime() + expiry))
+	    		.withExpiresAt(new Date((new Date()).getTime() + timeout))
 	    		.sign(algorithm);
 
 		if(cookieName != null)
 		{
 			Cookie cookie = new Cookie(cookieName, token);
 			cookie.setPath("/");
-			cookie.setMaxAge((int)(expiry / 1000));
+			cookie.setMaxAge((int)(timeout / 1000));
 			resp.addCookie(cookie);
 		}		
 	}
