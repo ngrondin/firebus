@@ -7,7 +7,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
-import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.dbcp.BasicDataSource;
@@ -18,7 +18,6 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
-import io.firebus.utils.DataEntity;
 import io.firebus.utils.DataException;
 import io.firebus.utils.DataList;
 import io.firebus.utils.DataLiteral;
@@ -179,8 +178,8 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		try
 		{
 			conn = dataSource.getConnection();
-	        ps1 = conn.prepareStatement(select.toString());
-			setStatementParams(ps1, select);
+	        ps1 = conn.prepareStatement(select.getParameterizedStatement());
+	        select.setStatementParams(ps1);
 	        rs1 = ps1.executeQuery();
 	        ResultSetMetaData rsmd = rs1.getMetaData();
 	        int colCnt = rsmd.getColumnCount();
@@ -205,7 +204,8 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	        	list.add(map);
 	        }
 	        qt = System.currentTimeMillis() - start;
-			logger.finer("[" + qt + "ms] " + select.toString());
+	        if(logger.getLevel() == Level.FINER)
+	        	logger.finer("[" + qt + "ms, " + list.size() + " rows] " + select.getNonParameterizedStatement());
 		}
 		catch(Exception e)
 		{
@@ -246,13 +246,14 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		        long qt = 0;
 		        long start = System.currentTimeMillis();
 				conn = dataSource.getConnection();
-		        ps1 = conn.prepareStatement(select.toString());
-				setStatementParams(ps1, select);
+		        ps1 = conn.prepareStatement(select.getParameterizedStatement());
+		        select.setStatementParams(ps1);
 		        rs1 = ps1.executeQuery();
 		        rs1.next();
 		        int count = rs1.getInt(1);
 		        qt = System.currentTimeMillis() - start;
-				logger.finer("[" + qt + "ms] " + select.toString());
+		        if(logger.getLevel() == Level.FINER)
+		        	logger.finer("[" + qt + "ms, 1 row] " + select.getNonParameterizedStatement());
 		        if(count > 0)
 		        {
 		        	StatementBuilder update = new StatementBuilder();
@@ -298,13 +299,14 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		        	insert.append(values);
 		        	sql = insert;
 		        }
-		        ps2 = conn.prepareStatement(sql.toString());
-				setStatementParams(ps2, sql);
+		        ps2 = conn.prepareStatement(sql.getParameterizedStatement());
+				sql.setStatementParams(ps2);
 		        long et = 0;
 		        start = System.currentTimeMillis();
 		        ps2.execute();
 		        et = System.currentTimeMillis() - start;
-				logger.finer("[" + et + "ms] " + sql.toString());
+		        if(logger.getLevel() == Level.FINER)
+		        	logger.finer("[" + et + "ms, 1 row] " + sql.getNonParameterizedStatement());
 			}
 			catch(Exception e)
 			{
@@ -403,7 +405,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		return where;
 	}
 	
-	
+	/*
 	public void setStatementParams(PreparedStatement ps, StatementBuilder sb) throws SQLException
 	{
 		List<DataEntity> params = sb.getParams();
@@ -451,4 +453,5 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 			}			
 		}
 	}
+	*/
 }
