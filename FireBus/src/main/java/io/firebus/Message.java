@@ -25,6 +25,7 @@ public class Message
 	public static final int MSGTYPE_GETFUNCTIONINFORMATION = 4;
 	public static final int MSGTYPE_FUNCTIONINFORMATION = 5;
 	public static final int MSGTYPE_REQUESTSERVICE = 6;
+	public static final int MSGTYPE_REQUESTSERVICEANDFORGET = 19;
 	public static final int MSGTYPE_SERVICERESPONSE = 7;
 	public static final int MSGTYPE_FUNCTIONUNAVAILABLE = 8;
 	public static final int MSGTYPE_SERVICEERROR = 9;
@@ -38,7 +39,7 @@ public class Message
 	public static final int MSGTYPE_STREAMEND = 18;
 	
 	
-	protected static final short  MESSAGE_VERSION = 4;
+	protected static final short  MESSAGE_VERSION = 5;
 	
 	protected static int nextId = 0;
 	

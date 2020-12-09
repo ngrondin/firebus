@@ -140,6 +140,12 @@ public class Firebus
 		request.execute(requestor);
 	}
 	
+	public void requestServiceAndForget(String serviceName, Payload payload) throws FunctionErrorException, FunctionTimeoutException
+	{
+		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, -1);
+		request.execute();
+	}
+
 	public StreamEndpoint requestStream(String streamName, Payload payload, int timeout) throws FunctionErrorException, FunctionTimeoutException
 	{
 		StreamRequest stream = new StreamRequest(nodeCore, streamName, payload, timeout);

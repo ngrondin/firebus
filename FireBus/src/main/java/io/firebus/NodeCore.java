@@ -191,6 +191,9 @@ public class NodeCore
 					case Message.MSGTYPE_REQUESTSERVICE:
 						functionManager.executeFunction(msg);
 						break;
+					case Message.MSGTYPE_REQUESTSERVICEANDFORGET:
+						functionManager.executeFunction(msg);
+						break;
 					case Message.MSGTYPE_PROGRESS:
 						correlationManager.receiveResponse(msg);
 						break;

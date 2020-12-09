@@ -27,7 +27,7 @@ public class ServiceRequest extends Thread
 		requestTimeout = t;
 		subTimeout = 500;
 		errorMessage = null;
-		expiry = System.currentTimeMillis() + requestTimeout;
+		expiry = System.currentTimeMillis() + (requestTimeout > -1 ? requestTimeout : subTimeout);
 	}
 	
 	public void execute(ServiceRequestor r)
@@ -69,7 +69,8 @@ public class ServiceRequest extends Thread
 					try{ Thread.sleep(1000);} catch(Exception e) {}
 
 				logger.finer("Sending service request message to " + ni.getNodeId());
-				Message reqMsg = new Message(ni.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSERVICE, serviceName, requestPayload);
+				int msgType = requestTimeout >= 0 ? Message.MSGTYPE_REQUESTSERVICE : Message.MSGTYPE_REQUESTSERVICEANDFORGET;
+				Message reqMsg = new Message(ni.getNodeId(), nodeCore.getNodeId(), msgType, serviceName, requestPayload);
 				int correlation = nodeCore.getCorrelationManager().send(reqMsg, subTimeout);
 				Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
 				if(respMsg != null)
@@ -97,7 +98,16 @@ public class ServiceRequest extends Thread
 						}
 						else if(respMsg.getType() == Message.MSGTYPE_PROGRESS)
 						{
-							respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, requestTimeout);
+							if(msgType == Message.MSGTYPE_REQUESTSERVICEANDFORGET)
+							{
+								responseReceived = true;
+								ni.getFunctionInformation(serviceName).resetRating();
+								break;
+							}
+							else 
+							{
+								respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, requestTimeout);
+							}
 						}
 						
 						if(System.currentTimeMillis() > expiry)

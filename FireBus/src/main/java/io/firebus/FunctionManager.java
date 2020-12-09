@@ -112,7 +112,7 @@ public class FunctionManager
 		{
 			if(fe.canRunOneMore() && this.canRunOneMore())
 			{
-				if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE  && fe.function instanceof ServiceProvider)
+				if((msg.getType() == Message.MSGTYPE_REQUESTSERVICE || msg.getType() == Message.MSGTYPE_REQUESTSERVICEANDFORGET) && fe.function instanceof ServiceProvider)
 				{
 					logger.finer("Executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
 					Payload returnPayload = null;
@@ -126,13 +126,17 @@ public class FunctionManager
 						returnPayload = ((ServiceProvider)fe.function).service(inPayload);
 						logger.finer("Finished executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
 						
-						Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
-						responseMsg.setCorrelation(msg.getCorrelation(), 1);
-						nodeCore.route(responseMsg);
+						if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
+						{
+							Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
+							responseMsg.setCorrelation(msg.getCorrelation(), 1);
+							nodeCore.route(responseMsg);
+						}
 					}
 					catch(FunctionErrorException e)
 					{
-						sendError(e, msg.getOriginatorId(), Message.MSGTYPE_SERVICEERROR,  msg.getSubject(), msg.getCorrelation(), 1);
+						if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
+							sendError(e, msg.getOriginatorId(), Message.MSGTYPE_SERVICEERROR,  msg.getSubject(), msg.getCorrelation(), 1);
 					}
 					decreaseTotalExecutionCount();
 					fe.runEnded();
