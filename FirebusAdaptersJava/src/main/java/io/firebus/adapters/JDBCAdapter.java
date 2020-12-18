@@ -209,7 +209,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		}
 		catch(Exception e)
 		{
-			logger.severe("Error querying the database : " + e.getMessage() + " (" + select.toString() + ")");
+			logger.severe("Error querying the database : " + e.getMessage() + " (" + select.getNonParameterizedStatement() + ")");
 			throw new FunctionErrorException("Error querying the database", e);
 		}
 		finally
@@ -310,7 +310,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 			}
 			catch(Exception e)
 			{
-				logger.severe("Error updating the database : " + e.getMessage() + " (" + sql + ")");
+				logger.severe("Error updating the database : " + e.getMessage() + " (" + sql.getNonParameterizedStatement() + ")");
 				e.printStackTrace();
 			}
 			finally
