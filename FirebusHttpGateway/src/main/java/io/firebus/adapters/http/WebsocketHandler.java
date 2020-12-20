@@ -59,6 +59,7 @@ public abstract class WebsocketHandler extends HttpHandler {
 	        	Payload payload = new Payload();
 	        	if(securityHandler != null)
 	        		securityHandler.enrichFirebusRequest(req, payload);
+	        	enrichFirebusRequestDefault(req, payload);
 	        	onOpen(sessionId, payload);
 	        } catch(Exception e) {
 	        	throw new ServletException("Error opening session", e);

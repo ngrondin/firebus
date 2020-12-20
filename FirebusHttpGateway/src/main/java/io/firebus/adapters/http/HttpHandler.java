@@ -1,12 +1,14 @@
 package io.firebus.adapters.http;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
+import io.firebus.Payload;
 import io.firebus.utils.DataMap;
 
 public abstract class HttpHandler extends Handler 
@@ -54,6 +56,18 @@ public abstract class HttpHandler extends Handler
 				httpService(req, resp);
 		}		
 	}
+
+	protected void enrichFirebusRequestDefault(HttpServletRequest req, Payload payload) {
+		Iterator<String> it = req.getHeaderNames().asIterator();
+		while(it.hasNext()) {
+			String name = it.next();
+			if(name.toLowerCase().startsWith("firebus-")) {
+				String shortName = name.toLowerCase().substring(8);
+				payload.metadata.put(shortName, req.getHeader(name));
+			}
+		}
+	}
+
 	
 	protected abstract void httpService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException;
 	
