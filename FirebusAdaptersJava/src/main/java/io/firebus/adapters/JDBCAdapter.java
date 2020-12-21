@@ -141,7 +141,10 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 					columns.append(", ");
 				columns.append(metric.getString("function"));
 				columns.append("(");
-				columns.append(metric.getString("field"));
+				if(!metric.getString("function").equalsIgnoreCase("count")) 
+					columns.append(metric.getString("field"));
+				else
+					columns.append("*");
 				columns.append(") as ");
 				columns.append(metric.getString("name"));
 			}
@@ -372,7 +375,10 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 					{
 						where.append(key);
 						where.append(" like ");
-						where.append(new DataLiteral("%" + map.getString("$regex") + "%"));
+						String expr = map.getString("$regex");
+						if(expr.contains("(?i)")) 
+							expr = "%" + expr.replace("(?i)", "") + "%";
+						where.append(new DataLiteral(expr));
 					}
 					else if(map.containsKey("$gt"))
 					{
