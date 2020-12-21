@@ -1,6 +1,7 @@
 package io.firebus.adapters.http;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Iterator;
 
 import javax.servlet.ServletException;
@@ -58,9 +59,9 @@ public abstract class HttpHandler extends Handler
 	}
 
 	protected void enrichFirebusRequestDefault(HttpServletRequest req, Payload payload) {
-		Iterator<String> it = req.getHeaderNames().asIterator();
-		while(it.hasNext()) {
-			String name = it.next();
+		Enumeration<String> e = req.getHeaderNames();
+		while(e.hasMoreElements()) {
+			String name = e.nextElement();
 			if(name.toLowerCase().startsWith("firebus-")) {
 				String shortName = name.toLowerCase().substring(8);
 				payload.metadata.put(shortName, req.getHeader(name));
