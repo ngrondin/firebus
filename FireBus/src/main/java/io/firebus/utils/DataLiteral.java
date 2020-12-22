@@ -2,6 +2,7 @@ package io.firebus.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 //import java.time.ZoneId;
 import java.time.ZonedDateTime;
 //import java.time.format.DateTimeFormatter;
@@ -209,9 +210,7 @@ public class DataLiteral extends DataEntity
 		else if(valueType == TYPE_BOOLEAN)
 			return "" + boolValue;
 		else if(valueType == TYPE_DATE)
-			return dateValue.toInstant().toString();
-			//return DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(ZonedDateTime.ofInstant(dateValue.toInstant(), ZoneId.systemDefault()));
-			//return (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")).format(dateValue);
+			return Instant.ofEpochMilli(dateValue.getTime()).toString();
 		return "";
 	}
 
