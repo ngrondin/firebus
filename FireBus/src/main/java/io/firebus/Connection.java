@@ -263,11 +263,11 @@ public class Connection extends Thread
 					msgState = 0;
 				}
 			} 
-			catch (IOException e) 
+			catch (Exception e) 
 			{
 				if(state == STATE_ACTIVE) 
 				{
-					logger.severe("IOException on connection listener : " + e.getMessage());
+					logger.severe("Exception on connection : " + e.getMessage());
 					close();
 				}
 			}

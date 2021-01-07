@@ -2,6 +2,8 @@ package io.firebus;
 
 import java.nio.ByteBuffer;
 
+import io.firebus.exceptions.MessageException;
+
 
 public class Message 
 {
@@ -87,7 +89,7 @@ public class Message
 		return msg;
 	}
 	
-	public static Message deserialise(byte[] encodedMessage)
+	public static Message deserialise(byte[] encodedMessage) throws MessageException
 	{
 		ByteBuffer bb = ByteBuffer.wrap(encodedMessage);
 		short version = bb.getShort();
@@ -112,7 +114,7 @@ public class Message
 		}
 		else
 		{
-			return null;
+			throw new MessageException("Wrong message version");
 		}
 	}
 	
@@ -226,17 +228,6 @@ public class Message
 	{
 		return payload;
 	}
-
-	/*public int getCRC()
-	{
-		int crc = 0;
-		byte[] b = serialise();
-		for(int i = 0; i < b.length; i++)
-		{
-			crc = (crc ^ b[i]) & 0x00FF;
-		}
-		return crc;
-	}*/
 
 	public String toString()
 	{
