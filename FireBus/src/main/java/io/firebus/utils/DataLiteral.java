@@ -3,9 +3,8 @@ package io.firebus.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
-//import java.time.ZoneId;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
-//import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,10 +14,12 @@ public class DataLiteral extends DataEntity
 	protected String stringValue;
 	protected boolean boolValue;
 	protected Number numberValue;
-	protected Date dateValue;
+	protected ZonedDateTime dateValue;
+	protected ZonedTime timeValue;
 	protected int valueType;
 
 	static protected Pattern datePattern = Pattern.compile("^(?:[1-9]\\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d{1,9})?(?:Z|[+-][01]\\d:[0-5]\\d)$");
+	static protected Pattern timePattern = Pattern.compile("^T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d{1,9})?(?:Z|[+-][01]\\d:[0-5]\\d|\\[[a-zA-Z]+\\/[a-zA-Z]+\\])$");
 	static protected Pattern doublePattern = Pattern.compile("[-+]?\\d*\\.\\d+");
 	static protected Pattern longPattern = Pattern.compile("[-+]?\\d+");
 	
@@ -27,6 +28,7 @@ public class DataLiteral extends DataEntity
 	static public int TYPE_NUMBER = 2;
 	static public int TYPE_BOOLEAN = 3;
 	static public int TYPE_DATE = 4;
+	static public int TYPE_TIME = 5;
 	
 	public DataLiteral(Object v)
 	{
@@ -52,8 +54,18 @@ public class DataLiteral extends DataEntity
 		else if(v instanceof Date)
 		{
 			valueType = TYPE_DATE;
-			dateValue = (Date)v;
+			dateValue = ZonedDateTime.ofInstant(Instant.ofEpochMilli(((Date)v).getTime()), ZoneId.systemDefault());
 		}
+		else if(v instanceof ZonedDateTime)
+		{
+			valueType = TYPE_DATE;
+			dateValue = (ZonedDateTime)v;
+		}
+		else if(v instanceof ZonedTime)
+		{
+			valueType = TYPE_TIME;
+			timeValue = (ZonedTime)v;
+		}		
 	}
 	
 	public DataLiteral(InputStream is) throws DataException, IOException
@@ -96,19 +108,28 @@ public class DataLiteral extends DataEntity
 						inQuotes = false;
 						hadQuotes = true;
 						String tempString = sb.toString();
-						Matcher matcher = datePattern.matcher(tempString);
-						if(matcher.matches())		
+						if(datePattern.matcher(tempString).matches())		
 						{
 							try
 							{
 								valueType = TYPE_DATE;
-								//dateValue = dateFormat.parse(tempString);
-								dateValue = Date.from(ZonedDateTime.parse(tempString).toInstant());
-								
+								dateValue = ZonedDateTime.parse(tempString);
 							} 
 							catch (Exception e)
 							{
 								throw new DataException("Error processing date value");
+							}
+						}
+						else if(timePattern.matcher(tempString).matches()) 
+						{
+							try
+							{
+								valueType = TYPE_TIME;
+								timeValue = ZonedTime.parse(tempString);
+							} 
+							catch (Exception e)
+							{
+								throw new DataException("Error processing time value");
 							}
 						}
 						else
@@ -210,7 +231,9 @@ public class DataLiteral extends DataEntity
 		else if(valueType == TYPE_BOOLEAN)
 			return "" + boolValue;
 		else if(valueType == TYPE_DATE)
-			return Instant.ofEpochMilli(dateValue.getTime()).toString();
+			return dateValue.toInstant().toString();
+		else if(valueType == TYPE_TIME)
+			return timeValue.toString();
 		return "";
 	}
 
@@ -239,7 +262,7 @@ public class DataLiteral extends DataEntity
 		else if(valueType == TYPE_BOOLEAN)
 			return boolValue == true ? 1 : 0;
 		else if(valueType == TYPE_DATE)
-			return dateValue.getTime();
+			return dateValue.toInstant().toEpochMilli();
 		return 0;
 	}
 	
@@ -252,9 +275,20 @@ public class DataLiteral extends DataEntity
 		else if(valueType == TYPE_BOOLEAN)
 			return null;
 		else if(valueType == TYPE_DATE)
-			return dateValue;
+			return Date.from(dateValue.toInstant());
+		else if(valueType == TYPE_TIME)
+			return Date.from(timeValue.atDate(ZonedDateTime.now()).toInstant());
 		return null;
-	}		
+	}	
+	
+	public ZonedTime getTime()
+	{
+		if(valueType == TYPE_DATE)
+			return new ZonedTime(dateValue);
+		else if(valueType == TYPE_TIME)
+			return timeValue;
+		return null;
+	}
 	
 	public Object getObject()
 	{
@@ -267,7 +301,9 @@ public class DataLiteral extends DataEntity
 		else if(valueType == TYPE_BOOLEAN)
 			return boolValue;
 		else if(valueType == TYPE_DATE)
-			return dateValue;
+			return Date.from(dateValue.toInstant());
+		else if(valueType == TYPE_TIME)
+			return timeValue;
 		return null;
 	}
 	
@@ -299,10 +335,11 @@ public class DataLiteral extends DataEntity
 	{
 		if(valueType == TYPE_NULL)
 			return "null";
-		else if(valueType == TYPE_STRING) {
+		else if(valueType == TYPE_STRING) 
 			return "\"" + escape(getString()) + "\"";
-			//return "\"" + getString().replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t").replace("/",  "\\/") + "\"";
-		} else if(valueType == TYPE_DATE)
+		else if(valueType == TYPE_DATE)
+			return "\"" + getString() + "\"";
+		else if(valueType == TYPE_TIME)
 			return "\"" + getString() + "\"";
 		else
 			return getString();
@@ -339,7 +376,9 @@ public class DataLiteral extends DataEntity
 		else if(valueType == TYPE_BOOLEAN)
 			return new DataLiteral(new Boolean(boolValue));
 		else if(valueType == TYPE_DATE)
-			return new DataLiteral(new Date(dateValue.getTime()));
+			return new DataLiteral(ZonedDateTime.ofInstant(dateValue.toInstant(), dateValue.getZone()) );
+		else if(valueType == TYPE_TIME)
+			return new DataLiteral(new ZonedTime(timeValue));
 		return null;
 	}
 }
