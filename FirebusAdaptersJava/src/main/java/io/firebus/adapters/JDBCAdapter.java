@@ -28,13 +28,11 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected String connStr;
 	protected BasicDataSource dataSource;
-	protected int pageSize;
 	protected SimpleDateFormat sdf;
 	
 	public JDBCAdapter(DataMap c) throws SQLException
 	{
 		super(c);
-		pageSize = config.containsKey("pagesize") ? config.getNumber("pagesize").intValue() : 50;
 		sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	}
 	
@@ -115,6 +113,8 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		String objectName = packet.getString("object");
 		DataMap filter = packet.getObject("filter");
 		int page = packet.containsKey("page") ? packet.getNumber("page").intValue() : 0;
+		int pageSize = config.containsKey("pagesize") ? config.getNumber("pagesize").intValue() : 50;
+		
 		
 		StatementBuilder select = new StatementBuilder("select top ");
 		select.append(Integer.toString(pageSize));
