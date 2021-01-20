@@ -117,7 +117,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		
 		
 		StatementBuilder select = new StatementBuilder("select top ");
-		select.append(Integer.toString(pageSize));
+		select.append(Integer.toString((page + 1) * pageSize));
 		select.append(" ");
 
 		StatementBuilder tuple = new StatementBuilder();
