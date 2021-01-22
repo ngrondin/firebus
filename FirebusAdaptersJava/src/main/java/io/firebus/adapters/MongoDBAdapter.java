@@ -3,6 +3,7 @@ package io.firebus.adapters;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.bson.Document;
@@ -292,6 +293,9 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 							data.merge(key);
 						else
 							data = key;
+						if(!data.containsKey("_id")) {
+							data.put("_id", UUID.randomUUID().toString());
+						}
 						Document incomingDoc = Document.parse(data.toString());
 						if(operation == null || (operation !=null && operation.equals("insert")) || (operation !=null && operation.equals("update")) || (operation !=null && operation.equals("replace")))
 							collection.insertOne(incomingDoc);
