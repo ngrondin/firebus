@@ -51,6 +51,8 @@ public class GeneralOutboundHandler extends OutboundHandler {
 				entityRequest = new HttpPatch(url);
 			if(request.containsKey("body")) {
 				entityRequest.setEntity(new ByteArrayEntity(request.get("body").toString().getBytes()));
+				if(request.get("body") instanceof DataMap)
+					entityRequest.setHeader("Content-Type", "application/json");
 			} else if(request.containsKey("form")) {
 				List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 				Iterator<String> it = request.getObject("form").keySet().iterator();
@@ -59,8 +61,8 @@ public class GeneralOutboundHandler extends OutboundHandler {
 					formParams.add(new BasicNameValuePair(key, request.getObject("form").getString(key)));
 				}				
 				entityRequest.setEntity(new UrlEncodedFormEntity(formParams, "UTF-8"));
+				entityRequest.setHeader("Content-Type", "application/x-www-form-urlencoded");
 			}
-			entityRequest.setHeader("Content-Type", "application/x-www-form-urlencoded");
 			httpRequest = entityRequest;
 		}
 		else if(method.equals("get"))
