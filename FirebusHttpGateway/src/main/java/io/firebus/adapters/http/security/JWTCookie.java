@@ -18,6 +18,7 @@ import io.firebus.utils.DataMap;
 
 public class JWTCookie extends SecurityHandler {
 	protected String cookieName;
+	protected String cookieDomain;
 	protected String fbMetadataName;
 	protected String jwtSecret;
 	protected String jwtIssuer;
@@ -26,6 +27,7 @@ public class JWTCookie extends SecurityHandler {
 	public JWTCookie(DataMap c) {
 		super(c);
 		cookieName = config.getString("cookie");
+		cookieDomain = config.getString("cookiedomain");
 		fbMetadataName = config.getString("fbmetaname");
 		jwtSecret = config.getString("jwtsecret");
 		jwtIssuer = config.getString("jwtissuer");
@@ -34,6 +36,8 @@ public class JWTCookie extends SecurityHandler {
 		} else {
 			timeout = 3600000;
 		}
+		if(cookieDomain != null && cookieDomain.equals(""))
+			cookieDomain = null;
 	}
 
 	public boolean checkHttpRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -90,6 +94,8 @@ public class JWTCookie extends SecurityHandler {
 			Cookie cookie = new Cookie(cookieName, token);
 			cookie.setPath("/");
 			cookie.setMaxAge((int)(timeout / 1000));
+			if(cookieDomain != null) 
+				cookie.setDomain(cookieDomain);
 			resp.addCookie(cookie);
 		}		
 	}
@@ -98,6 +104,8 @@ public class JWTCookie extends SecurityHandler {
 		Cookie cookie = new Cookie(cookieName, "");
 		cookie.setPath("/");
 		cookie.setMaxAge(0);
+		if(cookieDomain != null) 
+			cookie.setDomain(cookieDomain);
 		resp.addCookie(cookie);
 		
 	}
