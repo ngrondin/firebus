@@ -205,7 +205,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				pipeline.add(Document.parse(groupContainer.toString()));
 				
 				it = collection.aggregate(pipeline).iterator();
-				for(int i = 0; i < (page * pageSize); i++)
+				for(int i = 0; i < (page * pageSize) && it.hasNext(); i++)
 					it.next();
 				responseList = retieveDocuments(it, pageSize);
 				for(int i = 0; i < responseList.size(); i++)
