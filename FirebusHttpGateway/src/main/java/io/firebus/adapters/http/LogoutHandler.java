@@ -31,14 +31,14 @@ public class LogoutHandler extends HttpHandler {
         PrintWriter writer = resp.getWriter();
         writer.println("<html><head><title>Login</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><style>");
         writer.println("body{}");
-        writer.println(".main{position:fixed; top:50%; left: 50%; transform: translate(-50%, -50%); font-family:sans-serif; font-size:larger; border:1px solid lightgrey; padding:15px; border-radius:5px;}");
-        writer.println(".title{color:grey; padding:5px;}");
+        writer.println(".main{position:fixed; display:flex; flex-direction:column; align-items:center; top:50%; left: 50%; transform: translate(-50%, -50%); font-family:sans-serif; font-size:larger; border:1px solid lightgrey; padding:15px; border-radius:5px;}");
+        writer.println(".title{color:black; padding:5px;}");
         writer.println(".option{display:flex; flex-direction:row; align-items:center;padding:5px;}");
         writer.println("a{display:flex; flex-direction:row; align-items:center;}");
-        writer.println("a:link {color:black; text-decoration:none;} a:visited  {color:black; text-decoration:none;} a:hover {color:black; text-decoration:none;} a:active {color:black; text-decoration:none;}");
+        writer.println("a:link {color:grey; text-decoration:none;} a:visited  {color:grey; text-decoration:none;} a:hover {color:black; text-decoration:none;} a:active {color:grey; text-decoration:none;}");
         writer.println("img {padding-right:10px;}");
         writer.println("</style></head>");
-        writer.println("<body><div class=\"main\"><div class=\"title\">Logged out</div>");
+        writer.println("<body><div class=\"main\"><div class=\"title\">Logged out</div><br><br><div><a href=\"/\">Return</a></div>");
         writer.println("</div></body></html>");
 		
 	}
