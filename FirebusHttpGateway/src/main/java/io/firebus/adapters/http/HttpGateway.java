@@ -50,7 +50,8 @@ public class HttpGateway implements ServiceProvider
 		
         try 
         {
-	        int port = config.containsKey("port") ? Integer.parseInt(config.getString("port")) : 80; 
+        	String portStr = config.getString("port");
+	        int port = portStr != null && !portStr.equals("") ? Integer.parseInt(portStr) : 80; 
 	        tomcat = new Tomcat();
 	        tomcat.setBaseDir("temp");
 	        tomcat.getConnector().setPort(port);

@@ -42,7 +42,7 @@ public abstract class SecurityHandler {
 		        writer.println("a:link {color:black; text-decoration:none;} a:visited  {color:black; text-decoration:none;} a:hover {color:black; text-decoration:none;} a:active {color:black; text-decoration:none;}");
 		        writer.println("img {padding-right:10px;}");
 		        writer.println("</style></head>");
-		        writer.println("<body><div class=\"main\"><div class=\"title\">Select an identity provider</div>");
+		        writer.println("<body><div class=\"main\"><div class=\"title\">Login with</div>");
 		        for(AuthValidationHandler avh: authValidationHandlers) {
 			        writer.println("<div class=\"option\"><a href=\"" + avh.getLoginURL(path) + "\"><img src=\"" + avh.getIcon() + "\"><div>" + avh.getLabel() + "</div></a></div>");
 		        }

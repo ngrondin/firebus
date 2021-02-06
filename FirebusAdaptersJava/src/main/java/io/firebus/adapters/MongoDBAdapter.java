@@ -165,6 +165,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			{
 				Iterator<Document> it = null;
 				ArrayList<Document> pipeline = new ArrayList<Document>();
+
 				if(request.containsKey("filter"))
 				{
 					DataMap match = new DataMap("$match", request.getObject("filter"));
@@ -187,8 +188,9 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 						key = tuple.getString(i);
 						source = "$" + key;
 					}
-					if(source != null)
+					if(source != null) {
 						groupKeys.put(key, source);
+					}
 				}
 				group.put("_id", groupKeys);
 				DataList metrics = request.getList("metrics");
@@ -203,6 +205,9 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				}
 				DataMap groupContainer = new DataMap("$group", group);
 				pipeline.add(Document.parse(groupContainer.toString()));
+				
+				DataMap sortContainer = new DataMap("$sort", new DataMap("_id", 1));
+				pipeline.add(Document.parse(sortContainer.toString()));
 				
 				it = collection.aggregate(pipeline).iterator();
 				for(int i = 0; i < (page * pageSize) && it.hasNext(); i++)
