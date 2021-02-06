@@ -20,7 +20,7 @@ public class FirebusSimpleFormatter extends Formatter
 		buf.append("\t");
 		buf.append(pad(rec.getSourceMethodName(), 25));
 		buf.append("\t");
-		buf.append(rec.getMessage());
+		buf.append(rec.getMessage().replaceAll("\r", "").replaceAll("\n", "\u2028"));
 		buf.append("\r\n");
 		return buf.toString();
 	}
