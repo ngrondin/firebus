@@ -137,11 +137,12 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 			}
 		} catch(Exception e) {
 			active = false;
+			logger.severe("Websocket connection closed due to exception: " + e.getMessage());
 		} finally {
 			try {
 				connection.close();
 			} catch(Exception e) {
-				
+
 			}
 		}
 	}
@@ -166,6 +167,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 				os.write(msg[i]);
 			os.flush();
 		} catch(Exception e) {
+			logger.severe("Websocket exception when sending: " + e.getMessage());
 			active = false;
 		}
 	}
