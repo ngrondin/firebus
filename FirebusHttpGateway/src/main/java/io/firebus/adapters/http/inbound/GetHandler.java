@@ -40,8 +40,6 @@ public class GetHandler extends InboundHandler
 
 	protected void processResponse(HttpServletResponse resp, Payload payload) throws ServletException, IOException
 	{
-		if(payload.metadata.containsKey("mime"))
-			resp.setHeader("content-type", payload.metadata.get("mime"));
 		OutputStream os = resp.getOutputStream();
 		os.write(payload.getBytes());
 		os.flush();

@@ -41,6 +41,15 @@ public abstract class InboundHandler extends HttpHandler
 				logger.finest(fbReq.toString());
 				Payload fbResp = firebus.requestService(service, fbReq, timeout);
 				logger.finest(fbResp.toString());
+				if(fbResp.metadata.containsKey("mime"))
+					resp.setHeader("content-type", fbResp.metadata.get("mime"));
+				if(fbResp.metadata.containsKey("httpcode")) {
+					int status = Integer.parseInt(fbResp.metadata.get("httpcode"));
+					resp.setStatus(status);
+					if(status == 401 && this.securityHandler != null) {
+						this.securityHandler.enrichLogoutResponse(resp);
+					}
+				}
 				processResponse(resp, fbResp);
 			}
 			else

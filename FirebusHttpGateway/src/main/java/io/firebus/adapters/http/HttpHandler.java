@@ -2,7 +2,6 @@ package io.firebus.adapters.http;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.Iterator;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -53,7 +52,7 @@ public abstract class HttpHandler extends Handler
 			boolean allowed = true;
 			if(securityHandler != null)
 				allowed = securityHandler.checkHttpRequest(req, resp);
-			if(allowed)
+			if(allowed) 
 				httpService(req, resp);
 		}		
 	}

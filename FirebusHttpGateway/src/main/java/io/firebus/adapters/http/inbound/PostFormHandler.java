@@ -41,8 +41,6 @@ public class PostFormHandler extends InboundHandler
 
 	protected void processResponse(HttpServletResponse resp, Payload payload) throws ServletException, IOException, DataException
 	{
-		if(payload.metadata.containsKey("mime"))
-			resp.setHeader("content-type", payload.metadata.get("mime"));
         PrintWriter writer = resp.getWriter();
         writer.print(payload.getString());
 	}	
