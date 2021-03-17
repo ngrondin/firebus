@@ -1,5 +1,7 @@
 package io.firebus;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.logging.Logger;
 
 public class FirebusThread extends Thread
@@ -47,8 +49,10 @@ public class FirebusThread extends Thread
 			} 
 			catch (Exception e)
 			{
-				logger.severe(e.getMessage());
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				e.printStackTrace(pw);
+				logger.severe(sw.toString());
 			}
 		}
 	}
