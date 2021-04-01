@@ -312,9 +312,15 @@ public class DataList extends DataEntity
 	}
 	
 	public boolean contains(Object o) {
-		for(int i = 0; i < list.size(); i++)
-			if(list.get(i).toString().equals(o.toString()))
+		for(int i = 0; i < list.size(); i++) {
+			DataEntity de = list.get(i);
+			if(de instanceof DataMap && o instanceof DataMap && de == o) 
 				return true;
+			else if(de instanceof DataList && o instanceof DataList && de == o)
+				return true;
+			else if(de instanceof DataLiteral && ((DataLiteral)de).equals(o))
+				return true;
+		}
 		return false;
 	}
 }
