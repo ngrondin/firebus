@@ -43,9 +43,11 @@ public class StreamGatewayWSHandler extends WebsocketHandler implements StreamHa
 
 	protected void onClose(String session) {
 		StreamEndpoint sep = sessionToStream.get(session);
-		sep.close();
-		sessionToStream.remove(session);
-		streamToSession.remove(sep);
+		if(sep != null) {
+			sep.close();
+			sessionToStream.remove(session);
+			streamToSession.remove(sep);
+		}
 	}
 
 	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
