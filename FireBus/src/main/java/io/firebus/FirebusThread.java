@@ -20,7 +20,6 @@ public class FirebusThread extends Thread
 		quit = false;
 		ready = false;
 		setName("fbThread" + getId());
-		logger.info("Starting firebus thead " + getId());
 	}
 	
 		
@@ -57,7 +56,6 @@ public class FirebusThread extends Thread
 				logger.severe(sw.toString());
 			}
 		}
-		logger.info("killing firebus thead " + getId());
 	}
 	
 	public void setFunctionExecutionId(long id) 
