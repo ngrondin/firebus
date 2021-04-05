@@ -92,7 +92,7 @@ public class FunctionManager
 	{
 		return totalExecutionCount < nodeCore.getThreadManager().getThreadCount() - 2;
 	}
-
+/*
 	protected synchronized void increaseTotalExecutionCount()
 	{
 		totalExecutionCount++;
@@ -102,7 +102,7 @@ public class FunctionManager
 	{
 		totalExecutionCount--;
 	}
-	
+	*/
 	public void executeFunction(Message msg)
 	{
 		String functionName = msg.getSubject();
@@ -110,75 +110,86 @@ public class FunctionManager
 		Payload inPayload = msg.getPayload();
 		if(fe != null)
 		{
-			if(fe.canRunOneMore() && this.canRunOneMore())
+			if(this.canRunOneMore())
 			{
-				if((msg.getType() == Message.MSGTYPE_REQUESTSERVICE || msg.getType() == Message.MSGTYPE_REQUESTSERVICEANDFORGET) && fe.function instanceof ServiceProvider)
+				long executionId = fe.getExecutionId();
+				if(executionId != -1) 
 				{
-					logger.finer("Executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
-					Payload returnPayload = null;
-					Message progressMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_PROGRESS, msg.getSubject(), null);
-					progressMsg.setCorrelation(msg.getCorrelation(), 0);
-					nodeCore.forkThenRoute(progressMsg);
-					fe.runStarted();
-					increaseTotalExecutionCount();
-					try
+					((FirebusThread)Thread.currentThread()).setFunctionExecutionId(executionId);
+					if((msg.getType() == Message.MSGTYPE_REQUESTSERVICE || msg.getType() == Message.MSGTYPE_REQUESTSERVICEANDFORGET) && fe.function instanceof ServiceProvider)
 					{
-						returnPayload = ((ServiceProvider)fe.function).service(inPayload);
-						logger.finer("Finished executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
-						
-						if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
+						logger.finer("Executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
+						Payload returnPayload = null;
+						Message progressMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_PROGRESS, msg.getSubject(), null);
+						progressMsg.setCorrelation(msg.getCorrelation(), 0);
+						nodeCore.forkThenRoute(progressMsg);
+						//fe.runStarted();
+						//increaseTotalExecutionCount();
+						try
 						{
-							Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
-							responseMsg.setCorrelation(msg.getCorrelation(), 1);
+							returnPayload = ((ServiceProvider)fe.function).service(inPayload);
+							logger.finer("Finished executing Service Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
+							
+							if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
+							{
+								Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
+								responseMsg.setCorrelation(msg.getCorrelation(), 1);
+								nodeCore.route(responseMsg);
+							}
+						}
+						catch(FunctionErrorException e)
+						{
+							if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
+								sendError(e, msg.getOriginatorId(), Message.MSGTYPE_SERVICEERROR,  msg.getSubject(), msg.getCorrelation(), 1);
+						}
+						//decreaseTotalExecutionCount();
+						//fe.runEnded();
+					}
+					else if(msg.getType() == Message.MSGTYPE_REQUESTSTREAM  && fe.function instanceof StreamProvider)
+					{
+						logger.finer("Executing Stream Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
+						StreamProvider streamProvider = (StreamProvider)fe.function;
+						long idleTimeout = streamProvider.getStreamIdleTimeout();
+						int localCorrelationId = nodeCore.getCorrelationManager().createEntry(idleTimeout);
+						StreamEndpoint streamEndpoint = new StreamEndpoint(nodeCore, functionName, localCorrelationId, msg.getCorrelation(), 1, msg.getOriginatorId());
+						//fe.runStarted();
+						//increaseTotalExecutionCount();
+						try
+						{
+							streamProvider.acceptStream(inPayload, streamEndpoint);
+							logger.finer("Accepted stream " + functionName + " (correlation: " + msg.getCorrelation() + ")");
+							
+							ByteBuffer bb = ByteBuffer.allocate(12);
+							bb.putInt(localCorrelationId);
+							bb.putLong(idleTimeout);
+							nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, idleTimeout);
+							Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), new Payload(bb.array()));
+							responseMsg.setCorrelation(msg.getCorrelation(), 0);
 							nodeCore.route(responseMsg);
 						}
+						catch(FunctionErrorException e)
+						{
+							sendError(e, msg.getOriginatorId(), Message.MSGTYPE_STREAMERROR,  msg.getSubject(), msg.getCorrelation(), 1);
+						}
+						//decreaseTotalExecutionCount();
 					}
-					catch(FunctionErrorException e)
+					else if(msg.getType() == Message.MSGTYPE_PUBLISH  &&  fe.function instanceof Consumer)
 					{
-						if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
-							sendError(e, msg.getOriginatorId(), Message.MSGTYPE_SERVICEERROR,  msg.getSubject(), msg.getCorrelation(), 1);
-					}
-					decreaseTotalExecutionCount();
-					fe.runEnded();
+						logger.finer("Executing Consumer");
+						((Consumer)fe.function).consume(inPayload);
+					}	
+					((FirebusThread)Thread.currentThread()).clearFunctionExecutionId();
+					fe.releaseExecutionId(executionId);
+				} else {
+					logger.info("Cannot execute function " + functionName + " as maximum number of executions reached for this function (" + totalExecutionCount + ")");
+					Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(),new Payload(null,  "Maximum concurrent functions running".getBytes()));
+					outMsg.setCorrelation(msg.getCorrelation(), 0);
+					nodeCore.route(outMsg);					
 				}
-				else if(msg.getType() == Message.MSGTYPE_REQUESTSTREAM  && fe.function instanceof StreamProvider)
-				{
-					logger.finer("Executing Stream Provider " + functionName + " (correlation: " + msg.getCorrelation() + ")");
-					StreamProvider streamProvider = (StreamProvider)fe.function;
-					long idleTimeout = streamProvider.getStreamIdleTimeout();
-					int localCorrelationId = nodeCore.getCorrelationManager().createEntry(idleTimeout);
-					StreamEndpoint streamEndpoint = new StreamEndpoint(nodeCore, functionName, localCorrelationId, msg.getCorrelation(), 1, msg.getOriginatorId());
-					fe.runStarted();
-					increaseTotalExecutionCount();
-					try
-					{
-						streamProvider.acceptStream(inPayload, streamEndpoint);
-						logger.finer("Accepted stream " + functionName + " (correlation: " + msg.getCorrelation() + ")");
-						
-						ByteBuffer bb = ByteBuffer.allocate(12);
-						bb.putInt(localCorrelationId);
-						bb.putLong(idleTimeout);
-						nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, idleTimeout);
-						Message responseMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), new Payload(bb.array()));
-						responseMsg.setCorrelation(msg.getCorrelation(), 0);
-						nodeCore.route(responseMsg);
-					}
-					catch(FunctionErrorException e)
-					{
-						sendError(e, msg.getOriginatorId(), Message.MSGTYPE_STREAMERROR,  msg.getSubject(), msg.getCorrelation(), 1);
-					}
-					decreaseTotalExecutionCount();
-					fe.runEnded();
-				}
-				else if(msg.getType() == Message.MSGTYPE_PUBLISH  &&  fe.function instanceof Consumer)
-				{
-					logger.finer("Executing Consumer");
-					((Consumer)fe.function).consume(inPayload);
-				}			
 			}
 			else
 			{
-				logger.info("Cannot execute function " + functionName + " as maximum number of executions reached (" + totalExecutionCount + ")");
+				logger.info("Cannot execute function " + functionName + " as maximum number of executions reached for this node (" + totalExecutionCount + ")");
 				Message outMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(),new Payload(null,  "Maximum concurrent functions running".getBytes()));
 				outMsg.setCorrelation(msg.getCorrelation(), 0);
 				nodeCore.route(outMsg);

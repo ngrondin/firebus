@@ -11,6 +11,7 @@ public class FirebusThread extends Thread
 	protected ThreadManager threadManager;
 	protected boolean quit;
 	protected boolean ready;
+	protected long functionExecutionId = -1;
 
 	public FirebusThread(ThreadManager tm, NodeCore c)
 	{
@@ -19,6 +20,7 @@ public class FirebusThread extends Thread
 		quit = false;
 		ready = false;
 		setName("fbThread" + getId());
+		logger.info("Starting firebus thead " + getId());
 	}
 	
 		
@@ -55,6 +57,22 @@ public class FirebusThread extends Thread
 				logger.severe(sw.toString());
 			}
 		}
+		logger.info("killing firebus thead " + getId());
+	}
+	
+	public void setFunctionExecutionId(long id) 
+	{
+		functionExecutionId = id;
+	}
+	
+	public long getFunctionExecutionId()
+	{
+		return functionExecutionId;
+	}
+	
+	public void clearFunctionExecutionId() 
+	{
+		functionExecutionId = -1;
 	}
 	
 	public void close()

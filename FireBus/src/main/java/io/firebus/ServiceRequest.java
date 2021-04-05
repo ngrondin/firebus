@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
+import io.firebus.information.FunctionInformation;
 import io.firebus.information.NodeInformation;
 import io.firebus.interfaces.ServiceRequestor;
 
@@ -122,7 +123,9 @@ public class ServiceRequest extends Thread
 				else
 				{
 					logger.fine("Service " + serviceName + " on node " + ni.getNodeId() + " has not responded to a service request (corr: " + reqMsg.getCorrelation() + ")");
-					ni.getFunctionInformation(serviceName).reduceRating(3);
+					FunctionInformation fi = ni.getFunctionInformation(serviceName);
+					if(fi != null)
+						fi.reduceRating(3);
 					lastRequestedNode = ni;
 				}
 				nodeCore.getCorrelationManager().removeEntry(correlation);

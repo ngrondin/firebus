@@ -15,6 +15,7 @@ public class Firebus
 {
 	private Logger logger = Logger.getLogger("io.firebus");
 	protected NodeCore nodeCore;
+	protected int defaultTimeout = 10000;
 	
 	public Firebus()
 	{
@@ -46,6 +47,11 @@ public class Firebus
 		nodeCore.getThreadManager().setThreadCount(tc);
 	}
 
+	public void setDefaultTimeout(int l)
+	{
+		defaultTimeout = l;
+	}
+	
 	public void addKnownNodeAddress(String a, int p)
 	{
 		nodeCore.addKnownNodeAddress(a, p);
@@ -124,7 +130,7 @@ public class Firebus
 
 	public Payload requestService(String serviceName, Payload payload) throws FunctionErrorException, FunctionTimeoutException
 	{
-		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, 10000);
+		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, defaultTimeout);
 		return request.execute();
 	}
 
