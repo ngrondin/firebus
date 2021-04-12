@@ -96,7 +96,7 @@ public class DataFilter {
 						} 
 					} else if(fValObj.containsKey("$gt")) {
 						DataEntity fSubVal = fValObj.get("$gt");
-						if(fSubVal instanceof DataLiteral) {
+						if(fSubVal instanceof DataLiteral && dVal != null) {
 							if(((DataLiteral)fSubVal).getNumber().doubleValue() >= ((DataLiteral)dVal).getNumber().doubleValue()) {
 								ret = false;
 							} 
@@ -105,7 +105,7 @@ public class DataFilter {
 						}
 					} else if(fValObj.containsKey("$lt")) {
 						DataEntity fSubVal = fValObj.get("$lt");
-						if(fSubVal instanceof DataLiteral) {
+						if(fSubVal instanceof DataLiteral && dVal != null) {
 							if(((DataLiteral)fSubVal).getNumber().doubleValue() <= ((DataLiteral)dVal).getNumber().doubleValue()) {
 								ret = false;
 							} 
