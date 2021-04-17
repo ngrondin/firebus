@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -50,17 +49,17 @@ public abstract class WebsocketHandler extends HttpHandler {
 	        String acceptKey = Base64.encodeBase64String(digest);
 	        resp.setHeader("Sec-WebSocket-Accept", acceptKey);
 
-	        WebsocketConnectionHandler wsHandler = req.upgrade(WebsocketConnectionHandler.class);
-	        String sessionId = UUID.randomUUID().toString();
-	        wsHandler.setHandler(this);
-	        wsHandler.setSessionId(sessionId);
-	        connections.put(sessionId, wsHandler);
+	        WebsocketConnectionHandler wsConnHandler = req.upgrade(WebsocketConnectionHandler.class);
+	        //String sessionId = UUID.randomUUID().toString();
+	        wsConnHandler.setHandler(this);
+	        //wsConnHandler.setSessionId(sessionId);
+	        connections.put(wsConnHandler.getConnectionId(), wsConnHandler);
 	        try {
 	        	Payload payload = new Payload();
 	        	if(securityHandler != null)
 	        		securityHandler.enrichFirebusRequest(req, payload);
 	        	enrichFirebusRequestDefault(req, payload);
-	        	onOpen(sessionId, payload);
+	        	onOpen(wsConnHandler.getConnectionId(), payload);
 	        } catch(Exception e) {
 	        	throw new ServletException("Error opening session", e);
 	        }
@@ -76,25 +75,25 @@ public abstract class WebsocketHandler extends HttpHandler {
 		connections.remove(session);
 	}
 	
-	public void sendStringMessage(String session, String msg) {
-		WebsocketConnectionHandler connection = connections.get(session);
+	public void sendStringMessage(String connectionId, String msg) {
+		WebsocketConnectionHandler connection = connections.get(connectionId);
 		connection.sendStringMessage(msg);
 	}
 	
-	public void sendBinaryMessage(String session, byte[] bytes) {
-		WebsocketConnectionHandler connection = connections.get(session);
+	public void sendBinaryMessage(String connectionId, byte[] bytes) {
+		WebsocketConnectionHandler connection = connections.get(connectionId);
 		connection.sendBinaryMessage(bytes);
 	}
 	
-	public void close(String session) {
-		WebsocketConnectionHandler connection = connections.get(session);
+	public void close(String connectionId) {
+		WebsocketConnectionHandler connection = connections.get(connectionId);
 		if(connection != null)
 			connection.destroy();
 	}
 	
-	protected abstract void onOpen(String session, Payload payload) throws FunctionErrorException, FunctionTimeoutException;
-	protected abstract void onStringMessage(String session, String msg) throws FunctionErrorException, FunctionTimeoutException;
-	protected abstract void onBinaryMessage(String session, byte[] msg) throws FunctionErrorException, FunctionTimeoutException;
-	protected abstract void onClose(String session) throws FunctionErrorException, FunctionTimeoutException;
+	protected abstract void onOpen(String connectionId, Payload payload) throws FunctionErrorException, FunctionTimeoutException;
+	protected abstract void onStringMessage(String connectionId, String msg) throws FunctionErrorException, FunctionTimeoutException;
+	protected abstract void onBinaryMessage(String connectionId, byte[] msg) throws FunctionErrorException, FunctionTimeoutException;
+	protected abstract void onClose(String connectionId) throws FunctionErrorException, FunctionTimeoutException;
 
 }

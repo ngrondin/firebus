@@ -13,49 +13,53 @@ import io.firebus.interfaces.StreamHandler;
 import io.firebus.utils.DataMap;
 
 public class StreamGatewayWSHandler extends WebsocketHandler implements StreamHandler {
-	protected Map<String, StreamEndpoint> sessionToStream;
-	protected Map<StreamEndpoint, String> streamToSession;
+	protected Map<String, StreamEndpoint> connIdToStream;
+	protected Map<StreamEndpoint, String> streamToConnId;
 	protected String streamName;
 	
 	public StreamGatewayWSHandler(DataMap c, Firebus f) {
 		super(c, f);
 		streamName = c.getString("service");
-		sessionToStream = new HashMap<String, StreamEndpoint>();
-		streamToSession = new HashMap<StreamEndpoint, String>();
+		connIdToStream = new HashMap<String, StreamEndpoint>();
+		streamToConnId = new HashMap<StreamEndpoint, String>();
 	}
 
-	protected void onOpen(String session, Payload payload) throws FunctionErrorException, FunctionTimeoutException {
+	protected void onOpen(String connectionId, Payload payload) throws FunctionErrorException, FunctionTimeoutException {
 		StreamEndpoint streamEndpoint = firebus.requestStream(streamName, payload, 10000);
 		streamEndpoint.setHandler(this);
-		sessionToStream.put(session, streamEndpoint);
-		streamToSession.put(streamEndpoint, session);
+		connIdToStream.put(connectionId, streamEndpoint);
+		streamToConnId.put(streamEndpoint, connectionId);
+		System.out.println("SGWS opened WS connection " + connectionId); //Temp Logging
 	}
 
-	protected void onStringMessage(String session, String msg) {
+	protected void onStringMessage(String connectionId, String msg) {
 		Payload payload = new Payload(msg);
-		sessionToStream.get(session).send(payload);
+		connIdToStream.get(connectionId).send(payload);
 	}
 
-	protected void onBinaryMessage(String session, byte[] msg) {
+	protected void onBinaryMessage(String connectionId, byte[] msg) {
 		Payload payload = new Payload(msg);
-		sessionToStream.get(session).send(payload);
+		connIdToStream.get(connectionId).send(payload);
 	}
 
-	protected void onClose(String session) {
-		StreamEndpoint sep = sessionToStream.get(session);
+	protected void onClose(String connectionId) {
+		StreamEndpoint sep = connIdToStream.get(connectionId);
 		if(sep != null) {
 			sep.close();
-			sessionToStream.remove(session);
-			streamToSession.remove(sep);
+			connIdToStream.remove(connectionId);
+			streamToConnId.remove(sep);
 		}
+		System.out.println("SGWS closed WS connection " + connectionId); //Temp Logging
 	}
 
 	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
-		this.sendStringMessage(streamToSession.get(streamEndpoint), payload.getString());
+		String connId = streamToConnId.get(streamEndpoint);
+		this.sendStringMessage(connId, payload.getString());
+		System.out.println("SGWS sending message to WS connection " + connId + " : " + payload.getString().hashCode()); //Temp Logging
 	}
 
 	public void streamClosed(StreamEndpoint streamEndpoint) {
-		close(streamToSession.get(streamEndpoint));
+		close(streamToConnId.get(streamEndpoint));
 	}
 
 }

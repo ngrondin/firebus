@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpUpgradeHandler;
@@ -11,22 +12,27 @@ import javax.servlet.http.WebConnection;
 
 public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHandler {
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
-	protected String session;
+	protected String id;
 	protected WebsocketHandler handler;
 	protected WebConnection connection;
 	protected InputStream is;
 	protected OutputStream os;
 	protected boolean active;
 	
+	public WebsocketConnectionHandler() {
+		id = UUID.randomUUID().toString();
+	}
+	
 	public void setHandler(WebsocketHandler wsh) {
 		handler = wsh;		
 	}
 	
+	/*
 	public void setSessionId(String sid)
 	{
-		session = sid;
+		id = sid;
 	}
-	
+	*/
 	public void init(WebConnection c) {
 		setName("fbHttpWebsocket");
 		connection = c;
@@ -43,7 +49,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 	}
 	
 	public void destroy() {
-		handler._onClose(session);
+		handler._onClose(id);
 		active = false;
 		try {
 			is.close();
@@ -52,6 +58,10 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 			
 		}
 		logger.fine("Websocket connection destroyed");
+	}
+	
+	public String getConnectionId() {
+		return id;
 	}
 
 	public void run() {
@@ -112,10 +122,10 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 								op = previousOp;
 							if(op == 1) {
 								String m = new String(Arrays.copyOfRange(msg, 0, len));
-								handler.onStringMessage(session, m);
+								handler.onStringMessage(id, m);
 								mp = 0;
 							} else if(op == 2) {
-								handler.onBinaryMessage(session, Arrays.copyOfRange(msg, 0, len));
+								handler.onBinaryMessage(id, Arrays.copyOfRange(msg, 0, len));
 								mp = 0;
 							} else if(op == 8) {
 								active = false;
