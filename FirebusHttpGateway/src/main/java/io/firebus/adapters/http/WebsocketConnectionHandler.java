@@ -147,7 +147,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 			}
 		} catch(Exception e) {
 			active = false;
-			logger.severe("Websocket connection closed due to exception: " + e.getMessage());
+			logger.severe("Websocket connection " + id + " closed due to exception: " + e.getMessage());
 		} finally {
 			try {
 				connection.close();
