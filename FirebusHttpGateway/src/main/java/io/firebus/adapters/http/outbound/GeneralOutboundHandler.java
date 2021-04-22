@@ -25,6 +25,7 @@ import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.adapters.http.OutboundHandler;
 import io.firebus.utils.DataException;
+import io.firebus.utils.DataList;
 import io.firebus.utils.DataMap;
 
 public class GeneralOutboundHandler extends OutboundHandler {
@@ -51,7 +52,7 @@ public class GeneralOutboundHandler extends OutboundHandler {
 				entityRequest = new HttpPatch(url);
 			if(request.containsKey("body")) {
 				entityRequest.setEntity(new ByteArrayEntity(request.get("body").toString().getBytes()));
-				if(request.get("body") instanceof DataMap)
+				if(request.get("body") instanceof DataMap || request.get("body") instanceof DataList)
 					entityRequest.setHeader("Content-Type", "application/json");
 			} else if(request.containsKey("form")) {
 				List<NameValuePair> formParams = new ArrayList<NameValuePair>();
