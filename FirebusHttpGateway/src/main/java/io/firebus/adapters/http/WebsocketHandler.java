@@ -50,29 +50,32 @@ public abstract class WebsocketHandler extends HttpHandler {
 	        resp.setHeader("Sec-WebSocket-Accept", acceptKey);
 
 	        WebsocketConnectionHandler wsConnHandler = req.upgrade(WebsocketConnectionHandler.class);
-	        //String sessionId = UUID.randomUUID().toString();
 	        wsConnHandler.setHandler(this);
-	        //wsConnHandler.setSessionId(sessionId);
+        	Payload payload = new Payload();
+        	if(securityHandler != null)
+        		securityHandler.enrichFirebusRequest(req, payload);
+        	enrichFirebusRequestDefault(req, payload);
+        	wsConnHandler.setRequestPayload(payload);
 	        connections.put(wsConnHandler.getConnectionId(), wsConnHandler);
-	        try {
-	        	Payload payload = new Payload();
-	        	if(securityHandler != null)
-	        		securityHandler.enrichFirebusRequest(req, payload);
-	        	enrichFirebusRequestDefault(req, payload);
-	        	onOpen(wsConnHandler.getConnectionId(), payload);
-	        } catch(Exception e) {
-	        	throw new ServletException("Error opening session", e);
-	        }
 		}
 	}
 	
-	public void _onClose(String session) {
+	protected void _onOpen(String connectionId) {
+        try {
+        	WebsocketConnectionHandler connection = connections.get(connectionId);
+        	onOpen(connectionId, connection.getRequestPayload());
+        } catch(Exception e) {
+        	logger.severe("Error openning WS connection: " + e.getMessage());
+        }		
+	}
+	
+	public void _onClose(String connectionId) {
 		try {
-			onClose(session);
+			onClose(connectionId);
 		} catch(Exception e) {
-			logger.severe("Error closing session: " + e.getMessage());
+			logger.severe("Error closing WS connection: " + e.getMessage());
 		}
-		connections.remove(session);
+		connections.remove(connectionId);
 	}
 	
 	public void sendStringMessage(String connectionId, String msg) {

@@ -10,10 +10,13 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.WebConnection;
 
+import io.firebus.Payload;
+
 public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHandler {
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	protected String id;
 	protected WebsocketHandler handler;
+	protected Payload requestPayload;
 	protected WebConnection connection;
 	protected InputStream is;
 	protected OutputStream os;
@@ -26,13 +29,15 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 	public void setHandler(WebsocketHandler wsh) {
 		handler = wsh;		
 	}
-	
-	/*
-	public void setSessionId(String sid)
-	{
-		id = sid;
+
+	public void setRequestPayload(Payload p) {
+		requestPayload = p;
 	}
-	*/
+	
+	public Payload getRequestPayload() {
+		return requestPayload;
+	}
+
 	public void init(WebConnection c) {
 		setName("fbHttpWebsocket");
 		connection = c;
@@ -42,6 +47,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 			os.flush();
 			active = true;
 			start();
+			handler._onOpen(id);
 			logger.fine("Websocket connection created");
 		} catch(IOException e) {
 			active = false;
@@ -158,27 +164,31 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 	}
 	
 	private synchronized void send(byte[] msg, int op) {
-		int len = msg != null ? msg.length : 0;
-		int lenSize = (len <= 125 ? 0 : (len <= 65535 ? 2 : 8));
-		try {
-			os.write(0x80 | (op & 0x0f));
-			if(lenSize == 0) {
-				os.write(0x7F & len);
-			} else if(lenSize == 2) {
-				os.write(0x7F & 126);
-				os.write((len >> 8) & 0xff);
-				os.write(len & 0xff);
-			} else if(lenSize == 8) {
-				os.write(0x7F & 127);
-				for(int i = 0; i < 8; i++)
-					os.write((len >> (7 - i)) & 0xff);
-			}
-			for(int i = 0; i < len; i++)
-				os.write(msg[i]);
-			os.flush();
-		} catch(Exception e) {
-			logger.severe("Websocket exception when sending: " + e.getMessage());
-			active = false;
+		if(os != null) {
+			int len = msg != null ? msg.length : 0;
+			int lenSize = (len <= 125 ? 0 : (len <= 65535 ? 2 : 8));
+			try {
+				os.write(0x80 | (op & 0x0f));
+				if(lenSize == 0) {
+					os.write(0x7F & len);
+				} else if(lenSize == 2) {
+					os.write(0x7F & 126);
+					os.write((len >> 8) & 0xff);
+					os.write(len & 0xff);
+				} else if(lenSize == 8) {
+					os.write(0x7F & 127);
+					for(int i = 0; i < 8; i++)
+						os.write((len >> (7 - i)) & 0xff);
+				}
+				for(int i = 0; i < len; i++)
+					os.write(msg[i]);
+				os.flush();
+			} catch(Exception e) {
+				logger.severe("Websocket exception when sending: " + e.getMessage());
+				active = false;
+			}			
+		} else {
+			logger.severe("Websocket exception when sending: outputstrem not initialized");
 		}
 	}
 	
