@@ -35,12 +35,16 @@ public class StreamGatewayWSHandler extends WebsocketHandler implements StreamHa
 
 	protected void onStringMessage(String connectionId, String msg) {
 		Payload payload = new Payload(msg);
-		connIdToStream.get(connectionId).send(payload);
+		StreamEndpoint sep = connIdToStream.get(connectionId);
+		if(sep != null)
+			sep.send(payload);
 	}
 
 	protected void onBinaryMessage(String connectionId, byte[] msg) {
 		Payload payload = new Payload(msg);
-		connIdToStream.get(connectionId).send(payload);
+		StreamEndpoint sep = connIdToStream.get(connectionId);
+		if(sep != null)
+			sep.send(payload);
 	}
 
 	protected void onClose(String connectionId) {
