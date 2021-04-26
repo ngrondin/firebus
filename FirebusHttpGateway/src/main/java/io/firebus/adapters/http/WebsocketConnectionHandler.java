@@ -3,7 +3,7 @@ package io.firebus.adapters.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
+import java.nio.ByteBuffer;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -79,8 +79,8 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 		int lenSize = 0;
 		int mask = 0;
 		int maskVal = 0;
-		byte[] msg = new byte[2048];
-		int mp = 0;
+		ByteBuffer msg = null;
+		//int mp = 0;
 		int read = -1;
 		try {
 			while(active) {
@@ -114,11 +114,11 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 					} else if(fp >= 14 && fp < (14 + len)) {
 						if(mask == 1) {
 							int bytePos = 3 - ((fp - 14) % 4);
-							msg[mp] = (byte)(read ^ (maskVal >> (bytePos * 8)));
+							msg.put((byte)(read ^ (maskVal >> (bytePos * 8))));
 						} else {
-							msg[mp] = (byte)read;
+							msg.put((byte)read);
 						}
-						mp++;
+						//mp++;
 					}
 					if(fp == (14 + len - 1)) {
 						if(fin == 0) {
@@ -127,12 +127,12 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 							if(op == 0)
 								op = previousOp;
 							if(op == 1) {
-								String m = new String(Arrays.copyOfRange(msg, 0, len));
+								String m = new String(msg.array());
 								handler.onStringMessage(id, m);
-								mp = 0;
+								//mp = 0;
 							} else if(op == 2) {
-								handler.onBinaryMessage(id, Arrays.copyOfRange(msg, 0, len));
-								mp = 0;
+								handler.onBinaryMessage(id, msg.array());
+								//mp = 0;
 							} else if(op == 8) {
 								active = false;
 							} else if(op == 9) {
@@ -147,6 +147,8 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 						mask = 0;
 						maskVal = 0;
 					} else {
+						if(fp == 9)
+							msg = ByteBuffer.allocate(len);
 						fp++;
 					}
 				}
@@ -165,26 +167,28 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 	
 	private synchronized void send(byte[] msg, int op) {
 		if(os != null) {
-			int len = msg != null ? msg.length : 0;
+			long len = msg != null ? msg.length : 0;
 			int lenSize = (len <= 125 ? 0 : (len <= 65535 ? 2 : 8));
+			int i = 0;
 			try {
 				os.write(0x80 | (op & 0x0f));
 				if(lenSize == 0) {
-					os.write(0x7F & len);
+					os.write((int)(0x7F & len));
 				} else if(lenSize == 2) {
-					os.write(0x7F & 126);
-					os.write((len >> 8) & 0xff);
-					os.write(len & 0xff);
+					os.write((int)(0x7F & 126));
+					os.write((int)((len >> 8) & 0xff));
+					os.write((int)(len & 0xff));
 				} else if(lenSize == 8) {
 					os.write(0x7F & 127);
-					for(int i = 0; i < 8; i++)
-						os.write((len >> (7 - i)) & 0xff);
+					for(int s = 56; s >= 0; s-=8) {
+						os.write((int)((len >> s) & 0xff));
+					}
 				}
-				for(int i = 0; i < len; i++)
+				for(i = 0; i < len; i++)
 					os.write(msg[i]);
 				os.flush();
 			} catch(Exception e) {
-				logger.severe("Websocket exception when sending: " + e.getMessage());
+				logger.severe("Websocket exception when sending (at byte " + i + "): " + e.getMessage());
 				active = false;
 			}			
 		} else {
