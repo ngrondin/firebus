@@ -4,15 +4,15 @@ import io.firebus.interfaces.BusFunction;
 
 public class FunctionEntry
 {
-	protected String serviceName;
+	protected String name;
 	protected BusFunction function;
 	protected int maxConcurrent;
 	protected int currentCount;
 	protected boolean[] reservedIds;
 	
-	public FunctionEntry(String sn, BusFunction f, int mc)
+	public FunctionEntry(String n, BusFunction f, int mc)
 	{
-		serviceName = sn;
+		name = n;
 		function = f;
 		maxConcurrent = mc;
 		reservedIds = new boolean[maxConcurrent];
@@ -47,9 +47,8 @@ public class FunctionEntry
 		}
 	}
 	
-	/*
-	public boolean canRunOneMore()
+	public String getName() 
 	{
-		return currentCount < maxConcurrent;
-	}*/
+		return name;
+	}
 }

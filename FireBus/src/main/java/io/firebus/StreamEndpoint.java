@@ -39,7 +39,7 @@ public class StreamEndpoint implements CorrelationListener {
 		Message msg = new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMDATA, streamName, payload);
 		msg.setCorrelation(remoteCorrelationId, remoteCorrelationSequence);
 		remoteCorrelationSequence++;
-		nodeCore.forkThenRoute(msg);
+		nodeCore.enqueue(msg);
 	}
 	
 	public void close()
@@ -47,7 +47,7 @@ public class StreamEndpoint implements CorrelationListener {
 		Message msg = new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMEND, streamName, null);
 		msg.setCorrelation(remoteCorrelationId, remoteCorrelationSequence);
 		remoteCorrelationSequence++;
-		nodeCore.forkThenRoute(msg);
+		nodeCore.enqueue(msg);
 		nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
 	}
 

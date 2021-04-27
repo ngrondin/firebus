@@ -13,6 +13,7 @@ import io.firebus.interfaces.BusFunction;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.StreamProvider;
+import io.firebus.threads.FirebusThread;
 
 public class FunctionManager
 {
@@ -90,7 +91,7 @@ public class FunctionManager
 	
 	protected boolean canRunOneMore()
 	{
-		return totalExecutionCount < nodeCore.getThreadManager().getThreadCount() - 2;
+		return true; //totalExecutionCount < nodeCore.getThreadManager().getThreadCount() - 2;
 	}
 /*
 	protected synchronized void increaseTotalExecutionCount()
@@ -122,7 +123,7 @@ public class FunctionManager
 						Payload returnPayload = null;
 						Message progressMsg = new Message(msg.getOriginatorId(), nodeCore.getNodeId(), Message.MSGTYPE_PROGRESS, msg.getSubject(), null);
 						progressMsg.setCorrelation(msg.getCorrelation(), 0);
-						nodeCore.forkThenRoute(progressMsg);
+						nodeCore.enqueue(progressMsg);
 						//fe.runStarted();
 						//increaseTotalExecutionCount();
 						try

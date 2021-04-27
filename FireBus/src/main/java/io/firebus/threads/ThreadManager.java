@@ -1,15 +1,18 @@
-package io.firebus;
+package io.firebus.threads;
 
 import java.lang.Thread.State;
 import java.util.ArrayList;
 import java.util.logging.Logger;
+
+import io.firebus.NodeCore;
+import io.firebus.utils.Queue;
 
 public class ThreadManager
 {
 	private static Logger logger = Logger.getLogger("io.firebus");
 	
 	protected NodeCore nodeCore;
-	protected MessageQueue queue;
+	protected Queue<Runnable> queue;
 	protected boolean quit;
 	protected ArrayList<FirebusThread> threads;
 	protected int threadCount;
@@ -20,7 +23,7 @@ public class ThreadManager
 		quit = false;
 		threadCount = 10;
 		threads = new ArrayList<FirebusThread>();
-		queue = new MessageQueue(1024);
+		queue = new Queue<Runnable>(1024);
 	}
 	
 	public void setThreadCount(int tc)
@@ -33,10 +36,15 @@ public class ThreadManager
 		return threadCount;
 	}
 	
-	public synchronized void process(Message msg)
+	public int getQueueDepth()
 	{
-		queue.push(msg);
-		logger.finest("Dropped message " + msg.getid() + " in thread queue (depth: " + queue.getMessageCount() + ")");
+		return queue.getDepth();
+	}
+	
+	public synchronized void enqueue(Runnable rbl)
+	{
+		queue.push(rbl);
+		logger.finest("Dropped runnable in thread queue (depth: " + queue.getDepth() + ")");
 		
 		FirebusThread thread = null;
 		for(int i = 0; i < threads.size(); i++)
@@ -64,7 +72,7 @@ public class ThreadManager
 
 	}
 	
-	public synchronized Message getNextMessage()
+	public synchronized Runnable getNext()
 	{
 		return queue.pop();
 	}

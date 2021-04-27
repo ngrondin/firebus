@@ -38,7 +38,7 @@ public class FunctionFinder {
 					DataMap serviceConfig = new DataMap(response.getString());
 					String type = serviceConfig.getString("type");
 					DistributableService newDS = DistributableService.instantiate(nodeCore, type, serviceConfig.getObject("config"));
-					nodeCore.getFunctionManager().addFunction(functionName, newDS, 10);
+					nodeCore.getServiceManager().addService(functionName, newDS, 10);
 					ni = nodeCore.getDirectory().getNodeById(nodeCore.getNodeId());
 					ni.addFunctionInformation(functionName, new ServiceInformation(functionName));						
 					logger.finer("Instantiated distributable service : " + functionName);

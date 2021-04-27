@@ -200,7 +200,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 				NodeInformation originatorNode = nodeCore.getDirectory().getOrCreateNodeInformation(originatorId);
 				originatorNode.addRepeater(connectedId);
 			}
-			nodeCore.forkThenRoute(m);
+			nodeCore.enqueue(m);
 		}
 		else
 		{

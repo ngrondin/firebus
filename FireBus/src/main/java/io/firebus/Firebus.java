@@ -44,7 +44,7 @@ public class Firebus
 	
 	public void setThreadCount(int tc)
 	{
-		nodeCore.getThreadManager().setThreadCount(tc);
+		//nodeCore.getServiceManager().setThreadCount(tc);
 	}
 
 	public void setDefaultTimeout(int l)
@@ -64,37 +64,37 @@ public class Firebus
 	
 	public void registerServiceProvider(String serviceName, ServiceProvider serviceProvider, int maxConcurrent)
 	{
-		nodeCore.getFunctionManager().addFunction(serviceName, serviceProvider, maxConcurrent);
+		nodeCore.getServiceManager().addService(serviceName, serviceProvider, maxConcurrent);
 	}
 	
 	public void deregisterServiceProvider(String serviceName) 
 	{
-		nodeCore.getFunctionManager().removeFunction(serviceName);
+		nodeCore.getServiceManager().removeService(serviceName);
 	}
 	
 	public void registerStreamProvider(String streamName, StreamProvider streamProvider, int maxConcurrent)
 	{
-		nodeCore.getFunctionManager().addFunction(streamName, streamProvider, maxConcurrent);
+		nodeCore.getStreamManager().addStream(streamName, streamProvider, maxConcurrent);
 	}
 	
 	public void deregisterStreamProvider(String streamName) 
 	{
-		nodeCore.getFunctionManager().removeFunction(streamName);
+		nodeCore.getStreamManager().removeStream(streamName);
 	}
 	
 	public void registerConsumer(String consumerName, Consumer consumer, int maxConcurrent)
 	{
-		nodeCore.getFunctionManager().addFunction(consumerName, consumer, maxConcurrent);
+		nodeCore.getConsumerManager().addConsumer(consumerName, consumer, maxConcurrent);
 	}
 	
 	public void deregisterConsumer(String consumerName) 
 	{
-		nodeCore.getFunctionManager().removeFunction(consumerName);
+		nodeCore.getConsumerManager().removeConsumer(consumerName);
 	}
 	
 	public boolean hasRegisteredFunction(String name) 
 	{
-		return nodeCore.getFunctionManager().hasFunction(name);
+		return nodeCore.getServiceManager().hasService(name) || nodeCore.getStreamManager().hasStream(name) || nodeCore.getConsumerManager().hasConsumer(name);
 	}
 	
 	public boolean hasConnections()
@@ -140,10 +140,10 @@ public class Firebus
 		return request.execute();
 	}
 	
-	public void requestService(String serviceName, Payload payload, int timeout, ServiceRequestor requestor)
+	public void requestService(String serviceName, Payload payload, ServiceRequestor requestor, int timeout) throws FunctionErrorException, FunctionTimeoutException
 	{
-		ServiceRequest request = new ServiceRequest(nodeCore, serviceName, payload, timeout);
-		request.execute(requestor);
+		ServiceRequestAsync request = new ServiceRequestAsync(nodeCore, serviceName, payload, requestor, timeout);
+		request.execute();
 	}
 	
 	public void requestServiceAndForget(String serviceName, Payload payload) throws FunctionErrorException, FunctionTimeoutException
@@ -161,7 +161,7 @@ public class Firebus
 	public void publish(String dataname, Payload payload)
 	{
 		logger.finer("Publishing");
-		nodeCore.forkThenRoute(new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_PUBLISH, dataname, payload));
+		nodeCore.enqueue(new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_PUBLISH, dataname, payload));
 	}
 	
 	public void close()

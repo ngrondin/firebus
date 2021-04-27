@@ -102,7 +102,9 @@ public class CorrelationManager extends Thread
 	public Message sendAndWait(Message outMsg, int timeout)
 	{
 		int c = send(outMsg, null, timeout);
-		return waitForResponse(c, timeout);
+		Message m = waitForResponse(c, timeout);
+		removeEntry(c);
+		return m;
 	}
 	
 	public int send(Message outMsg, int timeout)
@@ -117,7 +119,7 @@ public class CorrelationManager extends Thread
 		entry.outboundMessage = outMsg;
 		entry.correlationListener = cl;
 		outMsg.setCorrelation(c, 0);
-		nodeCore.forkThenRoute(outMsg);
+		nodeCore.enqueue(outMsg);
 		return c;
 	}
 	

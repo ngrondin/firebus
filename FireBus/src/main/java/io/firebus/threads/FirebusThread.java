@@ -1,8 +1,10 @@
-package io.firebus;
+package io.firebus.threads;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Logger;
+
+import io.firebus.NodeCore;
 
 public class FirebusThread extends Thread
 {
@@ -29,10 +31,10 @@ public class FirebusThread extends Thread
 		{
 			try
 			{
-				Message message = threadManager.getNextMessage();
-				if(message != null)
+				Runnable runnable = threadManager.getNext();
+				if(runnable != null)
 				{
-					nodeCore.route(message);
+					runnable.run();
 				}
 				else
 				{

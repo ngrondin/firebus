@@ -67,18 +67,18 @@ public class Console implements ServiceRequestor
 	
 
 	
-	public void requestCallback(Payload payload)
+	public void response(Payload payload)
 	{
 		System.out.println(new String(payload.data));
 		
 	}
 
-	public void requestErrorCallback(FunctionErrorException e)
+	public void error(FunctionErrorException e)
 	{
 		System.out.println("Error: " + e.getMessage());		
 	}
 
-	public void requestTimeout()
+	public void timeout()
 	{
 		System.out.println("Timed out");
 	}

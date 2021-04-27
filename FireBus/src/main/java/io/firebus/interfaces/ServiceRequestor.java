@@ -5,9 +5,9 @@ import io.firebus.exceptions.FunctionErrorException;
 
 public interface ServiceRequestor 
 {
-	public void requestCallback(Payload payload);
+	public void response(Payload payload);
 
-	public void requestErrorCallback(FunctionErrorException e);
+	public void error(FunctionErrorException e);
 
-	public void requestTimeout();
+	public void timeout();
 }

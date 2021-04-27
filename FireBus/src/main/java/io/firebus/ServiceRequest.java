@@ -19,6 +19,7 @@ public class ServiceRequest extends Thread
 	protected long expiry;
 	protected ServiceRequestor requestor;
 	protected String errorMessage;
+	protected NodeInformation nodeInformation;
 
 	public ServiceRequest(NodeCore nc, String sn, Payload p, int t)
 	{
@@ -31,30 +32,6 @@ public class ServiceRequest extends Thread
 		expiry = System.currentTimeMillis() + (requestTimeout > -1 ? requestTimeout : subTimeout);
 	}
 	
-	public void execute(ServiceRequestor r)
-	{
-		requestor = r;
-		start();
-	}
-	
-	public void run()
-	{
-		setName("fbServiceReq" + getId());
-		try
-		{
-			Payload responsePayload = execute();
-			requestor.requestCallback(responsePayload);
-		}
-		catch(FunctionErrorException e)
-		{
-			requestor.requestErrorCallback(e);
-		}
-		catch(FunctionTimeoutException e)
-		{
-			requestor.requestTimeout();
-		}
-	}
-	
 	public Payload execute() throws FunctionErrorException, FunctionTimeoutException
 	{
 		logger.finer("Requesting Service");
@@ -63,15 +40,16 @@ public class ServiceRequest extends Thread
 		NodeInformation lastRequestedNode = null;
 		while(responseReceived == false  &&  System.currentTimeMillis() < expiry)
 		{
-			NodeInformation ni = FunctionFinder.findFunction(nodeCore, serviceName); 
-			if(ni != null)
+			nodeInformation = FunctionFinder.findFunction(nodeCore, serviceName); 
+			if(nodeInformation != null)
 			{
-				if(ni == lastRequestedNode) 
+				if(nodeInformation == lastRequestedNode) 
 					try{ Thread.sleep(1000);} catch(Exception e) {}
 
-				logger.finer("Sending service request message to " + ni.getNodeId());
+				lastRequestedNode = nodeInformation;
+				logger.finer("Sending service request message to " + nodeInformation.getNodeId());
 				int msgType = requestTimeout >= 0 ? Message.MSGTYPE_REQUESTSERVICE : Message.MSGTYPE_REQUESTSERVICEANDFORGET;
-				Message reqMsg = new Message(ni.getNodeId(), nodeCore.getNodeId(), msgType, serviceName, requestPayload);
+				Message reqMsg = new Message(nodeInformation.getNodeId(), nodeCore.getNodeId(), msgType, serviceName, requestPayload);
 				int correlation = nodeCore.getCorrelationManager().send(reqMsg, subTimeout);
 				Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
 				if(respMsg != null)
@@ -85,16 +63,15 @@ public class ServiceRequest extends Thread
 						}
 						else if(respMsg.getType() == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
 						{
-							logger.fine("Service " + serviceName + " on node " + ni.getNodeId() + " has responded as unavailable");
-							ni.getFunctionInformation(serviceName).reduceRating(1);
-							lastRequestedNode = ni;
+							logger.fine("Service " + serviceName + " on node " + nodeInformation.getNodeId() + " has responded as unavailable");
+							reduceRatingOfServiceForNode(1);							
 							break;
 						} 
 						else if(respMsg.getType() == Message.MSGTYPE_SERVICERESPONSE)
 						{
 							responseReceived = true;
 							responsePayload = respMsg.getPayload();
-							ni.getFunctionInformation(serviceName).resetRating();
+							resetRatingOfServiceForNode();
 							break;
 						}
 						else if(respMsg.getType() == Message.MSGTYPE_PROGRESS)
@@ -102,7 +79,7 @@ public class ServiceRequest extends Thread
 							if(msgType == Message.MSGTYPE_REQUESTSERVICEANDFORGET)
 							{
 								responseReceived = true;
-								ni.getFunctionInformation(serviceName).resetRating();
+								resetRatingOfServiceForNode();
 								break;
 							}
 							else 
@@ -115,18 +92,15 @@ public class ServiceRequest extends Thread
 						{
 							String str = "Service request " + serviceName + " has timed out while executing (corr: " + reqMsg.getCorrelation() + ")"; 
 							logger.fine(str);
-							ni.getFunctionInformation(serviceName).reduceRating(1);
+							reduceRatingOfServiceForNode(1);
 							throw new FunctionTimeoutException(str);
 						}
 					}
 				}
 				else
 				{
-					logger.fine("Service " + serviceName + " on node " + ni.getNodeId() + " has not responded to a service request (corr: " + reqMsg.getCorrelation() + ")");
-					FunctionInformation fi = ni.getFunctionInformation(serviceName);
-					if(fi != null)
-						fi.reduceRating(3);
-					lastRequestedNode = ni;
+					logger.fine("Service " + serviceName + " on node " + nodeInformation.getNodeId() + " has not responded to a service request (corr: " + reqMsg.getCorrelation() + ")");
+					reduceRatingOfServiceForNode(3);
 				}
 				nodeCore.getCorrelationManager().removeEntry(correlation);
 			}			
@@ -137,5 +111,18 @@ public class ServiceRequest extends Thread
 		else
 			throw new FunctionTimeoutException("Service " + serviceName + " could not be found");
 	}
+	
+	private void reduceRatingOfServiceForNode(int q) {
+		FunctionInformation fi = nodeInformation.getFunctionInformation(serviceName);
+		if(fi != null)
+			fi.reduceRating(q);		
+	}
+	
+	private void resetRatingOfServiceForNode() {
+		FunctionInformation fi = nodeInformation.getFunctionInformation(serviceName);
+		if(fi != null)
+			fi.resetRating();	
+	}
+	
 	
 }

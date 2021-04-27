@@ -13,6 +13,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.PBEKeySpec;
 
 import io.firebus.discovery.DefaultDiscoveryAgent;
+import io.firebus.threads.ThreadManager;
 
 
 public class NodeCore
@@ -23,11 +24,14 @@ public class NodeCore
 	protected String networkName;
 
 	protected ConnectionManager connectionManager;
-	protected FunctionManager functionManager;
+	protected ServiceManager serviceManager;
+	protected StreamManager streamManager;
+	protected ConsumerManager consumerManager;
 	protected Directory directory;
 	protected List<DiscoveryAgent> discoveryAgents;
 	protected CorrelationManager correlationManager;
-	protected ThreadManager threadManager;
+	protected ThreadManager messageThreads;
+	protected ThreadManager executionThreads;
 	protected Cipher cipher;
 	protected HistoryQueue historyQueue;
 	
@@ -69,9 +73,12 @@ public class NodeCore
 			directory = new Directory();
 			directory.getOrCreateNodeInformation(nodeId);
 			connectionManager = new ConnectionManager(this, nodeId, networkName, key, port);
-			functionManager = new FunctionManager(this);
+			serviceManager = new ServiceManager(this);
+			streamManager = new StreamManager(this);
+			consumerManager = new ConsumerManager(this);
 			correlationManager = new CorrelationManager(this);
-			threadManager = new ThreadManager(this);
+			messageThreads = new ThreadManager(this);
+			executionThreads = new ThreadManager(this);
 			historyQueue = new HistoryQueue(256);
 			discoveryAgents = new ArrayList<DiscoveryAgent>();
 			discoveryAgents.add(new DefaultDiscoveryAgent(this));
@@ -87,7 +94,8 @@ public class NodeCore
 	{
 		connectionManager.close();
 		correlationManager.close();
-		threadManager.close();
+		messageThreads.close();
+		executionThreads.close();
 		for(DiscoveryAgent agent : discoveryAgents)
 			agent.close();
 		quit = true;
@@ -111,10 +119,20 @@ public class NodeCore
 	{
 		return directory;
 	}
-
-	public FunctionManager getFunctionManager()
+	
+	public ServiceManager getServiceManager() 
 	{
-		return functionManager;
+		return serviceManager;
+	}
+	
+	public StreamManager getStreamManager()
+	{
+		return streamManager;
+	}
+	
+	public ConsumerManager getConsumerManager()
+	{
+		return consumerManager;
 	}
 	
 	public ConnectionManager getConnectionManager()
@@ -127,9 +145,14 @@ public class NodeCore
 		return correlationManager;
 	}
 	
-	public ThreadManager getThreadManager() 
+	public ThreadManager getExecutionThreads() 
 	{
-		return threadManager;
+		return executionThreads;
+	}
+	
+	public void setMaxThreadCount(int c)
+	{
+		executionThreads.setThreadCount(c);
 	}
 	
 	public void addKnownNodeAddress(String a, int p)
@@ -143,9 +166,9 @@ public class NodeCore
 		discoveryAgents.add(agent);
 	}
 	
-	protected void forkThenRoute(Message msg)
+	protected void enqueue(Message msg)
 	{
-		threadManager.process(msg);
+		messageThreads.enqueue(new RouteMessage(this, msg));
 	}
 	
 	protected void route(Message msg)
@@ -182,17 +205,23 @@ public class NodeCore
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_GETFUNCTIONINFORMATION:
-						functionManager.processServiceInformationRequest(msg);
+						String name = msg.getSubject();
+						if(serviceManager.hasService(name))
+							serviceManager.processServiceInformationRequest(msg);
+						else if(streamManager.hasStream(name))
+							streamManager.processServiceInformationRequest(msg);
+						else if(consumerManager.hasConsumer(name))
+							consumerManager.processServiceInformationRequest(msg);
 						break;
 					case Message.MSGTYPE_FUNCTIONINFORMATION:
 						directory.processFunctionInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload().data);
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_REQUESTSERVICE:
-						functionManager.executeFunction(msg);
+						serviceManager.executeService(msg);
 						break;
 					case Message.MSGTYPE_REQUESTSERVICEANDFORGET:
-						functionManager.executeFunction(msg);
+						serviceManager.executeService(msg);
 						break;
 					case Message.MSGTYPE_PROGRESS:
 						correlationManager.receiveResponse(msg);
@@ -207,11 +236,11 @@ public class NodeCore
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_PUBLISH:
-						if(functionManager.hasFunction(msg.getSubject()))
-							functionManager.executeFunction(msg);
+						if(consumerManager.hasConsumer(msg.getSubject()))
+							consumerManager.consume(msg);
 						break;
 					case Message.MSGTYPE_REQUESTSTREAM:
-						functionManager.executeFunction(msg);
+						streamManager.connectStream(msg);
 						break;
 					case Message.MSGTYPE_STREAMACCEPT:
 						correlationManager.receiveResponse(msg);
@@ -236,7 +265,9 @@ public class NodeCore
 		logger.finer("Responding to a node information request");
 		StringBuilder sb = new StringBuilder();
 		sb.append(connectionManager.getAddressStateString(nodeId));
-		sb.append(functionManager.getFunctionStateString(nodeId));
+		sb.append(serviceManager.getFunctionStateString(nodeId));
+		sb.append(streamManager.getFunctionStateString(nodeId));
+		sb.append(consumerManager.getFunctionStateString(nodeId));
 		sb.append(directory.getDirectoryStateString(nodeId));
 		Message msg = new Message(reqMsg.getOriginatorId(), nodeId, Message.MSGTYPE_NODEINFORMATION, null, new Payload(null, sb.toString().getBytes()));
 		msg.setCorrelation(reqMsg.getCorrelation(), 0);
@@ -248,7 +279,9 @@ public class NodeCore
 		StringBuilder sb = new StringBuilder();
 		sb.append("Node Id :" + nodeId + "\r\n");
 		sb.append("-------Functions----------\r\n");
-		sb.append(functionManager);
+		sb.append(serviceManager);
+		sb.append(streamManager);
+		sb.append(consumerManager);
 		sb.append("-------Connections--------\r\n");
 		sb.append(connectionManager);
 		sb.append("-------Directory----------\r\n");
