@@ -31,7 +31,7 @@ public class CorrelationManager extends Thread
 	protected synchronized int createEntry(long to)
 	{
 		int c = getNextCorrelation();
-		CorrelationEntry entry = new CorrelationEntry(to); 
+		CorrelationEntry entry = new CorrelationEntry(nodeCore, to); 
 		entries.put(c, entry);
 		return c;
 	}

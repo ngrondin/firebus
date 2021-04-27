@@ -64,8 +64,8 @@ public class ServiceManager extends ExecutionManager {
 		Payload inPayload = msg.getPayload();
 		if(fe != null)
 		{
-			if(increaseExecutionCount())
-			{
+			/*if(increaseExecutionCount())
+			{*/
 				long executionId = fe.getExecutionId();
 				if(executionId != -1) 
 				{
@@ -98,12 +98,12 @@ public class ServiceManager extends ExecutionManager {
 					logger.info("Cannot execute function " + name + " as maximum number of executions reached for this function (" + totalExecutionCount + ")");
 					sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "Maximum concurrent functions running");
 				}
-			}
+			/*}
 			else
 			{
 				logger.info("Cannot execute function " + name + " as maximum number of executions reached for this node (" + totalExecutionCount + ")");
 				sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "Maximum concurrent functions running");
-			}
+			}*/
 		}	
 		else
 		{

@@ -6,12 +6,14 @@ public class CorrelationEntry {
 	protected int sequence;
 	protected Message outboundMessage;
 	protected MessageQueue inboundMessages;
+	protected NodeCore nodeCore;
 	protected CorrelationListener correlationListener;
 	protected long timeout;
 	protected long expiry;
 	
-	public CorrelationEntry(long to)
+	public CorrelationEntry(NodeCore nc, long to)
 	{
+		nodeCore = nc;
 		timeout = to;
 		expiry = System.currentTimeMillis() + to;
 		sequence = 0;
@@ -55,7 +57,12 @@ public class CorrelationEntry {
 		if(correlationListener != null) {
 			Message next = null;
 			while((next = popNext()) != null) {
-				correlationListener.correlatedResponseReceived(outboundMessage, next);
+				final Message inboundMessage = next;
+				nodeCore.getExecutionThreads().enqueue(new Runnable() {
+					public void run() {
+						correlationListener.correlatedResponseReceived(outboundMessage, inboundMessage);
+					}
+				});
 			}
 		}
 	}
