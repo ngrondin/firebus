@@ -13,6 +13,9 @@ public class StreamEndpoint implements CorrelationListener {
 	protected int remoteCorrelationSequence;
 	protected int remoteNodeId;
 	protected MessageQueue inQueue;
+	protected Payload requestPayload;
+	protected Payload acceptPayload;
+	protected boolean active;
 	
 	protected StreamEndpoint(NodeCore nc, String sn, int lc, int rc, int rcs, int rni)
 	{
@@ -23,14 +26,37 @@ public class StreamEndpoint implements CorrelationListener {
 		remoteCorrelationSequence = rcs;
 		remoteNodeId = rni;
 		inQueue = new MessageQueue(100);
+		active = true;
 	}
 	
+	public void setRequestPayload(Payload p)
+	{
+		requestPayload = p;
+	}
+	
+	public Payload getRequestPayload()
+	{
+		return requestPayload;
+	}
+	
+	public void setAcceptPayload(Payload p)
+	{
+		acceptPayload = p;
+	}
+	
+	public Payload getAcceptPayload()
+	{
+		return acceptPayload;
+	}
+
 	public void setHandler(StreamHandler sh)
 	{
 		streamHandler = sh;
-		while(inQueue.getMessageCount() > 0) {
-			Message inMsg = inQueue.pop();
-			streamHandler.receiveStreamData(inMsg.getPayload(), this);
+		if(streamHandler != null) {
+			while(inQueue.getMessageCount() > 0) {
+				Message inMsg = inQueue.pop();
+				streamHandler.receiveStreamData(inMsg.getPayload(), this);
+			}
 		}
 	}
 	
@@ -49,6 +75,7 @@ public class StreamEndpoint implements CorrelationListener {
 		remoteCorrelationSequence++;
 		nodeCore.enqueue(msg);
 		nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
+		active = false;
 	}
 
 	public void correlatedResponseReceived(Message outMsg, Message inMsg) {
@@ -56,6 +83,7 @@ public class StreamEndpoint implements CorrelationListener {
 			nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
 			if(streamHandler != null)
 				streamHandler.streamClosed(this);
+			active = false;
 		} else if(streamHandler != null) {
 			streamHandler.receiveStreamData(inMsg.getPayload(), this);
 		} else {

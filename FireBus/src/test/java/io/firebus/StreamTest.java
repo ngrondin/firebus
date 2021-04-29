@@ -5,9 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import io.firebus.exceptions.FunctionErrorException;
-import io.firebus.information.ServiceInformation;
 import io.firebus.information.StreamInformation;
-import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.StreamHandler;
 import io.firebus.interfaces.StreamProvider;
 import io.firebus.logging.FirebusSimpleFormatter;
@@ -34,7 +32,7 @@ public class StreamTest {
 		
 		Firebus firebus = new Firebus();
 		firebus.registerStreamProvider("teststream", new StreamProvider() {
-			public void acceptStream(Payload payload, StreamEndpoint streamEndpoint) throws FunctionErrorException {
+			public Payload acceptStream(Payload payload, StreamEndpoint streamEndpoint) throws FunctionErrorException {
 				System.out.println("Provider end : Accepting : " + payload.getString());
 				streamEndpoint.setHandler(new StreamHandler() {
 					public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
@@ -50,6 +48,7 @@ public class StreamTest {
 						return 10000;
 					}
 				});
+				return new Payload();
 			}
 
 			public StreamInformation getStreamInformation() {

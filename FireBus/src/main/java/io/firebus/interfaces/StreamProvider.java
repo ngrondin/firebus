@@ -7,7 +7,7 @@ import io.firebus.information.StreamInformation;
 
 public interface StreamProvider extends BusFunction
 {
-	public void acceptStream(Payload payload, StreamEndpoint streamEndpoint) throws FunctionErrorException;
+	public Payload acceptStream(Payload payload, StreamEndpoint streamEndpoint) throws FunctionErrorException;
 	
 	public int getStreamIdleTimeout();
 	

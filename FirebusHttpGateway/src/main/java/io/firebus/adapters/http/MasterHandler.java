@@ -27,9 +27,9 @@ public class MasterHandler extends HttpServlet
 		rootForward = null;
 	}
 	
-	public void addHttpHandler(String path, String method, HttpHandler handler)
+	public void addHttpHandler(String path, String method, String contentType, HttpHandler handler)
 	{
-		handlerMap.add(new HttpHandlerEntry(path, method, handler));
+		handlerMap.add(new HttpHandlerEntry(path, method, contentType, handler));
 	}
 	
 	public void setDefaultHander(HttpHandler dh)
@@ -52,51 +52,68 @@ public class MasterHandler extends HttpServlet
 	{
 		String path = req.getRequestURI();
 		String method = req.getMethod();
+		String contentType = req.getContentType();
 		
 		if(path.equals("/") && rootForward != null)
 			path = rootForward;
 
-		HttpHandler selected = null;
+		HttpHandler best = null;
+		int bestPoints = 0;
+
 		if(path.equals("/logout")) 
 		{
-			selected = logoutHandler;
+			best = logoutHandler;
 		}
 		else 
 		{
-			for(int i = 0; i < handlerMap.size() && selected == null; i++) 
+			for(int i = 0; i < handlerMap.size() && best == null; i++) 
 			{
 				HttpHandlerEntry entry = handlerMap.get(i);
-				boolean match = true;
-				if(entry.method == null || (entry.method != null && entry.method.equalsIgnoreCase(method)))
-				{
+				int matchPoints = 0;
+				boolean disqualified = false;
+				if(entry.path != null) {
 					if(entry.path.endsWith("/*")) 
 					{
 						String shortEntryPath = entry.path.substring(0, entry.path.length() - 2);
 						if(path.startsWith(shortEntryPath + "/") || path.equals(shortEntryPath))
-							match = true;
+							matchPoints++;
 						else
-							match = false;
+							disqualified = true;
 					}
 					else
 					{
 						if(entry.path.equals(path))
-							match = true;
+							matchPoints++;
 						else
-							match = false;
-					}
+							disqualified = true;
+					}					
+				} 
+				
+				if(entry.method != null) {
+					if(entry.method.equalsIgnoreCase(method))
+						matchPoints++;
+					else
+						disqualified = true;
+				} 
+				
+				if(entry.contentType != null) {
+					if(entry.contentType.equalsIgnoreCase(contentType))
+						matchPoints++;
+					else
+						disqualified = true;
+				} 
+				
+				if(!disqualified && matchPoints > bestPoints) {
+					bestPoints = matchPoints;
+					best = entry.handler;
 				}
-				else
-				{
-					match = false;
-				}
-				if(match)
-					selected = entry.handler;
+				
 			}			
 		}
 
-		if(selected != null)
+		if(best != null)
 		{
-			selected.service(req, resp);
+			best.service(req, resp);
 		}
 		else if(defaultHandler != null)
 		{

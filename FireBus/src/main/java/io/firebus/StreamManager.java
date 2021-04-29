@@ -1,5 +1,4 @@
 package io.firebus;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -77,15 +76,18 @@ public class StreamManager extends ExecutionManager {
 							long idleTimeout = streamProvider.getStreamIdleTimeout();
 							int localCorrelationId = nodeCore.getCorrelationManager().createEntry(idleTimeout);
 							StreamEndpoint streamEndpoint = new StreamEndpoint(nodeCore, name, localCorrelationId, msg.getCorrelation(), 1, msg.getOriginatorId());
+							streamEndpoint.setRequestPayload(inPayload);
 							try
 							{
-								streamProvider.acceptStream(inPayload, streamEndpoint);
+								Payload acceptPayload = streamProvider.acceptStream(inPayload, streamEndpoint);
+								streamEndpoint.setAcceptPayload(acceptPayload);
 								logger.finer("Accepted stream " + name + " (correlation: " + msg.getCorrelation() + ")");
-								ByteBuffer bb = ByteBuffer.allocate(12);
-								bb.putInt(localCorrelationId);
-								bb.putLong(idleTimeout);
+								if(acceptPayload == null)
+									acceptPayload = new Payload();
+								acceptPayload.metadata.put("correlationid", String.valueOf(localCorrelationId));
+								acceptPayload.metadata.put("timeout", String.valueOf(idleTimeout));
 								nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, idleTimeout);
-								sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), new Payload(bb.array()));
+								sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), acceptPayload);
 							}
 							catch(FunctionErrorException e)
 							{

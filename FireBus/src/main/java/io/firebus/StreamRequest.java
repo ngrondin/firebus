@@ -1,6 +1,5 @@
 package io.firebus;
 
-import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
 import io.firebus.exceptions.FunctionErrorException;
@@ -88,10 +87,12 @@ public class StreamRequest extends Thread
 						} 
 						else if(respMsg.getType() == Message.MSGTYPE_STREAMACCEPT)
 						{
-							ByteBuffer bb = ByteBuffer.wrap(respMsg.getPayload().getBytes());
-							int remoteCorrelation = bb.getInt();
-							long idleTimeout = bb.getLong();
+							Payload acceptPayload = respMsg.getPayload();
+							int remoteCorrelation = Integer.parseInt(acceptPayload.metadata.get("correlationid"));
+							int idleTimeout = Integer.parseInt(acceptPayload.metadata.get("timeout"));
 							streamEndpoint = new StreamEndpoint(nodeCore, streamName, correlation, remoteCorrelation, 0, ni.getNodeId());
+							streamEndpoint.setAcceptPayload(acceptPayload);
+							streamEndpoint.setRequestPayload(requestPayload);
 							nodeCore.getCorrelationManager().setListenerOnEntry(correlation, streamEndpoint, idleTimeout);
 							ni.getFunctionInformation(streamName).resetRating();
 							break;

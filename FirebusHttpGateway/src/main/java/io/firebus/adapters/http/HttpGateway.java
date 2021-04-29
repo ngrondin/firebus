@@ -19,6 +19,7 @@ import io.firebus.adapters.http.auth.AppleValidator;
 import io.firebus.adapters.http.auth.NoValidator;
 import io.firebus.adapters.http.auth.OAuth2CodeValidator;
 import io.firebus.adapters.http.auth.UserPassValidator;
+import io.firebus.adapters.http.inbound.FileStreamHandler;
 import io.firebus.adapters.http.inbound.GetHandler;
 import io.firebus.adapters.http.inbound.PostFormHandler;
 import io.firebus.adapters.http.inbound.PostJsonHandler;
@@ -101,6 +102,7 @@ public class HttpGateway implements ServiceProvider
 		        {
 		        	DataMap authConfig = list.getObject(i);
 		            String method = authConfig.getString("method");
+		            String contentType = authConfig.getString("contenttype");
 		            String urlPattern = authConfig.getString("path");
 		            String security = authConfig.getString("security");
 		            AuthValidationHandler handler = getAuthValidationHandler(authConfig);
@@ -112,7 +114,7 @@ public class HttpGateway implements ServiceProvider
 		            	}
 		            	if(publicHost != null)
 		            		handler.setPublicHost(publicHost);
-		            	masterHandler.addHttpHandler(urlPattern, method, handler);
+		            	masterHandler.addHttpHandler(urlPattern, method, contentType, handler);
 		            	authValidationHanders.add(handler);
 		            }
 		        }
@@ -126,13 +128,14 @@ public class HttpGateway implements ServiceProvider
 		        {
 		        	DataMap inboundConfig = list.getObject(i);
 		            String method = inboundConfig.getString("method");
+		            String contentType = inboundConfig.getString("contenttype");
 		            String urlPattern = inboundConfig.getString("path");
 		            String security = inboundConfig.getString("security");
 		            InboundHandler handler = getInboundHandler(inboundConfig);
 		            if(handler != null) {
 		            	if(security != null)
 		            		handler.setSecurityHandler(securityHandlerMap.get(security));
-		            	masterHandler.addHttpHandler(urlPattern, method, handler);
+		            	masterHandler.addHttpHandler(urlPattern, method, contentType, handler);
 		            }
 		        }
 	        }
@@ -151,7 +154,7 @@ public class HttpGateway implements ServiceProvider
 		            {
 		            	if(security != null)
 		            		handler.setSecurityHandler(securityHandlerMap.get(security));
-		            	masterHandler.addHttpHandler(urlPattern, "get", handler);
+		            	masterHandler.addHttpHandler(urlPattern, "get", null, handler);
 		            	if(handler instanceof ServiceProvider)
 		            		firebus.registerServiceProvider(name, (ServiceProvider)handler, 10);
 		            	else if(handler instanceof Consumer)
@@ -199,7 +202,11 @@ public class HttpGateway implements ServiceProvider
 	{
 		String method = inboundConfig.containsKey("method") ? inboundConfig.getString("method").toLowerCase() : "get";
 		String contentType = inboundConfig.containsKey("contenttype") ? inboundConfig.getString("contenttype").toLowerCase() : "application/json";
-		if(method.equals("get"))
+		String type = inboundConfig.getString("type");
+		if(type != null && type.equals("filestream")) {
+			return new FileStreamHandler(inboundConfig, firebus);
+		}
+		else if(method.equals("get"))
 		{
 			return new GetHandler(inboundConfig, firebus);
 		}

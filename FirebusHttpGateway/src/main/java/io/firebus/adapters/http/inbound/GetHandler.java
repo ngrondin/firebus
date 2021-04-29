@@ -1,26 +1,24 @@
 package io.firebus.adapters.http.inbound;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Enumeration;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
-import io.firebus.adapters.http.InboundHandler;
+import io.firebus.adapters.http.InboundReqRespHandler;
 import io.firebus.utils.DataMap;
 
-public class GetHandler extends InboundHandler 
+public class GetHandler extends InboundReqRespHandler 
 {
 	public GetHandler(DataMap c, Firebus f) 
 	{
 		super(c, f);
 	}
 
-	protected Payload processRequest(HttpServletRequest req) throws ServletException, IOException
+	protected Payload processRequest(HttpServletRequest req) throws Exception
 	{
 		DataMap fbReq = new DataMap();
 		String path = req.getRequestURI();
@@ -38,7 +36,7 @@ public class GetHandler extends InboundHandler
 		return payload;
 	}
 
-	protected void processResponse(HttpServletResponse resp, Payload payload) throws ServletException, IOException
+	protected void processResponse(HttpServletResponse resp, Payload payload) throws Exception
 	{
 		OutputStream os = resp.getOutputStream();
 		os.write(payload.getBytes());

@@ -11,10 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.adapters.http.InboundHandler;
+import io.firebus.adapters.http.InboundReqRespHandler;
 import io.firebus.utils.DataException;
 import io.firebus.utils.DataMap;
 
-public class PostFormHandler extends InboundHandler 
+public class PostFormHandler extends InboundReqRespHandler 
 {
 	public PostFormHandler(DataMap c, Firebus f) 
 	{
