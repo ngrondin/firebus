@@ -105,7 +105,7 @@ public class ServiceRequestAsync implements CorrelationListener {
 			resetRatingOfServiceForNode();
 			requestor.response(responsePayload);
 		}
-				
+		nodeCore.getCorrelationManager().removeEntry(inMsg.getCorrelation());		
 	}
 
 	public void correlationTimedout(Message outMsg) {
