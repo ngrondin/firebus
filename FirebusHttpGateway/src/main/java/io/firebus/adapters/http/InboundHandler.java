@@ -9,10 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
-import io.firebus.Payload;
-import io.firebus.exceptions.FunctionErrorException;
-import io.firebus.exceptions.FunctionTimeoutException;
-import io.firebus.utils.DataException;
 import io.firebus.utils.DataMap;
 
 public abstract class InboundHandler extends HttpHandler 
@@ -34,6 +30,7 @@ public abstract class InboundHandler extends HttpHandler
 		catch (Exception e)
 		{
 			logger.severe("Error processing inbound : " + e.getMessage());
+			resp.reset();
 			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	        PrintWriter writer = resp.getWriter();
 			String accept = req.getHeader("accept");

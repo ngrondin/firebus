@@ -3,13 +3,18 @@ package io.firebus.script.units;
 import io.firebus.script.scopes.Scope;
 import io.firebus.script.values.SValue;
 
-public class Setter extends ExecutionUnit {
+public class Declare extends ExecutionUnit {
+	protected String modifier;
 	protected String key;
 	protected Expression expression;
 	
-	public Setter(String k, Expression exp) {
+	public Declare(String k, Expression exp) {
 		key = k;
 		expression = exp;
+	}
+	
+	public void setModifier(String m) {
+		modifier = m;
 	}
 
 	public SValue eval(Scope scope) {
@@ -17,5 +22,4 @@ public class Setter extends ExecutionUnit {
 		scope.setValue(key, val);
 		return val;
 	}
-
 }

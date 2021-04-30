@@ -1,13 +1,19 @@
-package io.firebus.script.objects;
+package io.firebus.script.values;
 
-public class ScriptString extends ScriptObject {
+import java.util.List;
+import java.util.Map;
+
+public class SString extends PredefinedSObject {
 	protected String str;
 	
-	public ScriptString(String s) {
+	public SString(String s) {
 		str = s;
 	}
-	
-	public String toString() {
-		return str;
+
+	protected Map<String, SValue> defineMembers() {
+		// TODO Auto-generated method stub
+		return null;
 	}
+
+
 }

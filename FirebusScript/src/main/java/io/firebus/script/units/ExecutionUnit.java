@@ -1,7 +1,7 @@
 package io.firebus.script.units;
 
-import io.firebus.script.objects.ScriptObject;
 import io.firebus.script.scopes.Scope;
+import io.firebus.script.values.SValue;
 
 public abstract class ExecutionUnit {
 	
@@ -9,5 +9,5 @@ public abstract class ExecutionUnit {
 		
 	}
 	
-	public abstract ScriptObject eval(Scope scope);
+	public abstract SValue eval(Scope scope);
 }

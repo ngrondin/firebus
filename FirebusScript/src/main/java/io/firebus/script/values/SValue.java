@@ -1,6 +1,6 @@
-package io.firebus.script.objects;
+package io.firebus.script.values;
 
-public abstract class ScriptObject {
+public abstract class SValue {
 
 	
 }

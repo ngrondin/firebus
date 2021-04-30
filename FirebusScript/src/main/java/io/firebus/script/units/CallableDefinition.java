@@ -2,9 +2,9 @@ package io.firebus.script.units;
 
 import java.util.List;
 
-import io.firebus.script.objects.InternalCallable;
-import io.firebus.script.objects.ScriptObject;
 import io.firebus.script.scopes.Scope;
+import io.firebus.script.values.InternalSCallable;
+import io.firebus.script.values.SValue;
 
 public class CallableDefinition extends Expression {
 	protected List<String> params;
@@ -15,8 +15,8 @@ public class CallableDefinition extends Expression {
 		body = b;
 	}
 	
-	public ScriptObject eval(Scope scope) {
-		return new InternalCallable(params, body, scope);
+	public SValue eval(Scope scope) {
+		return new InternalSCallable(params, body, scope);
 	}
 
 }

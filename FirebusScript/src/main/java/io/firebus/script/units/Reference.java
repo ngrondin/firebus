@@ -1,7 +1,7 @@
 package io.firebus.script.units;
 
-import io.firebus.script.objects.ScriptObject;
 import io.firebus.script.scopes.Scope;
+import io.firebus.script.values.SValue;
 
 public class Reference extends Expression {
 	protected String name;
@@ -10,7 +10,7 @@ public class Reference extends Expression {
 		name = n;
 	}
 
-	public ScriptObject eval(Scope scope) {
+	public SValue eval(Scope scope) {
 		return scope.getValue(name);
 	}
 }

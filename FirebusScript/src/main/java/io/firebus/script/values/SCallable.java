@@ -1,8 +1,8 @@
-package io.firebus.script.objects;
+package io.firebus.script.values;
 
 import java.util.List;
 
-public abstract class Callable extends ScriptObject {
+public abstract class SCallable extends SValue {
 
-	public abstract ScriptObject call(List<ScriptObject> params);
+	public abstract SValue call(List<SValue> params);
 }

@@ -1,8 +1,8 @@
 package io.firebus.script.units;
 
-import io.firebus.script.objects.ScriptObject;
-import io.firebus.script.objects.ScriptString;
 import io.firebus.script.scopes.Scope;
+import io.firebus.script.values.SValue;
+import io.firebus.script.values.SString;
 
 public class StringLiteral extends Literal {
 	protected String str;
@@ -11,8 +11,8 @@ public class StringLiteral extends Literal {
 		str = s;
 	}
 	
-	public ScriptObject eval(Scope scope) {
-		return new ScriptString(new String(str));
+	public SValue eval(Scope scope) {
+		return new SString(new String(str));
 	}
 
 }

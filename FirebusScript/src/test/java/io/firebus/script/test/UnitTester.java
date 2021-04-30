@@ -2,7 +2,6 @@ package io.firebus.script.test;
 
 import java.util.Arrays;
 
-import io.firebus.script.objects.impl.Print;
 import io.firebus.script.scopes.Scope;
 import io.firebus.script.units.Block;
 import io.firebus.script.units.Call;
@@ -13,6 +12,7 @@ import io.firebus.script.units.Reference;
 import io.firebus.script.units.Setter;
 import io.firebus.script.units.StringLiteral;
 import io.firebus.script.units.operators.AddOperator;
+import io.firebus.script.values.impl.Print;
 
 public class UnitTester {
 

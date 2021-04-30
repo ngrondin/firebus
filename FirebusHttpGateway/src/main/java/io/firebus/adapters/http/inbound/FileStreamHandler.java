@@ -49,6 +49,7 @@ public class FileStreamHandler extends InboundHandler  {
 			OutputStream os = resp.getOutputStream();
 			new StreamReceiver(os, sep).sync();
 			resp.setStatus(200);
+			os.flush();
 			os.close();
 			sep.close();
 		} else if(action.equals("put")) {
@@ -105,6 +106,7 @@ public class FileStreamHandler extends InboundHandler  {
 				
 				OutputStream os = resp.getOutputStream();
 				new StreamReceiver(os, sep).sync();
+				os.flush();
 				os.close();
 				sep.close();
 			}

@@ -3,9 +3,9 @@ package io.firebus.script.units;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.firebus.script.objects.Callable;
-import io.firebus.script.objects.ScriptObject;
 import io.firebus.script.scopes.Scope;
+import io.firebus.script.values.SCallable;
+import io.firebus.script.values.SValue;
 
 public class Call extends Expression {
 	protected Expression callableExpression;
@@ -16,14 +16,14 @@ public class Call extends Expression {
 		paramExpressions = e;
 	}
 
-	public ScriptObject eval(Scope scope) {
-		ScriptObject c = callableExpression.eval(scope);
-		if(c instanceof Callable) {
-			List<ScriptObject> params = new ArrayList<ScriptObject>();
+	public SValue eval(Scope scope) {
+		SValue c = callableExpression.eval(scope);
+		if(c instanceof SCallable) {
+			List<SValue> params = new ArrayList<SValue>();
 			for(Expression e : paramExpressions) {
 				params.add(e.eval(scope));
 			}
-			ScriptObject ret = ((Callable)c).call(params);
+			SValue ret = ((SCallable)c).call(params);
 			return ret;
 		} else {
 			return null; //Throw exception

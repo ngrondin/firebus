@@ -1,10 +1,10 @@
 package io.firebus.script.units.operators;
 
-import io.firebus.script.objects.ScriptObject;
-import io.firebus.script.objects.ScriptString;
 import io.firebus.script.scopes.Scope;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
+import io.firebus.script.values.SValue;
+import io.firebus.script.values.SString;
 
 public class AddOperator extends Operator {
 	protected ExecutionUnit expression1;
@@ -15,12 +15,12 @@ public class AddOperator extends Operator {
 		expression2 = exp2;
 	}
 	
-	public ScriptObject eval(Scope scope) {
-		ScriptObject v1 = expression1.eval(scope);
-		ScriptObject v2 = expression2.eval(scope);
-		ScriptObject ret = null;
-		if(v1 instanceof ScriptString && v2 instanceof ScriptString) {
-			ret = new ScriptString(v1.toString() + v2.toString());
+	public SValue eval(Scope scope) {
+		SValue v1 = expression1.eval(scope);
+		SValue v2 = expression2.eval(scope);
+		SValue ret = null;
+		if(v1 instanceof SString && v2 instanceof SString) {
+			ret = new SString(v1.toString() + v2.toString());
 		}
 		return ret;
 	}
