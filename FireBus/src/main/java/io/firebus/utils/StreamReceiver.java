@@ -73,6 +73,7 @@ public class StreamReceiver implements StreamHandler {
 						bytesReceived += bytes.length;
 						if(outputStream != null) {
 							outputStream.write(bytes);	
+							outputStream.flush();
 						} else if(chunkListener != null) {
 							chunkListener.chunk(bytes);
 						}

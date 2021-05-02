@@ -226,12 +226,12 @@ public class HttpGateway implements ServiceProvider
 			}
 			else
 			{
-				return null;
+				return new PostJsonHandler(inboundConfig, firebus);
 			}
 		}
 		else
 		{
-			return null;
+			return new GetHandler(inboundConfig, firebus);
 		}
 	}
 	

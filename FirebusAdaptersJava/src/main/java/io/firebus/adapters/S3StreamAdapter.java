@@ -102,6 +102,7 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 				throw new FunctionErrorException("No action provided");
 			}
 		} catch(Exception e) {
+			logger.severe("Error accepting stream connection : " + e.getMessage());
 			throw new FunctionErrorException("Error accepting stream connection", e);
 		}
 	}

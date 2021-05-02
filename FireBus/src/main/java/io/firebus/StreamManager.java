@@ -91,7 +91,7 @@ public class StreamManager extends ExecutionManager {
 							}
 							catch(FunctionErrorException e)
 							{
-								sendError(e, msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_STREAMERROR,  msg.getSubject());
+								sendError(e, msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMERROR,  msg.getSubject());
 							}
 
 							
