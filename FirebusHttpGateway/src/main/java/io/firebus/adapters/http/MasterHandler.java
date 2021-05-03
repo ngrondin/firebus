@@ -97,7 +97,7 @@ public class MasterHandler extends HttpServlet
 				} 
 				
 				if(entry.contentType != null) {
-					if(entry.contentType.equalsIgnoreCase(contentType))
+					if(contentType != null && (contentType.equalsIgnoreCase(entry.contentType) || contentType.startsWith(entry.contentType + ";")))
 						matchPoints++;
 					else
 						disqualified = true;
