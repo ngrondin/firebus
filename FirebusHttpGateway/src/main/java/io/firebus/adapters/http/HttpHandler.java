@@ -58,12 +58,20 @@ public abstract class HttpHandler extends Handler
 	}
 
 	protected void enrichFirebusRequestDefault(HttpServletRequest req, Payload payload) {
-		Enumeration<String> e = req.getHeaderNames();
-		while(e.hasMoreElements()) {
-			String name = e.nextElement();
+		Enumeration<String> e1 = req.getHeaderNames();
+		while(e1.hasMoreElements()) {
+			String name = e1.nextElement();
 			if(name.toLowerCase().startsWith("firebus-")) {
 				String shortName = name.toLowerCase().substring(8);
 				payload.metadata.put(shortName, req.getHeader(name));
+			}
+		}
+		Enumeration<String> e2 = req.getParameterNames();
+		while(e2.hasMoreElements()) {
+			String name = e2.nextElement();
+			if(name.toLowerCase().startsWith("firebus-")) {
+				String shortName = name.toLowerCase().substring(8);
+				payload.metadata.put(shortName, req.getParameter(name));
 			}
 		}
 	}
