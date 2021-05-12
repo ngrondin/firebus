@@ -172,6 +172,18 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 			select.append(tuple);
 		}
 		
+		if(packet.containsKey("sort"))
+		{
+			DataMap sort = null;
+			int i = 0;
+
+			while ((sort = packet.getObject("sort").getObject("" + i++)) != null ) {
+				select.append(i == 1 ? " order by " : ", ");
+				select.append(sort.getString("attribute"));
+				select.append(sort.getNumber("dir").intValue() == -1 ? " desc" : " asc");
+			}
+		}
+		
 		DataList list = new DataList();
 		Connection conn = null;
         PreparedStatement ps1 = null;
