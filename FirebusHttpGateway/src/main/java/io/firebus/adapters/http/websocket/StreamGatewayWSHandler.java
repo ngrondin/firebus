@@ -25,12 +25,12 @@ public class StreamGatewayWSHandler extends WebsocketHandler implements StreamHa
 	}
 
 	protected void onOpen(String connectionId, Payload payload) throws FunctionErrorException, FunctionTimeoutException {
-		System.out.println("SGWS opening WS connection " + connectionId); //Temp Logging
+		//System.out.println("SGWS opening WS connection " + connectionId); //Temp Logging
 		StreamEndpoint streamEndpoint = firebus.requestStream(streamName, payload, 10000);
 		connIdToStream.put(connectionId, streamEndpoint);
 		streamToConnId.put(streamEndpoint, connectionId);
 		streamEndpoint.setHandler(this);
-		System.out.println("SGWS opened WS connection " + connectionId); //Temp Logging
+		//System.out.println("SGWS opened WS connection " + connectionId); //Temp Logging
 	}
 
 	protected void onStringMessage(String connectionId, String msg) {
@@ -48,14 +48,14 @@ public class StreamGatewayWSHandler extends WebsocketHandler implements StreamHa
 	}
 
 	protected void onClose(String connectionId) {
-		System.out.println("SGWS closing WS connection " + connectionId); //Temp Logging
+		//System.out.println("SGWS closing WS connection " + connectionId); //Temp Logging
 		StreamEndpoint sep = connIdToStream.get(connectionId);
 		if(sep != null) {
 			sep.close();
 			connIdToStream.remove(connectionId);
 			streamToConnId.remove(sep);
 		}
-		System.out.println("SGWS closed WS connection " + connectionId); //Temp Logging
+		//System.out.println("SGWS closed WS connection " + connectionId); //Temp Logging
 	}
 
 	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
