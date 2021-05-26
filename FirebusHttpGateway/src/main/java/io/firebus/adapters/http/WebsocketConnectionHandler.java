@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -79,8 +81,9 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 		int lenSize = 0;
 		int mask = 0;
 		int maskVal = 0;
-		ByteBuffer msg = null;
-		//int mp = 0;
+		List<ByteBuffer> frames = new ArrayList<ByteBuffer>();
+		int runningLen = 0;
+		ByteBuffer frame = null;
 		int read = -1;
 		try {
 			while(active) {
@@ -114,25 +117,31 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 					} else if(fp >= 14 && fp < (14 + len)) {
 						if(mask == 1) {
 							int bytePos = 3 - ((fp - 14) % 4);
-							msg.put((byte)(read ^ (maskVal >> (bytePos * 8))));
+							frame.put((byte)(read ^ (maskVal >> (bytePos * 8))));
 						} else {
-							msg.put((byte)read);
+							frame.put((byte)read);
 						}
-						//mp++;
 					}
 					if(fp == (14 + len - 1)) {
 						if(fin == 0) {
-							previousOp = op;
+							frames.add(frame);
+							if(op != 0) 
+								previousOp = op;
 						} else {
-							if(op == 0)
+							if(op == 0) {
+								frames.add(frame);
+								frame = ByteBuffer.allocate(runningLen);
+								for(ByteBuffer bb : frames)
+									frame.put(bb.array());
 								op = previousOp;
+								runningLen = 0;
+								frames.clear();
+							}
 							if(op == 1) {
-								String m = new String(msg.array());
+								String m = new String(frame.array());
 								handler.onStringMessage(id, m);
-								//mp = 0;
 							} else if(op == 2) {
-								handler.onBinaryMessage(id, msg.array());
-								//mp = 0;
+								handler.onBinaryMessage(id, frame.array());
 							} else if(op == 8) {
 								active = false;
 							} else if(op == 9) {
@@ -147,8 +156,11 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 						mask = 0;
 						maskVal = 0;
 					} else {
-						if(fp == 9)
-							msg = ByteBuffer.allocate(len);
+						if(fp == 9) {
+							//System.out.println("WS op = " + op + "  fin = " + fin + "  len = " + len);
+							frame = ByteBuffer.allocate(len);
+							runningLen += len;
+						}
 						fp++;
 					}
 				}
