@@ -64,46 +64,36 @@ public class ServiceManager extends ExecutionManager {
 		Payload inPayload = msg.getPayload();
 		if(fe != null)
 		{
-			/*if(increaseExecutionCount())
-			{*/
-				long executionId = fe.getExecutionId();
-				if(executionId != -1) 
-				{
-					nodeCore.getExecutionThreads().enqueue(new Runnable() {
-						public void run() {
-							((FirebusThread)Thread.currentThread()).setFunctionExecutionId(executionId);
-							logger.finer("Executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
-							sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_PROGRESS, msg.getSubject(), new Payload());
-							try
-							{
-								Payload returnPayload = ((ServiceProvider)fe.function).service(inPayload);
-								logger.finer("Finished executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
-								if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
-									sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
-							}
-							catch(FunctionErrorException e)
-							{
-								if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
-									sendError(e, msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_SERVICEERROR,  msg.getSubject());
-							}
-
-							
-							((FirebusThread)Thread.currentThread()).clearFunctionExecutionId();
-							fe.releaseExecutionId(executionId);
-							decreaseExecutionCount();
-						}
-					});
-				} else {
-					decreaseExecutionCount();
-					logger.info("Cannot execute function " + name + " as maximum number of executions reached for this function (" + totalExecutionCount + ")");
-					sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "Maximum concurrent functions running");
-				}
-			/*}
-			else
+			long executionId = fe.getExecutionId();
+			if(executionId != -1) 
 			{
-				logger.info("Cannot execute function " + name + " as maximum number of executions reached for this node (" + totalExecutionCount + ")");
+				nodeCore.getExecutionThreads().enqueue(new Runnable() {
+					public void run() {
+						((FirebusThread)Thread.currentThread()).setFunctionExecutionId(executionId);
+						logger.finer("Executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
+						sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_PROGRESS, msg.getSubject(), new Payload());
+						try
+						{
+							Payload returnPayload = ((ServiceProvider)fe.function).service(inPayload);
+							logger.finer("Finished executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
+							if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
+								sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
+						}
+						catch(FunctionErrorException e)
+						{
+							if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
+								sendError(e, msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_SERVICEERROR,  msg.getSubject());
+						}
+
+						
+						((FirebusThread)Thread.currentThread()).clearFunctionExecutionId();
+						fe.releaseExecutionId(executionId);
+					}
+				});
+			} else {
+				logger.info("Cannot execute function " + name + " as maximum number of executions reached for this function (" + fe.getExecutionCount() + ")");
 				sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "Maximum concurrent functions running");
-			}*/
+			}
 		}	
 		else
 		{

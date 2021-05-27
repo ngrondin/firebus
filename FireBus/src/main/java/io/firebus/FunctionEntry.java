@@ -47,6 +47,11 @@ public class FunctionEntry
 		}
 	}
 	
+	public int getExecutionCount()
+	{
+		return currentCount;
+	}
+	
 	public String getName() 
 	{
 		return name;

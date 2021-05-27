@@ -12,22 +12,20 @@ import io.firebus.interfaces.StreamProvider;
 public abstract class ExecutionManager {
 	protected NodeCore nodeCore;
 	
-	protected int maxExecutionCount;
-	protected int totalExecutionCount;
+	/*protected int maxExecutionCount;
+	protected int totalExecutionCount;*/
 	
 	public ExecutionManager(NodeCore nc)
 	{
-		nodeCore = nc;
-		
-		
-		totalExecutionCount = 0;
-		maxExecutionCount = 10;
+		nodeCore = nc;		
+		/*totalExecutionCount = 0;
+		maxExecutionCount = 10;*/
 	}
 	
-	public void setMaxExecutionCount(int c) 
+	/*public void setMaxExecutionCount(int c) 
 	{
 		maxExecutionCount = c;
-	}
+	}*/
 	
 	protected abstract List<FunctionEntry> getFunctionEntries();
 	
@@ -66,7 +64,7 @@ public abstract class ExecutionManager {
 			sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONINFORMATION, msg.getSubject(), new Payload(fi != null ? fi.serialise() : null));
 		}
 	}
-	
+	/*
 	protected synchronized boolean increaseExecutionCount()
 	{
 		if(totalExecutionCount < maxExecutionCount) {
@@ -80,7 +78,7 @@ public abstract class ExecutionManager {
 	protected synchronized void decreaseExecutionCount()
 	{
 		totalExecutionCount--;
-	}
+	}*/
 	
 	protected void sendError(Throwable t, int dest, int corr, int corrSeq, int msgType, String subject)
 	{

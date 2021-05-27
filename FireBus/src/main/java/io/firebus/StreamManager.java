@@ -63,54 +63,44 @@ public class StreamManager extends ExecutionManager {
 		Payload inPayload = msg.getPayload();
 		if(fe != null)
 		{
-			/*if(increaseExecutionCount())
-			{*/
-				long executionId = fe.getExecutionId();
-				if(executionId != -1) 
-				{
-					nodeCore.getExecutionThreads().enqueue(new Runnable() {
-						public void run() {
-							logger.finer("Executing Stream Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
-							((FirebusThread)Thread.currentThread()).setFunctionExecutionId(executionId);
-							StreamProvider streamProvider = (StreamProvider)fe.function;
-							long idleTimeout = streamProvider.getStreamIdleTimeout();
-							int localCorrelationId = nodeCore.getCorrelationManager().createEntry(idleTimeout);
-							StreamEndpoint streamEndpoint = new StreamEndpoint(nodeCore, name, localCorrelationId, msg.getCorrelation(), 1, msg.getOriginatorId());
-							streamEndpoint.setRequestPayload(inPayload);
-							try
-							{
-								Payload acceptPayload = streamProvider.acceptStream(inPayload, streamEndpoint);
-								streamEndpoint.setAcceptPayload(acceptPayload);
-								logger.finer("Accepted stream " + name + " (correlation: " + msg.getCorrelation() + ")");
-								if(acceptPayload == null)
-									acceptPayload = new Payload();
-								acceptPayload.metadata.put("correlationid", String.valueOf(localCorrelationId));
-								acceptPayload.metadata.put("timeout", String.valueOf(idleTimeout));
-								nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, idleTimeout);
-								sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), acceptPayload);
-							}
-							catch(FunctionErrorException e)
-							{
-								sendError(e, msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMERROR,  msg.getSubject());
-							}
-
-							
-							((FirebusThread)Thread.currentThread()).clearFunctionExecutionId();
-							fe.releaseExecutionId(executionId);
-							decreaseExecutionCount();
-						}
-					});
-				} else {
-					decreaseExecutionCount();
-					logger.info("Cannot execute function " + name + " as maximum number of executions reached for this function (" + totalExecutionCount + ")");
-					sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "Maximum concurrent functions running");
-				}
-			/*}
-			else
+			long executionId = fe.getExecutionId();
+			if(executionId != -1) 
 			{
-				logger.info("Cannot execute function " + name + " as maximum number of executions reached for this node (" + totalExecutionCount + ")");
+				nodeCore.getExecutionThreads().enqueue(new Runnable() {
+					public void run() {
+						logger.finer("Executing Stream Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
+						((FirebusThread)Thread.currentThread()).setFunctionExecutionId(executionId);
+						StreamProvider streamProvider = (StreamProvider)fe.function;
+						long idleTimeout = streamProvider.getStreamIdleTimeout();
+						int localCorrelationId = nodeCore.getCorrelationManager().createEntry(idleTimeout);
+						StreamEndpoint streamEndpoint = new StreamEndpoint(nodeCore, name, localCorrelationId, msg.getCorrelation(), 1, msg.getOriginatorId());
+						streamEndpoint.setRequestPayload(inPayload);
+						try
+						{
+							Payload acceptPayload = streamProvider.acceptStream(inPayload, streamEndpoint);
+							streamEndpoint.setAcceptPayload(acceptPayload);
+							logger.finer("Accepted stream " + name + " (correlation: " + msg.getCorrelation() + ")");
+							if(acceptPayload == null)
+								acceptPayload = new Payload();
+							acceptPayload.metadata.put("correlationid", String.valueOf(localCorrelationId));
+							acceptPayload.metadata.put("timeout", String.valueOf(idleTimeout));
+							nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, idleTimeout);
+							sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), acceptPayload);
+						}
+						catch(FunctionErrorException e)
+						{
+							sendError(e, msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMERROR,  msg.getSubject());
+						}
+
+						
+						((FirebusThread)Thread.currentThread()).clearFunctionExecutionId();
+						fe.releaseExecutionId(executionId);
+					}
+				});
+			} else {
+				logger.info("Cannot execute function " + name + " as maximum number of executions reached for this function (" + fe.getExecutionCount() + ")");
 				sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "Maximum concurrent functions running");
-			}*/
+			}
 		}	
 		else
 		{
