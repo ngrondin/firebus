@@ -122,7 +122,16 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 							frame.put((byte)read);
 						}
 					}
-					if(fp == (14 + len - 1)) {
+					
+					if(fp < (14 + len)) {
+						if(fp == 9) {
+							//System.out.println("WS op = " + op + "  fin = " + fin + "  len = " + len);
+							frame = ByteBuffer.allocate(len);
+							runningLen += len;
+						}
+						fp++;	
+					}
+					if(fp == (14 + len)){
 						if(fin == 0) {
 							frames.add(frame);
 							if(op != 0) 
@@ -143,6 +152,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 							} else if(op == 2) {
 								handler.onBinaryMessage(id, frame.array());
 							} else if(op == 8) {
+								send(frame.array(), 8);
 								active = false;
 							} else if(op == 9) {
 								send(null, 10);
@@ -154,14 +164,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 						len = 0;
 						lenSize = 0;
 						mask = 0;
-						maskVal = 0;
-					} else {
-						if(fp == 9) {
-							//System.out.println("WS op = " + op + "  fin = " + fin + "  len = " + len);
-							frame = ByteBuffer.allocate(len);
-							runningLen += len;
-						}
-						fp++;
+						maskVal = 0;						
 					}
 				}
 			}
@@ -170,9 +173,11 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 			logger.severe("Websocket connection " + id + " closed due to exception: " + e.getMessage());
 		} finally {
 			try {
+				is.close();
+				os.close();
 				connection.close();
 			} catch(Exception e) {
-
+				logger.severe("Websocket connection " + id + " closing exception: " + e.getMessage());
 			}
 		}
 	}
