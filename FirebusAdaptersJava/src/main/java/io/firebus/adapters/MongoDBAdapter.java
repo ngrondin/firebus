@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.bson.Document;
@@ -12,6 +13,7 @@ import org.bson.json.JsonWriterSettings;
 import org.bson.json.StrictJsonWriter;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
@@ -32,6 +34,9 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 	protected DataMap queryColumns;	
 	protected long lastWriteOfQueryColumns;
 	protected JsonWriterSettings jsonWritterSettings;
+	protected int waitTimeout = 9000; 
+	protected String databaseName;
+	protected String connectionString;
 	
 	public MongoDBAdapter(DataMap c)
 	{
@@ -42,11 +47,16 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 						writer.writeNumber(value.toString());
 					}})
 		         .build();
-		connectMongo();
+		connectionString = config.getString("connectionstring");
+		databaseName = config.getString("database");
 		if(config.getBoolean("writecolumns")) {
 			queryColumns = new DataMap();
 			lastWriteOfQueryColumns = 0;
 		}
+		if(config.containsKey("waittimeout")) {
+			waitTimeout = config.getNumber("waittimeout").intValue();
+		}
+		connectMongo();
 	}
 
 	protected void connectMongo()
@@ -56,8 +66,13 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			client.close();
 			client = null;
 		}
-		client =  new MongoClient(config.getString("connectionstring"));
-		database = client.getDatabase(config.getString("database"));
+		MongoClientOptions mongoClientOptions = MongoClientOptions.builder()
+                .connectTimeout(2000)
+                .maxWaitTime(waitTimeout)
+                .serverSelectionTimeout(waitTimeout)
+                .build();
+		client =  new MongoClient(connectionString, mongoClientOptions);
+		database = client.getDatabase(databaseName);
 	}
 	
 
@@ -76,11 +91,11 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 
 	public Payload service(Payload payload) throws FunctionErrorException
 	{
+		long start = System.currentTimeMillis();
 		Payload response = new Payload();
 		DataMap responseJSON = new DataMap();
 		try
 		{
-			long start = System.currentTimeMillis();
 			DataMap request = new DataMap(payload.getString());
 			logger.finer("Starting mongo request : " + request.toString(0, true));
 			if(request.containsKey("tuple")) 
@@ -103,7 +118,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		}
 		catch(Exception e)
 		{
-			logger.severe("Error processing data request : " + e.getMessage());
+			logger.severe("Error processing data request: " + e.getMessage());
 			throw new FunctionErrorException(e.getMessage());
 		}		
 		return response;
@@ -137,7 +152,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 						sortDoc.append(sortItem.getString("attribute"), sortItem.getNumber("dir").intValue());
 					}
 				} 
-				it = collection.find(filterDoc).sort(sortDoc).skip(page * pageSize).iterator();		
+				it = collection.find(filterDoc).maxAwaitTime(waitTimeout, TimeUnit.MILLISECONDS).sort(sortDoc).skip(page * pageSize).iterator();		
 				responseList = retieveDocuments(it, pageSize);
 			}
 			else
@@ -209,7 +224,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				DataMap sortContainer = new DataMap("$sort", new DataMap("_id", 1));
 				pipeline.add(Document.parse(sortContainer.toString()));
 				
-				it = collection.aggregate(pipeline).iterator();
+				it = collection.aggregate(pipeline).maxTime(waitTimeout, TimeUnit.MILLISECONDS).iterator();
 				for(int i = 0; i < (page * pageSize) && it.hasNext(); i++)
 					it.next();
 				responseList = retieveDocuments(it, pageSize);
@@ -272,7 +287,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				if(key != null)
 				{
 					Document findDoc = Document.parse(key.toString());
-					Document existingDoc = collection.find(findDoc).first();
+					Document existingDoc = collection.find(findDoc).maxTime(waitTimeout, TimeUnit.MILLISECONDS).first();
 											
 					if(existingDoc != null)
 					{
