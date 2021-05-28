@@ -58,12 +58,12 @@ public class ServiceManager extends ExecutionManager {
 
 	public void executeService(Message msg)
 	{
-		String name = msg.getSubject();
-		FunctionEntry fe = services.get(name);
-		Payload inPayload = msg.getPayload();
+		final String name = msg.getSubject();
+		final FunctionEntry fe = services.get(name);
+		final Payload inPayload = msg.getPayload();
 		if(fe != null)
 		{
-			long executionId = fe.getExecutionId();
+			final long executionId = fe.getExecutionId();
 			if(executionId != -1) 
 			{
 				nodeCore.getExecutionThreads().enqueue(new Runnable() {

@@ -109,7 +109,7 @@ public class ServiceRequest extends Thread
 		if(responseReceived)
 			return responsePayload;
 		else
-			throw new FunctionTimeoutException("Service " + serviceName + " could not be found");
+			throw new FunctionTimeoutException("Service " + serviceName + " could not be called succesfully");
 	}
 	
 	private void reduceRatingOfServiceForNode(int q) {

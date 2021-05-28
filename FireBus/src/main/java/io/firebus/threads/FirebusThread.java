@@ -13,6 +13,7 @@ public class FirebusThread extends Thread
 	protected ThreadManager threadManager;
 	protected boolean quit;
 	protected boolean ready;
+	protected long expiry;
 	protected long functionExecutionId = -1;
 
 	public FirebusThread(ThreadManager tm, NodeCore c)
@@ -21,6 +22,7 @@ public class FirebusThread extends Thread
 		nodeCore = c;
 		quit = false;
 		ready = false;
+		expiry = -1;
 		setName("fbThread" + getId());
 	}
 	
@@ -31,10 +33,11 @@ public class FirebusThread extends Thread
 		{
 			try
 			{
-				Runnable runnable = threadManager.getNext();
-				if(runnable != null)
+				FirebusRunnable fbRunnable = threadManager.getNext();
+				if(fbRunnable != null)
 				{
-					runnable.run();
+					expiry = fbRunnable.expiry;
+					fbRunnable.runnable.run();
 				}
 				else
 				{
@@ -42,6 +45,7 @@ public class FirebusThread extends Thread
 					{
 						if(!quit) 
 						{
+							expiry = -1;
 							ready = true;
 							wait();
 							ready = false;

@@ -152,7 +152,7 @@ public class NodeCore
 	
 	public void setMaxThreadCount(int c)
 	{
-		executionThreads.setThreadCount(c);
+		executionThreads.setMaxThreadCount(c);
 	}
 	
 	public void addKnownNodeAddress(String a, int p)

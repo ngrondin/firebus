@@ -44,7 +44,7 @@ public class Firebus
 	
 	public void setThreadCount(int tc)
 	{
-		//nodeCore.getServiceManager().setThreadCount(tc);
+		nodeCore.getExecutionThreads().setMaxThreadCount(tc);
 	}
 
 	public void setDefaultTimeout(int l)
