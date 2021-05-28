@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.threads.FirebusThread;
 
@@ -79,7 +78,7 @@ public class ServiceManager extends ExecutionManager {
 							if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
 								sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
 						}
-						catch(FunctionErrorException e)
+						catch(Exception e)
 						{
 							if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
 								sendError(e, msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_SERVICEERROR,  msg.getSubject());
@@ -103,6 +102,17 @@ public class ServiceManager extends ExecutionManager {
 	}
 
 	
-	
+	public void logStatus() {
+		StringBuilder sb = new StringBuilder();
+		for(FunctionEntry fe : this.getFunctionEntries()) {
+			sb.append(fe.getName());
+			sb.append(":");
+			sb.append(fe.getExecutionCount());
+			sb.append("/");
+			sb.append(fe.maxConcurrent);
+			sb.append("    ");
+		}
+		logger.info(sb.toString());
+	}
 
 }

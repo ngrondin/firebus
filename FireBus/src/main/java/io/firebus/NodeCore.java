@@ -290,6 +290,9 @@ public class NodeCore
 		return sb.toString();
 	}
 
-
+	public void logStatus() {
+		serviceManager.logStatus();
+		streamManager.logStatus();
+	}
 
 }

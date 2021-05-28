@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.interfaces.StreamProvider;
 import io.firebus.threads.FirebusThread;
 
@@ -87,7 +86,7 @@ public class StreamManager extends ExecutionManager {
 							nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, idleTimeout);
 							sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), acceptPayload);
 						}
-						catch(FunctionErrorException e)
+						catch(Exception e)
 						{
 							sendError(e, msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMERROR,  msg.getSubject());
 						}
@@ -110,5 +109,17 @@ public class StreamManager extends ExecutionManager {
 	}
 	
 	
+	public void logStatus() {
+		StringBuilder sb = new StringBuilder();
+		for(FunctionEntry fe : this.getFunctionEntries()) {
+			sb.append(fe.getName());
+			sb.append(":");
+			sb.append(fe.getExecutionCount());
+			sb.append("/");
+			sb.append(fe.maxConcurrent);
+			sb.append("   ");
+		}
+		logger.info(sb.toString());
+	}
 
 }

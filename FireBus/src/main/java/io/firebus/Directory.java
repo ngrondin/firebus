@@ -51,7 +51,7 @@ public class Directory
 
 	public synchronized void deleteNode(NodeInformation n)
 	{
-		logger.fine("Deleting Node from Directory");
+		logger.info("Deleting Node " + n.getNodeId() + " from Directory");
 		nodes.remove(n);
 	}
 	
@@ -165,17 +165,17 @@ public class Directory
 			NodeInformation ni = nodes.get(i);
 			FunctionInformation fi = ni.getFunctionInformation(name);
 			if(fi != null) {
-				if(fi.getRating() > -10) {
+				//if(fi.getRating() > -10) {
 					if(fi.getRating() > bestNodeRating) {
 						bestNode = ni;
 						bestNodeRating = fi.getRating();
 					}
-				} else {
+				/*} else {
 					ni.removeFunctionInformation(name);
 					ni.reduceRating(2);
 					if(ni.getFunctionCount() == 0 || ni.getRating() < -5) 
 						deleteNode(ni);
-				}
+				}*/
 			}
 		}
 		return bestNode;

@@ -22,11 +22,14 @@ public abstract class FunctionInformation
 	public void reduceRating(int i)
 	{
 		rating -= i;
+		if(rating < -10) rating = -10;
+		//System.out.println("func " + rating);
 	}
 	
 	public void resetRating()
 	{
 		rating = 0;
+		//System.out.println("func " + rating);
 	}
 	
 	public abstract String toString();

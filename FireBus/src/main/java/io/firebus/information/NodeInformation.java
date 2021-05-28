@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import io.firebus.Address;
 
 public class NodeInformation 
 {
+	private Logger logger = Logger.getLogger("io.firebus");
 	protected int nodeId;
 	protected ArrayList<Address> addresses;
 	protected ArrayList<Integer> repeaters;
@@ -86,6 +88,7 @@ public class NodeInformation
 
 	public void removeFunctionInformation(String fn)
 	{
+		logger.info("Removing function information " + fn);
 		if(functions.containsKey(fn))
 			functions.remove(fn);
 	}
@@ -148,10 +151,13 @@ public class NodeInformation
 	
 	public void reduceRating(int r) {
 		rating -= r;
+		if(rating < -10) rating = -10;
+		//System.out.println("node " + rating);
 	}
 	
 	public void resetRating() {
 		rating = 0;
+		//System.out.println("node " + rating);
 	}
 	
 	public int getRating() {

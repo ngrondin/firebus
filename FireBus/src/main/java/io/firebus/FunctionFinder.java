@@ -2,10 +2,7 @@ package io.firebus;
 
 import java.util.logging.Logger;
 
-import io.firebus.distributables.DistributableService;
 import io.firebus.information.NodeInformation;
-import io.firebus.information.ServiceInformation;
-import io.firebus.utils.DataMap;
 
 public class FunctionFinder {
 	private static Logger logger = Logger.getLogger("io.firebus");
@@ -24,7 +21,7 @@ public class FunctionFinder {
 				ni = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId());
 			}
 		}
-		
+		/*
 		if(ni == null  &&  !functionName.equals("firebus_distributable_services_source"))
 		{
 			try
@@ -52,7 +49,7 @@ public class FunctionFinder {
 			{
 				logger.finer("General error when refreshing the source of a distributable function : " + e.getMessage());
 			}
-		}
+		}*/
 		return ni;
 	}
 

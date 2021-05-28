@@ -164,6 +164,11 @@ public class Firebus
 		nodeCore.enqueue(new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_PUBLISH, dataname, payload));
 	}
 	
+	public void logStatus() 
+	{
+		nodeCore.logStatus();
+	}
+	
 	public void close()
 	{
 		nodeCore.close();

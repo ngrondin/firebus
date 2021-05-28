@@ -1,5 +1,6 @@
 package io.firebus;
 
+import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +27,8 @@ public class LoadTest {
 			for(int i = 0; i < count; i++) {
 				try {
 					Payload resp = firebus.requestService("service", new Payload("request"));
+					System.out.println("recieved");
+					Thread.sleep(50);
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
@@ -48,9 +51,9 @@ public class LoadTest {
 
 				public ServiceInformation getServiceInformation() {
 					return null;
-				}}, 20);
+				}}, 10);
 			
-			int iterations = 20;
+			int iterations = 1;
 			int threads = 20;
 			Requestor[] list = new Requestor[threads];
 			long start = System.currentTimeMillis();
@@ -82,11 +85,11 @@ public class LoadTest {
 		try
 		{
 			Level lvl = Level.INFO;
-			FileHandler fh = new FileHandler("LoadTest.log");
-			fh.setFormatter(new FirebusSimpleFormatter());
-			fh.setLevel(lvl);
+			//FileHandler fh = new FileHandler("LoadTest.log");
+			//fh.setFormatter(new FirebusSimpleFormatter());
+			//fh.setLevel(lvl);
 			Logger logger = Logger.getLogger("io.firebus");
-			logger.addHandler(fh);
+			logger.addHandler(new ConsoleHandler());
 			logger.setLevel(lvl);
 		}
 		catch(Exception e)
