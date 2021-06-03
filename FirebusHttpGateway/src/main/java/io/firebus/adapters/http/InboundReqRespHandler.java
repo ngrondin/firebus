@@ -34,6 +34,8 @@ public abstract class InboundReqRespHandler  extends InboundHandler {
 			logger.finest(fbResp.toString());
 			if(fbResp.metadata.containsKey("mime"))
 				resp.setHeader("content-type", fbResp.metadata.get("mime"));
+			if(fbResp.metadata.containsKey("filename"))
+				resp.setHeader("content-disposition", "inline; filename=\"" + fbResp.metadata.get("filename") + "\"");
 			if(fbResp.metadata.containsKey("httpcode")) {
 				int status = Integer.parseInt(fbResp.metadata.get("httpcode"));
 				resp.setStatus(status);
