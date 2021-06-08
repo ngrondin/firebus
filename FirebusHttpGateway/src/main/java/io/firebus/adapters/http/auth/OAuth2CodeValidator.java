@@ -16,7 +16,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 
 import com.auth0.jwt.JWT;
@@ -25,6 +24,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 
 import io.firebus.Firebus;
 import io.firebus.adapters.http.AuthValidationHandler;
+import io.firebus.adapters.http.HttpGateway;
 import io.firebus.utils.DataException;
 import io.firebus.utils.DataMap;
 
@@ -36,9 +36,9 @@ public class OAuth2CodeValidator extends AuthValidationHandler
 	protected String clientSecret;
 	protected String redirectUrl;
 
-	public OAuth2CodeValidator(DataMap c, Firebus fb) 
+	public OAuth2CodeValidator(HttpGateway gw, Firebus f, DataMap c) 
 	{
-		super(c, fb);
+		super(gw, f, c);
 		loginUrl = handlerConfig.getString("loginurl");
 		tokenUrl = handlerConfig.getString("tokenurl");
 		clientId = handlerConfig.getString("clientid");
@@ -60,7 +60,7 @@ public class OAuth2CodeValidator extends AuthValidationHandler
         	if(code != null && redirectUrlResolved != null)
         	{
         		DataMap respMap = null;
-        		HttpClient httpclient = HttpClients.createDefault();
+        		HttpClient httpclient = httpGateway.getHttpClient();
         		HttpPost httppost = new HttpPost(tokenUrl);
         		List<NameValuePair> params = new ArrayList<NameValuePair>(2);
         		params.add(new BasicNameValuePair("code", code));

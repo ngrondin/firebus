@@ -7,9 +7,7 @@ import javax.servlet.ServletException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import io.firebus.Firebus;
@@ -28,15 +26,13 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
 	protected String service;
 	protected String baseUrl;
 	protected int timeout;
-	protected HttpClient httpClient;
 	
-	public OutboundHandler(DataMap c, Firebus f) 
+	public OutboundHandler(HttpGateway gw, Firebus f, DataMap c) 
 	{
-		super(c, f);
+		super(gw, f, c);
 		service = handlerConfig.getString("service");
 		baseUrl = handlerConfig.getString("baseurl");
 		timeout = handlerConfig.containsKey("timeout") ? handlerConfig.getNumber("timeout").intValue() : 10000;
-		httpClient = HttpClients.createDefault();
 	}
 
 	public Payload service(Payload payload) throws FunctionErrorException {
@@ -47,7 +43,7 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
 			HttpUriRequest httpRequest = processRequest(payload);
 			if(httpRequest != null)
 			{
-				HttpResponse response = httpClient.execute(httpRequest);
+				HttpResponse response = httpGateway.getHttpClient().execute(httpRequest);
         		int respStatus = response.getStatusLine().getStatusCode(); 
         		HttpEntity entity = response.getEntity();
         		if(respStatus >= 200 && respStatus < 400)

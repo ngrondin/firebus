@@ -8,14 +8,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.InboundReqRespHandler;
 import io.firebus.utils.DataMap;
 
 public class GetHandler extends InboundReqRespHandler 
 {
-	public GetHandler(DataMap c, Firebus f) 
+	public GetHandler(HttpGateway gw, Firebus f, DataMap c) 
 	{
-		super(c, f);
+		super(gw, f, c);
 	}
 
 	protected Payload processRequest(HttpServletRequest req) throws Exception

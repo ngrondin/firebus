@@ -13,11 +13,13 @@ import io.firebus.Payload;
 import io.firebus.utils.DataMap;
 
 public abstract class SecurityHandler {
+	protected HttpGateway httpGateway;
 	protected DataMap config;
 	protected List<AuthValidationHandler> authValidationHandlers;
 	
-	public SecurityHandler(DataMap c) 
+	public SecurityHandler(HttpGateway gw, DataMap c) 
 	{
+		httpGateway = gw;
 		config = c;
 		authValidationHandlers = new ArrayList<AuthValidationHandler>();
 	}

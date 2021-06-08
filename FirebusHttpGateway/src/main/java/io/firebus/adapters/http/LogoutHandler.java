@@ -14,8 +14,8 @@ import io.firebus.utils.DataMap;
 public class LogoutHandler extends HttpHandler {
 	protected List<SecurityHandler> securityHandlers;
 		
-	public LogoutHandler(DataMap c, Firebus f) {
-		super(c, f);
+	public LogoutHandler(HttpGateway gw, Firebus f, DataMap c) {
+		super(gw, f, c);
 	}
 	
 	public void setSecuritytHandlers(List<SecurityHandler> sh) {

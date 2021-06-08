@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.adapters.http.AuthValidationHandler;
+import io.firebus.adapters.http.HttpGateway;
 import io.firebus.utils.DataMap;
 
 public class UserPassValidator extends AuthValidationHandler
@@ -25,9 +26,9 @@ public class UserPassValidator extends AuthValidationHandler
 	protected String redirectUrl;
 	protected String cookieName;
 
-	public UserPassValidator(DataMap c, Firebus fb) 
+	public UserPassValidator(HttpGateway gw, Firebus f, DataMap c) 
 	{
-		super(c, fb);
+		super(gw, f, c);
 		loginUrl = handlerConfig.getString("loginurl");
 		dataService = handlerConfig.getString("dataservice");
 		collection = handlerConfig.containsKey("collection") ? handlerConfig.getString("collection") : "user";

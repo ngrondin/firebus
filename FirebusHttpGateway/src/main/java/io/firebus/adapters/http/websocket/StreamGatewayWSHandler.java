@@ -6,6 +6,7 @@ import java.util.Map;
 import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
+import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.WebsocketHandler;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
@@ -17,8 +18,8 @@ public class StreamGatewayWSHandler extends WebsocketHandler implements StreamHa
 	protected Map<StreamEndpoint, String> streamToConnId;
 	protected String streamName;
 	
-	public StreamGatewayWSHandler(DataMap c, Firebus f) {
-		super(c, f);
+	public StreamGatewayWSHandler(HttpGateway gw, Firebus f, DataMap c) {
+		super(gw, f, c);
 		streamName = c.getString("service");
 		connIdToStream = new HashMap<String, StreamEndpoint>();
 		streamToConnId = new HashMap<StreamEndpoint, String>();

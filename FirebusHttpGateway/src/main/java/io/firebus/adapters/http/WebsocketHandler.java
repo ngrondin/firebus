@@ -2,7 +2,6 @@ package io.firebus.adapters.http;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -28,9 +27,9 @@ public abstract class WebsocketHandler extends HttpHandler {
 	
 	protected Map<String, WebsocketConnectionHandler> connections;
 	
-	public WebsocketHandler(DataMap c, Firebus f) 
+	public WebsocketHandler(HttpGateway gw, Firebus f, DataMap c) 
 	{
-		super(c, f);
+		super(gw, f, c);
 		connections = new HashMap<String, WebsocketConnectionHandler>();
 	}
 

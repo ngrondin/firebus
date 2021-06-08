@@ -12,6 +12,7 @@ import javax.servlet.http.Part;
 import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
+import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.InboundHandler;
 import io.firebus.utils.DataMap;
 import io.firebus.utils.StreamReceiver;
@@ -21,8 +22,8 @@ public class FileStreamHandler extends InboundHandler  {
 
 	protected String streamName;
 	
-	public FileStreamHandler(DataMap c, Firebus fb) {
-		super(c, fb);
+	public FileStreamHandler(HttpGateway gw, Firebus f, DataMap c) {
+		super(gw, f, c);
 		streamName = handlerConfig.getString("stream");	
 	}
 

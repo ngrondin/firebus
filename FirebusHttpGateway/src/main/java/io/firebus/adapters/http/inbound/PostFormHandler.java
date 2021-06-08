@@ -10,16 +10,16 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
-import io.firebus.adapters.http.InboundHandler;
+import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.InboundReqRespHandler;
 import io.firebus.utils.DataException;
 import io.firebus.utils.DataMap;
 
 public class PostFormHandler extends InboundReqRespHandler 
 {
-	public PostFormHandler(DataMap c, Firebus f) 
+	public PostFormHandler(HttpGateway gw, Firebus f, DataMap c) 
 	{
-		super(c, f);
+		super(gw, f, c);
 	}
 
 	protected Payload processRequest(HttpServletRequest req) throws ServletException, IOException, DataException

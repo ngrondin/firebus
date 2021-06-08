@@ -16,9 +16,9 @@ public abstract class HttpHandler extends Handler
 	protected SecurityHandler securityHandler;
 	protected String path;
 
-	public HttpHandler(DataMap c, Firebus fb) 
+	public HttpHandler(HttpGateway gw, Firebus f, DataMap c) 
 	{
-		super(c, fb);
+		super(gw, f, c);
 		path = handlerConfig.getString("path");
 	}
 	

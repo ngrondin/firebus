@@ -9,9 +9,9 @@ public abstract class AuthValidationHandler extends HttpHandler
 	protected String publicHost;
 	protected SecurityHandler _securityHandler;
 	
-	public AuthValidationHandler(DataMap c, Firebus fb) 
+	public AuthValidationHandler(HttpGateway gw, Firebus f, DataMap c) 
 	{
-		super(c, fb);
+		super(gw, f, c);
 	}
 	
 	public String getLabel()

@@ -12,15 +12,16 @@ import org.apache.http.util.EntityUtils;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.OutboundHandler;
 import io.firebus.utils.DataException;
 import io.firebus.utils.DataMap;
 
 public class PostHandler extends OutboundHandler 
 {
-	public PostHandler(DataMap c, Firebus f) 
+	public PostHandler(HttpGateway gw, Firebus f, DataMap c) 
 	{
-		super(c, f);
+		super(gw, f, c);
 	}
 
 	protected HttpUriRequest processRequest(Payload payload) throws ServletException, IOException, DataException 

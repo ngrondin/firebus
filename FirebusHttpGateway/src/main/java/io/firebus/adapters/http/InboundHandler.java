@@ -15,9 +15,9 @@ public abstract class InboundHandler extends HttpHandler
 {
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	
-	public InboundHandler(DataMap c, Firebus f) 
+	public InboundHandler(HttpGateway gw, Firebus f, DataMap c) 
 	{
-		super(c, f);
+		super(gw, f, c);
 	}
 	
 	

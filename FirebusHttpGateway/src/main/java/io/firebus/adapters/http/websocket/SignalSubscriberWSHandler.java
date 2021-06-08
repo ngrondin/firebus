@@ -8,6 +8,7 @@ import java.util.Map;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.WebsocketHandler;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
@@ -18,8 +19,8 @@ public class SignalSubscriberWSHandler extends WebsocketHandler implements Consu
 
 	protected Map<String, List<String>> subscriptions;
 	
-	public SignalSubscriberWSHandler(DataMap c, Firebus f) {
-		super(c, f);
+	public SignalSubscriberWSHandler(HttpGateway gw, Firebus f, DataMap c) {
+		super(gw, f, c);
 		subscriptions = new HashMap<String, List<String>>();
 	}
 

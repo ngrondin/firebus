@@ -12,6 +12,8 @@ import javax.servlet.MultipartConfigElement;
 import org.apache.catalina.Context;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
@@ -44,6 +46,7 @@ public class HttpGateway implements ServiceProvider
 	protected Firebus firebus;
 	protected DataMap config;
 	protected Tomcat tomcat;
+	protected HttpClient httpclient;
 	
 	public HttpGateway(DataMap c, Firebus f) {
 		config = c;
@@ -73,6 +76,8 @@ public class HttpGateway implements ServiceProvider
 	        	masterHandler.setRootForward(config.getString("rootforward"));
 	        String publicHost = config.getString("publichost");
 	        
+	        httpclient = HttpClients.createDefault();
+	        
 	        DataList list = config.getList("security");
 	        Map<String, SecurityHandler> securityHandlerMap = new HashMap<String, SecurityHandler>();
 	        List<SecurityHandler> securityHandlerList = new ArrayList<SecurityHandler>();
@@ -90,7 +95,7 @@ public class HttpGateway implements ServiceProvider
 		        }
 	        }
 	        
-	        LogoutHandler logoutHandler = new LogoutHandler(new DataMap(), firebus);
+	        LogoutHandler logoutHandler = new LogoutHandler(this, firebus, new DataMap());
 	        logoutHandler.setSecuritytHandlers(securityHandlerList);
 	        masterHandler.setLogouHander(logoutHandler);
 
@@ -184,13 +189,17 @@ public class HttpGateway implements ServiceProvider
         	e.printStackTrace();
 		}
 	}
+	
+	public HttpClient getHttpClient() {
+		return httpclient;
+	}
 
 	private SecurityHandler getSecurityHandler(DataMap securityConfig)
 	{
 		String type = securityConfig.containsKey("type") ? securityConfig.getString("type").toLowerCase() : "jwtcookie";
 		if(type.equals("jwtcookie"))
 		{
-			return new JWTCookie(securityConfig);
+			return new JWTCookie(this, securityConfig);
 		}
 		else
 		{
@@ -204,34 +213,34 @@ public class HttpGateway implements ServiceProvider
 		String contentType = inboundConfig.containsKey("contenttype") ? inboundConfig.getString("contenttype").toLowerCase() : "application/json";
 		String type = inboundConfig.getString("type");
 		if(type != null && type.equals("filestream")) {
-			return new FileStreamHandler(inboundConfig, firebus);
+			return new FileStreamHandler(this, firebus, inboundConfig);
 		}
 		else if(method.equals("get"))
 		{
-			return new GetHandler(inboundConfig, firebus);
+			return new GetHandler(this, firebus, inboundConfig);
 		}
 		else if(method.equals("post"))
 		{
 			if(contentType.equals("application/json"))
 			{
-				return new PostJsonHandler(inboundConfig, firebus);
+				return new PostJsonHandler(this, firebus, inboundConfig);
 			}
 			else if(contentType.equals("application/x-www-form-urlencoded"))
 			{
-				return new PostFormHandler(inboundConfig, firebus);
+				return new PostFormHandler(this, firebus, inboundConfig);
 			}
 			else if(contentType.equals("multipart/form-data"))
 			{
-				return new PostMultiPartHandler(inboundConfig, firebus);
+				return new PostMultiPartHandler(this, firebus, inboundConfig);
 			}
 			else
 			{
-				return new PostJsonHandler(inboundConfig, firebus);
+				return new PostJsonHandler(this, firebus, inboundConfig);
 			}
 		}
 		else
 		{
-			return new GetHandler(inboundConfig, firebus);
+			return new GetHandler(this, firebus, inboundConfig);
 		}
 	}
 	
@@ -241,15 +250,15 @@ public class HttpGateway implements ServiceProvider
 		String method = outboundConfig.getString("method");
 		if(method != null && method.toLowerCase().equals("get"))
 		{
-			return new OutboundGetHandler(outboundConfig, firebus);
+			return new OutboundGetHandler(this, firebus, outboundConfig);
 		}
 		else if(method != null && method.toLowerCase().equals("post"))
 		{
-			return new PostHandler(outboundConfig, firebus);
+			return new PostHandler(this, firebus, outboundConfig);
 		}
 		else
 		{
-			return new GeneralOutboundHandler(outboundConfig, firebus);
+			return new GeneralOutboundHandler(this, firebus, outboundConfig);
 		}
 	}
 	
@@ -258,15 +267,15 @@ public class HttpGateway implements ServiceProvider
 		String type = wsConfig.containsKey("type") ? wsConfig.getString("type").toLowerCase() : "echo";
 		if(type.equals("echo")) 
 		{
-			return new EchoWebsocketHandler(wsConfig, firebus);
+			return new EchoWebsocketHandler(this, firebus, wsConfig);
 		}
 		else if(type.equals("signalsubscriber")) 
 		{
-			return new SignalSubscriberWSHandler(wsConfig, firebus);
+			return new SignalSubscriberWSHandler(this, firebus, wsConfig);
 		}
 		else if(type.equals("stream"))
 		{
-			return new StreamGatewayWSHandler(wsConfig, firebus);
+			return new StreamGatewayWSHandler(this, firebus, wsConfig);
 		}
 		else 
 		{
@@ -280,19 +289,19 @@ public class HttpGateway implements ServiceProvider
 		String type = authConfig.getString("type").toLowerCase();
 		if(type != null && type.equals("oauth2code"))
 		{
-			return new OAuth2CodeValidator(authConfig, firebus);
+			return new OAuth2CodeValidator(this, firebus, authConfig);
 		}
 		else if(type != null && type.equals("apple"))
 		{
-			return new AppleValidator(authConfig, firebus);
+			return new AppleValidator(this, firebus, authConfig);
 		}
 		else if(type != null && type.equals("userpassform"))
 		{
-			return new UserPassValidator(authConfig, firebus);
+			return new UserPassValidator(this, firebus, authConfig);
 		}
 		else if(type != null && type.equals("novalidation"))
 		{
-			return new NoValidator(authConfig, firebus);
+			return new NoValidator(this, firebus, authConfig);
 		}
 		else
 		{

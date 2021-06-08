@@ -2,6 +2,7 @@ package io.firebus.adapters.http.websocket;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.WebsocketHandler;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
@@ -10,8 +11,8 @@ import io.firebus.utils.DataMap;
 public class EchoWebsocketHandler extends WebsocketHandler {
 
 
-	public EchoWebsocketHandler(DataMap c, Firebus f) {
-		super(c, f);
+	public EchoWebsocketHandler(HttpGateway gw, Firebus f, DataMap c) {
+		super(gw, f, c);
 	}
 
 	protected void onOpen(String session, Payload payload) {

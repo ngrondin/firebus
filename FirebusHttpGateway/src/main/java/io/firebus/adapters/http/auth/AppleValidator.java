@@ -24,7 +24,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 
 import com.auth0.jwt.JWT;
@@ -35,6 +34,7 @@ import com.auth0.jwt.interfaces.ECDSAKeyProvider;
 
 import io.firebus.Firebus;
 import io.firebus.adapters.http.AuthValidationHandler;
+import io.firebus.adapters.http.HttpGateway;
 import io.firebus.utils.DataException;
 import io.firebus.utils.DataMap;
 
@@ -49,8 +49,8 @@ public class AppleValidator extends AuthValidationHandler {
 	protected String privateKey;
 	protected String redirectUrl;
 
-	public AppleValidator(DataMap c, Firebus fb) {
-		super(c, fb);
+	public AppleValidator(HttpGateway gw, Firebus f, DataMap c) {
+		super(gw, f, c);
 		loginUrl = handlerConfig.getString("loginurl");
 		tokenUrl = handlerConfig.getString("tokenurl");
 		clientId = handlerConfig.getString("clientid");
@@ -116,7 +116,7 @@ public class AppleValidator extends AuthValidationHandler {
 	           		redirectUrlResolved = redirectUrlResolved.replace("${state}", state != null ? state : "");
 
 	        		DataMap respMap = null;
-	        		HttpClient httpclient = HttpClients.createDefault();
+	        		HttpClient httpclient = httpGateway.getHttpClient();
 	        		HttpPost httppost = new HttpPost(tokenUrl);
 	        		List<NameValuePair> params = new ArrayList<NameValuePair>(2);
 	        		params.add(new BasicNameValuePair("code", code));

@@ -16,8 +16,8 @@ public abstract class InboundReqRespHandler  extends InboundHandler {
 	protected String service;
 	private int timeout;
 
-	public InboundReqRespHandler(DataMap c, Firebus f) {
-		super(c, f);
+	public InboundReqRespHandler(HttpGateway gw, Firebus f, DataMap c) {
+		super(gw, f, c);
 		timeout = handlerConfig.containsKey("timeout") ? handlerConfig.getNumber("timeout").intValue() : 10000;
 		service = handlerConfig.getString("service");	
 	}
