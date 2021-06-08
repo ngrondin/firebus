@@ -1,5 +1,6 @@
 package io.firebus.utils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
@@ -70,7 +71,8 @@ public class DataLiteral extends DataEntity
 	
 	public DataLiteral(InputStream is) throws DataException, IOException
 	{
-		StringBuilder sb = null;
+		//StringBuilder sb = null;
+		ByteArrayOutputStream accumulator = new ByteArrayOutputStream();
 		boolean inQuotes = false;
 		boolean escaping = false;
 		int cInt = -1;
@@ -95,7 +97,8 @@ public class DataLiteral extends DataEntity
 				if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
 				{
 					bis.reset();
-					sb = new StringBuilder();
+					//sb = new StringBuilder();
+					accumulator = new ByteArrayOutputStream();
 					readState = 1;
 				}					
 			}
@@ -107,7 +110,8 @@ public class DataLiteral extends DataEntity
 					{
 						inQuotes = false;
 						hadQuotes = true;
-						String tempString = sb.toString();
+						//String tempString = sb.toString();
+						String tempString = new String(accumulator.toByteArray());
 						if(datePattern.matcher(tempString).matches())		
 						{
 							try
@@ -143,12 +147,12 @@ public class DataLiteral extends DataEntity
 					{
 						if(escaping)
 						{
-							if(c == '\\') sb.append('\\');
-							else if(c == 'n') sb.append('\n');
-							else if(c == 'r') sb.append('\r');
-							else if(c == 't') sb.append('\t');
-							else if(c == '/') sb.append('/');
-							else if(c == '\"') sb.append('\"');
+							if(c == '\\') accumulator.write(c);//sb.append('\\');
+							else if(c == 'n') accumulator.write(10);//sb.append('\n');
+							else if(c == 'r') accumulator.write(13);//sb.append('\r');
+							else if(c == 't') accumulator.write(9);//sb.append('\t');
+							else if(c == '/') accumulator.write(c);//sb.append('/');
+							else if(c == '"') accumulator.write(c);//sb.append('\"');
 							escaping = false;
 						}
 						else if(c == '\\')
@@ -157,7 +161,8 @@ public class DataLiteral extends DataEntity
 						}
 						else
 						{
-							sb.append(c);
+							accumulator.write(c);
+							//sb.append(c);
 						}
 					}
 				}
@@ -165,14 +170,17 @@ public class DataLiteral extends DataEntity
 				{
 					if(c == '"')
 					{
-						if(sb.length() == 0)
+						
+						//if(sb.length() == 0)
+						if(accumulator.size() == 0)							
 							inQuotes = true;
 						else
 							throw new DataException("Illegal character at line " + bis.getLine() + " column " + bis.getColumn());
 					}
 					else if(c == ' ' || c == '\r' || c == '\n' || c == '\t' || c == ',' || c == '}' || c == ']')
 					{
-						String tempString = sb.toString();
+						//String tempString = sb.toString();
+						String tempString = new String(accumulator.toByteArray());
 						bis.reset();
 						if(!hadQuotes)
 						{
@@ -212,7 +220,8 @@ public class DataLiteral extends DataEntity
 					}
 					else
 					{
-						sb.append(c);
+						accumulator.write(c);
+						//sb.append(c);
 					}
 				}
 			}
