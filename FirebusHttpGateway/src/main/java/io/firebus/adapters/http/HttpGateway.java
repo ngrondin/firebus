@@ -13,7 +13,9 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
@@ -76,7 +78,18 @@ public class HttpGateway implements ServiceProvider
 	        	masterHandler.setRootForward(config.getString("rootforward"));
 	        String publicHost = config.getString("publichost");
 	        
-	        httpclient = HttpClients.createDefault();
+	        RequestConfig requestConfig = RequestConfig.custom()
+					.setConnectionRequestTimeout(1000)
+					.setConnectTimeout(5000)
+					.setSocketTimeout(5000)
+					.build();
+	        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+		    connectionManager.setMaxTotal(100);
+		    connectionManager.setDefaultMaxPerRoute(50);
+		    httpclient = HttpClients.custom()
+		    		.setConnectionManager(connectionManager)
+		    		.setDefaultRequestConfig(requestConfig)
+		    		.build();
 	        
 	        DataList list = config.getList("security");
 	        Map<String, SecurityHandler> securityHandlerMap = new HashMap<String, SecurityHandler>();
