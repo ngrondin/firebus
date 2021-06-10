@@ -1,11 +1,13 @@
 package io.firebus;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.information.FunctionInformation;
 import io.firebus.information.NodeInformation;
+import io.firebus.information.Statistics;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.ServiceRequestor;
@@ -164,9 +166,9 @@ public class Firebus
 		nodeCore.enqueue(new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_PUBLISH, dataname, payload));
 	}
 	
-	public void logStatus() 
+	public List<Statistics> getStatistics() 
 	{
-		nodeCore.logStatus();
+		return nodeCore.getStatistics();
 	}
 	
 	public void close()

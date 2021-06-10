@@ -47,9 +47,9 @@ public class FileStreamHandler extends InboundHandler  {
 			}
 			payload.setData(request.toString());
 			StreamEndpoint sep = firebus.requestStream(streamName, payload, 10000);
+			resp.setStatus(200);
 			OutputStream os = resp.getOutputStream();
 			new StreamReceiver(os, sep).sync();
-			resp.setStatus(200);
 			os.flush();
 			os.close();
 			sep.close();

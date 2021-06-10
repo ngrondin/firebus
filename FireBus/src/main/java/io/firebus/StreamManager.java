@@ -109,17 +109,6 @@ public class StreamManager extends ExecutionManager {
 	}
 	
 	
-	public void logStatus() {
-		StringBuilder sb = new StringBuilder();
-		for(FunctionEntry fe : this.getFunctionEntries()) {
-			sb.append(fe.getName());
-			sb.append(":");
-			sb.append(fe.getExecutionCount());
-			sb.append("/");
-			sb.append(fe.maxConcurrent);
-			sb.append("   ");
-		}
-		logger.info(sb.toString());
-	}
+
 
 }

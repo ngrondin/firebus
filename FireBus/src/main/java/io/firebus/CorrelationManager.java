@@ -129,6 +129,7 @@ public class CorrelationManager extends Thread
 	{
 		int correlationId = inMsg.getCorrelation();
 		int correlationSequence = inMsg.getCorrelationSequence();
+		//System.out.println(correlationId + " " + correlationSequence);
 		if(correlationId != 0)
 		{
 			CorrelationEntry entry = getEntry(correlationId);

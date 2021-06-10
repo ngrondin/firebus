@@ -20,6 +20,7 @@ public class StreamPipe implements StreamHandler {
 			streamEndpoint2.send(payload);
 		else
 			streamEndpoint1.send(payload);
+		//System.out.println("pipe");
 	}
 
 	public void streamClosed(StreamEndpoint streamEndpoint) {

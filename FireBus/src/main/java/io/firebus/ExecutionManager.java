@@ -1,9 +1,11 @@
 package io.firebus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.firebus.information.FunctionInformation;
 import io.firebus.information.ServiceInformation;
+import io.firebus.information.Statistics;
 import io.firebus.interfaces.BusFunction;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
@@ -18,14 +20,8 @@ public abstract class ExecutionManager {
 	public ExecutionManager(NodeCore nc)
 	{
 		nodeCore = nc;		
-		/*totalExecutionCount = 0;
-		maxExecutionCount = 10;*/
 	}
 	
-	/*public void setMaxExecutionCount(int c) 
-	{
-		maxExecutionCount = c;
-	}*/
 	
 	protected abstract List<FunctionEntry> getFunctionEntries();
 	
@@ -64,21 +60,6 @@ public abstract class ExecutionManager {
 			sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONINFORMATION, msg.getSubject(), new Payload(fi != null ? fi.serialise() : null));
 		}
 	}
-	/*
-	protected synchronized boolean increaseExecutionCount()
-	{
-		if(totalExecutionCount < maxExecutionCount) {
-			totalExecutionCount++;
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	protected synchronized void decreaseExecutionCount()
-	{
-		totalExecutionCount--;
-	}*/
 	
 	protected void sendError(Throwable t, int dest, int corr, int corrSeq, int msgType, String subject)
 	{
@@ -105,6 +86,14 @@ public abstract class ExecutionManager {
 		nodeCore.enqueue(outMsg);		
 	}
 
+	public List<Statistics> getStatistics() {
+		List<Statistics> stats = new ArrayList<Statistics>();
+		for(FunctionEntry fe : this.getFunctionEntries()) {
+			stats.add(fe.getStatistics());
+		}
+		return stats;
+	}
+	
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();

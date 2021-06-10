@@ -49,7 +49,7 @@ public class StreamEndpoint implements CorrelationListener {
 		return acceptPayload;
 	}
 
-	public void setHandler(StreamHandler sh)
+	public synchronized void setHandler(StreamHandler sh)
 	{
 		streamHandler = sh;
 		if(streamHandler != null) {
@@ -78,16 +78,19 @@ public class StreamEndpoint implements CorrelationListener {
 		active = false;
 	}
 
-	public void correlatedResponseReceived(Message outMsg, Message inMsg) {
+	public synchronized void correlatedResponseReceived(Message outMsg, Message inMsg) {
+		//System.out.print("sep " + inMsg.correlation + " " + inMsg.correlationSequence + " ");
 		if(inMsg.getType() == Message.MSGTYPE_STREAMEND) {
 			nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
 			if(streamHandler != null)
 				streamHandler.streamClosed(this);
 			active = false;
 		} else if(streamHandler != null) {
+			//System.out.println("d");
 			streamHandler.receiveStreamData(inMsg.getPayload(), this);
 		} else {
 			inQueue.push(inMsg);
+			//System.out.println("s");
 		}
 		//System.out.println("sep: " + (inMsg.getPayload() != null ? inMsg.getPayload().getString() : "payload null"));
 	}

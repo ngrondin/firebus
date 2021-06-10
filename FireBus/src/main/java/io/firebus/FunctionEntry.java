@@ -1,22 +1,27 @@
 package io.firebus;
 
+import io.firebus.information.Statistics;
 import io.firebus.interfaces.BusFunction;
 
 public class FunctionEntry
 {
 	protected String name;
 	protected BusFunction function;
-	protected int maxConcurrent;
-	protected int currentCount;
+	protected int limitConcurrent;
 	protected boolean[] reservedIds;
+	protected int currentCount;
+	protected int maxCountSinceReset;
+	protected int maxCountAllTime;
 	
 	public FunctionEntry(String n, BusFunction f, int mc)
 	{
 		name = n;
 		function = f;
-		maxConcurrent = mc;
-		reservedIds = new boolean[maxConcurrent];
+		limitConcurrent = mc;
+		reservedIds = new boolean[limitConcurrent];
 		currentCount = 0;
+		maxCountSinceReset = 0;
+		maxCountAllTime = 0;
 	}
 	
 	public void setFunction(BusFunction f)
@@ -26,11 +31,16 @@ public class FunctionEntry
 	
 	public synchronized long getExecutionId()
 	{
-		if(currentCount < maxConcurrent) {
-			for(int i = 0; i < maxConcurrent; i++) {
+		if(currentCount < limitConcurrent) {
+			for(int i = 0; i < limitConcurrent; i++) {
 				if(reservedIds[i] == false) {
 					reservedIds[i] = true;
 					currentCount++;
+					if(currentCount > maxCountSinceReset) {
+						maxCountSinceReset = currentCount;
+						if(maxCountSinceReset > maxCountAllTime)
+							maxCountAllTime = maxCountSinceReset;
+					}
 					return (long)i;
 				}
 			}
@@ -47,13 +57,20 @@ public class FunctionEntry
 		}
 	}
 	
+	public String getName() 
+	{
+		return name;
+	}
+	
 	public int getExecutionCount()
 	{
 		return currentCount;
 	}
 	
-	public String getName() 
+	public Statistics getStatistics() 
 	{
-		return name;
+		Statistics stat = new Statistics(name, maxCountSinceReset, maxCountAllTime, limitConcurrent);
+		maxCountSinceReset = 0;
+		return stat;
 	}
 }

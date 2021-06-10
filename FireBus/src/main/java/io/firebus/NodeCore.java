@@ -13,6 +13,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.PBEKeySpec;
 
 import io.firebus.discovery.DefaultDiscoveryAgent;
+import io.firebus.information.Statistics;
 import io.firebus.threads.ThreadManager;
 
 
@@ -290,9 +291,11 @@ public class NodeCore
 		return sb.toString();
 	}
 
-	public void logStatus() {
-		serviceManager.logStatus();
-		streamManager.logStatus();
+	public List<Statistics> getStatistics() {
+		List<Statistics> list = new ArrayList<Statistics>();
+		list.addAll(serviceManager.getStatistics());
+		list.addAll(streamManager.getStatistics());
+		return list;
 	}
 
 }
