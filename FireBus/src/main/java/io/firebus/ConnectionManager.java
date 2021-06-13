@@ -104,7 +104,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 					for(int j = 0; j < connections.size(); j++)
 						if(connections.get(j).remoteAddressEquals(kai.getAddress()))
 							hasConnection = true;
-					if(!hasConnection && kai.isDueToTry())
+					if(!hasConnection && kai.isDueToTry() && !kai.isSelf())
 					{
 						logger.fine("Creating new connection from known address");
 						createConnection(kai.getAddress());
@@ -131,16 +131,6 @@ public class ConnectionManager extends Thread implements ConnectionListener
 					}
 				}
 
-				/*
-				for(int i = 0; i < connections.size(); i++)
-				{
-					if(connections.get(i).getLoad() > maxConnectionLoad)
-					{
-						logger.fine("Creating new connection to spread traffic to node " + connections.get(i).getRemoteNodeId());
-						createConnection(connections.get(i).getRemoteAddress());
-					}
-				}
-				*/
 				sleep(500);
 			} 
 			catch (Exception e) 
@@ -180,11 +170,15 @@ public class ConnectionManager extends Thread implements ConnectionListener
 			NodeInformation ni = nodeCore.getDirectory().getNodeByAddress(a); 
 			if(ni != null) {
 				logger.finer("Removing address " + a + " from node");
-				ni.removeAddress(a);
+				ni.removeAddress(a); 
 			}
-			for(KnownAddressInformation kai: knownAddresses) 
-				if(kai.getAddress().equals(a))
+			for(KnownAddressInformation kai: knownAddresses) {
+				if(kai.getAddress().equals(a)) {
 					kai.connectionFailed();
+					if(c.remoteNodeId == c.localNodeId)
+						kai.setAsSelf();
+				}
+			}
 		}
 	}
 	
@@ -219,9 +213,16 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	
 	public void addKnownNodeAddress(String a, int p)
 	{
+		boolean exists = false;
 		Address address = new Address(a, p);
-		KnownAddressInformation kai = new KnownAddressInformation(address);
-		knownAddresses.add(kai);
+		for(KnownAddressInformation kai: knownAddresses) {
+			if(kai.getAddress().equals(address))
+				exists = true;
+		}
+		if(!exists) {
+			KnownAddressInformation kai = new KnownAddressInformation(address);
+			knownAddresses.add(kai);			
+		}
 	}	
 	
 	public void sendMessage(Message msg)

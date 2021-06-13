@@ -1,9 +1,11 @@
 package io.firebus;
 
+import io.firebus.utils.DataMap;
 
 public abstract class DiscoveryAgent extends Thread 
 {
 	protected NodeCore nodeCore;
+	protected DataMap config;
 
 	public DiscoveryAgent()
 	{
@@ -14,6 +16,12 @@ public abstract class DiscoveryAgent extends Thread
 		setNodeCore(nc);
 	}
 	
+	public DiscoveryAgent(NodeCore nc, DataMap c)
+	{
+		setConfig(c);
+		setNodeCore(nc);
+	}	
+	
 	public void setNodeCore(NodeCore nc)
 	{
 		nodeCore = nc;
@@ -21,6 +29,11 @@ public abstract class DiscoveryAgent extends Thread
 			init();
 			start();
 		}
+	}
+	
+	public void setConfig(DataMap c)
+	{
+		config = c;
 	}
 	
 	public void setFirebus(Firebus fb)

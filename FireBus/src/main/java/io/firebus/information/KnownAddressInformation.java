@@ -7,12 +7,14 @@ public class KnownAddressInformation {
 	protected long lastTry;
 	protected long nextTry;
 	protected int failedCount;
+	protected boolean self;
 	
 	public KnownAddressInformation(Address a) {
 		address = a;
 		lastTry = 0;
 		nextTry = 0;
 		failedCount = 0;
+		self = false;
 	}
 	
 	public Address getAddress() {
@@ -38,6 +40,14 @@ public class KnownAddressInformation {
 	
 	public void connectionSucceeded() {
 		failedCount = 0;
+	}
+	
+	public boolean isSelf() {
+		return self;
+	}
+	
+	public void setAsSelf() {
+		self = true;
 	}
 
 }

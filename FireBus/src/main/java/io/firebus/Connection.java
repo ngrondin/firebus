@@ -22,8 +22,9 @@ public class Connection extends Thread
 	public static int STATE_INITIALIZING = 1;
 	public static int STATE_INITIALIZED = 2;
 	public static int STATE_ACTIVE = 3;
-	public static int STATE_CLOSING = 4;
-	public static int STATE_DEAD = 5;
+	public static int STATE_FAILED = 4;
+	public static int STATE_CLOSING = 5;
+	public static int STATE_DEAD = 6;
 	
 	private Logger logger = Logger.getLogger("io.firebus");
 	protected int state;
@@ -185,9 +186,13 @@ public class Connection extends Thread
 							remoteAddress = advertisedRemoteAddress;
 						}
 					}
-
-					logger.fine("Established connection " + getId() + " with node " + remoteNodeId + " at address " + remoteAddress);
-					state = STATE_INITIALIZED;
+					if(remoteNodeId != localNodeId) {
+						logger.fine("Established connection " + getId() + " with node " + remoteNodeId + " at address " + remoteAddress);
+						state = STATE_INITIALIZED;						
+					} else {
+						logger.info("Tried to establish connection " + getId() + " with self at address " + remoteAddress);
+						state = STATE_FAILED;
+					}
 				}
 				else
 				{
@@ -202,7 +207,7 @@ public class Connection extends Thread
 		}
 		catch(Exception e)
 		{
-			logger.severe(e.getMessage());
+			logger.severe("Error trying to establish connection to " + remoteAddress + " : " + e.getMessage());
 			close();
 		}		
 	}
