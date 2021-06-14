@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
@@ -167,30 +168,40 @@ public class Connection extends Thread
 					os = new CipherOutputStream(os, encryptionCipher);
 					is = new CipherInputStream(is, decryptionCipher);
 
-					os.write(ByteBuffer.allocate(4).putInt(localNodeId).array());
-					os.write(socket.getLocalAddress().getAddress());
-					os.write(ByteBuffer.allocate(4).putInt(localPort).array());
+					byte[] checkBytes = {(byte)0xCA, (byte)0xFE, (byte)0xBA, (byte)0xBE};
+					os.write(checkBytes);
+					byte[] remoteCheckBytes = new byte[4];
+					is.read(remoteCheckBytes);
+					
+					if(Arrays.equals(checkBytes, remoteCheckBytes)) {
+						os.write(ByteBuffer.allocate(4).putInt(localNodeId).array());
+						os.write(socket.getLocalAddress().getAddress());
+						os.write(ByteBuffer.allocate(4).putInt(localPort).array());
 
-					byte[] ab = new byte[4];
-					is.read(ab);
-					remoteNodeId = (ByteBuffer.wrap(ab)).getInt();
-					is.read(ab);
-					InetAddress a = InetAddress.getByAddress(ab);
-					is.read(ab);
-					int remotePort = (ByteBuffer.wrap(ab)).getInt();
-					Address advertisedRemoteAddress = new Address(a.getHostAddress(), remotePort);
-					if(remoteAddress == null)
-					{
-						if(advertisedRemoteAddress.getIPAddress().equals(socket.getInetAddress().getHostAddress()))
+						byte[] ab = new byte[4];
+						is.read(ab);
+						remoteNodeId = (ByteBuffer.wrap(ab)).getInt();
+						is.read(ab);
+						InetAddress a = InetAddress.getByAddress(ab);
+						is.read(ab);
+						int remotePort = (ByteBuffer.wrap(ab)).getInt();
+						Address advertisedRemoteAddress = new Address(a.getHostAddress(), remotePort);
+						if(remoteAddress == null)
 						{
-							remoteAddress = advertisedRemoteAddress;
+							if(advertisedRemoteAddress.getIPAddress().equals(socket.getInetAddress().getHostAddress()))
+							{
+								remoteAddress = advertisedRemoteAddress;
+							}
 						}
-					}
-					if(remoteNodeId != localNodeId) {
-						logger.fine("Established connection " + getId() + " with node " + remoteNodeId + " at address " + remoteAddress);
-						state = STATE_INITIALIZED;						
+						if(remoteNodeId != localNodeId) {
+							logger.fine("Established connection " + getId() + " with node " + remoteNodeId + " at address " + remoteAddress);
+							state = STATE_INITIALIZED;						
+						} else {
+							logger.info("Tried to establish connection " + getId() + " with self at address " + remoteAddress);
+							state = STATE_FAILED;
+						}						
 					} else {
-						logger.info("Tried to establish connection " + getId() + " with self at address " + remoteAddress);
+						logger.info("Tried to establish connection " + getId() + ", but received a bad cipher");
 						state = STATE_FAILED;
 					}
 				}
@@ -207,7 +218,7 @@ public class Connection extends Thread
 		}
 		catch(Exception e)
 		{
-			logger.severe("Error trying to establish connection to " + remoteAddress + " : " + e.getMessage());
+			logger.severe("Error trying to establish connection with " + remoteAddress + " : " + e.getMessage());
 			close();
 		}		
 	}

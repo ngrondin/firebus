@@ -144,7 +144,8 @@ public class Executor {
 		{
 			int nodeId = Integer.parseInt(parts[1]);
 			NodeInformation ni = firebus.getNodeInformation(nodeId);
-			ret = ni.toString();
+			if(ni != null)
+				ret = ni.toString();
 		}
 		else if(command.equals("dir"))
 		{

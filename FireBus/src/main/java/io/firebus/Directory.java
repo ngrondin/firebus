@@ -108,7 +108,7 @@ public class Directory
 				{
 					Address a = new Address(parts[2], Integer.parseInt(parts[3]));
 					NodeInformation nodeByAddress = getNodeByAddress(a);
-					if(nodeByAddress != ni)
+					if(nodeByAddress != null && nodeByAddress != ni)
 						deleteNode(nodeByAddress);
 					ni.addAddress(a);
 				}

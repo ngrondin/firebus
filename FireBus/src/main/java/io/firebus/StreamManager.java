@@ -67,7 +67,7 @@ public class StreamManager extends ExecutionManager {
 			{
 				nodeCore.getExecutionThreads().enqueue(new Runnable() {
 					public void run() {
-						logger.finer("Executing Stream Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
+						logger.fine("Executing Stream Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
 						((FirebusThread)Thread.currentThread()).setFunctionExecutionId(executionId);
 						StreamProvider streamProvider = (StreamProvider)fe.function;
 						long idleTimeout = streamProvider.getStreamIdleTimeout();
@@ -78,7 +78,7 @@ public class StreamManager extends ExecutionManager {
 						{
 							Payload acceptPayload = streamProvider.acceptStream(inPayload, streamEndpoint);
 							streamEndpoint.setAcceptPayload(acceptPayload);
-							logger.finer("Accepted stream " + name + " (correlation: " + msg.getCorrelation() + ")");
+							logger.fine("Accepted stream " + name + " (correlation: " + msg.getCorrelation() + ")");
 							if(acceptPayload == null)
 								acceptPayload = new Payload();
 							acceptPayload.metadata.put("correlationid", String.valueOf(localCorrelationId));
@@ -103,7 +103,7 @@ public class StreamManager extends ExecutionManager {
 		}	
 		else
 		{
-			logger.fine("Function " + name + " does not exist");
+			logger.severe("Function " + name + " does not exist");
 			sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "No such function registered in this node");
 		}
 	}

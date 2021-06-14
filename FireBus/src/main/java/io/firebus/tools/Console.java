@@ -59,7 +59,7 @@ public class Console implements ServiceRequestor
 			}
 			catch(Exception e)
 			{
-				logger.severe(e.getMessage());
+				e.printStackTrace();
 			}
 		}
 		executor.close();			

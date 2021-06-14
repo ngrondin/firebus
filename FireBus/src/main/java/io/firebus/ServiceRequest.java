@@ -34,7 +34,7 @@ public class ServiceRequest extends Thread
 	
 	public Payload execute() throws FunctionErrorException, FunctionTimeoutException
 	{
-		logger.finer("Requesting Service");
+		logger.fine("Requesting Service " + serviceName);
 		boolean responseReceived = false;
 		Payload responsePayload = null;
 		NodeInformation lastRequestedNode = null;
@@ -47,7 +47,7 @@ public class ServiceRequest extends Thread
 					try{ Thread.sleep(1000);} catch(Exception e) {}
 
 				lastRequestedNode = nodeInformation;
-				logger.finer("Sending service request message to " + nodeInformation.getNodeId());
+				logger.fine("Sending service request message to " + nodeInformation.getNodeId());
 				int msgType = requestTimeout >= 0 ? Message.MSGTYPE_REQUESTSERVICE : Message.MSGTYPE_REQUESTSERVICEANDFORGET;
 				Message reqMsg = new Message(nodeInformation.getNodeId(), nodeCore.getNodeId(), msgType, serviceName, requestPayload);
 				int correlation = nodeCore.getCorrelationManager().send(reqMsg, subTimeout);

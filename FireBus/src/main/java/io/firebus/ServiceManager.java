@@ -69,12 +69,12 @@ public class ServiceManager extends ExecutionManager {
 				nodeCore.getExecutionThreads().enqueue(new Runnable() {
 					public void run() {
 						((FirebusThread)Thread.currentThread()).setFunctionExecutionId(executionId);
-						logger.finer("Executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
+						logger.fine("Executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
 						sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_PROGRESS, msg.getSubject(), new Payload());
 						try
 						{
 							Payload returnPayload = ((ServiceProvider)fe.function).service(inPayload);
-							logger.finer("Finished executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
+							logger.fine("Finished executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
 							if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
 								sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
 						}
@@ -96,7 +96,7 @@ public class ServiceManager extends ExecutionManager {
 		}	
 		else
 		{
-			logger.fine("Function " + name + " does not exist");
+			logger.severe("Function " + name + " does not exist");
 			sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "No such function registered in this node");
 		}
 	}
