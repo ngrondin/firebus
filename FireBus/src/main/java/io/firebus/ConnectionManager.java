@@ -100,14 +100,23 @@ public class ConnectionManager extends Thread implements ConnectionListener
 				for(int i = 0; i < knownAddresses.size(); i++)
 				{
 					KnownAddressInformation kai = knownAddresses.get(i);
-					boolean hasConnection = false;
-					for(int j = 0; j < connections.size(); j++)
-						if(connections.get(j).remoteAddressEquals(kai.getAddress()))
-							hasConnection = true;
-					if(!hasConnection && kai.isDueToTry() && !kai.isSelf())
+					if(kai.shouldRemove())
 					{
-						logger.fine("Creating new connection from known address");
-						createConnection(kai.getAddress());
+						knownAddresses.remove(i);
+						i--;
+					}
+					else
+					{
+						boolean hasConnection = false;
+						for(int j = 0; j < connections.size(); j++)
+							if(connections.get(j).remoteAddressEquals(kai.getAddress()))
+								hasConnection = true;
+						
+						if(!hasConnection && kai.isDueToTry())
+						{
+							logger.fine("Creating new connection from known address (try " + kai.tries() + ")");
+							createConnection(kai.getAddress());
+						}						
 					}
 				}
 				

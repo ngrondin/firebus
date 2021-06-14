@@ -21,9 +21,21 @@ public class KnownAddressInformation {
 		return address;
 	}
 	
+	public int tries() {
+		return failedCount;
+	}
+	
 	public boolean isDueToTry() {
 		long now = System.currentTimeMillis();
-		return now > nextTry;
+		return !self && now > nextTry;
+	}
+
+	public boolean isSelf() {
+		return self;
+	}
+	
+	public boolean shouldRemove() {
+		return failedCount > 30;
 	}
 	
 	public void connectionFailed() {
@@ -40,10 +52,6 @@ public class KnownAddressInformation {
 	
 	public void connectionSucceeded() {
 		failedCount = 0;
-	}
-	
-	public boolean isSelf() {
-		return self;
 	}
 	
 	public void setAsSelf() {
