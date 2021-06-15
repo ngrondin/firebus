@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.util.EntityUtils;
 
@@ -43,22 +43,26 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
 			HttpUriRequest httpRequest = processRequest(payload);
 			if(httpRequest != null)
 			{
-				HttpResponse response = httpGateway.getHttpClient().execute(httpRequest);
-        		int respStatus = response.getStatusLine().getStatusCode(); 
-        		HttpEntity entity = response.getEntity();
-        		if(respStatus >= 200 && respStatus < 400)
-        		{
-        			fbResponse = processResponse(entity);
-					logger.finest(fbResponse.toString());
-        		}
-        		else
-        		{
-        			String responseStr = EntityUtils.toString(entity).replaceAll("\r", "").replaceAll("\n", "").replaceAll("\t", "");
-        			String errorMsg = "Http error " + respStatus + " on request " + httpRequest.toString() + " with response " + responseStr + " ";
-        			logger.severe(errorMsg);
-        			logger.severe("Input was " + payload.toString());
-        			throw new FunctionErrorException(errorMsg);
-        		}
+				CloseableHttpResponse response = httpGateway.getHttpClient().execute(httpRequest);
+				try {
+	        		int respStatus = response.getStatusLine().getStatusCode(); 
+	        		HttpEntity entity = response.getEntity();
+	        		if(respStatus >= 200 && respStatus < 400)
+	        		{
+	        			fbResponse = processResponse(entity);
+						logger.finest(fbResponse.toString());
+	        		}
+	        		else
+	        		{
+	        			String responseStr = EntityUtils.toString(entity).replaceAll("\r", "").replaceAll("\n", "").replaceAll("\t", "");
+	        			String errorMsg = "Http error " + respStatus + " on request " + httpRequest.toString() + " with response " + responseStr + " ";
+	        			logger.severe(errorMsg);
+	        			logger.severe("Input was " + payload.toString());
+	        			throw new FunctionErrorException(errorMsg);
+	        		}
+				} finally {
+					response.close();
+				}
 			}
 		}
 		catch(IOException | DataException | ServletException e) 

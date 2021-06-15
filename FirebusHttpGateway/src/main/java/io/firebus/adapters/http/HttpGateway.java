@@ -12,8 +12,8 @@ import javax.servlet.MultipartConfigElement;
 import org.apache.catalina.Context;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
@@ -48,7 +48,7 @@ public class HttpGateway implements ServiceProvider
 	protected Firebus firebus;
 	protected DataMap config;
 	protected Tomcat tomcat;
-	protected HttpClient httpclient;
+	protected CloseableHttpClient httpclient;
 	
 	public HttpGateway(DataMap c, Firebus f) {
 		config = c;
@@ -90,8 +90,8 @@ public class HttpGateway implements ServiceProvider
 		    		.setConnectionManager(connectionManager)
 		    		.setDefaultRequestConfig(requestConfig)
 		    		.build();
-	        
-	        DataList list = config.getList("security");
+
+		    DataList list = config.getList("security");
 	        Map<String, SecurityHandler> securityHandlerMap = new HashMap<String, SecurityHandler>();
 	        List<SecurityHandler> securityHandlerList = new ArrayList<SecurityHandler>();
 	        if(list != null)
@@ -203,7 +203,7 @@ public class HttpGateway implements ServiceProvider
 		}
 	}
 	
-	public HttpClient getHttpClient() {
+	public CloseableHttpClient getHttpClient() {
 		return httpclient;
 	}
 

@@ -11,10 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -59,8 +58,8 @@ public class OAuth2CodeValidator extends AuthValidationHandler
         	
         	if(code != null && redirectUrlResolved != null)
         	{
+        		int respStatus = -1;
         		DataMap respMap = null;
-        		HttpClient httpclient = httpGateway.getHttpClient();
         		HttpPost httppost = new HttpPost(tokenUrl);
         		List<NameValuePair> params = new ArrayList<NameValuePair>(2);
         		params.add(new BasicNameValuePair("code", code));
@@ -69,15 +68,20 @@ public class OAuth2CodeValidator extends AuthValidationHandler
         		params.add(new BasicNameValuePair("redirect_uri", publicHost + path));
         		params.add(new BasicNameValuePair("grant_type", "authorization_code"));
         		httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-        		HttpResponse response = httpclient.execute(httppost);
-        		int respStatus = response.getStatusLine().getStatusCode(); 
-        		HttpEntity entity = response.getEntity();
-        		if (entity != null) 
-        		{
-        			InputStream is = entity.getContent();
-        			try { respMap = new DataMap(is); }
-        			catch(DataException e) {}
+        		CloseableHttpResponse response = httpGateway.getHttpClient().execute(httppost);
+        		try {
+            		respStatus = response.getStatusLine().getStatusCode(); 
+            		HttpEntity entity = response.getEntity();
+            		if (entity != null) 
+            		{
+            			InputStream is = entity.getContent();
+            			try { respMap = new DataMap(is); }
+            			catch(DataException e) {}
+            		}        		
+        		} finally {
+        			response.close();
         		}
+
         		if(respStatus >= 200 && respStatus < 400)
         		{
             		if (respMap != null) 

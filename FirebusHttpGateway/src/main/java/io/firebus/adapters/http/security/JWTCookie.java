@@ -9,8 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 
@@ -105,40 +104,43 @@ public class JWTCookie extends SecurityHandler {
 	    
 		if(idmUrl != null && idmClientId != null && idmClientSecret != null) {
 			try {
-	    		HttpClient httpclient = httpGateway.getHttpClient();
-	    		HttpPost httppost = new HttpPost(idmUrl);
+				HttpPost httppost = new HttpPost(idmUrl);
 	    		httppost.setHeader("Content-Type", "application/json");
 	    		DataMap req = new DataMap();
 	    		req.put("client_id", idmClientId);
 	    		req.put("client_secret", idmClientSecret);
 	    		req.put("user", username);
 	    		httppost.setEntity(new StringEntity(req.toString(), "UTF-8"));
-	    		HttpResponse response = httpclient.execute(httppost);
-	    		int respStatus = response.getStatusLine().getStatusCode(); 
-	    		DataMap respMap = null;
-	    		if(respStatus == 200) {
-	        		HttpEntity entity = response.getEntity();
-	        		if (entity != null) 
-	        		{
-	        			respMap = new DataMap(entity.getContent()); 
-	        			DataList roles = respMap.getList("roles");
-	        			if(roles != null && roles.size() > 0) {
-	        				String[] rolesArray = new String[roles.size()];
-	        				for(int i = 0; i < roles.size(); i++) 
-	        					rolesArray[i] = roles.getString(i);
-	    					tokenBuilder.withArrayClaim("roles", rolesArray);
-	        			}
-	        			DataList domains = respMap.getList("domains");
-	        			if(domains != null && domains.size() > 0) {
-	        				String[] domainArray = new String[domains.size()];
-	        				for(int i = 0; i < domains.size(); i++) 
-	        					domainArray[i] = domains.getString(i);
-	    					tokenBuilder.withArrayClaim("domains", domainArray);
-	        			}
-	        		}
-	    			
+	    		CloseableHttpResponse response = httpGateway.getHttpClient().execute(httppost);
+	    		try {
+		    		int respStatus = response.getStatusLine().getStatusCode(); 
+		    		DataMap respMap = null;
+		    		if(respStatus == 200) {
+		        		HttpEntity entity = response.getEntity();
+		        		if (entity != null) 
+		        		{
+		        			respMap = new DataMap(entity.getContent()); 
+		        			DataList roles = respMap.getList("roles");
+		        			if(roles != null && roles.size() > 0) {
+		        				String[] rolesArray = new String[roles.size()];
+		        				for(int i = 0; i < roles.size(); i++) 
+		        					rolesArray[i] = roles.getString(i);
+		    					tokenBuilder.withArrayClaim("roles", rolesArray);
+		        			}
+		        			DataList domains = respMap.getList("domains");
+		        			if(domains != null && domains.size() > 0) {
+		        				String[] domainArray = new String[domains.size()];
+		        				for(int i = 0; i < domains.size(); i++) 
+		        					domainArray[i] = domains.getString(i);
+		    					tokenBuilder.withArrayClaim("domains", domainArray);
+		        			}
+		        		}
+		    			
+		    		}
+	    		} finally {
+	    			response.close();
 	    		}
-			} catch(Exception e) { }
+			} catch(Exception e) { } 
 		}
 		
 	    String token = tokenBuilder.sign(algorithm);
