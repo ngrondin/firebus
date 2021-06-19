@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.information.FunctionInformation;
-import io.firebus.information.NodeInformation;
 import io.firebus.interfaces.StreamRequestor;
 
 public class StreamRequest extends Thread
@@ -18,7 +17,7 @@ public class StreamRequest extends Thread
 	protected long expiry;
 	protected StreamRequestor requestor;
 	protected String errorMessage;
-	protected NodeInformation nodeInformation;
+	protected FunctionInformation functionInformation;
 
 	public StreamRequest(NodeCore nc, String sn, Payload p, int t)
 	{
@@ -58,18 +57,19 @@ public class StreamRequest extends Thread
 	{
 		logger.finer("Requesting Stream");
 		StreamEndpoint streamEndpoint = null;
-		NodeInformation lastRequestedNode = null;
+		FunctionInformation lastRequestedFunction = null;
+		FunctionFinder functionFinder = new FunctionFinder(nodeCore, streamName);
 		while(streamEndpoint == null  &&  System.currentTimeMillis() < expiry)
 		{
-			nodeInformation = FunctionFinder.findFunction(nodeCore, streamName); 
-			if(nodeInformation != null)
+			functionInformation = functionFinder.findNext(); 
+			if(functionInformation != null)
 			{
-				if(nodeInformation == lastRequestedNode) 
+				if(functionInformation == lastRequestedFunction) 
 					try{ Thread.sleep(1000);} catch(Exception e) {}
 
-				lastRequestedNode = nodeInformation;
-				logger.finer("Sending stream request message to " + nodeInformation.getNodeId());
-				Message reqMsg = new Message(nodeInformation.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSTREAM, streamName, requestPayload);
+				lastRequestedFunction = functionInformation;
+				logger.finer("Sending stream request message to " + functionInformation.getNodeId());
+				Message reqMsg = new Message(functionInformation.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSTREAM, streamName, requestPayload);
 				int correlation = nodeCore.getCorrelationManager().send(reqMsg, subTimeout);
 				Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
 				if(respMsg != null)
@@ -83,8 +83,8 @@ public class StreamRequest extends Thread
 						}
 						else if(respMsg.getType() == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
 						{
-							logger.fine("Stream " + streamName + " on node " + nodeInformation.getNodeId() + " has responded as unavailable");
-							reduceRatingOfServiceForNode(1);
+							logger.fine("Stream " + streamName + " on node " + functionInformation.getNodeId() + " has responded as unavailable");
+							functionInformation.wasUnavailable();
 							break;
 						} 
 						else if(respMsg.getType() == Message.MSGTYPE_STREAMACCEPT)
@@ -92,11 +92,11 @@ public class StreamRequest extends Thread
 							Payload acceptPayload = respMsg.getPayload();
 							int remoteCorrelation = Integer.parseInt(acceptPayload.metadata.get("correlationid"));
 							int idleTimeout = Integer.parseInt(acceptPayload.metadata.get("timeout"));
-							streamEndpoint = new StreamEndpoint(nodeCore, streamName, correlation, remoteCorrelation, 0, nodeInformation.getNodeId());
+							streamEndpoint = new StreamEndpoint(nodeCore, streamName, correlation, remoteCorrelation, 0, functionInformation.getNodeId());
 							streamEndpoint.setAcceptPayload(acceptPayload);
 							streamEndpoint.setRequestPayload(requestPayload);
 							nodeCore.getCorrelationManager().setListenerOnEntry(correlation, streamEndpoint, idleTimeout);
-							resetRatingOfServiceForNode();
+							functionInformation.wasSuccesful();
 							break;
 						}
 						
@@ -104,15 +104,15 @@ public class StreamRequest extends Thread
 						{
 							String str = "Stream request " + streamName + " has timed out while executing (corr: " + reqMsg.getCorrelation() + ")"; 
 							logger.fine(str);
-							reduceRatingOfServiceForNode(1);
+							functionInformation.timedOutWhileExecuting();
 							throw new FunctionTimeoutException(str);
 						}
 					}
 				}
 				else
 				{
-					logger.fine("Stream " + streamName + " on node " + nodeInformation.getNodeId() + " has not responded to a stream request (corr: " + reqMsg.getCorrelation() + ")");
-					reduceRatingOfServiceForNode(3);			
+					logger.fine("Stream " + streamName + " on node " + functionInformation.getNodeId() + " has not responded to a stream request (corr: " + reqMsg.getCorrelation() + ")");
+					functionInformation.didNotRespond();
 				}
 			}			
 		}
@@ -123,15 +123,4 @@ public class StreamRequest extends Thread
 			throw new FunctionTimeoutException("Stream " + streamName + " could not be found");
 	}
 	
-	private void reduceRatingOfServiceForNode(int q) {
-		FunctionInformation fi = nodeInformation.getFunctionInformation(streamName);
-		if(fi != null)
-			fi.reduceRating(q);		
-	}
-	
-	private void resetRatingOfServiceForNode() {
-		FunctionInformation fi = nodeInformation.getFunctionInformation(streamName);
-		if(fi != null)
-			fi.resetRating();	
-	}	
 }

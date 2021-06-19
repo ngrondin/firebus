@@ -114,7 +114,7 @@ public class Firebus
 		return null;
 	}
 	
-	public FunctionInformation getFunctionInformation(String name)
+	/*public FunctionInformation getFunctionInformation(String name)
 	{
 		FunctionInformation si = null;
 		NodeInformation ni = nodeCore.getDirectory().findFunction(name);
@@ -128,7 +128,7 @@ public class Firebus
 		}
 
 		return si;
-	}
+	}*/
 
 	public Payload requestService(String serviceName, Payload payload) throws FunctionErrorException, FunctionTimeoutException
 	{

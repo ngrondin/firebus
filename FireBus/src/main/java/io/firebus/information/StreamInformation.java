@@ -5,31 +5,21 @@ import java.nio.ByteBuffer;
 
 public class StreamInformation extends FunctionInformation
 {
-	protected String serviceName;
-	protected boolean fullInformation;
 	protected String requestMimeType;
 	protected String requestContract;
 	protected String responseMimeType;
 	protected String responseContract;
-	protected int rating;
-	
+
 	public StreamInformation(String sn)
 	{
-		serviceName = sn;
-		fullInformation = false;
-		rating = 0;
+		super(sn);
 	}
 	
-	public StreamInformation(String rqmt, String rqc, String rpmt, String rpc)
+	public StreamInformation(NodeInformation ni, String sn)
 	{
-		requestMimeType = rqmt;
-		requestContract = rqc;
-		responseMimeType = rpmt;
-		responseContract = rpc;
-		fullInformation = true;
-		rating = 100;
+		super(ni, sn);
 	}
-
+	
 	public String getRequestMimeType()
 	{
 		return requestMimeType;
@@ -152,6 +142,6 @@ public class StreamInformation extends FunctionInformation
 
 	public String toString() 
 	{
-		return "Stream   : " + serviceName;
+		return "Stream   : " + name + " [" + rating + "]";
 	}
 }

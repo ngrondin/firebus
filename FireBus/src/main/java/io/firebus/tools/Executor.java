@@ -133,12 +133,6 @@ public class Executor {
 			{
 				firebus.publish(functionName, payload);
 			}
-			else if(command.equals("si")  &&  functionName != null)
-			{
-				FunctionInformation si = firebus.getFunctionInformation(functionName);
-				if(si != null)
-					ret = si.toString();
-			}
 		}
 		else if(command.equals("ni"))
 		{

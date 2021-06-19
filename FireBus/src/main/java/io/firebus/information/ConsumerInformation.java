@@ -3,11 +3,14 @@ package io.firebus.information;
 
 public class ConsumerInformation extends FunctionInformation
 {
-	protected String consumerName;
-	
 	public ConsumerInformation(String sn)
 	{
-		consumerName = sn;
+		super(sn);
+	}
+
+	public ConsumerInformation(NodeInformation ni, String sn)
+	{
+		super(ni, sn);
 	}
 
 	public byte[] serialise() 
@@ -22,7 +25,7 @@ public class ConsumerInformation extends FunctionInformation
 
 	public String toString() 
 	{
-		return "Consumer : " + consumerName;
+		return "Consumer : " + name;
 	}
 
 }

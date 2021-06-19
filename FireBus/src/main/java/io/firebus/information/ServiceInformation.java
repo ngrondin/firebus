@@ -9,25 +9,17 @@ public class ServiceInformation extends FunctionInformation
 	protected String requestContract;
 	protected String responseMimeType;
 	protected String responseContract;
-	protected String serviceName;
 	
 	public ServiceInformation(String sn)
 	{
-		serviceName = sn;
-		fullInformation = false;
-		rating = 0;
+		super(sn);
 	}
 	
-	public ServiceInformation(String rqmt, String rqc, String rpmt, String rpc)
+	public ServiceInformation(NodeInformation ni, String sn)
 	{
-		requestMimeType = rqmt;
-		requestContract = rqc;
-		responseMimeType = rpmt;
-		responseContract = rpc;
-		fullInformation = true;
-		rating = 100;
+		super(ni, sn);
 	}
-
+	
 	public String getRequestMimeType()
 	{
 		return requestMimeType;
@@ -132,6 +124,6 @@ public class ServiceInformation extends FunctionInformation
 
 	public String toString()
 	{
-		return "Service  : " + serviceName;
+		return "Service  : " + name + " [" + rating + "]";
 	}
 }

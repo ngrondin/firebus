@@ -52,7 +52,7 @@ public class ScriptedService extends DistributableService
 		js = new ScriptEngineManager().getEngineByName("javascript");
 	    bindings = js.getBindings(ScriptContext.ENGINE_SCOPE);
 	    bindings.put("firebus", new Firebus(nodeCore));
-	    serviceInformation = new ServiceInformation(c.getString("requestmime"), c.getString("requestcontract"), c.getString("responsemime"), c.getString("responsecontract"));
+	    serviceInformation = new ServiceInformation(c.getString("name"));
 	}
 
 	public Payload service(Payload payload) throws FunctionErrorException

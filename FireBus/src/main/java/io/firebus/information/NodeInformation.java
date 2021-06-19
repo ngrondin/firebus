@@ -18,8 +18,8 @@ public class NodeInformation
 	protected long lastSentDiscovery;
 	protected long lastUpdated;
 	protected int rating;
-	protected boolean unconnectable;
-	protected boolean unresponsive;
+	/*protected boolean unconnectable;
+	protected boolean unresponsive;*/
 
 	public NodeInformation(int ni)
 	{
@@ -32,9 +32,9 @@ public class NodeInformation
 		addresses = new ArrayList<Address>();
 		repeaters = new ArrayList<Integer>();
 		functions = new HashMap<String, FunctionInformation>();
-		unconnectable = false;
-		unresponsive = false;
-		rating = 0;
+		/*unconnectable = false;
+		unresponsive = false;*/
+		rating = 100;
 	}
 
 	public void setLastDiscoverySentTime(long t)
@@ -46,7 +46,7 @@ public class NodeInformation
 	{
 		lastUpdated = t;
 	}
-	
+	/*
 	public void setUnconnectable()
 	{
 		unconnectable = true;
@@ -56,7 +56,7 @@ public class NodeInformation
 	{
 		unresponsive = true;
 	}
-	
+	*/
 	public void addAddress(Address a)
 	{
 		if(a != null  &&  !containsAddress(a))
@@ -139,28 +139,25 @@ public class NodeInformation
 		return functions.get(sn);
 	}
 	
-	public boolean isUnconnectable()
+	public synchronized void didNotRespond() 
 	{
-		return unconnectable;
+		rating--;
+		if(rating < 0) rating = 0;
 	}
 	
-	public boolean isUnresponsive()
+	public synchronized void responded() 
 	{
-		return unresponsive;
+		rating++;
+		if(rating > 100) rating = 100;
 	}
 	
-	public void reduceRating(int r) {
-		rating -= r;
-		if(rating < -10) rating = -10;
-		//System.out.println("node " + rating);
+	public boolean shouldRemove()
+	{
+		return rating == 0;
 	}
 	
-	public void resetRating() {
-		rating = 0;
-		//System.out.println("node " + rating);
-	}
-	
-	public int getRating() {
+	public int getRating() 
+	{
 		return rating;
 	}
 

@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.information.FunctionInformation;
-import io.firebus.information.NodeInformation;
 import io.firebus.interfaces.CorrelationListener;
 import io.firebus.interfaces.ServiceRequestor;
 
@@ -19,7 +18,7 @@ public class ServiceRequestAsync implements CorrelationListener {
 	protected int requestTimeout;
 	protected long expiry;
 	protected String errorMessage;
-	protected NodeInformation nodeInformation;
+	protected FunctionInformation functionInformation;
 	
 	
 	public ServiceRequestAsync(NodeCore nc, String sn, Payload p, ServiceRequestor r, int t)
@@ -37,20 +36,21 @@ public class ServiceRequestAsync implements CorrelationListener {
 	public void execute()  throws FunctionErrorException, FunctionTimeoutException {
 		logger.fine("Requesting Service " + serviceName);
 		boolean requestInProgress = false;
-		NodeInformation lastRequestedNode = null;
 		long subExpiry = System.currentTimeMillis() + subTimeout;
+		FunctionInformation lastRequestedFunction = null;
+		FunctionFinder functionFinder = new FunctionFinder(nodeCore, serviceName);
 		while(requestInProgress == false  &&  System.currentTimeMillis() < subExpiry)
 		{
-			nodeInformation = FunctionFinder.findFunction(nodeCore, serviceName); 
-			if(nodeInformation != null)
+			functionInformation = functionFinder.findNext(); 
+			if(functionInformation != null)
 			{
-				if(nodeInformation == lastRequestedNode) 
+				if(functionInformation == lastRequestedFunction) 
 					try{ Thread.sleep(1000);} catch(Exception e) {}
 				
-				lastRequestedNode = nodeInformation;
-				logger.fine("Sending service request message to " + nodeInformation.getNodeId());
+				lastRequestedFunction = functionInformation;
+				logger.fine("Sending service request message to " + functionInformation.getNodeId());
 				int msgType = requestTimeout >= 0 ? Message.MSGTYPE_REQUESTSERVICE : Message.MSGTYPE_REQUESTSERVICEANDFORGET;
-				Message reqMsg = new Message(nodeInformation.getNodeId(), nodeCore.getNodeId(), msgType, serviceName, requestPayload);
+				Message reqMsg = new Message(functionInformation.getNodeId(), nodeCore.getNodeId(), msgType, serviceName, requestPayload);
 				int correlation = nodeCore.getCorrelationManager().send(reqMsg, subTimeout);
 				Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
 				if(respMsg != null)
@@ -58,19 +58,20 @@ public class ServiceRequestAsync implements CorrelationListener {
 					if(respMsg.getType() == Message.MSGTYPE_PROGRESS)
 					{
 						requestInProgress = true;
+						functionInformation.returnedProgress();
 						nodeCore.getCorrelationManager().setListenerOnEntry(correlation, this, requestTimeout);
 					}
 					else //Will always only be Function Unavailable 
 					{
-						logger.fine("Service " + serviceName + " on node " + nodeInformation.getNodeId() + " has responded as unavailable");
-						reduceRatingOfServiceForNode(1);
+						logger.fine("Service " + serviceName + " on node " + functionInformation.getNodeId() + " has responded as unavailable");
+						functionInformation.wasUnavailable();
 						nodeCore.getCorrelationManager().removeEntry(correlation);
 					}
 				}
 				else
 				{
-					logger.fine("Service " + serviceName + " on node " + nodeInformation.getNodeId() + " has not responded to a service request (corr: " + reqMsg.getCorrelation() + ")");
-					reduceRatingOfServiceForNode(3);
+					logger.fine("Service " + serviceName + " on node " + functionInformation.getNodeId() + " has not responded to a service request (corr: " + reqMsg.getCorrelation() + ")");
+					functionInformation.didNotRespond();
 					nodeCore.getCorrelationManager().removeEntry(correlation);
 				}
 				
@@ -81,34 +82,25 @@ public class ServiceRequestAsync implements CorrelationListener {
 			throw new FunctionTimeoutException("Service " + serviceName + " could not be found");		
 	}
 	
-	private void reduceRatingOfServiceForNode(int q) {
-		FunctionInformation fi = nodeInformation.getFunctionInformation(serviceName);
-		if(fi != null)
-			fi.reduceRating(q);		
-	}
-	
-	private void resetRatingOfServiceForNode() {
-		FunctionInformation fi = nodeInformation.getFunctionInformation(serviceName);
-		if(fi != null)
-			fi.resetRating();	
-	}
 
 	public void correlatedResponseReceived(Message outMsg, Message inMsg) {
 		if(inMsg.getType() == Message.MSGTYPE_SERVICEERROR)
 		{
 			errorMessage = inMsg.getPayload().getString();
+			functionInformation.returnedError();
 			requestor.error(new FunctionErrorException(errorMessage));
 		}
 		else if(inMsg.getType() == Message.MSGTYPE_SERVICERESPONSE)
 		{
 			Payload responsePayload = inMsg.getPayload();
-			resetRatingOfServiceForNode();
+			functionInformation.wasSuccesful();
 			requestor.response(responsePayload);
 		}
 		nodeCore.getCorrelationManager().removeEntry(inMsg.getCorrelation());		
 	}
 
 	public void correlationTimedout(Message outMsg) {
+		functionInformation.timedOutWhileExecuting();
 		requestor.timeout();
 	}
 }

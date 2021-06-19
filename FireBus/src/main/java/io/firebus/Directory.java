@@ -103,7 +103,6 @@ public class Directory
 					nodes.add(ni);
 				}
 				ni.setLastUpdatedTime(System.currentTimeMillis());
-				ni.resetRating();
 				if(parts[1].equals("a"))
 				{
 					Address a = new Address(parts[2], Integer.parseInt(parts[3]));
@@ -119,11 +118,11 @@ public class Directory
 					FunctionInformation fi = ni.getFunctionInformation(name);
 					if(fi == null) {
 						if(functionType.equals("s"))
-							fi = new ServiceInformation(name);
+							fi = new ServiceInformation(ni, name);
 						else if(functionType.equals("t"))
-							fi = new StreamInformation(name);
+							fi = new StreamInformation(ni, name);
 						else if(functionType.equals("c"))
-							fi = new ConsumerInformation(name);
+							fi = new ConsumerInformation(ni, name);
 						ni.addFunctionInformation(name, fi);
 					}
 				}
@@ -139,46 +138,19 @@ public class Directory
 	public synchronized void processFunctionInformation(int nodeId, String functionName, byte[] payload)
 	{
 		NodeInformation ni = getOrCreateNodeInformation(nodeId);
-		ni.resetRating();
 		FunctionInformation fi = ni.getFunctionInformation(functionName);
 		if(fi == null)
 		{
 			char type = (char)payload[0];
 			if(type == 's')
-				fi = new ServiceInformation(functionName);
+				fi = new ServiceInformation(ni, functionName);
 			else if(type == 't')
-				fi = new StreamInformation(functionName);
+				fi = new StreamInformation(ni, functionName);
 			else if(type == 'c')
-				fi = new ConsumerInformation(functionName);
+				fi = new ConsumerInformation(ni, functionName);
 			ni.addFunctionInformation(functionName, fi);
 		}
 		fi.deserialise(payload);
-	}
-
-	
-	public NodeInformation findFunction(String name)
-	{
-		NodeInformation bestNode = null;
-		int bestNodeRating = -100000;
-		for(int i = 0; i < nodes.size(); i++)
-		{
-			NodeInformation ni = nodes.get(i);
-			FunctionInformation fi = ni.getFunctionInformation(name);
-			if(fi != null) {
-				//if(fi.getRating() > -10) {
-					if(fi.getRating() > bestNodeRating) {
-						bestNode = ni;
-						bestNodeRating = fi.getRating();
-					}
-				/*} else {
-					ni.removeFunctionInformation(name);
-					ni.reduceRating(2);
-					if(ni.getFunctionCount() == 0 || ni.getRating() < -5) 
-						deleteNode(ni);
-				}*/
-			}
-		}
-		return bestNode;
 	}
 
 	public String getDirectoryStateString(int nodeId)

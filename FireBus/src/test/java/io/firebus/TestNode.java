@@ -51,9 +51,9 @@ public class TestNode
 								String[] parts = in.split(" ");
 								if(parts[0].equals("info"))
 								{
-									FunctionInformation si = n.getFunctionInformation(functionName);
+									/*FunctionInformation si = n.getFunctionInformation(functionName);
 									if(si != null)
-										System.out.println(si.toString());
+										System.out.println(si.toString());*/
 								}
 								else if(parts[0].equals("req"))
 								{
@@ -112,7 +112,7 @@ public class TestNode
 
 							public ServiceInformation getServiceInformation()
 							{
-								return  new ServiceInformation("text/plain", "{request:String}", "text/plain", "{response:String}");
+								return  null;//new ServiceInformation("text/plain", "{request:String}", "text/plain", "{response:String}");
 							}
 						}, 2);
 						System.out.println("Service Provider Registered");
