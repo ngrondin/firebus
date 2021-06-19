@@ -104,7 +104,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 
 	public ServiceInformation getServiceInformation()
 	{
-		return new ServiceInformation("text/plain", "", "text/json", "{}");
+		return null;//new ServiceInformation("text/plain", "", "text/json", "{}");
 	}
 
 	private DataList get(DataMap packet) throws FunctionErrorException

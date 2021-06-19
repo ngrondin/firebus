@@ -81,7 +81,7 @@ public class FileAdapter extends Adapter implements ServiceProvider, Consumer
 
 	public ServiceInformation getServiceInformation()
 	{
-		return new ServiceInformation("text/plain", "", "text/plain", "");
+		return null;//new ServiceInformation("text/plain", "", "text/plain", "");
 	}
 
 }

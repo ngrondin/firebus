@@ -77,7 +77,7 @@ public class AzureBlobAdapter extends Adapter implements ServiceProvider, Consum
 
 	public ServiceInformation getServiceInformation()
 	{
-		return new ServiceInformation("text/plain", "", "text/plain", "");
+		return null;//new ServiceInformation("text/plain", "", "text/plain", "");
 	}
 
 }

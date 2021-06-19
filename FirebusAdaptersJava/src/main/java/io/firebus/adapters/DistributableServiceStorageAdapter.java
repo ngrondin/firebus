@@ -61,7 +61,7 @@ public class DistributableServiceStorageAdapter extends Adapter implements Servi
 	
 	public ServiceInformation getServiceInformation()
 	{
-		return new ServiceInformation("text/plain", "", "text/plain", "");
+		return null;//new ServiceInformation("text/plain", "", "text/plain", "");
 	}
 
 	protected void refreshConfigs()
