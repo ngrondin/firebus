@@ -3,6 +3,8 @@ package io.firebus.logging;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
+import io.firebus.threads.FirebusThread;
+
 public class FirebusSimpleFormatter extends Formatter
 {
 
@@ -10,16 +12,20 @@ public class FirebusSimpleFormatter extends Formatter
 	{
 		StringBuffer buf = new StringBuffer(1000);
 		buf.append(rec.getMillis());
-		buf.append("\t");
+		buf.append(" ");
 		buf.append(pad(rec.getLevel().toString(), 10));
-		buf.append("\t");
-		buf.append(pad(Thread.currentThread().getName(), 30));
-		buf.append("\t");
-		String className = rec.getSourceClassName();
-		buf.append(pad(className.substring(className.lastIndexOf(".") + 1), 25));
-		buf.append("\t");
-		buf.append(pad(rec.getSourceMethodName(), 25));
-		buf.append("\t");
+		//buf.append("\t");
+		//buf.append("\t");
+		if(Thread.currentThread() instanceof FirebusThread) {
+			FirebusThread fbt = (FirebusThread)Thread.currentThread();
+			buf.append(pad(fbt.getName(), 12));			
+			buf.append(pad(fbt.getFunctionName(), 10));			
+			buf.append(pad(String.valueOf(fbt.getFunctionExecutionId()), 4));			
+			buf.append(pad(fbt.getTrackingId(), 12));			
+			
+		} else {
+			buf.append(pad(Thread.currentThread().getName(), 38));			
+		}
 		String msg = rec.getMessage() != null ? rec.getMessage() : "";
 		buf.append(msg.replaceAll("\r", "").replaceAll("\n", "\u2028"));
 		buf.append("\r\n");
@@ -28,7 +34,7 @@ public class FirebusSimpleFormatter extends Formatter
 	
 	private String pad(String s, int l)
 	{
-		String ret = s;
+		String ret = s != null ? s : "";
 		for(int i = ret.length(); i < l; i+=1)
 			ret = ret + " ";
 		if(ret.length() > l)

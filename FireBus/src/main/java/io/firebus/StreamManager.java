@@ -68,7 +68,7 @@ public class StreamManager extends ExecutionManager {
 				nodeCore.getExecutionThreads().enqueue(new Runnable() {
 					public void run() {
 						logger.fine("Executing Stream Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
-						((FirebusThread)Thread.currentThread()).setFunctionExecutionId(executionId);
+						((FirebusThread)Thread.currentThread()).startFunctionExecution(fe.getName(), executionId);
 						StreamProvider streamProvider = (StreamProvider)fe.function;
 						long idleTimeout = streamProvider.getStreamIdleTimeout();
 						int localCorrelationId = nodeCore.getCorrelationManager().createEntry(idleTimeout);
@@ -92,7 +92,7 @@ public class StreamManager extends ExecutionManager {
 						}
 
 						
-						((FirebusThread)Thread.currentThread()).clearFunctionExecutionId();
+						((FirebusThread)Thread.currentThread()).finishFunctionExecution();
 						fe.releaseExecutionId(executionId);
 					}
 				});

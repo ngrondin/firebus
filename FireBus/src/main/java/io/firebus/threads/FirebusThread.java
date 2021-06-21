@@ -14,7 +14,9 @@ public class FirebusThread extends Thread
 	protected boolean quit;
 	protected boolean ready;
 	protected long expiry;
+	protected String functionName;
 	protected long functionExecutionId = -1;
+	protected String trackingId;
 
 	public FirebusThread(ThreadManager tm, NodeCore c)
 	{
@@ -64,9 +66,21 @@ public class FirebusThread extends Thread
 		}
 	}
 	
-	public void setFunctionExecutionId(long id) 
+	public void startFunctionExecution(String n, long id)
 	{
+		functionName = n;
 		functionExecutionId = id;
+	}
+	
+	public void finishFunctionExecution() 
+	{
+		functionName = null;
+		functionExecutionId = -1;
+	}
+
+	public String getFunctionName()
+	{
+		return functionName;
 	}
 	
 	public long getFunctionExecutionId()
@@ -74,9 +88,14 @@ public class FirebusThread extends Thread
 		return functionExecutionId;
 	}
 	
-	public void clearFunctionExecutionId() 
+	public void setTrackingId(String id) 
 	{
-		functionExecutionId = -1;
+		trackingId = id;
+	}
+	
+	public String getTrackingId()
+	{
+		return trackingId;
 	}
 	
 	public void close()
