@@ -114,7 +114,10 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				responseJSON.put("result", "ok");
 			}
 			response = new Payload(null, responseJSON.toString().getBytes());
-			logger.finer("Returning mongo response in " + (System.currentTimeMillis() - start) + "ms");
+			long duration = System.currentTimeMillis() - start;
+			if(duration > 2000) 
+				logger.warning("Long running mongo request (" + duration + "ms): " + request.toString(0, true));
+			logger.finer("Returning mongo response in " + duration + "ms");
 		}
 		catch(Exception e)
 		{
