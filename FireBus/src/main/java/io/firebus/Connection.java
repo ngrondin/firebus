@@ -218,7 +218,7 @@ public class Connection extends Thread
 		}
 		catch(Exception e)
 		{
-			logger.severe("Error trying to establish connection with " + remoteAddress + " : " + e.getMessage());
+			logger.warning("Error trying to establish connection with " + remoteAddress + " : " + e.getMessage());
 			close();
 		}		
 	}
