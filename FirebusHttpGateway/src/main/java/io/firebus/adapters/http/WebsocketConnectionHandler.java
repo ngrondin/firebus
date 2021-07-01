@@ -183,7 +183,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 	}
 	
 	private synchronized void send(byte[] msg, int op) {
-		if(os != null) {
+		if(active && os != null) {
 			long len = msg != null ? msg.length : 0;
 			int lenSize = (len <= 125 ? 0 : (len <= 65535 ? 2 : 8));
 			int i = 0;
@@ -205,12 +205,10 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 					os.write(msg[i]);
 				os.flush();
 			} catch(Exception e) {
-				logger.severe("Websocket exception when sending (at byte " + i + "): " + e.getMessage());
+				logger.warning("Websocket exception when sending (at byte " + i + "): " + e.getMessage());
 				active = false;
 			}			
-		} else {
-			logger.severe("Websocket exception when sending: outputstrem not initialized");
-		}
+		} 
 	}
 	
 	public void sendStringMessage(String msg)
