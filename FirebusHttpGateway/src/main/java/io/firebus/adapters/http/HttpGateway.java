@@ -81,7 +81,7 @@ public class HttpGateway implements ServiceProvider
 	        RequestConfig requestConfig = RequestConfig.custom()
 					.setConnectionRequestTimeout(1000)
 					.setConnectTimeout(5000)
-					.setSocketTimeout(5000)
+					.setSocketTimeout(60000)
 					.build();
 	        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
 		    connectionManager.setMaxTotal(100);
