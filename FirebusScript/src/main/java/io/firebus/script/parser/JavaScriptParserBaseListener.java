@@ -17,1608 +17,1608 @@ public class JavaScriptParserBaseListener implements JavaScriptParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterProgram(JavaScriptParser.ProgramContext ctx) { }
+	public void enterProgram(JavaScriptParser.ProgramContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitProgram(JavaScriptParser.ProgramContext ctx) { }
+	 public void exitProgram(JavaScriptParser.ProgramContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSourceElement(JavaScriptParser.SourceElementContext ctx) { }
+	 public void enterSourceElement(JavaScriptParser.SourceElementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitSourceElement(JavaScriptParser.SourceElementContext ctx) { }
+	 public void exitSourceElement(JavaScriptParser.SourceElementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterStatement(JavaScriptParser.StatementContext ctx) { }
+	 public void enterStatement(JavaScriptParser.StatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitStatement(JavaScriptParser.StatementContext ctx) { }
+	 public void exitStatement(JavaScriptParser.StatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterBlock(JavaScriptParser.BlockContext ctx) { }
+	 public void enterBlock(JavaScriptParser.BlockContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitBlock(JavaScriptParser.BlockContext ctx) { }
+	 public void exitBlock(JavaScriptParser.BlockContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterStatementList(JavaScriptParser.StatementListContext ctx) { }
+	 public void enterStatementList(JavaScriptParser.StatementListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitStatementList(JavaScriptParser.StatementListContext ctx) { }
+	 public void exitStatementList(JavaScriptParser.StatementListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterImportStatement(JavaScriptParser.ImportStatementContext ctx) { }
+	 public void enterImportStatement(JavaScriptParser.ImportStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitImportStatement(JavaScriptParser.ImportStatementContext ctx) { }
+	 public void exitImportStatement(JavaScriptParser.ImportStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterImportFromBlock(JavaScriptParser.ImportFromBlockContext ctx) { }
+	 public void enterImportFromBlock(JavaScriptParser.ImportFromBlockContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitImportFromBlock(JavaScriptParser.ImportFromBlockContext ctx) { }
+	 public void exitImportFromBlock(JavaScriptParser.ImportFromBlockContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterModuleItems(JavaScriptParser.ModuleItemsContext ctx) { }
+	 public void enterModuleItems(JavaScriptParser.ModuleItemsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitModuleItems(JavaScriptParser.ModuleItemsContext ctx) { }
+	 public void exitModuleItems(JavaScriptParser.ModuleItemsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterImportDefault(JavaScriptParser.ImportDefaultContext ctx) { }
+	 public void enterImportDefault(JavaScriptParser.ImportDefaultContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitImportDefault(JavaScriptParser.ImportDefaultContext ctx) { }
+	 public void exitImportDefault(JavaScriptParser.ImportDefaultContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterImportNamespace(JavaScriptParser.ImportNamespaceContext ctx) { }
+	 public void enterImportNamespace(JavaScriptParser.ImportNamespaceContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitImportNamespace(JavaScriptParser.ImportNamespaceContext ctx) { }
+	 public void exitImportNamespace(JavaScriptParser.ImportNamespaceContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterImportFrom(JavaScriptParser.ImportFromContext ctx) { }
+	 public void enterImportFrom(JavaScriptParser.ImportFromContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitImportFrom(JavaScriptParser.ImportFromContext ctx) { }
+	 public void exitImportFrom(JavaScriptParser.ImportFromContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAliasName(JavaScriptParser.AliasNameContext ctx) { }
+	 public void enterAliasName(JavaScriptParser.AliasNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAliasName(JavaScriptParser.AliasNameContext ctx) { }
+	 public void exitAliasName(JavaScriptParser.AliasNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExportDeclaration(JavaScriptParser.ExportDeclarationContext ctx) { }
+	 public void enterExportDeclaration(JavaScriptParser.ExportDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExportDeclaration(JavaScriptParser.ExportDeclarationContext ctx) { }
+	 public void exitExportDeclaration(JavaScriptParser.ExportDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExportDefaultDeclaration(JavaScriptParser.ExportDefaultDeclarationContext ctx) { }
+	 public void enterExportDefaultDeclaration(JavaScriptParser.ExportDefaultDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExportDefaultDeclaration(JavaScriptParser.ExportDefaultDeclarationContext ctx) { }
+	 public void exitExportDefaultDeclaration(JavaScriptParser.ExportDefaultDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExportFromBlock(JavaScriptParser.ExportFromBlockContext ctx) { }
+	 public void enterExportFromBlock(JavaScriptParser.ExportFromBlockContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExportFromBlock(JavaScriptParser.ExportFromBlockContext ctx) { }
+	 public void exitExportFromBlock(JavaScriptParser.ExportFromBlockContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDeclaration(JavaScriptParser.DeclarationContext ctx) { }
+	 public void enterDeclaration(JavaScriptParser.DeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitDeclaration(JavaScriptParser.DeclarationContext ctx) { }
+	 public void exitDeclaration(JavaScriptParser.DeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterVariableStatement(JavaScriptParser.VariableStatementContext ctx) { }
+	 public void enterVariableStatement(JavaScriptParser.VariableStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitVariableStatement(JavaScriptParser.VariableStatementContext ctx) { }
+	 public void exitVariableStatement(JavaScriptParser.VariableStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterVariableDeclarationList(JavaScriptParser.VariableDeclarationListContext ctx) { }
+	 public void enterVariableDeclarationList(JavaScriptParser.VariableDeclarationListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitVariableDeclarationList(JavaScriptParser.VariableDeclarationListContext ctx) { }
+	 public void exitVariableDeclarationList(JavaScriptParser.VariableDeclarationListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterVariableDeclaration(JavaScriptParser.VariableDeclarationContext ctx) { }
+	 public void enterVariableDeclaration(JavaScriptParser.VariableDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitVariableDeclaration(JavaScriptParser.VariableDeclarationContext ctx) { }
+	 public void exitVariableDeclaration(JavaScriptParser.VariableDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterEmptyStatement(JavaScriptParser.EmptyStatementContext ctx) { }
+	 public void enterEmptyStatement(JavaScriptParser.EmptyStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitEmptyStatement(JavaScriptParser.EmptyStatementContext ctx) { }
+	 public void exitEmptyStatement(JavaScriptParser.EmptyStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExpressionStatement(JavaScriptParser.ExpressionStatementContext ctx) { }
+	 public void enterExpressionStatement(JavaScriptParser.ExpressionStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExpressionStatement(JavaScriptParser.ExpressionStatementContext ctx) { }
+	 public void exitExpressionStatement(JavaScriptParser.ExpressionStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterIfStatement(JavaScriptParser.IfStatementContext ctx) { }
+	 public void enterIfStatement(JavaScriptParser.IfStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitIfStatement(JavaScriptParser.IfStatementContext ctx) { }
+	 public void exitIfStatement(JavaScriptParser.IfStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDoStatement(JavaScriptParser.DoStatementContext ctx) { }
+	 public void enterDoStatement(JavaScriptParser.DoStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitDoStatement(JavaScriptParser.DoStatementContext ctx) { }
+	 public void exitDoStatement(JavaScriptParser.DoStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterWhileStatement(JavaScriptParser.WhileStatementContext ctx) { }
+	 public void enterWhileStatement(JavaScriptParser.WhileStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitWhileStatement(JavaScriptParser.WhileStatementContext ctx) { }
+	 public void exitWhileStatement(JavaScriptParser.WhileStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterForStatement(JavaScriptParser.ForStatementContext ctx) { }
+	 public void enterForStatement(JavaScriptParser.ForStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitForStatement(JavaScriptParser.ForStatementContext ctx) { }
+	 public void exitForStatement(JavaScriptParser.ForStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterForInStatement(JavaScriptParser.ForInStatementContext ctx) { }
+	 public void enterForInStatement(JavaScriptParser.ForInStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitForInStatement(JavaScriptParser.ForInStatementContext ctx) { }
+	 public void exitForInStatement(JavaScriptParser.ForInStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterForOfStatement(JavaScriptParser.ForOfStatementContext ctx) { }
+	 public void enterForOfStatement(JavaScriptParser.ForOfStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitForOfStatement(JavaScriptParser.ForOfStatementContext ctx) { }
+	 public void exitForOfStatement(JavaScriptParser.ForOfStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterVarModifier(JavaScriptParser.VarModifierContext ctx) { }
+	 public void enterVarModifier(JavaScriptParser.VarModifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitVarModifier(JavaScriptParser.VarModifierContext ctx) { }
+	 public void exitVarModifier(JavaScriptParser.VarModifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterContinueStatement(JavaScriptParser.ContinueStatementContext ctx) { }
+	 public void enterContinueStatement(JavaScriptParser.ContinueStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitContinueStatement(JavaScriptParser.ContinueStatementContext ctx) { }
+	 public void exitContinueStatement(JavaScriptParser.ContinueStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterBreakStatement(JavaScriptParser.BreakStatementContext ctx) { }
+	 public void enterBreakStatement(JavaScriptParser.BreakStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitBreakStatement(JavaScriptParser.BreakStatementContext ctx) { }
+	 public void exitBreakStatement(JavaScriptParser.BreakStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterReturnStatement(JavaScriptParser.ReturnStatementContext ctx) { }
+	 public void enterReturnStatement(JavaScriptParser.ReturnStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitReturnStatement(JavaScriptParser.ReturnStatementContext ctx) { }
+	 public void exitReturnStatement(JavaScriptParser.ReturnStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterYieldStatement(JavaScriptParser.YieldStatementContext ctx) { }
+	 public void enterYieldStatement(JavaScriptParser.YieldStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitYieldStatement(JavaScriptParser.YieldStatementContext ctx) { }
+	 public void exitYieldStatement(JavaScriptParser.YieldStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterWithStatement(JavaScriptParser.WithStatementContext ctx) { }
+	 public void enterWithStatement(JavaScriptParser.WithStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitWithStatement(JavaScriptParser.WithStatementContext ctx) { }
+	 public void exitWithStatement(JavaScriptParser.WithStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSwitchStatement(JavaScriptParser.SwitchStatementContext ctx) { }
+	 public void enterSwitchStatement(JavaScriptParser.SwitchStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitSwitchStatement(JavaScriptParser.SwitchStatementContext ctx) { }
+	 public void exitSwitchStatement(JavaScriptParser.SwitchStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCaseBlock(JavaScriptParser.CaseBlockContext ctx) { }
+	 public void enterCaseBlock(JavaScriptParser.CaseBlockContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCaseBlock(JavaScriptParser.CaseBlockContext ctx) { }
+	 public void exitCaseBlock(JavaScriptParser.CaseBlockContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCaseClauses(JavaScriptParser.CaseClausesContext ctx) { }
+	 public void enterCaseClauses(JavaScriptParser.CaseClausesContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCaseClauses(JavaScriptParser.CaseClausesContext ctx) { }
+	 public void exitCaseClauses(JavaScriptParser.CaseClausesContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCaseClause(JavaScriptParser.CaseClauseContext ctx) { }
+	 public void enterCaseClause(JavaScriptParser.CaseClauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCaseClause(JavaScriptParser.CaseClauseContext ctx) { }
+	 public void exitCaseClause(JavaScriptParser.CaseClauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDefaultClause(JavaScriptParser.DefaultClauseContext ctx) { }
+	 public void enterDefaultClause(JavaScriptParser.DefaultClauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitDefaultClause(JavaScriptParser.DefaultClauseContext ctx) { }
+	 public void exitDefaultClause(JavaScriptParser.DefaultClauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLabelledStatement(JavaScriptParser.LabelledStatementContext ctx) { }
+	 public void enterLabelledStatement(JavaScriptParser.LabelledStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitLabelledStatement(JavaScriptParser.LabelledStatementContext ctx) { }
+	 public void exitLabelledStatement(JavaScriptParser.LabelledStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterThrowStatement(JavaScriptParser.ThrowStatementContext ctx) { }
+	 public void enterThrowStatement(JavaScriptParser.ThrowStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitThrowStatement(JavaScriptParser.ThrowStatementContext ctx) { }
+	 public void exitThrowStatement(JavaScriptParser.ThrowStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTryStatement(JavaScriptParser.TryStatementContext ctx) { }
+	 public void enterTryStatement(JavaScriptParser.TryStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitTryStatement(JavaScriptParser.TryStatementContext ctx) { }
+	 public void exitTryStatement(JavaScriptParser.TryStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCatchProduction(JavaScriptParser.CatchProductionContext ctx) { }
+	 public void enterCatchProduction(JavaScriptParser.CatchProductionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCatchProduction(JavaScriptParser.CatchProductionContext ctx) { }
+	 public void exitCatchProduction(JavaScriptParser.CatchProductionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFinallyProduction(JavaScriptParser.FinallyProductionContext ctx) { }
+	 public void enterFinallyProduction(JavaScriptParser.FinallyProductionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFinallyProduction(JavaScriptParser.FinallyProductionContext ctx) { }
+	 public void exitFinallyProduction(JavaScriptParser.FinallyProductionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDebuggerStatement(JavaScriptParser.DebuggerStatementContext ctx) { }
+	 public void enterDebuggerStatement(JavaScriptParser.DebuggerStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitDebuggerStatement(JavaScriptParser.DebuggerStatementContext ctx) { }
+	 public void exitDebuggerStatement(JavaScriptParser.DebuggerStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFunctionDeclaration(JavaScriptParser.FunctionDeclarationContext ctx) { }
+	 public void enterFunctionDeclaration(JavaScriptParser.FunctionDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFunctionDeclaration(JavaScriptParser.FunctionDeclarationContext ctx) { }
+	 public void exitFunctionDeclaration(JavaScriptParser.FunctionDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterClassDeclaration(JavaScriptParser.ClassDeclarationContext ctx) { }
+	 public void enterClassDeclaration(JavaScriptParser.ClassDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitClassDeclaration(JavaScriptParser.ClassDeclarationContext ctx) { }
+	 public void exitClassDeclaration(JavaScriptParser.ClassDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterClassTail(JavaScriptParser.ClassTailContext ctx) { }
+	 public void enterClassTail(JavaScriptParser.ClassTailContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitClassTail(JavaScriptParser.ClassTailContext ctx) { }
+	 public void exitClassTail(JavaScriptParser.ClassTailContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterClassElement(JavaScriptParser.ClassElementContext ctx) { }
+	 public void enterClassElement(JavaScriptParser.ClassElementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitClassElement(JavaScriptParser.ClassElementContext ctx) { }
+	 public void exitClassElement(JavaScriptParser.ClassElementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMethodDefinition(JavaScriptParser.MethodDefinitionContext ctx) { }
+	 public void enterMethodDefinition(JavaScriptParser.MethodDefinitionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMethodDefinition(JavaScriptParser.MethodDefinitionContext ctx) { }
+	 public void exitMethodDefinition(JavaScriptParser.MethodDefinitionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFormalParameterList(JavaScriptParser.FormalParameterListContext ctx) { }
+	 public void enterFormalParameterList(JavaScriptParser.FormalParameterListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFormalParameterList(JavaScriptParser.FormalParameterListContext ctx) { }
+	 public void exitFormalParameterList(JavaScriptParser.FormalParameterListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFormalParameterArg(JavaScriptParser.FormalParameterArgContext ctx) { }
+	 public void enterFormalParameterArg(JavaScriptParser.FormalParameterArgContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFormalParameterArg(JavaScriptParser.FormalParameterArgContext ctx) { }
+	public void exitFormalParameterArg(JavaScriptParser.FormalParameterArgContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLastFormalParameterArg(JavaScriptParser.LastFormalParameterArgContext ctx) { }
+	 public void enterLastFormalParameterArg(JavaScriptParser.LastFormalParameterArgContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitLastFormalParameterArg(JavaScriptParser.LastFormalParameterArgContext ctx) { }
+	 public void exitLastFormalParameterArg(JavaScriptParser.LastFormalParameterArgContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFunctionBody(JavaScriptParser.FunctionBodyContext ctx) { }
+	 public void enterFunctionBody(JavaScriptParser.FunctionBodyContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFunctionBody(JavaScriptParser.FunctionBodyContext ctx) { }
+	 public void exitFunctionBody(JavaScriptParser.FunctionBodyContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSourceElements(JavaScriptParser.SourceElementsContext ctx) { }
+	 public void enterSourceElements(JavaScriptParser.SourceElementsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitSourceElements(JavaScriptParser.SourceElementsContext ctx) { }
+	 public void exitSourceElements(JavaScriptParser.SourceElementsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArrayLiteral(JavaScriptParser.ArrayLiteralContext ctx) { }
+	 public void enterArrayLiteral(JavaScriptParser.ArrayLiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArrayLiteral(JavaScriptParser.ArrayLiteralContext ctx) { }
+	 public void exitArrayLiteral(JavaScriptParser.ArrayLiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterElementList(JavaScriptParser.ElementListContext ctx) { }
+	 public void enterElementList(JavaScriptParser.ElementListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitElementList(JavaScriptParser.ElementListContext ctx) { }
+	 public void exitElementList(JavaScriptParser.ElementListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArrayElement(JavaScriptParser.ArrayElementContext ctx) { }
+	 public void enterArrayElement(JavaScriptParser.ArrayElementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArrayElement(JavaScriptParser.ArrayElementContext ctx) { }
+	 public void exitArrayElement(JavaScriptParser.ArrayElementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPropertyExpressionAssignment(JavaScriptParser.PropertyExpressionAssignmentContext ctx) { }
+	 public void enterPropertyExpressionAssignment(JavaScriptParser.PropertyExpressionAssignmentContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPropertyExpressionAssignment(JavaScriptParser.PropertyExpressionAssignmentContext ctx) { }
+	 public void exitPropertyExpressionAssignment(JavaScriptParser.PropertyExpressionAssignmentContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterComputedPropertyExpressionAssignment(JavaScriptParser.ComputedPropertyExpressionAssignmentContext ctx) { }
+	 public void enterComputedPropertyExpressionAssignment(JavaScriptParser.ComputedPropertyExpressionAssignmentContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitComputedPropertyExpressionAssignment(JavaScriptParser.ComputedPropertyExpressionAssignmentContext ctx) { }
+	 public void exitComputedPropertyExpressionAssignment(JavaScriptParser.ComputedPropertyExpressionAssignmentContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFunctionProperty(JavaScriptParser.FunctionPropertyContext ctx) { }
+	 public void enterFunctionProperty(JavaScriptParser.FunctionPropertyContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFunctionProperty(JavaScriptParser.FunctionPropertyContext ctx) { }
+	 public void exitFunctionProperty(JavaScriptParser.FunctionPropertyContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPropertyGetter(JavaScriptParser.PropertyGetterContext ctx) { }
+	 public void enterPropertyGetter(JavaScriptParser.PropertyGetterContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPropertyGetter(JavaScriptParser.PropertyGetterContext ctx) { }
+	 public void exitPropertyGetter(JavaScriptParser.PropertyGetterContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPropertySetter(JavaScriptParser.PropertySetterContext ctx) { }
+	 public void enterPropertySetter(JavaScriptParser.PropertySetterContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPropertySetter(JavaScriptParser.PropertySetterContext ctx) { }
+	 public void exitPropertySetter(JavaScriptParser.PropertySetterContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPropertyShorthand(JavaScriptParser.PropertyShorthandContext ctx) { }
+	 public void enterPropertyShorthand(JavaScriptParser.PropertyShorthandContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPropertyShorthand(JavaScriptParser.PropertyShorthandContext ctx) { }
+	 public void exitPropertyShorthand(JavaScriptParser.PropertyShorthandContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPropertyName(JavaScriptParser.PropertyNameContext ctx) { }
+	 public void enterPropertyName(JavaScriptParser.PropertyNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPropertyName(JavaScriptParser.PropertyNameContext ctx) { }
+	 public void exitPropertyName(JavaScriptParser.PropertyNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArguments(JavaScriptParser.ArgumentsContext ctx) { }
+	 public void enterArguments(JavaScriptParser.ArgumentsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArguments(JavaScriptParser.ArgumentsContext ctx) { }
+	 public void exitArguments(JavaScriptParser.ArgumentsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArgument(JavaScriptParser.ArgumentContext ctx) { }
+	 public void enterArgument(JavaScriptParser.ArgumentContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArgument(JavaScriptParser.ArgumentContext ctx) { }
+	 public void exitArgument(JavaScriptParser.ArgumentContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExpressionSequence(JavaScriptParser.ExpressionSequenceContext ctx) { }
+	 public void enterExpressionSequence(JavaScriptParser.ExpressionSequenceContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExpressionSequence(JavaScriptParser.ExpressionSequenceContext ctx) { }
+	 public void exitExpressionSequence(JavaScriptParser.ExpressionSequenceContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTemplateStringExpression(JavaScriptParser.TemplateStringExpressionContext ctx) { }
+	 public void enterTemplateStringExpression(JavaScriptParser.TemplateStringExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitTemplateStringExpression(JavaScriptParser.TemplateStringExpressionContext ctx) { }
+	 public void exitTemplateStringExpression(JavaScriptParser.TemplateStringExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTernaryExpression(JavaScriptParser.TernaryExpressionContext ctx) { }
+	 public void enterTernaryExpression(JavaScriptParser.TernaryExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitTernaryExpression(JavaScriptParser.TernaryExpressionContext ctx) { }
+	 public void exitTernaryExpression(JavaScriptParser.TernaryExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLogicalAndExpression(JavaScriptParser.LogicalAndExpressionContext ctx) { }
+	 public void enterLogicalAndExpression(JavaScriptParser.LogicalAndExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitLogicalAndExpression(JavaScriptParser.LogicalAndExpressionContext ctx) { }
+	 public void exitLogicalAndExpression(JavaScriptParser.LogicalAndExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPowerExpression(JavaScriptParser.PowerExpressionContext ctx) { }
+	 public void enterPowerExpression(JavaScriptParser.PowerExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPowerExpression(JavaScriptParser.PowerExpressionContext ctx) { }
+	 public void exitPowerExpression(JavaScriptParser.PowerExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPreIncrementExpression(JavaScriptParser.PreIncrementExpressionContext ctx) { }
+	 public void enterPreIncrementExpression(JavaScriptParser.PreIncrementExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPreIncrementExpression(JavaScriptParser.PreIncrementExpressionContext ctx) { }
+	 public void exitPreIncrementExpression(JavaScriptParser.PreIncrementExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterObjectLiteralExpression(JavaScriptParser.ObjectLiteralExpressionContext ctx) { }
+	 public void enterObjectLiteralExpression(JavaScriptParser.ObjectLiteralExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitObjectLiteralExpression(JavaScriptParser.ObjectLiteralExpressionContext ctx) { }
+	 public void exitObjectLiteralExpression(JavaScriptParser.ObjectLiteralExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMetaExpression(JavaScriptParser.MetaExpressionContext ctx) { }
+	 public void enterMetaExpression(JavaScriptParser.MetaExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMetaExpression(JavaScriptParser.MetaExpressionContext ctx) { }
+	 public void exitMetaExpression(JavaScriptParser.MetaExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterInExpression(JavaScriptParser.InExpressionContext ctx) { }
+	 public void enterInExpression(JavaScriptParser.InExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitInExpression(JavaScriptParser.InExpressionContext ctx) { }
+	 public void exitInExpression(JavaScriptParser.InExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLogicalOrExpression(JavaScriptParser.LogicalOrExpressionContext ctx) { }
+	 public void enterLogicalOrExpression(JavaScriptParser.LogicalOrExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitLogicalOrExpression(JavaScriptParser.LogicalOrExpressionContext ctx) { }
+	 public void exitLogicalOrExpression(JavaScriptParser.LogicalOrExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterNotExpression(JavaScriptParser.NotExpressionContext ctx) { }
+	 public void enterNotExpression(JavaScriptParser.NotExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitNotExpression(JavaScriptParser.NotExpressionContext ctx) { }
+	 public void exitNotExpression(JavaScriptParser.NotExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPreDecreaseExpression(JavaScriptParser.PreDecreaseExpressionContext ctx) { }
+	 public void enterPreDecreaseExpression(JavaScriptParser.PreDecreaseExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPreDecreaseExpression(JavaScriptParser.PreDecreaseExpressionContext ctx) { }
+	 public void exitPreDecreaseExpression(JavaScriptParser.PreDecreaseExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArgumentsExpression(JavaScriptParser.ArgumentsExpressionContext ctx) { }
+	 public void enterArgumentsExpression(JavaScriptParser.ArgumentsExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArgumentsExpression(JavaScriptParser.ArgumentsExpressionContext ctx) { }
+	 public void exitArgumentsExpression(JavaScriptParser.ArgumentsExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAwaitExpression(JavaScriptParser.AwaitExpressionContext ctx) { }
+	 public void enterAwaitExpression(JavaScriptParser.AwaitExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAwaitExpression(JavaScriptParser.AwaitExpressionContext ctx) { }
+	 public void exitAwaitExpression(JavaScriptParser.AwaitExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterThisExpression(JavaScriptParser.ThisExpressionContext ctx) { }
+	 public void enterThisExpression(JavaScriptParser.ThisExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitThisExpression(JavaScriptParser.ThisExpressionContext ctx) { }
+	 public void exitThisExpression(JavaScriptParser.ThisExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFunctionExpression(JavaScriptParser.FunctionExpressionContext ctx) { }
+	 public void enterFunctionExpression(JavaScriptParser.FunctionExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFunctionExpression(JavaScriptParser.FunctionExpressionContext ctx) { }
+	 public void exitFunctionExpression(JavaScriptParser.FunctionExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterUnaryMinusExpression(JavaScriptParser.UnaryMinusExpressionContext ctx) { }
+	 public void enterUnaryMinusExpression(JavaScriptParser.UnaryMinusExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitUnaryMinusExpression(JavaScriptParser.UnaryMinusExpressionContext ctx) { }
+	 public void exitUnaryMinusExpression(JavaScriptParser.UnaryMinusExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAssignmentExpression(JavaScriptParser.AssignmentExpressionContext ctx) { }
+	 public void enterAssignmentExpression(JavaScriptParser.AssignmentExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAssignmentExpression(JavaScriptParser.AssignmentExpressionContext ctx) { }
+	 public void exitAssignmentExpression(JavaScriptParser.AssignmentExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPostDecreaseExpression(JavaScriptParser.PostDecreaseExpressionContext ctx) { }
+	 public void enterPostDecreaseExpression(JavaScriptParser.PostDecreaseExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPostDecreaseExpression(JavaScriptParser.PostDecreaseExpressionContext ctx) { }
+	 public void exitPostDecreaseExpression(JavaScriptParser.PostDecreaseExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTypeofExpression(JavaScriptParser.TypeofExpressionContext ctx) { }
+	 public void enterTypeofExpression(JavaScriptParser.TypeofExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitTypeofExpression(JavaScriptParser.TypeofExpressionContext ctx) { }
+	 public void exitTypeofExpression(JavaScriptParser.TypeofExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterInstanceofExpression(JavaScriptParser.InstanceofExpressionContext ctx) { }
+	 public void enterInstanceofExpression(JavaScriptParser.InstanceofExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitInstanceofExpression(JavaScriptParser.InstanceofExpressionContext ctx) { }
+	 public void exitInstanceofExpression(JavaScriptParser.InstanceofExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterUnaryPlusExpression(JavaScriptParser.UnaryPlusExpressionContext ctx) { }
+	 public void enterUnaryPlusExpression(JavaScriptParser.UnaryPlusExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitUnaryPlusExpression(JavaScriptParser.UnaryPlusExpressionContext ctx) { }
+	 public void exitUnaryPlusExpression(JavaScriptParser.UnaryPlusExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDeleteExpression(JavaScriptParser.DeleteExpressionContext ctx) { }
+	 public void enterDeleteExpression(JavaScriptParser.DeleteExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitDeleteExpression(JavaScriptParser.DeleteExpressionContext ctx) { }
+	 public void exitDeleteExpression(JavaScriptParser.DeleteExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterImportExpression(JavaScriptParser.ImportExpressionContext ctx) { }
+	 public void enterImportExpression(JavaScriptParser.ImportExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitImportExpression(JavaScriptParser.ImportExpressionContext ctx) { }
+	 public void exitImportExpression(JavaScriptParser.ImportExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterEqualityExpression(JavaScriptParser.EqualityExpressionContext ctx) { }
+	 public void enterEqualityExpression(JavaScriptParser.EqualityExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitEqualityExpression(JavaScriptParser.EqualityExpressionContext ctx) { }
+	 public void exitEqualityExpression(JavaScriptParser.EqualityExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterBitXOrExpression(JavaScriptParser.BitXOrExpressionContext ctx) { }
+	 public void enterBitXOrExpression(JavaScriptParser.BitXOrExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitBitXOrExpression(JavaScriptParser.BitXOrExpressionContext ctx) { }
+	 public void exitBitXOrExpression(JavaScriptParser.BitXOrExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSuperExpression(JavaScriptParser.SuperExpressionContext ctx) { }
+	 public void enterSuperExpression(JavaScriptParser.SuperExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitSuperExpression(JavaScriptParser.SuperExpressionContext ctx) { }
+	 public void exitSuperExpression(JavaScriptParser.SuperExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMultiplicativeExpression(JavaScriptParser.MultiplicativeExpressionContext ctx) { }
+	 public void enterMultiplicativeExpression(JavaScriptParser.MultiplicativeExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMultiplicativeExpression(JavaScriptParser.MultiplicativeExpressionContext ctx) { }
+	 public void exitMultiplicativeExpression(JavaScriptParser.MultiplicativeExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterBitShiftExpression(JavaScriptParser.BitShiftExpressionContext ctx) { }
+	 public void enterBitShiftExpression(JavaScriptParser.BitShiftExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitBitShiftExpression(JavaScriptParser.BitShiftExpressionContext ctx) { }
+	 public void exitBitShiftExpression(JavaScriptParser.BitShiftExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterParenthesizedExpression(JavaScriptParser.ParenthesizedExpressionContext ctx) { }
+	 public void enterParenthesizedExpression(JavaScriptParser.ParenthesizedExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitParenthesizedExpression(JavaScriptParser.ParenthesizedExpressionContext ctx) { }
+	 public void exitParenthesizedExpression(JavaScriptParser.ParenthesizedExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAdditiveExpression(JavaScriptParser.AdditiveExpressionContext ctx) { }
+	 public void enterAdditiveExpression(JavaScriptParser.AdditiveExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAdditiveExpression(JavaScriptParser.AdditiveExpressionContext ctx) { }
+	 public void exitAdditiveExpression(JavaScriptParser.AdditiveExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterRelationalExpression(JavaScriptParser.RelationalExpressionContext ctx) { }
+	 public void enterRelationalExpression(JavaScriptParser.RelationalExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitRelationalExpression(JavaScriptParser.RelationalExpressionContext ctx) { }
+	 public void exitRelationalExpression(JavaScriptParser.RelationalExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPostIncrementExpression(JavaScriptParser.PostIncrementExpressionContext ctx) { }
+	 public void enterPostIncrementExpression(JavaScriptParser.PostIncrementExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPostIncrementExpression(JavaScriptParser.PostIncrementExpressionContext ctx) { }
+	 public void exitPostIncrementExpression(JavaScriptParser.PostIncrementExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterYieldExpression(JavaScriptParser.YieldExpressionContext ctx) { }
+	 public void enterYieldExpression(JavaScriptParser.YieldExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitYieldExpression(JavaScriptParser.YieldExpressionContext ctx) { }
+	 public void exitYieldExpression(JavaScriptParser.YieldExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterBitNotExpression(JavaScriptParser.BitNotExpressionContext ctx) { }
+	 public void enterBitNotExpression(JavaScriptParser.BitNotExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitBitNotExpression(JavaScriptParser.BitNotExpressionContext ctx) { }
+	 public void exitBitNotExpression(JavaScriptParser.BitNotExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterNewExpression(JavaScriptParser.NewExpressionContext ctx) { }
+	 public void enterNewExpression(JavaScriptParser.NewExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitNewExpression(JavaScriptParser.NewExpressionContext ctx) { }
+	 public void exitNewExpression(JavaScriptParser.NewExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLiteralExpression(JavaScriptParser.LiteralExpressionContext ctx) { }
+	 public void enterLiteralExpression(JavaScriptParser.LiteralExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitLiteralExpression(JavaScriptParser.LiteralExpressionContext ctx) { }
+	 public void exitLiteralExpression(JavaScriptParser.LiteralExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArrayLiteralExpression(JavaScriptParser.ArrayLiteralExpressionContext ctx) { }
+	 public void enterArrayLiteralExpression(JavaScriptParser.ArrayLiteralExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArrayLiteralExpression(JavaScriptParser.ArrayLiteralExpressionContext ctx) { }
+	 public void exitArrayLiteralExpression(JavaScriptParser.ArrayLiteralExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMemberDotExpression(JavaScriptParser.MemberDotExpressionContext ctx) { }
+	 public void enterMemberDotExpression(JavaScriptParser.MemberDotExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMemberDotExpression(JavaScriptParser.MemberDotExpressionContext ctx) { }
+	 public void exitMemberDotExpression(JavaScriptParser.MemberDotExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterClassExpression(JavaScriptParser.ClassExpressionContext ctx) { }
+	 public void enterClassExpression(JavaScriptParser.ClassExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitClassExpression(JavaScriptParser.ClassExpressionContext ctx) { }
+	 public void exitClassExpression(JavaScriptParser.ClassExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMemberIndexExpression(JavaScriptParser.MemberIndexExpressionContext ctx) { }
+	 public void enterMemberIndexExpression(JavaScriptParser.MemberIndexExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMemberIndexExpression(JavaScriptParser.MemberIndexExpressionContext ctx) { }
+	 public void exitMemberIndexExpression(JavaScriptParser.MemberIndexExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterIdentifierExpression(JavaScriptParser.IdentifierExpressionContext ctx) { }
+	 public void enterIdentifierExpression(JavaScriptParser.IdentifierExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitIdentifierExpression(JavaScriptParser.IdentifierExpressionContext ctx) { }
+	 public void exitIdentifierExpression(JavaScriptParser.IdentifierExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterBitAndExpression(JavaScriptParser.BitAndExpressionContext ctx) { }
+	 public void enterBitAndExpression(JavaScriptParser.BitAndExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitBitAndExpression(JavaScriptParser.BitAndExpressionContext ctx) { }
+	 public void exitBitAndExpression(JavaScriptParser.BitAndExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterBitOrExpression(JavaScriptParser.BitOrExpressionContext ctx) { }
+	 public void enterBitOrExpression(JavaScriptParser.BitOrExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitBitOrExpression(JavaScriptParser.BitOrExpressionContext ctx) { }
+	 public void exitBitOrExpression(JavaScriptParser.BitOrExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAssignmentOperatorExpression(JavaScriptParser.AssignmentOperatorExpressionContext ctx) { }
+	 public void enterAssignmentOperatorExpression(JavaScriptParser.AssignmentOperatorExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAssignmentOperatorExpression(JavaScriptParser.AssignmentOperatorExpressionContext ctx) { }
+	 public void exitAssignmentOperatorExpression(JavaScriptParser.AssignmentOperatorExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterVoidExpression(JavaScriptParser.VoidExpressionContext ctx) { }
+	 public void enterVoidExpression(JavaScriptParser.VoidExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitVoidExpression(JavaScriptParser.VoidExpressionContext ctx) { }
+	 public void exitVoidExpression(JavaScriptParser.VoidExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCoalesceExpression(JavaScriptParser.CoalesceExpressionContext ctx) { }
+	 public void enterCoalesceExpression(JavaScriptParser.CoalesceExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCoalesceExpression(JavaScriptParser.CoalesceExpressionContext ctx) { }
+	 public void exitCoalesceExpression(JavaScriptParser.CoalesceExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAssignable(JavaScriptParser.AssignableContext ctx) { }
+	 public void enterAssignable(JavaScriptParser.AssignableContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAssignable(JavaScriptParser.AssignableContext ctx) { }
+	 public void exitAssignable(JavaScriptParser.AssignableContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterObjectLiteral(JavaScriptParser.ObjectLiteralContext ctx) { }
+	 public void enterObjectLiteral(JavaScriptParser.ObjectLiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitObjectLiteral(JavaScriptParser.ObjectLiteralContext ctx) { }
+	 public void exitObjectLiteral(JavaScriptParser.ObjectLiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFunctionDecl(JavaScriptParser.FunctionDeclContext ctx) { }
+	 public void enterFunctionDecl(JavaScriptParser.FunctionDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFunctionDecl(JavaScriptParser.FunctionDeclContext ctx) { }
+	 public void exitFunctionDecl(JavaScriptParser.FunctionDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAnoymousFunctionDecl(JavaScriptParser.AnoymousFunctionDeclContext ctx) { }
+	 public void enterAnoymousFunctionDecl(JavaScriptParser.AnoymousFunctionDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAnoymousFunctionDecl(JavaScriptParser.AnoymousFunctionDeclContext ctx) { }
+	 public void exitAnoymousFunctionDecl(JavaScriptParser.AnoymousFunctionDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArrowFunction(JavaScriptParser.ArrowFunctionContext ctx) { }
+	 public void enterArrowFunction(JavaScriptParser.ArrowFunctionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArrowFunction(JavaScriptParser.ArrowFunctionContext ctx) { }
+	 public void exitArrowFunction(JavaScriptParser.ArrowFunctionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArrowFunctionParameters(JavaScriptParser.ArrowFunctionParametersContext ctx) { }
+	 public void enterArrowFunctionParameters(JavaScriptParser.ArrowFunctionParametersContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArrowFunctionParameters(JavaScriptParser.ArrowFunctionParametersContext ctx) { }
+	 public void exitArrowFunctionParameters(JavaScriptParser.ArrowFunctionParametersContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArrowFunctionBody(JavaScriptParser.ArrowFunctionBodyContext ctx) { }
+	 public void enterArrowFunctionBody(JavaScriptParser.ArrowFunctionBodyContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArrowFunctionBody(JavaScriptParser.ArrowFunctionBodyContext ctx) { }
+	 public void exitArrowFunctionBody(JavaScriptParser.ArrowFunctionBodyContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAssignmentOperator(JavaScriptParser.AssignmentOperatorContext ctx) { }
+	 public void enterAssignmentOperator(JavaScriptParser.AssignmentOperatorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAssignmentOperator(JavaScriptParser.AssignmentOperatorContext ctx) { }
+	 public void exitAssignmentOperator(JavaScriptParser.AssignmentOperatorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLiteral(JavaScriptParser.LiteralContext ctx) { }
+	 public void enterLiteral(JavaScriptParser.LiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitLiteral(JavaScriptParser.LiteralContext ctx) { }
+	 public void exitLiteral(JavaScriptParser.LiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterNumericLiteral(JavaScriptParser.NumericLiteralContext ctx) { }
+	 public void enterNumericLiteral(JavaScriptParser.NumericLiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitNumericLiteral(JavaScriptParser.NumericLiteralContext ctx) { }
+	 public void exitNumericLiteral(JavaScriptParser.NumericLiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterBigintLiteral(JavaScriptParser.BigintLiteralContext ctx) { }
+	 public void enterBigintLiteral(JavaScriptParser.BigintLiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitBigintLiteral(JavaScriptParser.BigintLiteralContext ctx) { }
+	 public void exitBigintLiteral(JavaScriptParser.BigintLiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterGetter(JavaScriptParser.GetterContext ctx) { }
+	 public void enterGetter(JavaScriptParser.GetterContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitGetter(JavaScriptParser.GetterContext ctx) { }
+	 public void exitGetter(JavaScriptParser.GetterContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSetter(JavaScriptParser.SetterContext ctx) { }
+	 public void enterSetter(JavaScriptParser.SetterContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitSetter(JavaScriptParser.SetterContext ctx) { }
+	 public void exitSetter(JavaScriptParser.SetterContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterIdentifierName(JavaScriptParser.IdentifierNameContext ctx) { }
+	 public void enterIdentifierName(JavaScriptParser.IdentifierNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitIdentifierName(JavaScriptParser.IdentifierNameContext ctx) { }
+	 public void exitIdentifierName(JavaScriptParser.IdentifierNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterIdentifier(JavaScriptParser.IdentifierContext ctx) { }
+	 public void enterIdentifier(JavaScriptParser.IdentifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitIdentifier(JavaScriptParser.IdentifierContext ctx) { }
+	 public void exitIdentifier(JavaScriptParser.IdentifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterReservedWord(JavaScriptParser.ReservedWordContext ctx) { }
+	 public void enterReservedWord(JavaScriptParser.ReservedWordContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitReservedWord(JavaScriptParser.ReservedWordContext ctx) { }
+	 public void exitReservedWord(JavaScriptParser.ReservedWordContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterKeyword(JavaScriptParser.KeywordContext ctx) { }
+	 public void enterKeyword(JavaScriptParser.KeywordContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitKeyword(JavaScriptParser.KeywordContext ctx) { }
+	 public void exitKeyword(JavaScriptParser.KeywordContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLet_(JavaScriptParser.Let_Context ctx) { }
+	 public void enterLet_(JavaScriptParser.Let_Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitLet_(JavaScriptParser.Let_Context ctx) { }
+	 public void exitLet_(JavaScriptParser.Let_Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterEos(JavaScriptParser.EosContext ctx) { }
+	 public void enterEos(JavaScriptParser.EosContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitEos(JavaScriptParser.EosContext ctx) { }
+	 public void exitEos(JavaScriptParser.EosContext ctx) { }
 
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterEveryRule(ParserRuleContext ctx) { }
+	 public void enterEveryRule(ParserRuleContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitEveryRule(ParserRuleContext ctx) { }
+	 public void exitEveryRule(ParserRuleContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void visitTerminal(TerminalNode node) { }
+	 public void visitTerminal(TerminalNode node) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void visitErrorNode(ErrorNode node) { }
+	 public void visitErrorNode(ErrorNode node) { }
 }

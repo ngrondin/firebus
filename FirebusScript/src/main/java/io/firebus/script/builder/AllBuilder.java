@@ -18,9 +18,9 @@ import io.firebus.script.units.Reference;
 import io.firebus.script.units.StringLiteral;
 import io.firebus.script.parser.JavaScriptParser.*;
 
-public class UnitBuilder {
+public class AllBuilder {
 
-	public UnitBuilder() {
+	public AllBuilder() {
 		
 	}
 	

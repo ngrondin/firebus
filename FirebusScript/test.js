@@ -1,4 +1,2 @@
-var a = {k: "allo toi"};
-a.k = "non non";
+var a = "allo";
 print(a);
-print(a.k);

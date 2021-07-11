@@ -1,6 +1,8 @@
 package io.firebus.script;
 
 import io.firebus.script.scopes.Scope;
+import io.firebus.script.units.ExecutionUnit;
+import io.firebus.script.values.impl.Print;
 
 public class Engine {
 	
@@ -11,13 +13,15 @@ public class Engine {
 	public Engine() {
 		coreScope = new Scope();
 		compiler = new Compiler();
+		Print p = new Print();
+		coreScope.setValue("print", p);
+
 	}
 	
-	public void compile(String name, String str) {
-		compiler.compile(name, str);
+	public void compile(String name, String src) {
+		ExecutionUnit root = compiler.compile(src);
+		root.eval(coreScope);
 	}
 	
-	public void execute(Scope scope) {
-		executer.execute(scope);
-	}
+
 }

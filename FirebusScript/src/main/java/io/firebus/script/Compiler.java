@@ -1,17 +1,22 @@
 package io.firebus.script;
 
-import io.firebus.script.tokens.Cleaner;
-import io.firebus.script.tokens.Grouper;
-import io.firebus.script.tokens.TokenList;
-import io.firebus.script.tokens.Tokenizer;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+
+import io.firebus.script.builder.AllBuilder;
+import io.firebus.script.parser.JavaScriptLexer;
+import io.firebus.script.parser.JavaScriptParser;
+import io.firebus.script.units.ExecutionUnit;
 
 public class Compiler {
 
-	public void compile(String name, String str) {
-		TokenList tokens = Tokenizer.tokenize("test", str);
-		Cleaner.clean(tokens);
-		Grouper.group(tokens, "{" ,"}");
-		Grouper.group(tokens, "(" ,")");
-		System.out.println(tokens);
+	public ExecutionUnit compile(String source) {
+		JavaScriptLexer lexer = new JavaScriptLexer(CharStreams.fromString(source));
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		JavaScriptParser parser = new JavaScriptParser(tokens);
+		JavaScriptParser.ProgramContext tree = parser.program();
+		AllBuilder builder = new AllBuilder();
+		ExecutionUnit root = builder.buildProgram(tree);
+		return root;
 	}
 }
