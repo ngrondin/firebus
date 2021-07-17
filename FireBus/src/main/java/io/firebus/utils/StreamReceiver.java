@@ -94,13 +94,12 @@ public class StreamReceiver implements StreamHandler {
 					fail("Missing sequence number");
 				}
 			} else if(ctl.equals("complete")) {
+				Payload resp = new Payload();
+				resp.metadata.put("ctl", "complete");
+				streamEndpoint.send(resp);
 				complete = true;
-				streamEndpoint.setHandler(null);
-				if(compListener != null)
-					compListener.completed();
-				else if(chunkListener != null)
-					chunkListener.completed();
-				done();
+				complete();
+
 			}
 		} catch(Exception e) {
 			fail(e.getMessage());
@@ -109,20 +108,29 @@ public class StreamReceiver implements StreamHandler {
 
 	public void streamClosed(StreamEndpoint streamEndpoint) {
 		if(complete == false)
-			fail("Connection unexpectedly closed");		
+			fail("Receiver stream connection closed before completion");		
 	}
 	
 	protected void fail(String e) {
-		error = e;
+		error = e + " (life: " + (System.currentTimeMillis() - start) + "ms received: " + bytesReceived + "b chunks: " + chunkSequence + ")";
 		streamEndpoint.setHandler(null);
 		if(compListener != null)
 			compListener.error(error);
 		else if(chunkListener != null)
 			chunkListener.error(error);
-		done();
+		close();
 	}
 	
-	private void done() {
+	protected void complete() {
+		streamEndpoint.setHandler(null);
+		if(compListener != null)
+			compListener.completed();
+		else if(chunkListener != null)
+			chunkListener.completed();
+		close();
+	}
+	
+	private void close() {
 		try {
 			if(compListener == null && chunkListener == null && !waiting) {
 				outputStream.close();

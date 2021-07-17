@@ -169,7 +169,7 @@ public class NodeCore
 	
 	protected void enqueue(Message msg)
 	{
-		messageThreads.enqueue(new RouteMessage(this, msg));
+		messageThreads.enqueue(new RouteMessage(this, msg), "rte", -1);
 	}
 	
 	protected void route(Message msg)

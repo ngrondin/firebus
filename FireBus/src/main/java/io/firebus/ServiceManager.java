@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import io.firebus.interfaces.ServiceProvider;
-import io.firebus.threads.FirebusThread;
 
 public class ServiceManager extends ExecutionManager {
 	private Logger logger = Logger.getLogger("io.firebus");
@@ -68,7 +67,7 @@ public class ServiceManager extends ExecutionManager {
 			{
 				nodeCore.getExecutionThreads().enqueue(new Runnable() {
 					public void run() {
-						((FirebusThread)Thread.currentThread()).startFunctionExecution(fe.getName(), executionId);
+						//((FirebusThread)Thread.currentThread()).startFunctionExecution(fe.getName(), executionId);
 						logger.fine("Executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
 						sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_PROGRESS, msg.getSubject(), new Payload());
 						try
@@ -84,11 +83,10 @@ public class ServiceManager extends ExecutionManager {
 								sendError(e, msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_SERVICEERROR,  msg.getSubject());
 						}
 
-						
-						((FirebusThread)Thread.currentThread()).finishFunctionExecution();
+						//((FirebusThread)Thread.currentThread()).finishFunctionExecution();
 						fe.releaseExecutionId(executionId);
 					}
-				});
+				}, fe.getName(), executionId);
 			} else {
 				logger.info("Cannot execute function " + name + " as maximum number of executions reached for this function (" + fe.getExecutionCount() + ")");
 				sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "Maximum concurrent functions running");

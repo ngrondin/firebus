@@ -67,7 +67,7 @@ public class TestNode
 										}
 										public void error(FunctionErrorException e) {
 											System.out.println("Error: " + e.getMessage());
-										}}, 10000);
+										}}, "testrequestor", 10000);
 								}
 								else if(parts[0].equals("reqs"))
 								{
