@@ -16,6 +16,7 @@ public class StreamRequest extends Thread
 	protected int subTimeout;
 	protected long expiry;
 	protected StreamRequestor requestor;
+	protected String requestorFunctionName;
 	protected String errorMessage;
 	protected FunctionInformation functionInformation;
 
@@ -29,9 +30,10 @@ public class StreamRequest extends Thread
 		expiry = System.currentTimeMillis() + subTimeout;
 	}
 	
-	public void initiate(StreamRequestor r)
+	public void initiate(StreamRequestor r, String rfn)
 	{
 		requestor = r;
+		requestorFunctionName = rfn;
 		start();
 	}
 	
@@ -95,7 +97,7 @@ public class StreamRequest extends Thread
 							streamEndpoint = new StreamEndpoint(nodeCore, streamName, correlation, remoteCorrelation, 0, functionInformation.getNodeId());
 							streamEndpoint.setAcceptPayload(acceptPayload);
 							streamEndpoint.setRequestPayload(requestPayload);
-							nodeCore.getCorrelationManager().setListenerOnEntry(correlation, streamEndpoint, idleTimeout);
+							nodeCore.getCorrelationManager().setListenerOnEntry(correlation, streamEndpoint, requestorFunctionName, idleTimeout);
 							functionInformation.wasSuccesful();
 							break;
 						}

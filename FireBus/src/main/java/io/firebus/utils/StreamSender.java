@@ -64,15 +64,11 @@ public class StreamSender implements StreamHandler {
 		if(chunkLength > -1) {
 			sendChunk();
 		} else {
+			completed = true;
 			Payload chunk = new Payload(new byte[0]);
 			chunk.metadata.put("ctl", "complete");
 			streamEndpoint.send(chunk);
 			//System.out.println("Sender sent complete");
-			completed = true;
-			streamEndpoint.setHandler(null);
-			if(listener != null) 
-				listener.completed();
-			done();
 		}
 	}
 	
@@ -91,6 +87,8 @@ public class StreamSender implements StreamHandler {
 			if(ctl.equals("next")) {
 				bytesSent += chunkLength;
 				sendNextChunk();
+			} else if(ctl.equals("complete")) {
+				complete();
 			} else if(ctl.equals("resend")) {
 				sendChunk();
 			} else if(ctl.equals("fail")) {
@@ -102,19 +100,29 @@ public class StreamSender implements StreamHandler {
 	}
 	
 	public void streamClosed(StreamEndpoint streamEndpoint) {
-		if(completed == false)
+		if(completed == false) {
 			fail("Connection closed unexpectedly");
+		} else {
+			complete();
+		}
 	}
 	
 	protected void fail(String e) {
-		error = e;
+		error = e + " (life: " + (System.currentTimeMillis() - start) + "ms sent: " + bytesSent + "b chunks: " + chunkSequence + ")";
 		streamEndpoint.setHandler(null);
 		if(listener != null) 
 			listener.error(error);	
-		done();
+		close();
 	}
 	
-	private void done() {
+	protected void complete() {
+		streamEndpoint.setHandler(null);
+		if(listener != null) 
+			listener.completed();
+		close();
+	}
+	
+	private void close() {
 		try {
 			if(listener == null && !waiting) {
 				inputStream.close();

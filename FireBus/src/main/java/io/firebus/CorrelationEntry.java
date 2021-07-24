@@ -8,6 +8,7 @@ public class CorrelationEntry {
 	protected MessageQueue inboundMessages;
 	protected NodeCore nodeCore;
 	protected CorrelationListener correlationListener;
+	protected String listenerFunctionName;
 	protected long timeout;
 	protected long expiry;
 	
@@ -20,11 +21,12 @@ public class CorrelationEntry {
 		inboundMessages = new MessageQueue(100);
 	}
 	
-	public void setListener(CorrelationListener cl, long to)
+	public void setListener(CorrelationListener cl, String fn, long to)
 	{
 		timeout = to;
 		expiry = System.currentTimeMillis() + timeout;
 		correlationListener = cl;
+		listenerFunctionName = fn;
 		drainInboundQueue();
 	}
 	
@@ -62,7 +64,7 @@ public class CorrelationEntry {
 					public void run() {
 						correlationListener.correlatedResponseReceived(outboundMessage, inboundMessage);
 					}
-				});
+				}, listenerFunctionName, -1);
 			}
 		}
 	}

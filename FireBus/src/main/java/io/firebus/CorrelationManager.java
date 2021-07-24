@@ -51,7 +51,7 @@ public class CorrelationManager extends Thread
 		return entries.keySet().toArray(new Integer[0]);
 	}
 	
-	public Message setListenerOnEntry(int correlationId, CorrelationListener cl, long timeout)
+	public Message setListenerOnEntry(int correlationId, CorrelationListener cl, String fn, long timeout)
 	{
 		CorrelationEntry entry = getEntry(correlationId);
 		Message message = null;
@@ -59,7 +59,7 @@ public class CorrelationManager extends Thread
 		{
 			synchronized(entry)
 			{
-				entry.setListener(cl, timeout);
+				entry.setListener(cl, fn, timeout);
 			}
 		}
 		else

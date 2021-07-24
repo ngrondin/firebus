@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import io.firebus.interfaces.StreamProvider;
-import io.firebus.threads.FirebusThread;
 
 public class StreamManager extends ExecutionManager {
 	private Logger logger = Logger.getLogger("io.firebus");
@@ -68,7 +67,7 @@ public class StreamManager extends ExecutionManager {
 				nodeCore.getExecutionThreads().enqueue(new Runnable() {
 					public void run() {
 						logger.fine("Executing Stream Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
-						((FirebusThread)Thread.currentThread()).startFunctionExecution(fe.getName(), executionId);
+						//((FirebusThread)Thread.currentThread()).startFunctionExecution(fe.getName(), executionId);
 						StreamProvider streamProvider = (StreamProvider)fe.function;
 						long idleTimeout = streamProvider.getStreamIdleTimeout();
 						int localCorrelationId = nodeCore.getCorrelationManager().createEntry(idleTimeout);
@@ -83,7 +82,7 @@ public class StreamManager extends ExecutionManager {
 								acceptPayload = new Payload();
 							acceptPayload.metadata.put("correlationid", String.valueOf(localCorrelationId));
 							acceptPayload.metadata.put("timeout", String.valueOf(idleTimeout));
-							nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, idleTimeout);
+							nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, fe.getName(), idleTimeout);
 							sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), acceptPayload);
 						}
 						catch(Exception e)
@@ -92,10 +91,10 @@ public class StreamManager extends ExecutionManager {
 						}
 
 						
-						((FirebusThread)Thread.currentThread()).finishFunctionExecution();
+						//((FirebusThread)Thread.currentThread()).finishFunctionExecution();
 						fe.releaseExecutionId(executionId);
 					}
-				});
+				}, fe.getName(), executionId);
 			} else {
 				logger.info("Cannot execute function " + name + " as maximum number of executions reached for this function (" + fe.getExecutionCount() + ")");
 				sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "Maximum concurrent functions running");

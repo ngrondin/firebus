@@ -14,6 +14,7 @@ public class ServiceRequestAsync implements CorrelationListener {
 	protected String serviceName;
 	protected Payload requestPayload;
 	protected ServiceRequestor requestor;
+	protected String requestorFunctionName;
 	protected int subTimeout;
 	protected int requestTimeout;
 	protected long expiry;
@@ -21,12 +22,13 @@ public class ServiceRequestAsync implements CorrelationListener {
 	protected FunctionInformation functionInformation;
 	
 	
-	public ServiceRequestAsync(NodeCore nc, String sn, Payload p, ServiceRequestor r, int t)
+	public ServiceRequestAsync(NodeCore nc, String sn, Payload p, ServiceRequestor r, String rfn, int t)
 	{
 		nodeCore = nc;
 		serviceName = sn;
 		requestPayload = p;
 		requestor = r;
+		requestorFunctionName = rfn;
 		requestTimeout = t;
 		subTimeout = 500;
 		errorMessage = null;
@@ -59,7 +61,7 @@ public class ServiceRequestAsync implements CorrelationListener {
 					{
 						requestInProgress = true;
 						functionInformation.returnedProgress();
-						nodeCore.getCorrelationManager().setListenerOnEntry(correlation, this, requestTimeout);
+						nodeCore.getCorrelationManager().setListenerOnEntry(correlation, this, requestorFunctionName, requestTimeout);
 					}
 					else //Will always only be Function Unavailable 
 					{

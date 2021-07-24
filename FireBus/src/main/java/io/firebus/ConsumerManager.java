@@ -61,7 +61,7 @@ public class ConsumerManager extends ExecutionManager {
 						logger.finer("Executing Consumer"); //This is not checking the function's capacity... it probably should
 						((Consumer)fe.function).consume(inPayload);
 					}
-				});
+				}, fe.getName(), -1);
 			}
 		}
 	}

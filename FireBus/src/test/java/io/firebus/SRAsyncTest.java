@@ -83,7 +83,7 @@ public class SRAsyncTest {
 					System.out.println("Async timeout");
 				}
 				
-			}, 10000);
+			}, "testrequestor", 10000);
 			Thread.sleep(2000);
 			firebus.close();			
 			

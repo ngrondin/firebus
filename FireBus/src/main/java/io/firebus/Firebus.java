@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
-import io.firebus.information.FunctionInformation;
 import io.firebus.information.NodeInformation;
 import io.firebus.information.Statistics;
 import io.firebus.interfaces.Consumer;
@@ -142,9 +141,9 @@ public class Firebus
 		return request.execute();
 	}
 	
-	public void requestService(String serviceName, Payload payload, ServiceRequestor requestor, int timeout) throws FunctionErrorException, FunctionTimeoutException
+	public void requestService(String serviceName, Payload payload, ServiceRequestor requestor, String requestorFunctionName, int timeout) throws FunctionErrorException, FunctionTimeoutException
 	{
-		ServiceRequestAsync request = new ServiceRequestAsync(nodeCore, serviceName, payload, requestor, timeout);
+		ServiceRequestAsync request = new ServiceRequestAsync(nodeCore, serviceName, payload, requestor, requestorFunctionName, timeout);
 		request.execute();
 	}
 	

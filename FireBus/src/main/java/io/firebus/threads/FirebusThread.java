@@ -38,8 +38,10 @@ public class FirebusThread extends Thread
 				FirebusRunnable fbRunnable = threadManager.getNext();
 				if(fbRunnable != null)
 				{
+					startFunctionExecution(fbRunnable.functionName, fbRunnable.functionExecutionId);
 					expiry = fbRunnable.expiry;
 					fbRunnable.runnable.run();
+					finishFunctionExecution();
 				}
 				else
 				{
@@ -58,6 +60,7 @@ public class FirebusThread extends Thread
 			} 
 			catch (Exception e)
 			{
+				finishFunctionExecution();
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
 				e.printStackTrace(pw);
