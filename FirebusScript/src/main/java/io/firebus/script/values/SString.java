@@ -1,6 +1,5 @@
 package io.firebus.script.values;
 
-import java.util.List;
 import java.util.Map;
 
 public class SString extends PredefinedSObject {
@@ -11,9 +10,14 @@ public class SString extends PredefinedSObject {
 	}
 
 	protected Map<String, SValue> defineMembers() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+	public String getString() {
+		return str;
+	}
 
+	public String toString() {
+		return str;
+	}
 }

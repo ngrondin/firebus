@@ -16,6 +16,7 @@ import io.firebus.script.units.Expression;
 import io.firebus.script.units.Literal;
 import io.firebus.script.units.Reference;
 import io.firebus.script.units.StringLiteral;
+import io.firebus.script.units.literals.NumericLiteral;
 import io.firebus.script.parser.JavaScriptParser.*;
 
 public class AllBuilder {
@@ -166,6 +167,21 @@ public class AllBuilder {
 	}
 	
 	public Literal buildLiteral(ParseTree ctx) {
-		return new StringLiteral(ctx.getText());
+		Literal ret = null;
+		ParseTree child = ctx.getChild(0);
+		if(child instanceof NumericLiteralContext) {
+			NumericLiteralContext nlc = (NumericLiteralContext)child;
+
+			TerminalNode tn = (TerminalNode)nlc.getChild(0);
+			double d = Double.parseDouble(tn.getText());
+			ret = new NumericLiteral(d);
+		} else  if(child instanceof TerminalNode) {
+			TerminalNode tn = (TerminalNode)child;
+			String str = tn.getText();
+			if(str.startsWith("\"") && str.endsWith("\"")) {
+				ret = new StringLiteral(str.substring(1, str.length() - 1));
+			}
+		}
+		return ret;
 	}
 }

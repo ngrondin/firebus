@@ -12,7 +12,7 @@ public class StringLiteral extends Literal {
 	}
 	
 	public SValue eval(Scope scope) {
-		return new SString(new String(str));
+		return new SString(str);
 	}
 
 }
