@@ -6,8 +6,13 @@ import io.firebus.script.values.SValue;
 public class Reference extends Expression {
 	protected String name;
 	
-	public Reference(String n) {
+	public Reference(String n, UnitContext uc) {
+		super(uc);
 		name = n;
+	}
+	
+	public String getName() {
+		return name;
 	}
 
 	public SValue eval(Scope scope) {

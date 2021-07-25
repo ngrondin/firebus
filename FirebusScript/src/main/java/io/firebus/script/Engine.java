@@ -18,7 +18,7 @@ public class Engine {
 
 	}
 	
-	public void compile(String name, String src) {
+	public void compile(String name, String src) throws ScriptException {
 		ExecutionUnit root = compiler.compile(src);
 		root.eval(coreScope);
 	}

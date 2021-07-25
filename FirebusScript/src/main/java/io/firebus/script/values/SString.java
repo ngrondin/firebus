@@ -20,4 +20,12 @@ public class SString extends PredefinedSObject {
 	public String toString() {
 		return str;
 	}
+
+	public boolean equals(SValue other) {
+		return other instanceof SString && str.equals(((SString)other).getString());
+	}
+
+	public boolean identical(SValue other) {
+		return this == other;
+	}
 }

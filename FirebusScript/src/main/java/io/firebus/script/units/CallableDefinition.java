@@ -10,7 +10,8 @@ public class CallableDefinition extends Expression {
 	protected List<String> params;
 	protected Block body;
 	
-	public CallableDefinition(List<String> p, Block b) {
+	public CallableDefinition(List<String> p, Block b, UnitContext uc) {
+		super(uc);
 		params = p;
 		body = b;
 	}

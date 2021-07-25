@@ -18,11 +18,19 @@ public class Scope {
 		values = new HashMap<String, SValue>();
 	}
 	
+	public boolean contains(String key) {
+		return values.containsKey(key);
+	}
+	
 	public SValue getValue(String key) {
 		return values.containsKey(key) ? values.get(key) : parent != null ? parent.getValue(key) : null;
 	}
 	
 	public void setValue(String key, SValue value) {
 		values.put(key, value);
+	}
+
+	public Scope getScopeOf(String key) {
+		return values.containsKey(key) ? this : parent != null ? parent.getScopeOf(key) : null;
 	}
 }

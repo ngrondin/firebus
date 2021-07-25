@@ -10,8 +10,8 @@ import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Reference;
 import io.firebus.script.units.Setter;
-import io.firebus.script.units.StringLiteral;
-import io.firebus.script.units.operators.AddOperator;
+import io.firebus.script.units.literals.StringLiteral;
+import io.firebus.script.units.operators.Add;
 import io.firebus.script.values.impl.Print;
 
 public class UnitTester {
@@ -24,23 +24,26 @@ public class UnitTester {
 						Arrays.asList(new String[] {"entry"}),
 						new Block(Arrays.asList(new ExecutionUnit[] {
 							new Call(
-								new Reference("print"), 
+								new Reference("print", null), 
 								Arrays.asList(new Expression[] {
-										new Reference("entry")
-								})
+										new Reference("entry", null)
+								}),
+								null
 							)	
-						}))
-					)),
-					new Setter("v", new StringLiteral("Allo")),
-					new Setter("t", new AddOperator(new Reference("v"), new StringLiteral(" toi"))),
+						}), null),
+						null
+					), null),
+					new Setter("v", new StringLiteral("Allo", null), null),
+					new Setter("t", new Add(new Reference("v", null), new StringLiteral(" toi", null), null), null),
 					new Call(
-						new Reference("f"), 
+						new Reference("f", null), 
 						Arrays.asList(new Expression[] {
-							new Reference("t")
-						})
+							new Reference("t", null)
+						}),
+						null
 					)
 				}
-			));
+			), null);
 			Print p = new Print();
 			Scope s = new Scope();
 			s.setValue("print", p);

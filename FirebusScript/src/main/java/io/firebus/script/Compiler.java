@@ -3,7 +3,7 @@ package io.firebus.script;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
-import io.firebus.script.builder.AllBuilder;
+import io.firebus.script.builder.MasterBuilder;
 import io.firebus.script.parser.JavaScriptLexer;
 import io.firebus.script.parser.JavaScriptParser;
 import io.firebus.script.units.ExecutionUnit;
@@ -15,7 +15,7 @@ public class Compiler {
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		JavaScriptParser parser = new JavaScriptParser(tokens);
 		JavaScriptParser.ProgramContext tree = parser.program();
-		AllBuilder builder = new AllBuilder();
+		MasterBuilder builder = new MasterBuilder();
 		ExecutionUnit root = builder.buildProgram(tree);
 		return root;
 	}

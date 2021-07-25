@@ -2,8 +2,10 @@ package io.firebus.script.values;
 
 import java.util.List;
 
+import io.firebus.script.ScriptException;
 import io.firebus.script.scopes.Scope;
 import io.firebus.script.units.Block;
+import io.firebus.script.values.flow.SReturn;
 
 public class InternalSCallable extends SCallable {
 	protected List<String> paramNames;
@@ -16,13 +18,19 @@ public class InternalSCallable extends SCallable {
 		definitionScope = s;
 	}
 
-	public SValue call(List<SValue> params) {
+	public SValue call(List<SValue> params) throws ScriptException {
 		Scope runScope = new Scope(definitionScope);
 		for(int i = 0; i < paramNames.size(); i++) {
 			String paramName = paramNames.get(i);
 			SValue so = params.size() > i ? params.get(i) : null;
 			runScope.setValue(paramName, so);			
 		}
-		return body.eval(runScope);
+		SValue ret = body.eval(runScope);
+		if(ret instanceof SReturn) {
+			return ((SReturn)ret).getReturnedValue();
+		} else {
+			return new SNull();
+		}
 	}
+
 }
