@@ -7,9 +7,13 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import io.firebus.script.units.Block;
+import io.firebus.script.units.DeclareList;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.UnitContext;
+import io.firebus.script.units.operators.abs.Operator;
+import io.firebus.script.units.statements.ForLoop;
+import io.firebus.script.units.statements.If;
 import io.firebus.script.units.statements.While;
 import io.firebus.script.parser.JavaScriptParser;
 import io.firebus.script.parser.JavaScriptParser.*;
@@ -65,7 +69,7 @@ public class MasterBuilder {
 		} else if(sub instanceof BlockContext) {
 			return buildBlock((BlockContext)sub);
 		} else if(sub instanceof IfStatementContext) {
-			return null;
+			return buildIfStatement((IfStatementContext)sub);
 		} else if(sub instanceof IterationStatementContext) {
 			return buildIterationStatement((IterationStatementContext)sub);
 		} else if(sub instanceof ContinueStatementContext) {
@@ -110,8 +114,31 @@ public class MasterBuilder {
 		if(tn.getSymbol().getType() == JavaScriptParser.While) {
 			List<Expression> exprSeq = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(2));
 			ExecutionUnit unit = buildStatement((StatementContext)ctx.getChild(4));
-			While w = new While(exprSeq.get(0), unit, uc);
-			return w;
+			While loop = new While(exprSeq.get(0), unit, uc);
+			return loop;
+		} else if(tn.getSymbol().getType() == JavaScriptParser.For) {
+			DeclareList declareList = DeclarationBuilder.buildVariableDeclarationList((VariableDeclarationListContext)ctx.getChild(2));
+			List<Expression> condES = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(4));
+			List<Expression> opES = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(6));
+			ExecutionUnit unit = buildStatement((StatementContext)ctx.getChild(8));
+			ForLoop loop = new ForLoop(declareList, condES.get(0), (Operator)opES.get(0), unit, uc);
+			return loop;
+		} else {
+			return null;
+		}
+	}
+	
+	public static ExecutionUnit buildIfStatement(IfStatementContext ctx) {
+		UnitContext uc = ContextBuilder.buildContext(ctx);
+		TerminalNode tn = (TerminalNode)ctx.getChild(0);
+		if(tn.getSymbol().getType() == JavaScriptParser.If) {
+			List<Expression> exprSeq = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(2));
+			ExecutionUnit unit = buildStatement((StatementContext)ctx.getChild(4));
+			ExecutionUnit elseUnit = null;
+			if(ctx.getChildCount() >= 7)
+				elseUnit = buildStatement((StatementContext)ctx.getChild(6));
+			If ret = new If(exprSeq.get(0), unit, elseUnit, uc);
+			return ret;
 		} else {
 			return null;
 		}

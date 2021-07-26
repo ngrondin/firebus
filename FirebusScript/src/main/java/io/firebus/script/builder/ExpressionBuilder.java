@@ -28,6 +28,7 @@ import io.firebus.script.parser.JavaScriptParser.LogicalAndExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.LogicalOrExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.MultiplicativeExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.NotExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.ParenthesizedExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.PostDecreaseExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.PostIncrementExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.PowerExpressionContext;
@@ -170,6 +171,12 @@ public class ExpressionBuilder {
 			return new RelationalCompare(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), ctx.getChild(1).getText(), uc);
 		} else if(ctx instanceof EqualityExpressionContext) {
 			return new EqualityCompare(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), ctx.getChild(1).getText(), uc);
+		} else if(ctx instanceof ParenthesizedExpressionContext) {
+			List<Expression> seq = buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(1));
+			if(seq.size() > 0) 
+				return seq.get(0);
+			else 
+				return null;
 		} else {
 			return null;
 		}

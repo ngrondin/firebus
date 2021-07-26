@@ -45,8 +45,13 @@ public class DeclarationBuilder {
 	
 	public static Declare buildFunctionDeclaration(FunctionDeclarationContext ctx) {
 		String key = ctx.getChild(1).getText();
-		List<String> params = CallableBuilder.buildFormalParameterList((FormalParameterListContext)ctx.getChild(3));
-		Block body = CallableBuilder.buildFunctionBody((FunctionBodyContext)ctx.getChild(5));
+		List<String> params = null;
+		if(ctx.getChildCount() > 5) {
+			params = CallableBuilder.buildFormalParameterList((FormalParameterListContext)ctx.getChild(3));
+		} else {
+			params = new ArrayList<String>();
+		}
+		Block body = CallableBuilder.buildFunctionBody((FunctionBodyContext)ctx.getChild(ctx.getChildCount() - 1));
 		CallableDefinition callDef = new CallableDefinition(params, body, ContextBuilder.buildContext(ctx));
 		return new Declare(key, callDef, ContextBuilder.buildContext(ctx));
 	}

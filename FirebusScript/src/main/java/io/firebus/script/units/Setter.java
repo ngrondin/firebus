@@ -16,7 +16,12 @@ public class Setter extends Expression {
 
 	public SValue eval(Scope scope) throws ScriptException {
 		SValue val = expression.eval(scope);
-		scope.setValue(key, val);
+		Scope varScope = scope.getScopeOf(key);
+		if(varScope != null) {
+			varScope.setValue(key, val);
+		} else {
+			scope.setValue(key, val);
+		}
 		return val;
 	}
 

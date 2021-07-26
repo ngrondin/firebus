@@ -1,14 +1,9 @@
 package io.firebus.script.values;
 
-import java.util.Map;
 
-public class SNull extends PredefinedSObject {
+public class SNull extends SValue {
 
     public SNull() {
-    }
-    
-    protected Map<String, SValue> defineMembers() {
-        return null;
     }
 
     public String toString() {
