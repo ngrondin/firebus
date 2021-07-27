@@ -28,6 +28,8 @@ import io.firebus.script.parser.JavaScriptParser.LogicalAndExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.LogicalOrExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.MultiplicativeExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.NotExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.ObjectLiteralContext;
+import io.firebus.script.parser.JavaScriptParser.ObjectLiteralExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.ParenthesizedExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.PostDecreaseExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.PostIncrementExpressionContext;
@@ -109,6 +111,8 @@ public class ExpressionBuilder {
 			return ReferenceBuilder.buildIdentifier((IdentifierContext)ctx.getChild(0));		
 		} else if(ctx instanceof LiteralExpressionContext) {
 			return LiteralBuilder.buildLiteral((LiteralContext)ctx.getChild(0));
+		} else if(ctx instanceof ObjectLiteralExpressionContext) {
+			return LiteralBuilder.buildObjectLiteral((ObjectLiteralContext)ctx.getChild(0));
 		} else if(ctx instanceof PostIncrementExpressionContext) {
 			return new Increase((Reference)buildSingleExpressionFromChild(ctx, 0), uc);
 		} else if(ctx instanceof PostDecreaseExpressionContext) {

@@ -1,16 +1,26 @@
 package io.firebus.script.builder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import io.firebus.script.parser.JavaScriptParser;
 import io.firebus.script.parser.JavaScriptParser.LiteralContext;
 import io.firebus.script.parser.JavaScriptParser.NumericLiteralContext;
+import io.firebus.script.parser.JavaScriptParser.ObjectLiteralContext;
+import io.firebus.script.parser.JavaScriptParser.ObjectLiteralExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.PropertyAssignmentContext;
+import io.firebus.script.parser.JavaScriptParser.SingleExpressionContext;
+import io.firebus.script.units.Expression;
 import io.firebus.script.units.Literal;
+import io.firebus.script.units.PropertySetter;
 import io.firebus.script.units.UnitContext;
 import io.firebus.script.units.literals.BooleanLiteral;
 import io.firebus.script.units.literals.NullLiteral;
 import io.firebus.script.units.literals.NumericLiteral;
+import io.firebus.script.units.literals.ObjectLiteral;
 import io.firebus.script.units.literals.StringLiteral;
 
 public class LiteralBuilder {
@@ -60,8 +70,20 @@ public class LiteralBuilder {
 		return new NumericLiteral(number, uc);
     }
     
-    public static StringLiteral buildStringLiteral(ParseTree ctx) {
+    /*public static StringLiteral buildStringLiteral(ParseTree ctx) {
         return null;
-    }
+    }*/
  
+    public static ObjectLiteral buildObjectLiteral(ObjectLiteralContext ctx) {
+    	List<PropertySetter> setters = new ArrayList<PropertySetter>();
+    	for(ParseTree sub: ctx.children) {
+    		if(sub instanceof PropertyAssignmentContext) {
+    			PropertyAssignmentContext subCtx = (PropertyAssignmentContext)sub;
+    			String key = sub.getChild(0).getText();
+    			Expression val = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub.getChild(2));
+    			setters.add(new PropertySetter(key, val, ContextBuilder.buildContext(subCtx)));
+    		}
+    	}
+    	return new ObjectLiteral(setters, ContextBuilder.buildContext(ctx));
+    }
 }
