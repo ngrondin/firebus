@@ -1,8 +1,10 @@
 package io.firebus.script.units;
 
+import io.firebus.script.SourceInfo;
+
 public abstract class Literal extends Expression {
 
-	public Literal(UnitContext uc) {
+	public Literal(SourceInfo uc) {
 		super(uc);
 	}
 

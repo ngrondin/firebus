@@ -1,8 +1,8 @@
 package io.firebus.script.units.operators;
 
 import io.firebus.script.ScriptException;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.units.Expression;
-import io.firebus.script.units.UnitContext;
 import io.firebus.script.units.operators.abs.TwoNumberOperator;
 import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.SValue;
@@ -14,7 +14,7 @@ public class RelationalCompare extends TwoNumberOperator {
 	protected final static int LessThan = 3;
 	protected final static int LessOrEqualTo = 4;
 	
-	public RelationalCompare(Expression e1, Expression e2, String compOp, UnitContext uc) {
+	public RelationalCompare(Expression e1, Expression e2, String compOp, SourceInfo uc) {
 		super(e1, e2, uc);
 		switch(compOp) {
 			case ">" :

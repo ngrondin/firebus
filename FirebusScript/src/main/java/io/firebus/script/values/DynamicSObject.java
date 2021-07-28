@@ -1,44 +1,32 @@
 package io.firebus.script.values;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public abstract class DynamicSObject extends SObject {
-	protected List<String> memberNames;
 	protected Map<String, SValue> members;
 	
 	public DynamicSObject() {
-		memberNames = new ArrayList<String>();
 		members = new HashMap<String, SValue>();
 	}
 	
-	public List<String> getMemberNames() {
-		return memberNames;
+	public boolean hasMember(String key) {
+		return members.containsKey(key);
 	}
 
-	public SValue getMember(String name) {
-		return members.get(name);
+	public String[] getMemberKeys() {
+		return members.keySet().toArray(new String[0]);
 	}
 
-	public void setMember(String name, SValue value) {
-		if(!memberNames.contains(name))
-			memberNames.add(name);
-		members.put(name, value);
+	public SValue getMember(String key) {
+		return members.get(key);
 	}
-
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("{\r\n");
-		for(String name : memberNames) {
-			sb.append("\t");
-			sb.append(name);
-			sb.append(": ");
-			sb.append(members.get(name));
-			sb.append("\r\n");
-		}
-		sb.append("}");
-		return sb.toString();
+			
+	public void putMember(String key, SValue value) {
+		members.put(key, value);
+	}
+	
+	public void removeMember(String key) {
+		members.remove(key);
 	}
 }

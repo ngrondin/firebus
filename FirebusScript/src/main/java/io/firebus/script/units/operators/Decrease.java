@@ -1,13 +1,13 @@
 package io.firebus.script.units.operators;
 
 import io.firebus.script.ScriptException;
-import io.firebus.script.units.Reference;
-import io.firebus.script.units.UnitContext;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.units.operators.abs.NumberReferenceOperator;
+import io.firebus.script.units.references.Reference;
 
 public class Decrease extends NumberReferenceOperator {
 
-	public Decrease(Reference r, UnitContext uc) {
+	public Decrease(Reference r, SourceInfo uc) {
 		super(r, uc);
 	}
 

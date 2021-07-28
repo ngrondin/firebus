@@ -3,6 +3,7 @@ package io.firebus.script.units;
 import java.util.List;
 
 import io.firebus.script.ScriptException;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.scopes.Scope;
 import io.firebus.script.values.SValue;
 
@@ -10,7 +11,7 @@ public class DeclareList extends ExecutionUnit {
 	protected String modifier;
 	protected List<Declare> list;
 	
-	public DeclareList(String m, List<Declare> l, UnitContext uc) {
+	public DeclareList(String m, List<Declare> l, SourceInfo uc) {
 		super(uc);
 		list = l;
 		modifier = m;

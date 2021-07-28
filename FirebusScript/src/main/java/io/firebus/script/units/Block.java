@@ -3,6 +3,7 @@ package io.firebus.script.units;
 import java.util.List;
 
 import io.firebus.script.ScriptException;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.scopes.Scope;
 import io.firebus.script.values.SNull;
 import io.firebus.script.values.SValue;
@@ -11,7 +12,7 @@ import io.firebus.script.values.flow.SReturn;
 public class Block extends ExecutionUnit {
 	protected List<ExecutionUnit> units;
 	
-	public Block(List<ExecutionUnit> u, UnitContext uc) {
+	public Block(List<ExecutionUnit> u, SourceInfo uc) {
 		super(uc);
 		units = u;
 	}

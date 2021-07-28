@@ -2,10 +2,12 @@ package io.firebus.script.builder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import io.firebus.script.SourceInfo;
+import io.firebus.script.parser.JavaScriptParser;
+import io.firebus.script.parser.JavaScriptParser.AnoymousFunctionDeclContext;
 import io.firebus.script.parser.JavaScriptParser.ArgumentContext;
 import io.firebus.script.parser.JavaScriptParser.ArgumentsContext;
 import io.firebus.script.parser.JavaScriptParser.ArgumentsExpressionContext;
@@ -24,15 +26,14 @@ import io.firebus.script.units.Call;
 import io.firebus.script.units.CallableDefinition;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
-import io.firebus.script.units.UnitContext;
 import io.firebus.script.units.statements.Return;
 
-public class CallableBuilder {
+public class CallableBuilder extends Builder {
 
 	public static Expression buildArgumentsExpression(ArgumentsExpressionContext ctx) {
 		Expression callable = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)ctx.getChild(0));
 		List<Expression> args = buildArguments((ArgumentsContext)ctx.getChild(1));
-		return new Call(callable, args, ContextBuilder.buildContext(ctx));
+		return new Call(callable, args, sourceInfo(ctx));
 	}
 	
 	public static List<Expression> buildArguments(ArgumentsContext ctx) {
@@ -62,17 +63,18 @@ public class CallableBuilder {
 	public static CallableDefinition buildFunctionExpression(FunctionExpressionContext ctx) {
 		ParseTree sub = ctx.getChild(0);
 		if(sub instanceof ArrowFunctionContext) {
-			return buildArrowFunction((ArrowFunctionContext)sub);
+			List<String> params = buildArrowFunctionParameters((ArrowFunctionParametersContext)sub.getChild(0));
+			Block body = buildArrowFunctionBody((ArrowFunctionBodyContext)sub.getChild(2));
+			CallableDefinition callDef = new CallableDefinition(params, body, sourceInfo(ctx));
+			return callDef;
+		} else if(sub instanceof AnoymousFunctionDeclContext) {
+			List<String> params = buildFormalParameterList((FormalParameterListContext)sub.getChild(2));
+			Block body = buildFunctionBody((FunctionBodyContext)sub.getChild(4));
+			CallableDefinition callDef = new CallableDefinition(params, body, sourceInfo(ctx));
+			return callDef;			
 		} else {
 			return null;
 		}
-	}
-	
-	public static CallableDefinition buildArrowFunction(ArrowFunctionContext ctx) {
-		List<String> params = buildArrowFunctionParameters((ArrowFunctionParametersContext)ctx.getChild(0));
-		Block body = buildArrowFunctionBody((ArrowFunctionBodyContext)ctx.getChild(2));
-		CallableDefinition callDef = new CallableDefinition(params, body, ContextBuilder.buildContext(ctx));
-		return callDef;
 	}
 	
 	public static List<String> buildArrowFunctionParameters(ArrowFunctionParametersContext ctx) {
@@ -84,7 +86,7 @@ public class CallableBuilder {
 		if(sub instanceof FunctionBodyContext) {
 			return buildFunctionBody((FunctionBodyContext)sub);
 		} else if(sub instanceof SingleExpressionContext) {
-			UnitContext uc = ContextBuilder.buildContext(ctx);
+			SourceInfo uc = sourceInfo(ctx);
 			Expression expr = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub);
 			Return ret = new Return(expr, uc);
 			List<ExecutionUnit> list = new ArrayList<ExecutionUnit>();

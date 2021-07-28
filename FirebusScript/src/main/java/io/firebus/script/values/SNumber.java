@@ -29,4 +29,16 @@ public class SNumber extends PredefinedSObject {
 		return this == other;
 	}
     
+	public boolean hasMember(String key) {
+		return false;
+	}
+
+	public String[] getMemberKeys() {
+		return null;
+	}
+
+	public SValue getMember(String name) {
+		return null;
+	}
+
 }

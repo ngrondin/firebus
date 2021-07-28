@@ -17,12 +17,10 @@ import io.firebus.script.units.CallableDefinition;
 import io.firebus.script.units.Declare;
 import io.firebus.script.units.DeclareList;
 import io.firebus.script.units.Expression;
-import io.firebus.script.units.UnitContext;
 
-public class DeclarationBuilder {
+public class DeclarationBuilder extends Builder {
 
 	public static DeclareList buildVariableDeclarationList(VariableDeclarationListContext ctx) {
-		UnitContext uc = new UnitContext(ctx.getStart().getTokenSource().getSourceName(), ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());		
 		List<Declare> list = new ArrayList<Declare>();
 		String modifier = null;
 		for(int i = 0; i < ctx.getChildCount(); i++) {
@@ -33,14 +31,14 @@ public class DeclarationBuilder {
 				list.add(buildVariableDeclaration((VariableDeclarationContext)sub));
 			}
 		}
-		return new DeclareList(modifier, list, uc);
+		return new DeclareList(modifier, list, sourceInfo(ctx));
 	}
 	
 	public static Declare buildVariableDeclaration(VariableDeclarationContext ctx) {
 		String key = ReferenceBuilder.buildAssignable(ctx.getChild(0));
 		ParseTree sub = ctx.getChild(2);
 		Expression exp = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub);
-		return new Declare(key, exp, ContextBuilder.buildContext(ctx));
+		return new Declare(key, exp, sourceInfo(ctx));
 	}
 	
 	public static Declare buildFunctionDeclaration(FunctionDeclarationContext ctx) {
@@ -52,7 +50,7 @@ public class DeclarationBuilder {
 			params = new ArrayList<String>();
 		}
 		Block body = CallableBuilder.buildFunctionBody((FunctionBodyContext)ctx.getChild(ctx.getChildCount() - 1));
-		CallableDefinition callDef = new CallableDefinition(params, body, ContextBuilder.buildContext(ctx));
-		return new Declare(key, callDef, ContextBuilder.buildContext(ctx));
+		CallableDefinition callDef = new CallableDefinition(params, body, sourceInfo(ctx));
+		return new Declare(key, callDef, sourceInfo(ctx));
 	}
 }

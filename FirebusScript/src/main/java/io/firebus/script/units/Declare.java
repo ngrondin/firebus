@@ -1,6 +1,7 @@
 package io.firebus.script.units;
 
 import io.firebus.script.ScriptException;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.scopes.Scope;
 import io.firebus.script.values.SValue;
 
@@ -9,7 +10,7 @@ public class Declare extends ExecutionUnit {
 	protected String key;
 	protected Expression expression;
 	
-	public Declare(String k, Expression exp, UnitContext uc) {
+	public Declare(String k, Expression exp, SourceInfo uc) {
 		super(uc);
 		key = k;
 		expression = exp;

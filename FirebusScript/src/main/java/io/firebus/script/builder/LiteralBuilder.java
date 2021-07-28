@@ -1,29 +1,29 @@
 package io.firebus.script.builder;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import io.firebus.script.SourceInfo;
 import io.firebus.script.parser.JavaScriptParser;
+import io.firebus.script.parser.JavaScriptParser.ArrayElementContext;
+import io.firebus.script.parser.JavaScriptParser.ArrayLiteralContext;
+import io.firebus.script.parser.JavaScriptParser.ElementListContext;
 import io.firebus.script.parser.JavaScriptParser.LiteralContext;
 import io.firebus.script.parser.JavaScriptParser.NumericLiteralContext;
 import io.firebus.script.parser.JavaScriptParser.ObjectLiteralContext;
-import io.firebus.script.parser.JavaScriptParser.ObjectLiteralExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.PropertyAssignmentContext;
 import io.firebus.script.parser.JavaScriptParser.SingleExpressionContext;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Literal;
-import io.firebus.script.units.PropertySetter;
-import io.firebus.script.units.UnitContext;
+import io.firebus.script.units.literals.ArrayLiteral;
 import io.firebus.script.units.literals.BooleanLiteral;
 import io.firebus.script.units.literals.NullLiteral;
 import io.firebus.script.units.literals.NumericLiteral;
 import io.firebus.script.units.literals.ObjectLiteral;
 import io.firebus.script.units.literals.StringLiteral;
 
-public class LiteralBuilder {
+public class LiteralBuilder extends Builder {
     
     public static Literal buildLiteral(LiteralContext ctx) {
 		Literal ret = null;
@@ -31,7 +31,7 @@ public class LiteralBuilder {
 		if(child instanceof NumericLiteralContext) {
 			return buildNumericLiteral((NumericLiteralContext)child);
 		} else if(child instanceof TerminalNode) {
-			UnitContext uc = new UnitContext(ctx.getStart().getTokenSource().getSourceName(), ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
+			SourceInfo uc = sourceInfo(ctx);
 			TerminalNode tn = (TerminalNode)child;
 			if(tn.getSymbol().getType() == JavaScriptParser.StringLiteral) {
 				String str = tn.getText();
@@ -48,7 +48,7 @@ public class LiteralBuilder {
 	}
 
     public static NumericLiteral buildNumericLiteral(NumericLiteralContext ctx) {
-    	UnitContext uc = new UnitContext(ctx.getStart().getTokenSource().getSourceName(), ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
+    	SourceInfo uc = sourceInfo(ctx);
 		TerminalNode tn = (TerminalNode)ctx.getChild(0);
 		Number number = null;
 		if(tn.getSymbol().getType() == JavaScriptParser.DecimalLiteral) {
@@ -69,21 +69,28 @@ public class LiteralBuilder {
 		} 
 		return new NumericLiteral(number, uc);
     }
-    
-    /*public static StringLiteral buildStringLiteral(ParseTree ctx) {
-        return null;
-    }*/
  
     public static ObjectLiteral buildObjectLiteral(ObjectLiteralContext ctx) {
-    	List<PropertySetter> setters = new ArrayList<PropertySetter>();
+    	ObjectLiteral ol = new ObjectLiteral(sourceInfo(ctx));
     	for(ParseTree sub: ctx.children) {
     		if(sub instanceof PropertyAssignmentContext) {
-    			PropertyAssignmentContext subCtx = (PropertyAssignmentContext)sub;
     			String key = sub.getChild(0).getText();
     			Expression val = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub.getChild(2));
-    			setters.add(new PropertySetter(key, val, ContextBuilder.buildContext(subCtx)));
+    			ol.addSetter(key, val);
     		}
     	}
-    	return new ObjectLiteral(setters, ContextBuilder.buildContext(ctx));
+    	return ol;
+    }
+    
+    public static ArrayLiteral buildArrayLiteral(ArrayLiteralContext ctx) {
+    	ArrayLiteral al = new ArrayLiteral(sourceInfo(ctx));
+    	ElementListContext el = (ElementListContext)ctx.getChild(1);
+    	for(ParseTree sub: el.children) {
+    		if(sub instanceof ArrayElementContext) {
+    			Expression val = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub.getChild(0));
+    			al.addExpression(val);
+    		}
+    	}    	
+    	return al;
     }
 }

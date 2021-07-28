@@ -6,9 +6,12 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import io.firebus.script.SourceInfo;
 import io.firebus.script.parser.JavaScriptParser;
 import io.firebus.script.parser.JavaScriptParser.AdditiveExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.ArgumentsExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.ArrayLiteralContext;
+import io.firebus.script.parser.JavaScriptParser.ArrayLiteralExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.AssignmentExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.BitAndExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.BitNotExpressionContext;
@@ -26,6 +29,8 @@ import io.firebus.script.parser.JavaScriptParser.LiteralContext;
 import io.firebus.script.parser.JavaScriptParser.LiteralExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.LogicalAndExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.LogicalOrExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.MemberDotExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.MemberIndexExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.MultiplicativeExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.NotExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.ObjectLiteralContext;
@@ -41,9 +46,7 @@ import io.firebus.script.parser.JavaScriptParser.SingleExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.UnaryMinusExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.UnaryPlusExpressionContext;
 import io.firebus.script.units.Expression;
-import io.firebus.script.units.Reference;
 import io.firebus.script.units.Setter;
-import io.firebus.script.units.UnitContext;
 import io.firebus.script.units.operators.Add;
 import io.firebus.script.units.operators.BitAnd;
 import io.firebus.script.units.operators.BitNot;
@@ -69,8 +72,11 @@ import io.firebus.script.units.operators.RelationalCompare;
 import io.firebus.script.units.operators.Substract;
 import io.firebus.script.units.operators.UnaryMinus;
 import io.firebus.script.units.operators.UnaryPlus;
+import io.firebus.script.units.references.MemberDotReference;
+import io.firebus.script.units.references.MemberIndexReference;
+import io.firebus.script.units.references.Reference;
 
-public class ExpressionBuilder {
+public class ExpressionBuilder extends Builder {
 	    
 	public static Expression buildExpressionStatement(ExpressionStatementContext ctx) {
 		ParseTree sub = ctx.getChild(0);
@@ -100,17 +106,23 @@ public class ExpressionBuilder {
 
 	
 	public static Expression buildSingleExpression(SingleExpressionContext ctx) {
-		UnitContext uc = ContextBuilder.buildContext(ctx);
+		SourceInfo uc = sourceInfo(ctx);
 		if(ctx instanceof AssignmentExpressionContext) {
-			return new Setter(ctx.getChild(0).getText(), buildSingleExpressionFromChild(ctx, 2), uc);
+			return new Setter((Reference)buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
 		} else if(ctx instanceof ArgumentsExpressionContext) {
 			return CallableBuilder.buildArgumentsExpression((ArgumentsExpressionContext)ctx);	
 		} else if(ctx instanceof FunctionExpressionContext) {
 			return CallableBuilder.buildFunctionExpression((FunctionExpressionContext)ctx);
 		} else if(ctx instanceof IdentifierExpressionContext) {
-			return ReferenceBuilder.buildIdentifier((IdentifierContext)ctx.getChild(0));		
+			return ReferenceBuilder.buildIdentifier((IdentifierContext)ctx.getChild(0));	
+		} else if(ctx instanceof MemberDotExpressionContext) {
+			return new MemberDotReference(buildSingleExpressionFromChild(ctx, 0), ctx.getChild(2).getText(), uc);
+		} else if(ctx instanceof MemberIndexExpressionContext) {
+			return new MemberIndexReference(buildSingleExpressionFromChild(ctx, 0), Integer.parseInt(ctx.getChild(2).getText()), uc);
 		} else if(ctx instanceof LiteralExpressionContext) {
 			return LiteralBuilder.buildLiteral((LiteralContext)ctx.getChild(0));
+		} else if(ctx instanceof ArrayLiteralExpressionContext) {
+			return LiteralBuilder.buildArrayLiteral((ArrayLiteralContext)ctx.getChild(0));
 		} else if(ctx instanceof ObjectLiteralExpressionContext) {
 			return LiteralBuilder.buildObjectLiteral((ObjectLiteralContext)ctx.getChild(0));
 		} else if(ctx instanceof PostIncrementExpressionContext) {
@@ -189,6 +201,13 @@ public class ExpressionBuilder {
 	public static Expression buildSingleExpressionFromChild(ParseTree parentContext, int childIndex) {
 		return buildSingleExpression((SingleExpressionContext)parentContext.getChild(childIndex));
 	}
+	
+	/*public static MemberSetter buildMemberDotExpression(MemberDotExpressionContext memberCtx, SingleExpressionContext valueCtx) {
+		Expression objectExpr = buildSingleExpression((SingleExpressionContext)memberCtx.getChild(0));
+		String key = memberCtx.getChild(2).getText();
+		Expression valExpr = buildSingleExpression(valueCtx);
+		return new MemberSetter(objectExpr, key, valExpr, ContextBuilder.buildContext(memberCtx));
+	}*/
 	
 
 }

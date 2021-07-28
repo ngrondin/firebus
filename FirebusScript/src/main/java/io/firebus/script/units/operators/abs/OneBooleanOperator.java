@@ -1,14 +1,14 @@
 package io.firebus.script.units.operators.abs;
 
 import io.firebus.script.ScriptException;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.units.Expression;
-import io.firebus.script.units.UnitContext;
 import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.SValue;
 
 public abstract class OneBooleanOperator extends OneExpressionOperator {
 
-	public OneBooleanOperator(Expression e, UnitContext uc) {
+	public OneBooleanOperator(Expression e, SourceInfo uc) {
 		super(e, uc);
 	}
 
@@ -17,7 +17,7 @@ public abstract class OneBooleanOperator extends OneExpressionOperator {
 			boolean b = ((SBoolean)v).getBoolean();
 			return evalWithBoolean(b);
 		} else {
-			throw new ScriptException(this.getClass().getSimpleName() + " operator requries 1 boolean value", context);
+			throw new ScriptException(this.getClass().getSimpleName() + " operator requries 1 boolean value", source);
 		}
 	}
 

@@ -1,14 +1,14 @@
 package io.firebus.script.units.operators.abs;
 
 import io.firebus.script.ScriptException;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.units.Expression;
-import io.firebus.script.units.UnitContext;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.SValue;
 
 public abstract class TwoNumberOperator extends TwoExpressionOperator {
 
-	public TwoNumberOperator(Expression e1, Expression e2, UnitContext uc) {
+	public TwoNumberOperator(Expression e1, Expression e2, SourceInfo uc) {
 		super(e1, e2, uc);
 	}
 
@@ -18,7 +18,7 @@ public abstract class TwoNumberOperator extends TwoExpressionOperator {
 			Number n2 = ((SNumber)v2).getNumber();
 			return evalWithNumbers(n1, n2);
 		} else {
-			throw new ScriptException(this.getClass().getSimpleName() + " operator requries 2 numeric value", context);
+			throw new ScriptException(this.getClass().getSimpleName() + " operator requries 2 numeric value", source);
 		}
 	}
 

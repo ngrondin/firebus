@@ -1,14 +1,14 @@
 package io.firebus.script.units.operators.abs;
 
 import io.firebus.script.ScriptException;
-import io.firebus.script.units.Reference;
-import io.firebus.script.units.UnitContext;
+import io.firebus.script.SourceInfo;
+import io.firebus.script.units.references.Reference;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.SValue;
 
 public abstract class NumberReferenceOperator extends ReferenceOperator {
 
-	public NumberReferenceOperator(Reference r, UnitContext uc) {
+	public NumberReferenceOperator(Reference r, SourceInfo uc) {
 		super(r, uc);
 	}
 
@@ -18,7 +18,7 @@ public abstract class NumberReferenceOperator extends ReferenceOperator {
 			Number updateNumber = getUpdateNumber(originalNumber);
 			return new SNumber(updateNumber);
 		} else {
-			throw new ScriptException(this.getClass().getSimpleName() + " operator requires a reference to a number", context);
+			throw new ScriptException(this.getClass().getSimpleName() + " operator requires a reference to a number", source);
 		}
 	}
 
@@ -26,7 +26,7 @@ public abstract class NumberReferenceOperator extends ReferenceOperator {
 		if(originalValue instanceof SNumber && updatedValue instanceof SNumber) {
 			return new SNumber(getReturnNumber(((SNumber)originalValue).getNumber(), ((SNumber)updatedValue).getNumber()));
 		} else {
-			throw new ScriptException(this.getClass().getSimpleName() + " operator requires a reference to a number", context);
+			throw new ScriptException(this.getClass().getSimpleName() + " operator requires a reference to a number", source);
 		}
 	}
 

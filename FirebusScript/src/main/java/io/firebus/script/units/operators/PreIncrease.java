@@ -1,12 +1,12 @@
 package io.firebus.script.units.operators;
 
 import io.firebus.script.ScriptException;
-import io.firebus.script.units.Reference;
-import io.firebus.script.units.UnitContext;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.units.operators.abs.NumberReferenceOperator;
+import io.firebus.script.units.references.Reference;
 
 public class PreIncrease extends NumberReferenceOperator {
-	public PreIncrease(Reference r, UnitContext uc) {
+	public PreIncrease(Reference r, SourceInfo uc) {
 		super(r, uc);
 	}
 

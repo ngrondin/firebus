@@ -28,4 +28,17 @@ public class SString extends PredefinedSObject {
 	public boolean identical(SValue other) {
 		return this == other;
 	}
+	
+	public boolean hasMember(String key) {
+		return false;
+	}
+
+	public String[] getMemberKeys() {
+		return null;
+	}
+
+	public SValue getMember(String name) {
+		return null;
+	}
+
 }

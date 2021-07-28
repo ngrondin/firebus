@@ -1,22 +1,24 @@
 package io.firebus.script;
 
-import io.firebus.script.units.UnitContext;
-
 public class ScriptException extends Exception {
 	private static final long serialVersionUID = 1L;
-	protected UnitContext context;
+	protected SourceInfo context;
 
-	public ScriptException(String m, UnitContext c) {
+	public ScriptException(String m) {
+		super(m);
+	}
+	
+	public ScriptException(String m, SourceInfo c) {
 		super(m);
 		context = c;
 	}
 	
-	public ScriptException(String m, Throwable t, UnitContext c) {
+	public ScriptException(String m, Throwable t, SourceInfo c) {
 		super(m, t);
 		context = c;
 	}
 	
 	public String getMessage() {
-		return super.getMessage() + " [" + context.toString() + "]";
+		return super.getMessage() + (context != null ? " [" + context.getLineCol() + "]" : "");
 	}
 }

@@ -1,11 +1,11 @@
 package io.firebus.script.units.statements;
 
 import io.firebus.script.ScriptException;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.scopes.Scope;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Statement;
-import io.firebus.script.units.UnitContext;
 import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.SNull;
 import io.firebus.script.values.SValue;
@@ -16,7 +16,7 @@ public class If extends Statement {
 	protected ExecutionUnit unit;
 	protected ExecutionUnit elseUnit;
 	
-	public If(Expression c, ExecutionUnit u, ExecutionUnit eu, UnitContext uc) {
+	public If(Expression c, ExecutionUnit u, ExecutionUnit eu, SourceInfo uc) {
 		super(uc);
 		condition = c;
 		unit = u;
@@ -42,7 +42,7 @@ public class If extends Statement {
 			}
 			return new SNull();
 		} else {
-			throw new ScriptException("Condition does not return a boolean", context);
+			throw new ScriptException("Condition does not return a boolean", source);
 		}
 	}
 

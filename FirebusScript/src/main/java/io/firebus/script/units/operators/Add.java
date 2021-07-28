@@ -1,8 +1,8 @@
 package io.firebus.script.units.operators;
 
 import io.firebus.script.ScriptException;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.units.Expression;
-import io.firebus.script.units.UnitContext;
 import io.firebus.script.units.operators.abs.TwoExpressionOperator;
 import io.firebus.script.values.SValue;
 import io.firebus.script.values.SNumber;
@@ -10,7 +10,7 @@ import io.firebus.script.values.SString;
 
 public class Add extends TwoExpressionOperator {
 
-	public Add(Expression e1, Expression e2, UnitContext uc) {
+	public Add(Expression e1, Expression e2, SourceInfo uc) {
 		super(e1, e2, uc);
 	}
 	
@@ -29,7 +29,7 @@ public class Add extends TwoExpressionOperator {
 			}
 			return new SNumber(r);
 		} else {
-			throw new ScriptException("Invalid expressions for add operator", context);
+			throw new ScriptException("Invalid expressions for add operator", source);
 		}
 	}
 }

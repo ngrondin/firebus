@@ -28,5 +28,17 @@ public class SBoolean extends PredefinedSObject {
 	public boolean identical(SValue other) {
 		return other instanceof SBoolean && value == ((SBoolean)other).getBoolean();
 	}
+
+	public boolean hasMember(String key) {
+		return false;
+	}
+
+	public String[] getMemberKeys() {
+		return null;
+	}
+
+	public SValue getMember(String name) {
+		return null;
+	}
     
 }

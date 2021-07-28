@@ -1,8 +1,8 @@
 package io.firebus.script.units.operators;
 
 import io.firebus.script.ScriptException;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.units.Expression;
-import io.firebus.script.units.UnitContext;
 import io.firebus.script.units.operators.abs.TwoExpressionOperator;
 import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.SValue;
@@ -14,7 +14,7 @@ public class EqualityCompare extends TwoExpressionOperator {
 	protected final static int Identical = 3;
 	protected final static int NotIdentical = 4;
 	
-	public EqualityCompare(Expression e1, Expression e2, String compOp, UnitContext uc) {
+	public EqualityCompare(Expression e1, Expression e2, String compOp, SourceInfo uc) {
 		super(e1, e2, uc);
 		switch(compOp) {
 			case "==" :

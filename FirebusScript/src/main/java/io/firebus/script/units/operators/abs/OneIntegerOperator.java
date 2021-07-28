@@ -1,13 +1,13 @@
 package io.firebus.script.units.operators.abs;
 
 import io.firebus.script.ScriptException;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.units.Expression;
-import io.firebus.script.units.UnitContext;
 import io.firebus.script.values.SValue;
 
 public abstract class OneIntegerOperator extends OneNumberOperator {
 
-	public OneIntegerOperator(Expression e, UnitContext uc) {
+	public OneIntegerOperator(Expression e, SourceInfo uc) {
 		super(e, uc);
 	}
 
@@ -16,7 +16,7 @@ public abstract class OneIntegerOperator extends OneNumberOperator {
 		if(n.doubleValue() == i) {
 			return evalWithInt(i);
 		} else {
-			throw new ScriptException(this.getClass().getSimpleName() + " operator requries an integer", context);
+			throw new ScriptException(this.getClass().getSimpleName() + " operator requries an integer", source);
 		}
 	}
 	

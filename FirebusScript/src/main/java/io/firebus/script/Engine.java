@@ -1,15 +1,9 @@
 package io.firebus.script;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import io.firebus.script.scopes.Scope;
 import io.firebus.script.units.ExecutionUnit;
-import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.SCallable;
-import io.firebus.script.values.SNull;
-import io.firebus.script.values.SNumber;
-import io.firebus.script.values.SString;
 import io.firebus.script.values.SValue;
 import io.firebus.script.values.impl.Print;
 
@@ -33,10 +27,10 @@ public class Engine {
 	}
 	
 	public SValue invoke(String name) throws ScriptException {
-		return invoke(name, new ArrayList<SValue>());
+		return invoke(name, null);
 	}
 	
-	public SValue invoke(String name, Object[] rawParams) throws ScriptException {
+	/*public SValue invoke(String name, Object[] rawParams) throws ScriptException {
 		List<SValue> params = new ArrayList<SValue>();
 		for(int i = 0; i < rawParams.length; i++) {
 			Object o = rawParams[i];
@@ -53,13 +47,13 @@ public class Engine {
 			} 
 		}
 		return invoke(name, params);
-	}
+	}*/
 	
-	public SValue invoke(String name, List<SValue> params) throws ScriptException {
+	public SValue invoke(String name, SValue[] arguments) throws ScriptException {
 		SValue c = coreScope.getValue(name);
 		if(c != null) {
 			if(c instanceof SCallable) {
-				SValue ret = ((SCallable)c).call(params != null ? params : new ArrayList<SValue>());
+				SValue ret = ((SCallable)c).call(arguments);
 				return ret;
 			} else {
 				throw new ScriptException("'" + name + "' is not callable", null);

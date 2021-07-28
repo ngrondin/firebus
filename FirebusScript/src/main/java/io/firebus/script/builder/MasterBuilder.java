@@ -10,15 +10,15 @@ import io.firebus.script.units.Block;
 import io.firebus.script.units.DeclareList;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
-import io.firebus.script.units.UnitContext;
 import io.firebus.script.units.operators.abs.Operator;
 import io.firebus.script.units.statements.ForLoop;
 import io.firebus.script.units.statements.If;
 import io.firebus.script.units.statements.While;
+import io.firebus.script.SourceInfo;
 import io.firebus.script.parser.JavaScriptParser;
 import io.firebus.script.parser.JavaScriptParser.*;
 
-public class MasterBuilder {
+public class MasterBuilder extends Builder {
 
 
 	
@@ -35,7 +35,7 @@ public class MasterBuilder {
 				list.add(buildSourceElement((SourceElementContext)sub));
 			}
 		}
-		return new Block(list, ContextBuilder.buildContext(ctx));
+		return new Block(list, sourceInfo(ctx));
 	}
 	
 	public static ExecutionUnit buildSourceElement(SourceElementContext ctx) {
@@ -102,14 +102,14 @@ public class MasterBuilder {
 		ParseTree sub = ctx.getChild(1);
 		if(sub instanceof StatementListContext) {
 			List<ExecutionUnit> list = buildStatementList((StatementListContext)sub);
-			return new Block(list, ContextBuilder.buildContext(ctx));
+			return new Block(list, sourceInfo(ctx));
 		} else {
 			return null;
 		}
 	}
 	
 	public static ExecutionUnit buildIterationStatement(IterationStatementContext ctx) {
-		UnitContext uc = ContextBuilder.buildContext(ctx);
+		SourceInfo uc = sourceInfo(ctx);
 		TerminalNode tn = (TerminalNode)ctx.getChild(0);
 		if(tn.getSymbol().getType() == JavaScriptParser.While) {
 			List<Expression> exprSeq = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(2));
@@ -129,7 +129,7 @@ public class MasterBuilder {
 	}
 	
 	public static ExecutionUnit buildIfStatement(IfStatementContext ctx) {
-		UnitContext uc = ContextBuilder.buildContext(ctx);
+		SourceInfo uc = sourceInfo(ctx);
 		TerminalNode tn = (TerminalNode)ctx.getChild(0);
 		if(tn.getSymbol().getType() == JavaScriptParser.If) {
 			List<Expression> exprSeq = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(2));

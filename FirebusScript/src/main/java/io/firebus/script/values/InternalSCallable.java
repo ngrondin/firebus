@@ -18,11 +18,11 @@ public class InternalSCallable extends SCallable {
 		definitionScope = s;
 	}
 
-	public SValue call(List<SValue> params) throws ScriptException {
+	public SValue call(SValue[] arguments) throws ScriptException {
 		Scope runScope = new Scope(definitionScope);
 		for(int i = 0; i < paramNames.size(); i++) {
 			String paramName = paramNames.get(i);
-			SValue so = params.size() > i ? params.get(i) : null;
+			SValue so = arguments != null && arguments.length > i ? arguments[i] : null;
 			runScope.setValue(paramName, so);			
 		}
 		SValue ret = body.eval(runScope);
