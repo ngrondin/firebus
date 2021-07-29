@@ -19,7 +19,7 @@ public class ForLoop extends ConditionalIterator {
 		operator = o;
 	}
 
-	protected void updateLocalScope(Scope scope) throws ScriptException {
+	protected void before(Scope scope) throws ScriptException {
 		declares.eval(scope);
 	}
 

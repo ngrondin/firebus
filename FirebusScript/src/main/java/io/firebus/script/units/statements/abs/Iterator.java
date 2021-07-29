@@ -19,7 +19,7 @@ public abstract class Iterator extends Statement {
 
 	public SValue eval(Scope scope) throws ScriptException {
 		Scope localScope = new Scope(scope);
-		updateLocalScope(localScope);
+		before(localScope);
 		while(continueLoop(localScope)) {
 			SValue ret = unit.eval(localScope);
 			if(ret instanceof SReturn) {
@@ -30,7 +30,7 @@ public abstract class Iterator extends Statement {
 		return new SNull();
 	}
 	
-	protected abstract void updateLocalScope(Scope scope) throws ScriptException;
+	protected abstract void before(Scope scope) throws ScriptException;
 	
 	protected abstract boolean continueLoop(Scope scope) throws ScriptException;
 	

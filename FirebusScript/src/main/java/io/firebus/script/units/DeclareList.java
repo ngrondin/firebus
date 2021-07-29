@@ -20,6 +20,10 @@ public class DeclareList extends ExecutionUnit {
 		}
 	}
 	
+	public List<Declare> getDeclares() {
+		return list;
+	}
+	
 	public SValue eval(Scope scope) throws ScriptException {
 		for(Declare d : list)
 			d.eval(scope);

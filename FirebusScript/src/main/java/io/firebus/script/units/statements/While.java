@@ -13,7 +13,7 @@ public class While extends ConditionalIterator {
 		super(c, u, uc);
 	}
 
-	protected void updateLocalScope(Scope scope) throws ScriptException {
+	protected void before(Scope scope) throws ScriptException {
 	}
 
 

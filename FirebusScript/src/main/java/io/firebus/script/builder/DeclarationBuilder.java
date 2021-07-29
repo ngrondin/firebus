@@ -36,9 +36,11 @@ public class DeclarationBuilder extends Builder {
 	
 	public static Declare buildVariableDeclaration(VariableDeclarationContext ctx) {
 		String key = ReferenceBuilder.buildAssignable(ctx.getChild(0));
-		ParseTree sub = ctx.getChild(2);
-		Expression exp = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub);
-		return new Declare(key, exp, sourceInfo(ctx));
+		Expression valExpr = null;
+		if(ctx.getChildCount() >= 3) {
+			valExpr = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)ctx.getChild(2));
+		}
+		return new Declare(key, valExpr, sourceInfo(ctx));
 	}
 	
 	public static Declare buildFunctionDeclaration(FunctionDeclarationContext ctx) {

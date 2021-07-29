@@ -11,6 +11,7 @@ import io.firebus.script.units.DeclareList;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.operators.abs.Operator;
+import io.firebus.script.units.statements.ArrayLoop;
 import io.firebus.script.units.statements.ForLoop;
 import io.firebus.script.units.statements.If;
 import io.firebus.script.units.statements.While;
@@ -117,12 +118,22 @@ public class MasterBuilder extends Builder {
 			While loop = new While(exprSeq.get(0), unit, uc);
 			return loop;
 		} else if(tn.getSymbol().getType() == JavaScriptParser.For) {
-			DeclareList declareList = DeclarationBuilder.buildVariableDeclarationList((VariableDeclarationListContext)ctx.getChild(2));
-			List<Expression> condES = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(4));
-			List<Expression> opES = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(6));
-			ExecutionUnit unit = buildStatement((StatementContext)ctx.getChild(8));
-			ForLoop loop = new ForLoop(declareList, condES.get(0), (Operator)opES.get(0), unit, uc);
-			return loop;
+			if(ctx.getChild(3).getText().equals(";")) {
+				DeclareList declareList = DeclarationBuilder.buildVariableDeclarationList((VariableDeclarationListContext)ctx.getChild(2));
+				List<Expression> condES = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(4));
+				List<Expression> opES = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(6));
+				ExecutionUnit unit = buildStatement((StatementContext)ctx.getChild(8));
+				ForLoop loop = new ForLoop(declareList, condES.get(0), (Operator)opES.get(0), unit, uc);
+				return loop;				
+			} else if(ctx.getChild(3).getText().equals("of")) {
+				DeclareList declareList = DeclarationBuilder.buildVariableDeclarationList((VariableDeclarationListContext)ctx.getChild(2));
+				List<Expression> arrayES = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(4));
+				ExecutionUnit unit = buildStatement((StatementContext)ctx.getChild(6));
+				ArrayLoop loop = new ArrayLoop(declareList, arrayES.get(0), unit, uc);
+				return loop;					
+			} else {
+				return null;
+			}
 		} else {
 			return null;
 		}
