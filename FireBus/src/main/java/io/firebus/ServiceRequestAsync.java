@@ -90,7 +90,7 @@ public class ServiceRequestAsync implements CorrelationListener {
 		{
 			errorMessage = inMsg.getPayload().getString();
 			String errorCodeStr = inMsg.getPayload().metadata.get("errorcode");
-			int errorCode = errorCodeStr != null ? Integer.parseInt(errorCodeStr) : null;
+			int errorCode = errorCodeStr != null ? Integer.parseInt(errorCodeStr) : 0;
 			functionInformation.returnedError();
 			requestor.error(new FunctionErrorException(errorMessage, errorCode));
 		}
