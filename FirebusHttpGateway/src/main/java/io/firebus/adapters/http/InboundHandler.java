@@ -34,8 +34,9 @@ public abstract class InboundHandler extends HttpHandler
 		{
 			if(!(e instanceof FunctionErrorException || e instanceof FunctionTimeoutException || e instanceof FunctionUnavailableException))
 				logger.severe("Error processing inbound : " + e.getMessage());
+			int errorCode = (e instanceof FunctionErrorException ? ((FunctionErrorException)e).getErrorCode() : 0);
 			resp.reset();
-			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			resp.setStatus(errorCode > 0 ? errorCode : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	        PrintWriter writer = resp.getWriter();
 			String accept = req.getHeader("accept");
 			if(accept != null && accept.contains("application/json"))
