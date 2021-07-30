@@ -80,12 +80,14 @@ public abstract class WebsocketHandler extends HttpHandler {
 	
 	public void sendStringMessage(String connectionId, String msg) {
 		WebsocketConnectionHandler connection = connections.get(connectionId);
-		connection.sendStringMessage(msg);
+		if(connection != null)
+			connection.sendStringMessage(msg);
 	}
 	
 	public void sendBinaryMessage(String connectionId, byte[] bytes) {
 		WebsocketConnectionHandler connection = connections.get(connectionId);
-		connection.sendBinaryMessage(bytes);
+		if(connection != null)
+			connection.sendBinaryMessage(bytes);
 	}
 	
 	public void close(String connectionId) {
