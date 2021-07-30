@@ -81,7 +81,10 @@ public class StreamRequest extends Thread
 						if(respMsg.getType() == Message.MSGTYPE_STREAMERROR)
 						{
 							errorMessage = respMsg.getPayload().getString();
-							throw new FunctionErrorException(errorMessage);
+							String errorCodeStr = respMsg.getPayload().metadata.get("errorcode");
+							int errorCode = errorCodeStr != null ? Integer.parseInt(errorCodeStr) : 0;
+							functionInformation.returnedError();
+							throw new FunctionErrorException(errorMessage, errorCode);
 						}
 						else if(respMsg.getType() == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
 						{

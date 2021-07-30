@@ -59,8 +59,10 @@ public class ServiceRequest
 						if(respMsg.getType() == Message.MSGTYPE_SERVICEERROR)
 						{
 							errorMessage = respMsg.getPayload().getString();
+							String errorCodeStr = respMsg.getPayload().metadata.get("errorcode");
+							int errorCode = errorCodeStr != null ? Integer.parseInt(errorCodeStr) : 0;
 							functionInformation.returnedError();
-							throw new FunctionErrorException(errorMessage);
+							throw new FunctionErrorException(errorMessage, errorCode);
 						}
 						else if(respMsg.getType() == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
 						{

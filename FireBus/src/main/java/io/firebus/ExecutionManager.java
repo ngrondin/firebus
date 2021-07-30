@@ -3,6 +3,7 @@ package io.firebus;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.FunctionInformation;
 import io.firebus.information.ServiceInformation;
 import io.firebus.information.Statistics;
@@ -14,14 +15,10 @@ import io.firebus.interfaces.StreamProvider;
 public abstract class ExecutionManager {
 	protected NodeCore nodeCore;
 	
-	/*protected int maxExecutionCount;
-	protected int totalExecutionCount;*/
-	
 	public ExecutionManager(NodeCore nc)
 	{
 		nodeCore = nc;		
 	}
-	
 	
 	protected abstract List<FunctionEntry> getFunctionEntries();
 	
@@ -64,14 +61,21 @@ public abstract class ExecutionManager {
 	protected void sendError(Throwable t, int dest, int corr, int corrSeq, int msgType, String subject)
 	{
 		String errorMessage = "";
-		while(t != null)
+		Throwable c = t;
+		while(c != null)
 		{
 			if(errorMessage.length() > 0)
 				errorMessage += " : ";
-			errorMessage += t.getMessage();
-			t = t.getCause();
+			errorMessage += c.getMessage();
+			c = c.getCause();
 		}
-		sendMessage(dest, corr, corrSeq, msgType, subject, errorMessage);
+		Payload payload = new Payload(errorMessage.getBytes());
+		if(t instanceof FunctionErrorException) 
+		{
+			int code = ((FunctionErrorException)t).getErrorCode();
+			if(code != 0) payload.metadata.put("errorcode", String.valueOf(code));
+		}
+		sendMessage(dest, corr, corrSeq, msgType, subject, payload);
 	}
 	
 	protected void sendMessage(int dest, int corr, int corrSeq, int msgType, String subject, String body)

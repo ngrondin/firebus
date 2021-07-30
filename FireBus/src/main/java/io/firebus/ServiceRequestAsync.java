@@ -89,8 +89,10 @@ public class ServiceRequestAsync implements CorrelationListener {
 		if(inMsg.getType() == Message.MSGTYPE_SERVICEERROR)
 		{
 			errorMessage = inMsg.getPayload().getString();
+			String errorCodeStr = inMsg.getPayload().metadata.get("errorcode");
+			int errorCode = errorCodeStr != null ? Integer.parseInt(errorCodeStr) : null;
 			functionInformation.returnedError();
-			requestor.error(new FunctionErrorException(errorMessage));
+			requestor.error(new FunctionErrorException(errorMessage, errorCode));
 		}
 		else if(inMsg.getType() == Message.MSGTYPE_SERVICERESPONSE)
 		{
