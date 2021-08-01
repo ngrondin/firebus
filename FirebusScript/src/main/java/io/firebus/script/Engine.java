@@ -1,7 +1,7 @@
 package io.firebus.script;
 
 
-import io.firebus.script.scopes.Scope;
+import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.values.SCallable;
 import io.firebus.script.values.SValue;

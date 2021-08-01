@@ -16,6 +16,7 @@ import io.firebus.script.units.statements.ForLoop;
 import io.firebus.script.units.statements.If;
 import io.firebus.script.units.statements.While;
 import io.firebus.script.SourceInfo;
+import io.firebus.script.exceptions.BuildException;
 import io.firebus.script.parser.JavaScriptParser;
 import io.firebus.script.parser.JavaScriptParser.*;
 
@@ -23,12 +24,12 @@ public class MasterBuilder extends Builder {
 
 
 	
-	public static Block buildProgram(ParseTree ctx) {
+	public static Block buildProgram(ParseTree ctx) throws BuildException {
 		ParseTree sub = ctx.getChild(0);
 		return buildSourceElements((SourceElementsContext)sub);
 	}
 	
-	public static Block buildSourceElements(SourceElementsContext ctx) {
+	public static Block buildSourceElements(SourceElementsContext ctx) throws BuildException {
 		List<ExecutionUnit> list = new ArrayList<ExecutionUnit>();
 		for(int i = 0; i < ctx.getChildCount(); i++) {
 			ParseTree sub = ctx.getChild(i);
@@ -39,16 +40,15 @@ public class MasterBuilder extends Builder {
 		return new Block(list, sourceInfo(ctx));
 	}
 	
-	public static ExecutionUnit buildSourceElement(SourceElementContext ctx) {
+	public static ExecutionUnit buildSourceElement(SourceElementContext ctx) throws BuildException {
 		ParseTree sub = ctx.getChild(0);
 		if(sub instanceof StatementContext) {
 			return buildStatement((StatementContext)sub);
-		} else {
-			return null;
-		}
+		} 
+		throw new BuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
-	public static List<ExecutionUnit> buildStatementList(StatementListContext ctx) {
+	public static List<ExecutionUnit> buildStatementList(StatementListContext ctx) throws BuildException {
 		List<ExecutionUnit> list = new ArrayList<ExecutionUnit>();
 		for(int i = 0; i < ctx.getChildCount(); i++) {
 			ParseTree sub = ctx.getChild(i);
@@ -59,7 +59,7 @@ public class MasterBuilder extends Builder {
 		return list;
 	}
 	
-	public static ExecutionUnit buildStatement(StatementContext ctx) {
+	public static ExecutionUnit buildStatement(StatementContext ctx) throws BuildException {
 		ParseTree sub = ctx.getChild(0);
 		if(sub instanceof VariableStatementContext) {
 			return buildVariableStatement((VariableStatementContext)sub);
@@ -74,42 +74,41 @@ public class MasterBuilder extends Builder {
 		} else if(sub instanceof IterationStatementContext) {
 			return buildIterationStatement((IterationStatementContext)sub);
 		} else if(sub instanceof ContinueStatementContext) {
-			return null;
+
 		} else if(sub instanceof BreakStatementContext) {
-			return null;
+
 		} else if(sub instanceof ReturnStatementContext) {
 			return FlowBuilder.buildReturnStatement((ReturnStatementContext)sub);
 		} else if(sub instanceof SwitchStatementContext) {
-			return null;
+
 		} else if(sub instanceof ThrowStatementContext) {
-			return null;
+
 		} else if(sub instanceof TryStatementContext) {
-			return null;
+
 		} else {
-			return null;
+
 		}
+		throw new BuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
-	public static ExecutionUnit buildVariableStatement(VariableStatementContext ctx) {
+	public static ExecutionUnit buildVariableStatement(VariableStatementContext ctx) throws BuildException {
 		ParseTree sub = ctx.getChild(0);
 		if(sub instanceof VariableDeclarationListContext) {
 			return DeclarationBuilder.buildVariableDeclarationList((VariableDeclarationListContext)sub);
-		} else {
-			return null;
-		}
+		} 
+		throw new BuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
-	public static ExecutionUnit buildBlock(BlockContext ctx) {
+	public static ExecutionUnit buildBlock(BlockContext ctx) throws BuildException {
 		ParseTree sub = ctx.getChild(1);
 		if(sub instanceof StatementListContext) {
 			List<ExecutionUnit> list = buildStatementList((StatementListContext)sub);
 			return new Block(list, sourceInfo(ctx));
-		} else {
-			return null;
-		}
+		} 
+		throw new BuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
-	public static ExecutionUnit buildIterationStatement(IterationStatementContext ctx) {
+	public static ExecutionUnit buildIterationStatement(IterationStatementContext ctx)  throws BuildException {
 		SourceInfo uc = sourceInfo(ctx);
 		TerminalNode tn = (TerminalNode)ctx.getChild(0);
 		if(tn.getSymbol().getType() == JavaScriptParser.While) {
@@ -131,15 +130,12 @@ public class MasterBuilder extends Builder {
 				ExecutionUnit unit = buildStatement((StatementContext)ctx.getChild(6));
 				ArrayLoop loop = new ArrayLoop(declareList, arrayES.get(0), unit, uc);
 				return loop;					
-			} else {
-				return null;
 			}
-		} else {
-			return null;
 		}
+		throw new BuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
-	public static ExecutionUnit buildIfStatement(IfStatementContext ctx) {
+	public static ExecutionUnit buildIfStatement(IfStatementContext ctx) throws BuildException {
 		SourceInfo uc = sourceInfo(ctx);
 		TerminalNode tn = (TerminalNode)ctx.getChild(0);
 		if(tn.getSymbol().getType() == JavaScriptParser.If) {
@@ -150,8 +146,7 @@ public class MasterBuilder extends Builder {
 				elseUnit = buildStatement((StatementContext)ctx.getChild(6));
 			If ret = new If(exprSeq.get(0), unit, elseUnit, uc);
 			return ret;
-		} else {
-			return null;
-		}
+		} 
+		throw new BuildException("Unknown source element", sourceInfo(ctx));
 	}
 }

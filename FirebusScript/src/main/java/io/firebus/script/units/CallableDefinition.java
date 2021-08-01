@@ -2,8 +2,8 @@ package io.firebus.script.units;
 
 import java.util.List;
 
+import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.scopes.Scope;
 import io.firebus.script.values.InternalSCallable;
 import io.firebus.script.values.SValue;
 

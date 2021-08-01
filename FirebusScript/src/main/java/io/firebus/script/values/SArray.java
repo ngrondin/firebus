@@ -3,7 +3,7 @@ package io.firebus.script.values;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.firebus.script.ScriptException;
+import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.callables.ArrayJoin;
 import io.firebus.script.values.callables.ArrayMap;
 

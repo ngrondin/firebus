@@ -1,4 +1,2 @@
-var a = [1, 5, 18];
-for(var i = 0; i < 3; i++) {
-	print(i);
-}
+var a = {b:"allo", c:"moi", d: () => "et moi"};
+print(a.d());

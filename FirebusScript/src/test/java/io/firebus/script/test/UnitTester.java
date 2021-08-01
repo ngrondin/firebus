@@ -2,7 +2,7 @@ package io.firebus.script.test;
 
 import java.util.Arrays;
 
-import io.firebus.script.scopes.Scope;
+import io.firebus.script.Scope;
 import io.firebus.script.units.Block;
 import io.firebus.script.units.Call;
 import io.firebus.script.units.CallableDefinition;

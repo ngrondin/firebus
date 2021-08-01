@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import io.firebus.script.SourceInfo;
+import io.firebus.script.exceptions.BuildException;
 import io.firebus.script.parser.JavaScriptParser;
 import io.firebus.script.parser.JavaScriptParser.ArrayElementContext;
 import io.firebus.script.parser.JavaScriptParser.ArrayLiteralContext;
@@ -25,7 +26,7 @@ import io.firebus.script.units.literals.StringLiteral;
 
 public class LiteralBuilder extends Builder {
     
-    public static Literal buildLiteral(LiteralContext ctx) {
+    public static Literal buildLiteral(LiteralContext ctx) throws BuildException {
 		Literal ret = null;
 		ParseTree child = ctx.getChild(0);
 		if(child instanceof NumericLiteralContext) {
@@ -47,7 +48,7 @@ public class LiteralBuilder extends Builder {
 		return ret;
 	}
 
-    public static NumericLiteral buildNumericLiteral(NumericLiteralContext ctx) {
+    public static NumericLiteral buildNumericLiteral(NumericLiteralContext ctx) throws BuildException {
     	SourceInfo uc = sourceInfo(ctx);
 		TerminalNode tn = (TerminalNode)ctx.getChild(0);
 		Number number = null;
@@ -70,7 +71,7 @@ public class LiteralBuilder extends Builder {
 		return new NumericLiteral(number, uc);
     }
  
-    public static ObjectLiteral buildObjectLiteral(ObjectLiteralContext ctx) {
+    public static ObjectLiteral buildObjectLiteral(ObjectLiteralContext ctx) throws BuildException {
     	ObjectLiteral ol = new ObjectLiteral(sourceInfo(ctx));
     	for(ParseTree sub: ctx.children) {
     		if(sub instanceof PropertyAssignmentContext) {
@@ -82,7 +83,7 @@ public class LiteralBuilder extends Builder {
     	return ol;
     }
     
-    public static ArrayLiteral buildArrayLiteral(ArrayLiteralContext ctx) {
+    public static ArrayLiteral buildArrayLiteral(ArrayLiteralContext ctx) throws BuildException {
     	ArrayLiteral al = new ArrayLiteral(sourceInfo(ctx));
     	ElementListContext el = (ElementListContext)ctx.getChild(1);
     	for(ParseTree sub: el.children) {

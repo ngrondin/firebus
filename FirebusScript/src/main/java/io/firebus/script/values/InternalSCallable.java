@@ -2,8 +2,8 @@ package io.firebus.script.values;
 
 import java.util.List;
 
-import io.firebus.script.ScriptException;
-import io.firebus.script.scopes.Scope;
+import io.firebus.script.Scope;
+import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Block;
 import io.firebus.script.values.flow.SReturn;
 

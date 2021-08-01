@@ -6,7 +6,7 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import io.firebus.script.SourceInfo;
-import io.firebus.script.parser.JavaScriptParser;
+import io.firebus.script.exceptions.BuildException;
 import io.firebus.script.parser.JavaScriptParser.AnoymousFunctionDeclContext;
 import io.firebus.script.parser.JavaScriptParser.ArgumentContext;
 import io.firebus.script.parser.JavaScriptParser.ArgumentsContext;
@@ -30,13 +30,13 @@ import io.firebus.script.units.statements.Return;
 
 public class CallableBuilder extends Builder {
 
-	public static Expression buildArgumentsExpression(ArgumentsExpressionContext ctx) {
+	public static Expression buildArgumentsExpression(ArgumentsExpressionContext ctx) throws BuildException {
 		Expression callable = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)ctx.getChild(0));
 		List<Expression> args = buildArguments((ArgumentsContext)ctx.getChild(1));
 		return new Call(callable, args, sourceInfo(ctx));
 	}
 	
-	public static List<Expression> buildArguments(ArgumentsContext ctx) {
+	public static List<Expression> buildArguments(ArgumentsContext ctx) throws BuildException {
 		List<Expression> list = new ArrayList<Expression>();
 		for(int i = 0; i < ctx.getChildCount(); i++) {
 			ParseTree sub = ctx.getChild(i);
@@ -47,20 +47,19 @@ public class CallableBuilder extends Builder {
 		return list;
 	}
 	
-	public static Expression buildArgument(ArgumentContext ctx) {
+	public static Expression buildArgument(ArgumentContext ctx) throws BuildException {
 		ParseTree sub = ctx.getChild(0);
 		if(sub instanceof SingleExpressionContext) {
 			return ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub);
 		} else if(sub instanceof IdentifierContext) {
 			return ReferenceBuilder.buildIdentifier((IdentifierContext)sub);
-		} else {
-			return null;
 		}
+		throw new BuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
 	
 	
-	public static CallableDefinition buildFunctionExpression(FunctionExpressionContext ctx) {
+	public static CallableDefinition buildFunctionExpression(FunctionExpressionContext ctx) throws BuildException {
 		ParseTree sub = ctx.getChild(0);
 		if(sub instanceof ArrowFunctionContext) {
 			List<String> params = buildArrowFunctionParameters((ArrowFunctionParametersContext)sub.getChild(0));
@@ -72,16 +71,15 @@ public class CallableBuilder extends Builder {
 			Block body = buildFunctionBody((FunctionBodyContext)sub.getChild(4));
 			CallableDefinition callDef = new CallableDefinition(params, body, sourceInfo(ctx));
 			return callDef;			
-		} else {
-			return null;
 		}
+		throw new BuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
-	public static List<String> buildArrowFunctionParameters(ArrowFunctionParametersContext ctx) {
+	public static List<String> buildArrowFunctionParameters(ArrowFunctionParametersContext ctx) throws BuildException {
 		return buildFormalParameterList((FormalParameterListContext)ctx.getChild(1));
 	}
 	
-	public static Block buildArrowFunctionBody(ArrowFunctionBodyContext ctx) {
+	public static Block buildArrowFunctionBody(ArrowFunctionBodyContext ctx) throws BuildException {
 		ParseTree sub = ctx.getChild(0);
 		if(sub instanceof FunctionBodyContext) {
 			return buildFunctionBody((FunctionBodyContext)sub);
@@ -93,16 +91,15 @@ public class CallableBuilder extends Builder {
 			list.add(ret);
 			Block block = new Block(list, uc);
 			return block;
-		} else {
-			return null;
 		}
+		throw new BuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
-	public static Block buildFunctionBody(FunctionBodyContext ctx) {
+	public static Block buildFunctionBody(FunctionBodyContext ctx) throws BuildException {
 		return MasterBuilder.buildSourceElements((SourceElementsContext)ctx.getChild(1));
 	}
 	
-	public static List<String> buildFormalParameterList(FormalParameterListContext ctx) {
+	public static List<String> buildFormalParameterList(FormalParameterListContext ctx) throws BuildException {
 		List<String> list = new ArrayList<String>();
 		for(ParseTree sub: ctx.children) {
 			if(sub instanceof FormalParameterArgContext) {

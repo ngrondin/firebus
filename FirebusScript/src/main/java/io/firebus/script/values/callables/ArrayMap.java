@@ -2,7 +2,7 @@ package io.firebus.script.values.callables;
 
 import java.util.List;
 
-import io.firebus.script.ScriptException;
+import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.SCallable;
 import io.firebus.script.values.SValue;

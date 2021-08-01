@@ -3,10 +3,12 @@ package io.firebus.script.builder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import io.firebus.script.SourceInfo;
+import io.firebus.script.exceptions.BuildException;
 import io.firebus.script.parser.JavaScriptParser;
 import io.firebus.script.parser.JavaScriptParser.AdditiveExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.ArgumentsExpressionContext;
@@ -78,20 +80,19 @@ import io.firebus.script.units.references.Reference;
 
 public class ExpressionBuilder extends Builder {
 	    
-	public static Expression buildExpressionStatement(ExpressionStatementContext ctx) {
+	public static Expression buildExpressionStatement(ExpressionStatementContext ctx) throws BuildException {
 		ParseTree sub = ctx.getChild(0);
 		if(sub instanceof ExpressionSequenceContext) {
 			List<Expression> list = buildExpressionSequence((ExpressionSequenceContext)sub);
 			if(list.size() > 0) 
 				return list.get(0);
 			else
-				return null;
-		} else {
-			return null;
-		}
+				throw new BuildException("Empty expression sequence", sourceInfo(ctx));
+		} 
+		throw new BuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
-	public static List<Expression> buildExpressionSequence(ExpressionSequenceContext ctx) {
+	public static List<Expression> buildExpressionSequence(ExpressionSequenceContext ctx) throws BuildException {
 		List<Expression> ret = new ArrayList<Expression>();
 		for(ParseTree sub: ctx.children) {
 			Expression expr = null;
@@ -105,7 +106,7 @@ public class ExpressionBuilder extends Builder {
 	
 
 	
-	public static Expression buildSingleExpression(SingleExpressionContext ctx) {
+	public static Expression buildSingleExpression(SingleExpressionContext ctx) throws BuildException {
 		SourceInfo uc = sourceInfo(ctx);
 		if(ctx instanceof AssignmentExpressionContext) {
 			return new Setter((Reference)buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
@@ -116,9 +117,9 @@ public class ExpressionBuilder extends Builder {
 		} else if(ctx instanceof IdentifierExpressionContext) {
 			return ReferenceBuilder.buildIdentifier((IdentifierContext)ctx.getChild(0));	
 		} else if(ctx instanceof MemberDotExpressionContext) {
-			return new MemberDotReference(buildSingleExpressionFromChild(ctx, 0), ctx.getChild(2).getText(), uc);
+			return new MemberDotReference(buildSingleExpressionFromChild(ctx, 0), ctx.getChild(2).getText(), sourceInfo(ctx));
 		} else if(ctx instanceof MemberIndexExpressionContext) {
-			return new MemberIndexReference(buildSingleExpressionFromChild(ctx, 0), Integer.parseInt(ctx.getChild(2).getText()), uc);
+			return new MemberIndexReference(buildSingleExpressionFromChild(ctx, 0), buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(2)).get(0), sourceInfo(ctx));			
 		} else if(ctx instanceof LiteralExpressionContext) {
 			return LiteralBuilder.buildLiteral((LiteralContext)ctx.getChild(0));
 		} else if(ctx instanceof ArrayLiteralExpressionContext) {
@@ -153,8 +154,6 @@ public class ExpressionBuilder extends Builder {
 				return new BitShiftRight(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);	
 			else if(op.getSymbol().getType() == JavaScriptParser.RightShiftLogical)
 				return new BitShiftRightLogical(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
-			else 
-				return null;
 		} else if(ctx instanceof LogicalAndExpressionContext) {
 			return new LogicalAnd(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
 		} else if(ctx instanceof LogicalOrExpressionContext) {
@@ -169,16 +168,12 @@ public class ExpressionBuilder extends Builder {
 				return new Divide(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
 			else if(op.getSymbol().getType() == JavaScriptParser.Modulus)
 				return new Modulus(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
-			else
-				return null;
 		} else if(ctx instanceof AdditiveExpressionContext) {
 			TerminalNode op = (TerminalNode)ctx.getChild(1);
 			if(op.getSymbol().getType() == JavaScriptParser.Plus)
 				return new Add(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
 			else if(op.getSymbol().getType() == JavaScriptParser.Minus)
 				return new Substract(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
-			else
-				return null;
 		} else if(ctx instanceof PowerExpressionContext) {
 			return new Power(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
 		} else if(ctx instanceof CoalesceExpressionContext) {
@@ -189,25 +184,12 @@ public class ExpressionBuilder extends Builder {
 			return new EqualityCompare(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), ctx.getChild(1).getText(), uc);
 		} else if(ctx instanceof ParenthesizedExpressionContext) {
 			List<Expression> seq = buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(1));
-			if(seq.size() > 0) 
-				return seq.get(0);
-			else 
-				return null;
-		} else {
-			return null;
-		}
+			return seq.get(0);
+		} 
+		throw new BuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
-	public static Expression buildSingleExpressionFromChild(ParseTree parentContext, int childIndex) {
+	public static Expression buildSingleExpressionFromChild(ParseTree parentContext, int childIndex) throws BuildException {
 		return buildSingleExpression((SingleExpressionContext)parentContext.getChild(childIndex));
 	}
-	
-	/*public static MemberSetter buildMemberDotExpression(MemberDotExpressionContext memberCtx, SingleExpressionContext valueCtx) {
-		Expression objectExpr = buildSingleExpression((SingleExpressionContext)memberCtx.getChild(0));
-		String key = memberCtx.getChild(2).getText();
-		Expression valExpr = buildSingleExpression(valueCtx);
-		return new MemberSetter(objectExpr, key, valExpr, ContextBuilder.buildContext(memberCtx));
-	}*/
-	
-
 }

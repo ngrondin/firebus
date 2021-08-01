@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import io.firebus.script.exceptions.BuildException;
 import io.firebus.script.parser.JavaScriptParser.FormalParameterListContext;
 import io.firebus.script.parser.JavaScriptParser.FunctionBodyContext;
 import io.firebus.script.parser.JavaScriptParser.FunctionDeclarationContext;
@@ -20,7 +21,7 @@ import io.firebus.script.units.Expression;
 
 public class DeclarationBuilder extends Builder {
 
-	public static DeclareList buildVariableDeclarationList(VariableDeclarationListContext ctx) {
+	public static DeclareList buildVariableDeclarationList(VariableDeclarationListContext ctx) throws BuildException {
 		List<Declare> list = new ArrayList<Declare>();
 		String modifier = null;
 		for(int i = 0; i < ctx.getChildCount(); i++) {
@@ -34,7 +35,7 @@ public class DeclarationBuilder extends Builder {
 		return new DeclareList(modifier, list, sourceInfo(ctx));
 	}
 	
-	public static Declare buildVariableDeclaration(VariableDeclarationContext ctx) {
+	public static Declare buildVariableDeclaration(VariableDeclarationContext ctx) throws BuildException {
 		String key = ReferenceBuilder.buildAssignable(ctx.getChild(0));
 		Expression valExpr = null;
 		if(ctx.getChildCount() >= 3) {
@@ -43,7 +44,7 @@ public class DeclarationBuilder extends Builder {
 		return new Declare(key, valExpr, sourceInfo(ctx));
 	}
 	
-	public static Declare buildFunctionDeclaration(FunctionDeclarationContext ctx) {
+	public static Declare buildFunctionDeclaration(FunctionDeclarationContext ctx) throws BuildException {
 		String key = ctx.getChild(1).getText();
 		List<String> params = null;
 		if(ctx.getChildCount() > 5) {

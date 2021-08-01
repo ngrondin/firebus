@@ -1,4 +1,4 @@
-package io.firebus.script.scopes;
+package io.firebus.script;
 
 import java.util.HashMap;
 import java.util.Map;

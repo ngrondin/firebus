@@ -1,7 +1,7 @@
 package io.firebus.script.values;
 
 
-import io.firebus.script.ScriptException;
+import io.firebus.script.exceptions.ScriptException;
 
 public abstract class SCallable extends SValue {
 

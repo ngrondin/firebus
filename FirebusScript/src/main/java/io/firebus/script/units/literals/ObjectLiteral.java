@@ -3,9 +3,9 @@ package io.firebus.script.units.literals;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.firebus.script.ScriptException;
+import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.scopes.Scope;
+import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Literal;
 import io.firebus.script.values.InternalSObject;

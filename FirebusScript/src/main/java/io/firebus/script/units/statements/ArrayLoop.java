@@ -1,8 +1,8 @@
 package io.firebus.script.units.statements;
 
-import io.firebus.script.ScriptException;
+import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.scopes.Scope;
+import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Declare;
 import io.firebus.script.units.DeclareList;
 import io.firebus.script.units.ExecutionUnit;
