@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.BuildException;
+import io.firebus.script.exceptions.ScriptBuildException;
 import io.firebus.script.parser.JavaScriptParser;
 import io.firebus.script.parser.JavaScriptParser.AdditiveExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.ArgumentsExpressionContext;
@@ -80,19 +80,19 @@ import io.firebus.script.units.references.Reference;
 
 public class ExpressionBuilder extends Builder {
 	    
-	public static Expression buildExpressionStatement(ExpressionStatementContext ctx) throws BuildException {
+	public static Expression buildExpressionStatement(ExpressionStatementContext ctx) throws ScriptBuildException {
 		ParseTree sub = ctx.getChild(0);
 		if(sub instanceof ExpressionSequenceContext) {
 			List<Expression> list = buildExpressionSequence((ExpressionSequenceContext)sub);
 			if(list.size() > 0) 
 				return list.get(0);
 			else
-				throw new BuildException("Empty expression sequence", sourceInfo(ctx));
+				throw new ScriptBuildException("Empty expression sequence", sourceInfo(ctx));
 		} 
-		throw new BuildException("Unknown source element", sourceInfo(ctx));
+		throw new ScriptBuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
-	public static List<Expression> buildExpressionSequence(ExpressionSequenceContext ctx) throws BuildException {
+	public static List<Expression> buildExpressionSequence(ExpressionSequenceContext ctx) throws ScriptBuildException {
 		List<Expression> ret = new ArrayList<Expression>();
 		for(ParseTree sub: ctx.children) {
 			Expression expr = null;
@@ -106,7 +106,7 @@ public class ExpressionBuilder extends Builder {
 	
 
 	
-	public static Expression buildSingleExpression(SingleExpressionContext ctx) throws BuildException {
+	public static Expression buildSingleExpression(SingleExpressionContext ctx) throws ScriptBuildException {
 		SourceInfo uc = sourceInfo(ctx);
 		if(ctx instanceof AssignmentExpressionContext) {
 			return new Setter((Reference)buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
@@ -186,10 +186,10 @@ public class ExpressionBuilder extends Builder {
 			List<Expression> seq = buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(1));
 			return seq.get(0);
 		} 
-		throw new BuildException("Unknown source element", sourceInfo(ctx));
+		throw new ScriptBuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
-	public static Expression buildSingleExpressionFromChild(ParseTree parentContext, int childIndex) throws BuildException {
+	public static Expression buildSingleExpressionFromChild(ParseTree parentContext, int childIndex) throws ScriptBuildException {
 		return buildSingleExpression((SingleExpressionContext)parentContext.getChild(childIndex));
 	}
 }

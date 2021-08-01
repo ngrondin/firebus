@@ -1,56 +1,51 @@
 package io.firebus.script;
 
 
+import java.util.Map;
+
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.ExecutionUnit;
+import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.SCallable;
+import io.firebus.script.values.SNull;
+import io.firebus.script.values.SNumber;
+import io.firebus.script.values.SString;
 import io.firebus.script.values.SValue;
 import io.firebus.script.values.impl.Print;
 
 public class Engine {
 	
-	protected Scope coreScope;
+	protected Scope rootScope;
 	protected Compiler compiler;
 	protected Executer executer;
 
 	public Engine() {
-		coreScope = new Scope();
+		rootScope = new Scope();
 		compiler = new Compiler();
 		Print p = new Print();
-		coreScope.setValue("print", p);
+		rootScope.setValue("print", p);
 
 	}
 	
-	public void compile(String name, String src) throws ScriptException {
-		ExecutionUnit root = compiler.compile(src);
-		root.eval(coreScope);
+	public ExecutionUnit compile(String src) throws ScriptException {
+		return compiler.compile(src);
+	}
+	
+	public void eval(String src) throws ScriptException {
+		eval(compile(src));
+	}
+	
+	public void eval(ExecutionUnit unit) throws ScriptException {
+		unit.eval(rootScope);
 	}
 	
 	public SValue invoke(String name) throws ScriptException {
 		return invoke(name, null);
 	}
 	
-	/*public SValue invoke(String name, Object[] rawParams) throws ScriptException {
-		List<SValue> params = new ArrayList<SValue>();
-		for(int i = 0; i < rawParams.length; i++) {
-			Object o = rawParams[i];
-			if(o == null) {
-				params.add(new SNull());
-			} else if(o instanceof SValue) {
-				params.add((SValue)o);
-			} else if(o instanceof Number) {
-				params.add(new SNumber((Number)o));
-			} else if(o instanceof String) {
-				params.add(new SString((String)o));
-			} else if(o instanceof Boolean) {
-				params.add(new SBoolean((Boolean)o));
-			} 
-		}
-		return invoke(name, params);
-	}*/
 	
 	public SValue invoke(String name, SValue[] arguments) throws ScriptException {
-		SValue c = coreScope.getValue(name);
+		SValue c = rootScope.getValue(name);
 		if(c != null) {
 			if(c instanceof SCallable) {
 				SValue ret = ((SCallable)c).call(arguments);
@@ -63,5 +58,32 @@ public class Engine {
 		}
 	}
 	
+	
+	public Scope createScope(Map<String, Object> map) {
+		Scope scope = new Scope(rootScope);
+		for(String key: map.keySet()) {
+			scope.setValue(key, convertIn(map.get(key)));
+		}
+		return scope;
+	}
+	
+	protected SValue convertIn(Object o) {
+		if(o == null) {
+			return new SNull();
+		} else if(o instanceof SValue) {
+			return (SValue)o;
+		} else if(o instanceof Number) {
+			return new SNumber((Number)o);
+		} else if(o instanceof String) {
+			return new SString((String)o);
+		} else if(o instanceof Boolean) {
+			return new SBoolean((Boolean)o);
+		} 		
+		return null;
+	}
+	
+	protected Object convertOut(SValue v) {
+		return null;
+	}
 
 }

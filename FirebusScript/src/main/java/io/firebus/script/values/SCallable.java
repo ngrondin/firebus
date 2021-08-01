@@ -15,4 +15,8 @@ public abstract class SCallable extends SValue {
 	public boolean identical(SValue other) {
 		return this == other;
 	}
+	
+	public String toString() {
+		return "callable()";
+	}
 }

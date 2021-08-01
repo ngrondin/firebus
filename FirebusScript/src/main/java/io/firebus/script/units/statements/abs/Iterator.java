@@ -7,6 +7,7 @@ import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Statement;
 import io.firebus.script.values.SNull;
 import io.firebus.script.values.SValue;
+import io.firebus.script.values.flow.SBreak;
 import io.firebus.script.values.flow.SReturn;
 
 public abstract class Iterator extends Statement {
@@ -24,6 +25,8 @@ public abstract class Iterator extends Statement {
 			SValue ret = unit.eval(localScope);
 			if(ret instanceof SReturn) {
 				return ret;
+			} else if(ret instanceof SBreak) {
+				return new SNull();
 			}
 			afterIteration(localScope);
 		}

@@ -23,4 +23,12 @@ public class ScriptException extends Exception {
 	public String getMessage() {
 		return super.getMessage() + (context != null ? " [" + context.getLineCol() + "]" : "");
 	}
+	
+	public String getMessageText() {
+		return super.getMessage();
+	}
+	
+	public SourceInfo getSourceInfo() {
+		return context;
+	}
 }

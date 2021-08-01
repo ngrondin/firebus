@@ -1,2 +1,4 @@
-var a = {b:"allo", c:"moi", d: () => "et moi"};
-print(a.d());
+for(var i = 0; i < 5; i++) {
+	print((i + 1) + " mississipi");
+	break;
+}

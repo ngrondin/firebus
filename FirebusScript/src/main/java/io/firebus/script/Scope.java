@@ -33,4 +33,30 @@ public class Scope {
 	public Scope getScopeOf(String key) {
 		return values.containsKey(key) ? this : parent != null ? parent.getScopeOf(key) : null;
 	}
+	
+	/*public String toString() {
+		return toString("");
+	}*/
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		//sb.append(indent);
+		sb.append("{");
+		sb.append("\r\n");
+		for(String key : values.keySet()) {
+			//sb.append(indent);
+			sb.append(" ");
+			sb.append(key);
+			sb.append(":");
+			sb.append(values.get(key).toString().replaceAll("(?m)^", " "));
+			sb.append(",\r\n");
+		}
+		if(parent != null) {
+			sb.append(parent.toString().replaceAll("(?m)^", " "));
+			sb.append("\r\n");
+		}
+		//sb.append(indent);
+		sb.append("}");
+		return sb.toString();
+	}
 }

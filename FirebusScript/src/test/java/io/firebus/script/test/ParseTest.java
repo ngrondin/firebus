@@ -13,7 +13,7 @@ public class ParseTest {
 		try {
 			String source = Files.readString(Paths.get("test.js"), StandardCharsets.US_ASCII);
 			Engine engine = new Engine();
-			engine.compile("test", source);
+			engine.eval(source);
 			System.out.println("Done");
 		} catch(Exception e) {
 			e.printStackTrace();

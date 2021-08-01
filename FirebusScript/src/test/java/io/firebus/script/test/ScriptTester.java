@@ -12,7 +12,7 @@ public class ScriptTester {
 		    Path fileName = Path.of("test.js");
 			String script = Files.readString(fileName);
 			Engine engine = new Engine();
-			engine.compile("test", script);
+			engine.eval(script);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
