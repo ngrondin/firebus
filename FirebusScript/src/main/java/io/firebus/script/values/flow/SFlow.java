@@ -1,6 +1,6 @@
 package io.firebus.script.values.flow;
 
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SValue;
 
 public abstract class SFlow extends SValue {
 

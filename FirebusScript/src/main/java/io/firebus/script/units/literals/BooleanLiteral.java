@@ -5,7 +5,7 @@ import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Literal;
 import io.firebus.script.values.SBoolean;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SValue;
 
 public class BooleanLiteral extends Literal {
     protected boolean value;

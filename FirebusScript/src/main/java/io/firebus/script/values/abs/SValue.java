@@ -1,4 +1,4 @@
-package io.firebus.script.values;
+package io.firebus.script.values.abs;
 
 public abstract class SValue {
 

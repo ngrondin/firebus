@@ -5,8 +5,8 @@ import java.util.List;
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
-import io.firebus.script.values.SCallable;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SCallable;
+import io.firebus.script.values.abs.SValue;
 
 public class Call extends Expression {
 	protected Expression callableExpression;

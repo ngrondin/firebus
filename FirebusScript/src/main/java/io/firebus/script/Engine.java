@@ -6,11 +6,11 @@ import java.util.Map;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.values.SBoolean;
-import io.firebus.script.values.SCallable;
 import io.firebus.script.values.SNull;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.SString;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SCallable;
+import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.impl.Print;
 
 public class Engine {

@@ -4,8 +4,8 @@ import java.util.List;
 
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.SArray;
-import io.firebus.script.values.SCallable;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SCallable;
+import io.firebus.script.values.abs.SValue;
 
 public class ArrayMap extends ArrayFunction {
 	

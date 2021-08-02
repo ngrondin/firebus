@@ -6,7 +6,7 @@ import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
 import io.firebus.script.values.SBoolean;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SValue;
 
 public abstract class ConditionalIterator extends Iterator {
 	protected Expression condition;

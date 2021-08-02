@@ -5,7 +5,7 @@ import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.SNull;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SValue;
 
 public class NullLiteral extends Literal {
 

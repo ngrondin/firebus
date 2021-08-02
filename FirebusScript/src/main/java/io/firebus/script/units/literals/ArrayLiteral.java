@@ -9,7 +9,7 @@ import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Literal;
 import io.firebus.script.values.SArray;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SValue;
 
 public class ArrayLiteral extends Literal {
 	protected List<Expression> expressions;

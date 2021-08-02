@@ -1,9 +1,9 @@
 package io.firebus.script.values.impl;
 
 
-import io.firebus.script.values.SCallable;
 import io.firebus.script.values.SNull;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SCallable;
+import io.firebus.script.values.abs.SValue;
 
 public class Print extends SCallable {
 

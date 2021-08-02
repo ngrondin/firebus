@@ -9,7 +9,7 @@ import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.statements.abs.Iterator;
 import io.firebus.script.values.SArray;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SValue;
 
 public class ArrayLoop extends Iterator {
 	protected DeclareList declares;

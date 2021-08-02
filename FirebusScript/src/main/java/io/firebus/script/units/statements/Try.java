@@ -6,7 +6,7 @@ import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Block;
 import io.firebus.script.units.Statement;
 import io.firebus.script.values.SException;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SValue;
 
 public class Try extends Statement {
 	protected Block block;

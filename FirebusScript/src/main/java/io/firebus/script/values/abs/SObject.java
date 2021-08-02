@@ -1,6 +1,6 @@
-package io.firebus.script.values;
+package io.firebus.script.values.abs;
 
-
+import io.firebus.script.values.SString;
 
 public abstract class SObject extends SValue {
 

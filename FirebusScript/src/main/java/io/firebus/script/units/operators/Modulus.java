@@ -5,7 +5,7 @@ import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.operators.abs.TwoIntegerOperator;
 import io.firebus.script.values.SNumber;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SValue;
 
 public class Modulus extends TwoIntegerOperator {
 

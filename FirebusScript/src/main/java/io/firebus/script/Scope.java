@@ -3,7 +3,7 @@ package io.firebus.script;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SValue;
 
 public class Scope {
 	protected Scope parent;

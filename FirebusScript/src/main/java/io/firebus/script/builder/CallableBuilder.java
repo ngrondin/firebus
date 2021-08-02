@@ -19,6 +19,7 @@ import io.firebus.script.parser.JavaScriptParser.FormalParameterListContext;
 import io.firebus.script.parser.JavaScriptParser.FunctionBodyContext;
 import io.firebus.script.parser.JavaScriptParser.FunctionExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.IdentifierContext;
+import io.firebus.script.parser.JavaScriptParser.NewExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.SingleExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.SourceElementsContext;
 import io.firebus.script.units.Block;
@@ -26,6 +27,7 @@ import io.firebus.script.units.Call;
 import io.firebus.script.units.CallableDefinition;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
+import io.firebus.script.units.operators.New;
 import io.firebus.script.units.statements.Return;
 
 public class CallableBuilder extends Builder {
@@ -115,4 +117,9 @@ public class CallableBuilder extends Builder {
 		return list;
 	}
 	
+	public static New buildNewOperator(NewExpressionContext ctx) throws ScriptBuildException {
+		Expression callable = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)ctx.getChild(1).getChild(0));
+		List<Expression> args = buildArguments((ArgumentsContext)ctx.getChild(1).getChild(1));
+		return new New(callable, args, sourceInfo(ctx));
+	}
 }

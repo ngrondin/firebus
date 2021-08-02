@@ -2,7 +2,10 @@ package io.firebus.script.values;
 
 import java.util.Map;
 
-public class SNumber extends PredefinedSObject {
+import io.firebus.script.values.abs.SPredefinedObject;
+import io.firebus.script.values.abs.SValue;
+
+public class SNumber extends SPredefinedObject {
     protected Number number;
 
     public SNumber(Number n) {   	

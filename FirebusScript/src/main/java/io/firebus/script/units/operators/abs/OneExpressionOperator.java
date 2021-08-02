@@ -4,7 +4,7 @@ import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Expression;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SValue;
 
 public abstract class OneExpressionOperator extends Operator {
 	protected Expression expr;

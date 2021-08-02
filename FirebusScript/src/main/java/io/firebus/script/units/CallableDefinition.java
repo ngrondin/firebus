@@ -4,8 +4,8 @@ import java.util.List;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.values.InternalSCallable;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.SInternalCallable;
+import io.firebus.script.values.abs.SValue;
 
 public class CallableDefinition extends Expression {
 	protected List<String> params;
@@ -18,7 +18,8 @@ public class CallableDefinition extends Expression {
 	}
 	
 	public SValue eval(Scope scope) {
-		return new InternalSCallable(params, body, scope);
+		Scope local = new Scope(scope);
+		return new SInternalCallable(params, body, local);
 	}
 
 }

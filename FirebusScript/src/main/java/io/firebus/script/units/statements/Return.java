@@ -5,7 +5,7 @@ import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Statement;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SReturn;
 
 public class Return extends Statement {

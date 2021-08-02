@@ -1,7 +1,9 @@
 package io.firebus.script.values;
 
+import io.firebus.script.values.abs.SPredefinedObject;
+import io.firebus.script.values.abs.SValue;
 
-public class SException extends PredefinedSObject {
+public class SException extends SPredefinedObject {
 	protected static String[] members = {"message"};
 	protected Exception exception;
 	

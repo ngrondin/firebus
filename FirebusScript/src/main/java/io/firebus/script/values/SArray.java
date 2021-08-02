@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.values.abs.SPredefinedObject;
+import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.callables.ArrayJoin;
 import io.firebus.script.values.callables.ArrayMap;
 
-public class SArray extends PredefinedSObject {
+public class SArray extends SPredefinedObject {
 	protected List<SValue> values;
 	protected static String[] keys = {"length"};
 	

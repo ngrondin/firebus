@@ -1,4 +1,4 @@
-package io.firebus.script.values;
+package io.firebus.script.values.abs;
 
 
 import io.firebus.script.exceptions.ScriptException;
@@ -6,7 +6,7 @@ import io.firebus.script.exceptions.ScriptException;
 public abstract class SCallable extends SValue {
 
 	public abstract SValue call(SValue[] arguments) throws ScriptException;
-	
+
 
 	public boolean equals(SValue other) {
 		return this == other;

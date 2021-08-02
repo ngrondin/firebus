@@ -4,11 +4,13 @@ import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Expression;
-import io.firebus.script.values.DynamicSObject;
 import io.firebus.script.values.SArray;
+import io.firebus.script.values.SMemberCallable;
 import io.firebus.script.values.SNumber;
-import io.firebus.script.values.SObject;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SCallable;
+import io.firebus.script.values.abs.SDynamicObject;
+import io.firebus.script.values.abs.SObject;
+import io.firebus.script.values.abs.SValue;
 
 public class MemberIndexReference extends Reference {
 	protected Expression baseExpr;
@@ -27,6 +29,8 @@ public class MemberIndexReference extends Reference {
 			SValue index = indexExpr.eval(scope);
 			if(index instanceof SNumber) {
 				SValue ret = a.get(((SNumber)index).getNumber().intValue());
+				if(ret instanceof SCallable) 
+					ret = new SMemberCallable(a, (SCallable)ret);
 				return ret;
 			} else {
 				throw new ScriptException("Index needs to be an integer on an array", source);
@@ -35,6 +39,8 @@ public class MemberIndexReference extends Reference {
 			SObject o = (SObject)base;
 			SValue key = indexExpr.eval(scope);
 			SValue ret = o.getMember(key.toString());
+			if(ret instanceof SCallable) 
+				ret = new SMemberCallable(o, (SCallable)ret);
 			return ret;
 		} else {
 			throw new ScriptException("Index reference base must be an array or an object", source);
@@ -52,8 +58,8 @@ public class MemberIndexReference extends Reference {
 			} else {
 				throw new ScriptException("Index needs to be an integer on an array", source);
 			}
-		} else if(base instanceof DynamicSObject) {
-			DynamicSObject o = (DynamicSObject)base;
+		} else if(base instanceof SDynamicObject) {
+			SDynamicObject o = (SDynamicObject)base;
 			SValue key = indexExpr.eval(scope);
 			o.putMember(key.toString(), val);
 		} else {

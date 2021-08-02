@@ -1,12 +1,12 @@
-package io.firebus.script.values;
+package io.firebus.script.values.abs;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class DynamicSObject extends SObject {
+public abstract class SDynamicObject extends SObject {
 	protected Map<String, SValue> members;
 	
-	public DynamicSObject() {
+	public SDynamicObject() {
 		members = new HashMap<String, SValue>();
 	}
 	

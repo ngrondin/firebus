@@ -3,7 +3,6 @@ package io.firebus.script.builder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -34,6 +33,7 @@ import io.firebus.script.parser.JavaScriptParser.LogicalOrExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.MemberDotExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.MemberIndexExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.MultiplicativeExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.NewExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.NotExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.ObjectLiteralContext;
 import io.firebus.script.parser.JavaScriptParser.ObjectLiteralExpressionContext;
@@ -45,6 +45,7 @@ import io.firebus.script.parser.JavaScriptParser.PreDecreaseExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.PreIncrementExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.RelationalExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.SingleExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.ThisExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.UnaryMinusExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.UnaryPlusExpressionContext;
 import io.firebus.script.units.Expression;
@@ -77,6 +78,7 @@ import io.firebus.script.units.operators.UnaryPlus;
 import io.firebus.script.units.references.MemberDotReference;
 import io.firebus.script.units.references.MemberIndexReference;
 import io.firebus.script.units.references.Reference;
+import io.firebus.script.units.references.VariableReference;
 
 public class ExpressionBuilder extends Builder {
 	    
@@ -185,7 +187,11 @@ public class ExpressionBuilder extends Builder {
 		} else if(ctx instanceof ParenthesizedExpressionContext) {
 			List<Expression> seq = buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(1));
 			return seq.get(0);
-		} 
+		} else if(ctx instanceof NewExpressionContext) {
+			return CallableBuilder.buildNewOperator((NewExpressionContext)ctx);
+		} else if(ctx instanceof ThisExpressionContext) {
+			return new VariableReference("this", uc);
+		}
 		throw new ScriptBuildException("Unknown source element", sourceInfo(ctx));
 	}
 	

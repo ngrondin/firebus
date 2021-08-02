@@ -8,8 +8,8 @@ import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Literal;
-import io.firebus.script.values.InternalSObject;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.SInternalObject;
+import io.firebus.script.values.abs.SValue;
 
 public class ObjectLiteral extends Literal {
 	class Setter {
@@ -32,9 +32,11 @@ public class ObjectLiteral extends Literal {
 	}
 
 	public SValue eval(Scope scope) throws ScriptException {
-		InternalSObject obj = new InternalSObject();
+		SInternalObject obj = new SInternalObject();
+		Scope local = new Scope(scope);
+		local.setValue("this", obj);
 		for(Setter setter: setters) {
-			SValue val = setter.expr.eval(scope);
+			SValue val = setter.expr.eval(local);
 			obj.putMember(setter.key, val);
 		}
 		return obj;

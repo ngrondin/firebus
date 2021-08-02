@@ -7,7 +7,7 @@ import io.firebus.script.units.references.MemberDotReference;
 import io.firebus.script.units.references.MemberIndexReference;
 import io.firebus.script.units.references.Reference;
 import io.firebus.script.units.references.VariableReference;
-import io.firebus.script.values.SValue;
+import io.firebus.script.values.abs.SValue;
 
 public abstract class ReferenceOperator extends Operator {
 	protected Reference ref;

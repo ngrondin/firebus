@@ -1,5 +1,6 @@
 package io.firebus.script.values;
 
+import io.firebus.script.values.abs.SValue;
 
 public class SNull extends SValue {
 

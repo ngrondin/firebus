@@ -2,7 +2,10 @@ package io.firebus.script.values;
 
 import java.util.Map;
 
-public class SBoolean extends PredefinedSObject {
+import io.firebus.script.values.abs.SPredefinedObject;
+import io.firebus.script.values.abs.SValue;
+
+public class SBoolean extends SPredefinedObject {
     protected boolean value;
 
     public SBoolean(boolean v) {

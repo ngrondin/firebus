@@ -2,7 +2,10 @@ package io.firebus.script.values;
 
 import java.util.Map;
 
-public class SString extends PredefinedSObject {
+import io.firebus.script.values.abs.SPredefinedObject;
+import io.firebus.script.values.abs.SValue;
+
+public class SString extends SPredefinedObject {
 	protected String str;
 	
 	public SString(String s) {
