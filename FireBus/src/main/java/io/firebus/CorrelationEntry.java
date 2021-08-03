@@ -1,11 +1,12 @@
 package io.firebus;
 
 import io.firebus.interfaces.CorrelationListener;
+import io.firebus.utils.Queue;
 
 public class CorrelationEntry {
 	protected int sequence;
 	protected Message outboundMessage;
-	protected MessageQueue inboundMessages;
+	protected Queue<Message> inboundMessages;
 	protected NodeCore nodeCore;
 	protected CorrelationListener correlationListener;
 	protected String listenerFunctionName;
@@ -18,7 +19,7 @@ public class CorrelationEntry {
 		timeout = to;
 		expiry = System.currentTimeMillis() + to;
 		sequence = 0;
-		inboundMessages = new MessageQueue(100);
+		inboundMessages = new Queue<Message>(100);
 	}
 	
 	public void setListener(CorrelationListener cl, String fn, long to)
@@ -33,7 +34,7 @@ public class CorrelationEntry {
 	public Message popNext() 
 	{
 		Message next = null;
-		int len = inboundMessages.getMessageCount();
+		int len = inboundMessages.getDepth();
 		for(int i = 0; i < len; i++) {
 			Message msg = inboundMessages.pop();
 			if(msg.getCorrelationSequence() == sequence) {

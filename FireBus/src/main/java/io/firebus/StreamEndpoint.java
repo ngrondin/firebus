@@ -2,6 +2,7 @@ package io.firebus;
 
 import io.firebus.interfaces.CorrelationListener;
 import io.firebus.interfaces.StreamHandler;
+import io.firebus.utils.Queue;
 
 public class StreamEndpoint implements CorrelationListener {
 
@@ -12,7 +13,7 @@ public class StreamEndpoint implements CorrelationListener {
 	protected int remoteCorrelationId;
 	protected int remoteCorrelationSequence;
 	protected int remoteNodeId;
-	protected MessageQueue inQueue;
+	protected Queue<Message> inQueue;
 	protected Payload requestPayload;
 	protected Payload acceptPayload;
 	protected boolean active;
@@ -25,7 +26,7 @@ public class StreamEndpoint implements CorrelationListener {
 		remoteCorrelationId = rc;
 		remoteCorrelationSequence = rcs;
 		remoteNodeId = rni;
-		inQueue = new MessageQueue(100);
+		inQueue = new Queue<Message>(100);
 		active = true;
 	}
 	
@@ -53,7 +54,7 @@ public class StreamEndpoint implements CorrelationListener {
 	{
 		streamHandler = sh;
 		if(streamHandler != null) {
-			while(inQueue.getMessageCount() > 0) {
+			while(inQueue.getDepth() > 0) {
 				Message inMsg = inQueue.pop();
 				streamHandler.receiveStreamData(inMsg.getPayload(), this);
 			}
