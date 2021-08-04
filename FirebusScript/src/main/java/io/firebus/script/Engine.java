@@ -43,6 +43,13 @@ public class Engine {
 		return invoke(name, null);
 	}
 	
+	public SValue invoke(String name, Object[] arguments) throws ScriptException {
+		SValue[] args = new SValue[arguments.length];
+		for(int i = 0; i < arguments.length; i++)
+			args[i] = convertIn(arguments[i]);
+		return invoke(name, args);
+	}
+	
 	
 	public SValue invoke(String name, SValue[] arguments) throws ScriptException {
 		SValue c = rootScope.getValue(name);
