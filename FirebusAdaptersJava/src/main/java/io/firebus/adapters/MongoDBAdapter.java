@@ -15,6 +15,7 @@ import org.bson.json.StrictJsonWriter;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 import io.firebus.Payload;
@@ -138,7 +139,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			MongoCollection<Document> collection = database.getCollection(objectName);
 			if(collection != null)
 			{
-				Iterator<Document> it = null;
+				MongoCursor<Document> it = null;
 				Document filterDoc = null;
 				if(request.containsKey("filter")) {
 					DataMap filter = request.getObject("filter");
@@ -157,6 +158,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				} 
 				it = collection.find(filterDoc).maxAwaitTime(waitTimeout, TimeUnit.MILLISECONDS).sort(sortDoc).skip(page * pageSize).iterator();		
 				responseList = retieveDocuments(it, pageSize);
+				it.close();
 			}
 			else
 			{
@@ -181,7 +183,6 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			MongoCollection<Document> collection = database.getCollection(objectName);
 			if(collection != null)
 			{
-				Iterator<Document> it = null;
 				ArrayList<Document> pipeline = new ArrayList<Document>();
 
 				if(request.containsKey("filter"))
@@ -227,10 +228,11 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				DataMap sortContainer = new DataMap("$sort", new DataMap("_id", 1));
 				pipeline.add(Document.parse(sortContainer.toString()));
 				
-				it = collection.aggregate(pipeline).maxTime(waitTimeout, TimeUnit.MILLISECONDS).iterator();
+				MongoCursor<Document> it = collection.aggregate(pipeline).maxTime(waitTimeout, TimeUnit.MILLISECONDS).iterator();
 				for(int i = 0; i < (page * pageSize) && it.hasNext(); i++)
 					it.next();
 				responseList = retieveDocuments(it, pageSize);
+				it.close();
 				for(int i = 0; i < responseList.size(); i++)
 				{
 					DataMap item = responseList.getObject(i);
