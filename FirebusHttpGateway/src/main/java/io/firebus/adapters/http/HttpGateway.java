@@ -32,8 +32,6 @@ import io.firebus.adapters.http.outbound.GeneralOutboundHandler;
 import io.firebus.adapters.http.outbound.OutboundGetHandler;
 import io.firebus.adapters.http.outbound.PostHandler;
 import io.firebus.adapters.http.security.JWTCookie;
-import io.firebus.adapters.http.websocket.EchoWebsocketHandler;
-import io.firebus.adapters.http.websocket.SignalSubscriberWSHandler;
 import io.firebus.adapters.http.websocket.StreamGatewayWSHandler;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
@@ -278,17 +276,10 @@ public class HttpGateway implements ServiceProvider
 	private WebsocketHandler getWebsocketHandler(DataMap wsConfig)
 	{
 		String type = wsConfig.containsKey("type") ? wsConfig.getString("type").toLowerCase() : "echo";
-		if(type.equals("echo")) 
+		if(type.equals("stream"))
 		{
-			return new EchoWebsocketHandler(this, firebus, wsConfig);
-		}
-		else if(type.equals("signalsubscriber")) 
-		{
-			return new SignalSubscriberWSHandler(this, firebus, wsConfig);
-		}
-		else if(type.equals("stream"))
-		{
-			return new StreamGatewayWSHandler(this, firebus, wsConfig);
+			Class<?> clz = StreamGatewayWSHandler.class;
+			return new WebsocketHandler(this, firebus, wsConfig, clz);
 		}
 		else 
 		{

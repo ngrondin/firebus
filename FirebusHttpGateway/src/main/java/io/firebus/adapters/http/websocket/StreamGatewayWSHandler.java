@@ -1,72 +1,73 @@
 package io.firebus.adapters.http.websocket;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.logging.Logger;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
-import io.firebus.adapters.http.HttpGateway;
-import io.firebus.adapters.http.WebsocketHandler;
+import io.firebus.adapters.http.WebsocketConnectionHandler;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.interfaces.StreamHandler;
 import io.firebus.utils.DataMap;
 
-public class StreamGatewayWSHandler extends WebsocketHandler implements StreamHandler {
-	protected Map<String, StreamEndpoint> connIdToStream;
-	protected Map<StreamEndpoint, String> streamToConnId;
+public class StreamGatewayWSHandler extends WebsocketConnectionHandler implements StreamHandler {
+	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	protected String streamName;
+	protected StreamEndpoint streamEndpoint;
+	protected long start = -1;
+	protected long lastIn = -1;
+	protected long lastOut = -1;
 	
-	public StreamGatewayWSHandler(HttpGateway gw, Firebus f, DataMap c) {
-		super(gw, f, c);
+	public void configure(Firebus fb, DataMap c, Payload p) {
+		super.configure(fb, c, p);
 		streamName = c.getString("service");
-		connIdToStream = new HashMap<String, StreamEndpoint>();
-		streamToConnId = new HashMap<StreamEndpoint, String>();
+		start = System.currentTimeMillis();
 	}
 
-	protected void onOpen(String connectionId, Payload payload) throws FunctionErrorException, FunctionTimeoutException {
-		//System.out.println("SGWS opening WS connection " + connectionId); //Temp Logging
-		StreamEndpoint streamEndpoint = firebus.requestStream(streamName, payload, 10000);
-		connIdToStream.put(connectionId, streamEndpoint);
-		streamToConnId.put(streamEndpoint, connectionId);
+	protected void onOpen() throws FunctionErrorException, FunctionTimeoutException {
+		requestPayload.metadata.put("streamgwnode", String.valueOf(firebus.getNodeId()));
+		requestPayload.metadata.put("streamgwid", id);
+		streamEndpoint = firebus.requestStream(streamName, requestPayload, 10000);
 		streamEndpoint.setHandler(this);
-		//System.out.println("SGWS opened WS connection " + connectionId); //Temp Logging
+		logger.info("Stream gateway connection " + id + " opened");
 	}
 
-	protected void onStringMessage(String connectionId, String msg) {
+	protected void onStringMessage(String msg) {
 		Payload payload = new Payload(msg);
-		StreamEndpoint sep = connIdToStream.get(connectionId);
-		if(sep != null)
-			sep.send(payload);
-	}
-
-	protected void onBinaryMessage(String connectionId, byte[] msg) {
-		Payload payload = new Payload(msg);
-		StreamEndpoint sep = connIdToStream.get(connectionId);
-		if(sep != null)
-			sep.send(payload);
-	}
-
-	protected void onClose(String connectionId) {
-		//System.out.println("SGWS closing WS connection " + connectionId); //Temp Logging
-		StreamEndpoint sep = connIdToStream.get(connectionId);
-		if(sep != null) {
-			sep.close();
-			connIdToStream.remove(connectionId);
-			streamToConnId.remove(sep);
+		if(streamEndpoint != null) {
+			streamEndpoint.send(payload);
+			lastIn = System.currentTimeMillis();
+		} else {
+			logger.warning("Stream Gateway received string message but stream endpoint was closed");
 		}
-		//System.out.println("SGWS closed WS connection " + connectionId); //Temp Logging
+	}
+
+	protected void onBinaryMessage(byte[] msg) {
+		Payload payload = new Payload(msg);
+		if(streamEndpoint != null) {
+			streamEndpoint.send(payload);
+			lastIn = System.currentTimeMillis();
+		} else {
+			logger.warning("Stream Gateway received binary message but stream endpoint was closed");
+		}
+	}
+
+	protected void onClose() {
+		if(streamEndpoint != null) {
+			streamEndpoint.close();
+		}
+		long now = System.currentTimeMillis();
+		logger.info("Stream gateway connection " + id + " closed (life: " + (now - start) + "ms  last_in: " + (lastIn > -1 ? (now - lastIn) : "-") + "ms  last_out: " + (lastOut > -1 ? (now - lastOut) : "-") + "ms)");
 	}
 
 	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
-		String connId = streamToConnId.get(streamEndpoint);
-		this.sendStringMessage(connId, payload.getString());
-		//System.out.println("SGWS sent message to WS connection " + connId + " : " + payload.getString().hashCode()); //Temp Logging
+		sendStringMessage(payload.getString());
+		lastOut = System.currentTimeMillis();
 	}
 
 	public void streamClosed(StreamEndpoint streamEndpoint) {
-		close(streamToConnId.get(streamEndpoint));
+		destroy();
 	}
 
 }

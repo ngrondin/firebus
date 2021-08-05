@@ -170,6 +170,11 @@ public class Firebus
 		return nodeCore.getStatistics();
 	}
 	
+	public int getNodeId()
+	{
+		return nodeCore.getNodeId();
+	}
+	
 	public void close()
 	{
 		nodeCore.close();

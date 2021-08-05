@@ -1,6 +1,5 @@
 package io.firebus.adapters.http;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -12,30 +11,41 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.WebConnection;
 
+import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.exceptions.FunctionErrorException;
+import io.firebus.exceptions.FunctionTimeoutException;
+import io.firebus.utils.DataMap;
 
-public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHandler {
+public abstract class WebsocketConnectionHandler extends Thread implements HttpUpgradeHandler {
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	protected String id;
-	protected WebsocketHandler handler;
+	//protected WebsocketHandler handler;
+	protected Firebus firebus;
 	protected Payload requestPayload;
+	protected DataMap config;
 	protected WebConnection connection;
 	protected InputStream is;
 	protected OutputStream os;
 	protected boolean active;
+	protected boolean destroyed;
 	
 	public WebsocketConnectionHandler() {
 		id = UUID.randomUUID().toString();
+		active = false;
+		destroyed = false;
 	}
 	
-	public void setHandler(WebsocketHandler wsh) {
+	/*public void setHandler(WebsocketHandler wsh) {
 		handler = wsh;		
+	}*/
+	
+	public void configure(Firebus fb, DataMap c, Payload p) {
+		firebus = fb;		
+		requestPayload = p;
+		config = c;
 	}
 
-	public void setRequestPayload(Payload p) {
-		requestPayload = p;
-	}
-	
 	public Payload getRequestPayload() {
 		return requestPayload;
 	}
@@ -47,25 +57,29 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 			is = connection.getInputStream();
 			os = connection.getOutputStream();
 			os.flush();
-			active = true;
+			onOpen();
 			start();
-			handler._onOpen(id);
 			logger.fine("Websocket connection created");
-		} catch(IOException e) {
+		} catch(Exception e) {
+			logger.severe("Error initating websocket connection " + id + ": " + e.getMessage());
 			active = false;
-		}
+			destroy();
+		} 
 	}
 	
 	public void destroy() {
-		handler._onClose(id);
-		active = false;
-		try {
-			is.close();
-			os.close();
-		} catch(Exception e) {
-			
+		if(!destroyed) {
+			destroyed = true;
+			active = false;
+			try {
+				onClose();
+				is.close();
+				os.close();
+				logger.fine("Websocket connection destroyed");
+			} catch(Exception e) {
+				logger.severe("Error destroying websocket connection " + id + ": " + e.getMessage());
+			}
 		}
-		logger.fine("Websocket connection destroyed");
 	}
 	
 	public String getConnectionId() {
@@ -85,6 +99,7 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 		int runningLen = 0;
 		ByteBuffer frame = null;
 		int read = -1;
+		active = true;
 		try {
 			while(active) {
 				read = is.read();
@@ -148,9 +163,9 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 							}
 							if(op == 1) {
 								String m = new String(frame.array());
-								handler.onStringMessage(id, m);
+								onStringMessage(m);
 							} else if(op == 2) {
-								handler.onBinaryMessage(id, frame.array());
+								onBinaryMessage(frame.array());
 							} else if(op == 8) {
 								send(frame.array(), 8);
 								active = false;
@@ -172,13 +187,14 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 			active = false;
 			logger.warning("Websocket connection " + id + " closed due to exception: " + e.getMessage());
 		} finally {
-			try {
+			destroy();
+			/*try {
 				is.close();
 				os.close();
 				connection.close();
 			} catch(Exception e) {
 				logger.severe("Websocket connection " + id + " closing exception: " + e.getMessage());
-			}
+			}*/
 		}
 	}
 	
@@ -220,5 +236,11 @@ public class WebsocketConnectionHandler extends Thread implements HttpUpgradeHan
 	{
 		send(bytes, 2);
 	}
+
+	
+	protected abstract void onOpen() throws FunctionErrorException, FunctionTimeoutException;
+	protected abstract void onStringMessage(String msg) throws FunctionErrorException, FunctionTimeoutException;
+	protected abstract void onBinaryMessage(byte[] msg) throws FunctionErrorException, FunctionTimeoutException;
+	protected abstract void onClose() throws FunctionErrorException, FunctionTimeoutException;
 
 }
