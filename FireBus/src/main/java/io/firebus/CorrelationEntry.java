@@ -70,5 +70,15 @@ public class CorrelationEntry {
 		}
 	}
 	
+	public void expire()
+	{
+		if(correlationListener != null) {
+			nodeCore.getExecutionThreads().enqueue(new Runnable() {
+				public void run() {
+					correlationListener.correlationTimedout(outboundMessage);
+				}
+			}, listenerFunctionName, -1);
+		}
+	}
 
 }

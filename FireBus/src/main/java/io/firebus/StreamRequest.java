@@ -7,7 +7,7 @@ import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.information.FunctionInformation;
 import io.firebus.interfaces.StreamRequestor;
 
-public class StreamRequest extends Thread
+public class StreamRequest 
 {
 	private Logger logger = Logger.getLogger("io.firebus");
 	protected NodeCore nodeCore;
@@ -20,39 +20,15 @@ public class StreamRequest extends Thread
 	protected String errorMessage;
 	protected FunctionInformation functionInformation;
 
-	public StreamRequest(NodeCore nc, String sn, Payload p, int t)
+	public StreamRequest(NodeCore nc, String sn, Payload p, String rfn, int t)
 	{
 		nodeCore = nc;
 		streamName = sn;
 		requestPayload = p;
 		errorMessage = null;
+		requestorFunctionName = rfn;
 		subTimeout = t;
 		expiry = System.currentTimeMillis() + subTimeout;
-	}
-	
-	public void initiate(StreamRequestor r, String rfn)
-	{
-		requestor = r;
-		requestorFunctionName = rfn;
-		start();
-	}
-	
-	public void run()
-	{
-		setName("fbStreamReq" + getId());
-		try
-		{
-			StreamEndpoint endPoint = initiate();
-			requestor.initiateCallback(endPoint);
-		}
-		catch(FunctionErrorException e)
-		{
-			requestor.initiateErrorCallback(e);
-		}
-		catch(FunctionTimeoutException e)
-		{
-			requestor.initiateTimeout();
-		}
 	}
 	
 	public StreamEndpoint initiate() throws FunctionErrorException, FunctionTimeoutException

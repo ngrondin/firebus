@@ -19,8 +19,11 @@ public class FirebusSimpleFormatter extends Formatter
 		if(Thread.currentThread() instanceof FirebusThread) {
 			FirebusThread fbt = (FirebusThread)Thread.currentThread();
 			buf.append(pad(fbt.getName(), 12));			
-			buf.append(pad(fbt.getFunctionName(), 10));			
-			buf.append(pad(String.valueOf(fbt.getFunctionExecutionId()), 4));			
+			buf.append(pad(fbt.getFunctionName(), 10));		
+			if(fbt.getFunctionExecutionId() > -1)
+				buf.append(pad(String.valueOf(fbt.getFunctionExecutionId()), 4));	
+			else
+				buf.append(pad("a", 4));
 			buf.append(pad(fbt.getTrackingId(), 12));			
 			
 		} else {

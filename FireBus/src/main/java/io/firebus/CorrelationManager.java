@@ -159,23 +159,14 @@ public class CorrelationManager extends Thread
 		for(int i = 0; i < ids.length; i++)
 		{
 			CorrelationEntry entry = getEntry(ids[i]);
-			if(entry != null)
+			if(entry != null && currTime > entry.expiry)
 			{
 				synchronized(entry)
 				{
-					if(currTime > entry.expiry)
-					{
-						logger.finer("Correlation " + ids[i] + " has expired");
-						if(entry.correlationListener != null)
-						{
-							entry.correlationListener.correlationTimedout(entry.outboundMessage);
-						}
-						else
-						{
-							entry.notify();
-						}					
-						removeEntry(ids[i]);
-					}
+					logger.finer("Correlation " + ids[i] + " has expired");
+					entry.expire();
+					entry.notify();				
+					removeEntry(ids[i]);
 				}
 			}
 		}

@@ -155,10 +155,15 @@ public class Firebus
 
 	public StreamEndpoint requestStream(String streamName, Payload payload, int timeout) throws FunctionErrorException, FunctionTimeoutException
 	{
-		StreamRequest stream = new StreamRequest(nodeCore, streamName, payload, timeout);
-		return stream.initiate();
+		return requestStream(streamName, payload, null, timeout);
 	}
 
+	public StreamEndpoint requestStream(String streamName, Payload payload, String requestorFunctionName, int timeout) throws FunctionErrorException, FunctionTimeoutException
+	{
+		StreamRequest stream = new StreamRequest(nodeCore, streamName, payload, requestorFunctionName, timeout);
+		return stream.initiate();
+	}
+	
 	public void publish(String dataname, Payload payload)
 	{
 		logger.finer("Publishing");
