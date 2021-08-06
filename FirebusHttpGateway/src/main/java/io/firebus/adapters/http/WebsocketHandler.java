@@ -48,8 +48,13 @@ public class WebsocketHandler extends HttpHandler {
         	if(securityHandler != null)
         		securityHandler.enrichFirebusRequest(req, payload);
         	enrichFirebusRequestDefault(req, payload);
-        	wsConnHandler.configure(firebus, handlerConfig, payload);
+        	wsConnHandler.configure(this, payload);
 		}
+	}
+	
+	public HttpGateway getGateway() 
+	{
+		return httpGateway;
 	}
 	
 }

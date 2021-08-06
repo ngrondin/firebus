@@ -43,6 +43,7 @@ import io.firebus.utils.DataMap;
 public class HttpGateway implements ServiceProvider 
 {
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
+	protected String name;
 	protected Firebus firebus;
 	protected DataMap config;
 	protected Tomcat tomcat;
@@ -51,7 +52,17 @@ public class HttpGateway implements ServiceProvider
 	public HttpGateway(DataMap c, Firebus f) {
 		config = c;
 		firebus = f;
-		
+		init();
+	}
+	
+	public HttpGateway(String n, DataMap c, Firebus f) {
+		name = n;
+		config = c;
+		firebus = f;
+		init();
+	}
+	
+	protected void init() {
         try 
         {
         	String portStr = config.getString("port");
@@ -321,6 +332,10 @@ public class HttpGateway implements ServiceProvider
 	public ServiceInformation getServiceInformation() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public String getServiceName() {
+		return name;
 	}
 
 }

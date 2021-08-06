@@ -2,14 +2,13 @@ package io.firebus.adapters.http.websocket;
 
 import java.util.logging.Logger;
 
-import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
 import io.firebus.adapters.http.WebsocketConnectionHandler;
+import io.firebus.adapters.http.WebsocketHandler;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.interfaces.StreamHandler;
-import io.firebus.utils.DataMap;
 
 public class StreamGatewayWSHandler extends WebsocketConnectionHandler implements StreamHandler {
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
@@ -19,16 +18,17 @@ public class StreamGatewayWSHandler extends WebsocketConnectionHandler implement
 	protected long lastIn = -1;
 	protected long lastOut = -1;
 	
-	public void configure(Firebus fb, DataMap c, Payload p) {
-		super.configure(fb, c, p);
-		streamName = c.getString("service");
+	public void configure(WebsocketHandler wsh, Payload p) {
+		super.configure(wsh, p);
+		streamName = getConfig().getString("service");
 		start = System.currentTimeMillis();
 	}
 
 	protected void onOpen() throws FunctionErrorException, FunctionTimeoutException {
-		requestPayload.metadata.put("streamgwnode", String.valueOf(firebus.getNodeId()));
+		requestPayload.metadata.put("streamgwnode", String.valueOf(getFirebus().getNodeId()));
 		requestPayload.metadata.put("streamgwid", id);
-		streamEndpoint = firebus.requestStream(streamName, requestPayload, 10000);
+		String serviceName = handler.getGateway().getServiceName();
+		streamEndpoint = getFirebus().requestStream(streamName, requestPayload, serviceName, 10000);
 		streamEndpoint.setHandler(this);
 		logger.info("Stream gateway connection " + id + " opened");
 	}
@@ -58,7 +58,7 @@ public class StreamGatewayWSHandler extends WebsocketConnectionHandler implement
 			streamEndpoint.close();
 		}
 		long now = System.currentTimeMillis();
-		logger.info("Stream gateway connection " + id + " closed (life: " + (now - start) + "ms  last_in: " + (lastIn > -1 ? (now - lastIn) : "-") + "ms  last_out: " + (lastOut > -1 ? (now - lastOut) : "-") + "ms)");
+		logger.info("Stream gateway connection " + id + " closed (life: " + (now - start) + "ms  last_in: " + (lastIn > -1 ? (now - lastIn) + "ms" : "-") + "  last_out: " + (lastOut > -1 ? (now - lastOut) + "ms" : "-") + ")");
 	}
 
 	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
