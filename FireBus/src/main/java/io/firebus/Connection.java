@@ -194,14 +194,14 @@ public class Connection extends Thread
 							}
 						}
 						if(remoteNodeId != localNodeId) {
-							logger.fine("Established connection " + getId() + " with node " + remoteNodeId + " at address " + remoteAddress);
+							logger.info("Established connection " + getId() + " with node " + remoteNodeId + " at address " + remoteAddress);
 							state = STATE_INITIALIZED;						
 						} else {
 							logger.info("Tried to establish connection " + getId() + " with self at address " + remoteAddress);
 							state = STATE_FAILED;
 						}						
 					} else {
-						logger.info("Tried to establish connection " + getId() + ", but received a bad cipher");
+						logger.warning("Tried to establish connection " + getId() + ", but received a bad cipher");
 						state = STATE_FAILED;
 					}
 				}
@@ -274,7 +274,8 @@ public class Connection extends Thread
 					}
 					else
 					{
-						logger.fine("Received corrupted message from connection " + getId() + " from node id " + remoteNodeId);
+						logger.severe("Received corrupted message from connection " + getId() + " from node id " + remoteNodeId);
+						close();
 					}
 					msgState = 0;
 				}
