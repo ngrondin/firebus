@@ -188,6 +188,46 @@ public class Message
 		return type;
 	}
 	
+	public String getTypeString()
+	{
+		String ret = null;
+		if(type == Message.MSGTYPE_QUERYNODE)
+			ret = "Query Node";
+		else if(type == Message.MSGTYPE_NODEINFORMATION)
+			ret = "Node Information";
+		else if(type == Message.MSGTYPE_GETFUNCTIONINFORMATION)
+			ret = "Get Function Information";
+		else if(type == Message.MSGTYPE_FUNCTIONINFORMATION)
+			ret = "Function Information";
+		else if(type == Message.MSGTYPE_REQUESTSERVICE)
+			ret = "Request Service";
+		else if(type == Message.MSGTYPE_SERVICERESPONSE)
+			ret = "Service Response";
+		else if(type == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
+			ret = "Service Unavailable";
+		else if(type == Message.MSGTYPE_SERVICEERROR)
+			ret = "Service Error";
+		else if(type == Message.MSGTYPE_PROGRESS)
+			ret = "Service In Progress";
+		else if(type == Message.MSGTYPE_PUBLISH)
+			ret = "Publish";
+		else if(type == Message.MSGTYPE_REPUBLISH)
+			ret = "Republish";
+		else if(type == Message.MSGTYPE_REQUESTSTREAM)
+			ret = "Stream Request";
+		else if(type == Message.MSGTYPE_STREAMACCEPT)
+			ret = "Stream Accept";
+		else if(type == Message.MSGTYPE_STREAMERROR)
+			ret = "Stream Error";
+		else if(type == Message.MSGTYPE_STREAMDATA)
+			ret = "Stream Data";
+		else if(type == Message.MSGTYPE_STREAMEND)
+			ret = "Stream End";		
+		else
+			ret = "Unknown";
+		return ret;
+	}
+	
 	public int getOriginatorId()
 	{
 		return originatorId;
@@ -237,40 +277,7 @@ public class Message
 		sb.append("Originator   : " + originatorId + "\r\n");
 		sb.append("Repeat Count : " + repeatCount + "\r\n");
 		sb.append("Repeats Left : " + repeatsLeft + "\r\n");
-		sb.append("Type         : ");
-		if(type == Message.MSGTYPE_QUERYNODE)
-			sb.append("Query Node");
-		else if(type == Message.MSGTYPE_NODEINFORMATION)
-			sb.append("Node Information");
-		else if(type == Message.MSGTYPE_GETFUNCTIONINFORMATION)
-			sb.append("Get Function Information");
-		else if(type == Message.MSGTYPE_FUNCTIONINFORMATION)
-			sb.append("Function Information");
-		else if(type == Message.MSGTYPE_REQUESTSERVICE)
-			sb.append("Request Service");
-		else if(type == Message.MSGTYPE_SERVICERESPONSE)
-			sb.append("Service Response");
-		else if(type == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
-			sb.append("Service Unavailable");
-		else if(type == Message.MSGTYPE_SERVICEERROR)
-			sb.append("Service Error");
-		else if(type == Message.MSGTYPE_PROGRESS)
-			sb.append("Service In Progress");
-		else if(type == Message.MSGTYPE_PUBLISH)
-			sb.append("Publish");
-		else if(type == Message.MSGTYPE_REPUBLISH)
-			sb.append("Republish");
-		else if(type == Message.MSGTYPE_REQUESTSTREAM)
-			sb.append("Stream Request");
-		else if(type == Message.MSGTYPE_STREAMACCEPT)
-			sb.append("Stream Accept");
-		else if(type == Message.MSGTYPE_STREAMERROR)
-			sb.append("Stream Error");
-		else if(type == Message.MSGTYPE_STREAMDATA)
-			sb.append("Stream Data");
-		else if(type == Message.MSGTYPE_STREAMEND)
-			sb.append("Stream End");
-		sb.append("\r\n");
+		sb.append("Type         : " + getTypeString() + "\r\n");
 		sb.append("Correlation  : " + correlation + "\r\n");
 		sb.append("Corr. Seq.   : " + correlationSequence + "\r\n");
 		sb.append("Subject      : ");
