@@ -100,7 +100,7 @@ public class FirebusThread extends Thread
 	{
 		return trackingId;
 	}
-	
+		
 	public void close()
 	{
 		synchronized(this)

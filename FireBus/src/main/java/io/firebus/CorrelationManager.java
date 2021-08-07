@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 import io.firebus.interfaces.CorrelationListener;
+import io.firebus.utils.StackUtils;
 
 public class CorrelationManager extends Thread
 {
@@ -94,7 +95,7 @@ public class CorrelationManager extends Thread
 		}
 		else
 		{
-			logger.severe("Correlation " + correlationId + " not found to wait for");
+			logger.severe("Correlation " + correlationId + " not found to wait for\r\n" + StackUtils.getStackString());
 		}
 		return message;
 	}
@@ -145,7 +146,7 @@ public class CorrelationManager extends Thread
 			else
 			{
 				String typeStr = (inMsg.getType() == Message.MSGTYPE_PROGRESS ? "progress" : (inMsg.getType() == Message.MSGTYPE_SERVICERESPONSE ? "final" : "other"));
-				logger.fine("No correlation entry found for " + typeStr + " response from service " + inMsg.getSubject() + " (corr: " + correlationId + ")");
+				logger.warning("No correlation entry found for " + typeStr + " response from service " + inMsg.getSubject() + " (corr: " + correlationId + ")");
 			}
 		}
 	}
