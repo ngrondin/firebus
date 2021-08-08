@@ -41,7 +41,7 @@ public class FileStreamAdapter extends Adapter implements StreamProvider {
 					}
 
 					public void error(String message) {
-						logger.severe("Error getting file : " + message);
+						logger.severe("Error sending file '" + fileName + "': " + message);
 					}
 				});
 				return null;
@@ -58,7 +58,7 @@ public class FileStreamAdapter extends Adapter implements StreamProvider {
 					}
 
 					public void error(String message) {
-						logger.severe("Error putting file : " + message);
+						logger.severe("Error putting file '" + fileName + "': " + message);
 					}
 				});
 				return null;
