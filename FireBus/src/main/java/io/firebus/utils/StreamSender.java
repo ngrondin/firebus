@@ -101,7 +101,7 @@ public class StreamSender implements StreamHandler {
 	
 	public void streamClosed(StreamEndpoint streamEndpoint) {
 		if(completed == false) {
-			fail("Connection closed unexpectedly");
+			fail("Stream Sender Connection closed before completion");
 		} else {
 			complete();
 		}

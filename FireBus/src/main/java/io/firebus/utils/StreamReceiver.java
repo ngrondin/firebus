@@ -108,7 +108,7 @@ public class StreamReceiver implements StreamHandler {
 
 	public void streamClosed(StreamEndpoint streamEndpoint) {
 		if(complete == false)
-			fail("Receiver stream connection closed before completion");		
+			fail("Stream Receiver connection closed before completion");		
 	}
 	
 	protected void fail(String e) {
