@@ -91,9 +91,9 @@ public class StreamEndpoint implements CorrelationListener {
 	public synchronized void correlatedResponseReceived(Message outMsg, Message inMsg) {
 		if(inMsg.getType() == Message.MSGTYPE_STREAMEND) {
 			nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
+			active = false;
 			if(streamHandler != null)
 				streamHandler.streamClosed(this);
-			active = false;
 		} else if(streamHandler != null) {
 			streamHandler.receiveStreamData(inMsg.getPayload(), this);
 		} else {
@@ -102,8 +102,8 @@ public class StreamEndpoint implements CorrelationListener {
 	}
 
 	public void correlationTimedout(Message outMsg) {
+		close();
 		if(streamHandler != null) {
-			active = false;
 			streamHandler.streamClosed(this);
 		}
 		
