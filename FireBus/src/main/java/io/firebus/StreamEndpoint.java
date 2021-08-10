@@ -49,6 +49,11 @@ public class StreamEndpoint implements CorrelationListener {
 	{
 		return acceptPayload;
 	}
+	
+	public boolean isActive() 
+	{
+		return active;
+	}
 
 	public synchronized void setHandler(StreamHandler sh)
 	{
@@ -63,42 +68,44 @@ public class StreamEndpoint implements CorrelationListener {
 	
 	public void send(Payload payload)
 	{
-		Message msg = new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMDATA, streamName, payload);
-		msg.setCorrelation(remoteCorrelationId, remoteCorrelationSequence);
-		remoteCorrelationSequence++;
-		nodeCore.enqueue(msg);
+		if(active) {
+			Message msg = new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMDATA, streamName, payload);
+			msg.setCorrelation(remoteCorrelationId, remoteCorrelationSequence);
+			remoteCorrelationSequence++;
+			nodeCore.enqueue(msg);
+		}
 	}
 	
 	public void close()
 	{
-		Message msg = new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMEND, streamName, null);
-		msg.setCorrelation(remoteCorrelationId, remoteCorrelationSequence);
-		remoteCorrelationSequence++;
-		nodeCore.enqueue(msg);
-		nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
-		active = false;
+		if(active) {
+			Message msg = new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMEND, streamName, null);
+			msg.setCorrelation(remoteCorrelationId, remoteCorrelationSequence);
+			remoteCorrelationSequence++;
+			nodeCore.enqueue(msg);
+			nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
+			active = false;
+		}
 	}
 
 	public synchronized void correlatedResponseReceived(Message outMsg, Message inMsg) {
-		//System.out.print("sep " + inMsg.correlation + " " + inMsg.correlationSequence + " ");
 		if(inMsg.getType() == Message.MSGTYPE_STREAMEND) {
 			nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
 			if(streamHandler != null)
 				streamHandler.streamClosed(this);
 			active = false;
 		} else if(streamHandler != null) {
-			//System.out.println("d");
 			streamHandler.receiveStreamData(inMsg.getPayload(), this);
 		} else {
 			inQueue.push(inMsg);
-			//System.out.println("s");
 		}
-		//System.out.println("sep: " + (inMsg.getPayload() != null ? inMsg.getPayload().getString() : "payload null"));
 	}
 
 	public void correlationTimedout(Message outMsg) {
-		if(streamHandler != null)
+		if(streamHandler != null) {
+			active = false;
 			streamHandler.streamClosed(this);
+		}
 		
 	}
 	

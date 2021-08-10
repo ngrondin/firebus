@@ -63,6 +63,8 @@ public class FunctionFinder {
 		{
 			fi = list.get(tryPointer);
 			tryPointer++;
+		} else {
+			logger.warning("Function finder cannot find the function '" + functionName + "' (list: " + list.size() + " pointer: " + tryPointer + ")");
 		}
 		return fi;
 	}

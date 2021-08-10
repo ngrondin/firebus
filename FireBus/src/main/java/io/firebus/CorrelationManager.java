@@ -145,7 +145,8 @@ public class CorrelationManager extends Thread
 			}
 			else
 			{
-				logger.warning("No correlation entry found for '" + inMsg.getTypeString() + "' response from service " + inMsg.getSubject() + " (corr: " + correlationId + ")");
+				if(inMsg.getType() != Message.MSGTYPE_FUNCTIONINFORMATION) 
+					logger.warning("No correlation entry found for '" + inMsg.getTypeString() + "' response from service " + inMsg.getSubject() + " (corr: " + correlationId + ")");
 			}
 		}
 	}
