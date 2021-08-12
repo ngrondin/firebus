@@ -13,7 +13,7 @@ public class CorrelationManager extends Thread
 	protected NodeCore nodeCore;
 	protected boolean quit;
 	
-	protected static int nextCorrelation = 1;
+	protected int nextCorrelation = 1;
 	
 	public CorrelationManager(NodeCore nc)
 	{
@@ -24,14 +24,10 @@ public class CorrelationManager extends Thread
 		start();
 	}
 	
-	protected synchronized int getNextCorrelation()
-	{
-		return nextCorrelation++;
-	}
-	
 	protected synchronized int createEntry(long to)
 	{
-		int c = getNextCorrelation();
+		int c = nextCorrelation;
+		nextCorrelation++;
 		CorrelationEntry entry = new CorrelationEntry(nodeCore, to); 
 		entries.put(c, entry);
 		return c;
