@@ -65,25 +65,26 @@ public class StreamEndpoint implements CorrelationListener {
 			}
 		}
 	}
+		
+	private void send(Message msg) 
+	{
+		msg.setCorrelation(remoteCorrelationId, remoteCorrelationSequence);
+		remoteCorrelationSequence++;
+		nodeCore.enqueue(msg);
+	}
 	
 	public void send(Payload payload)
 	{
 		if(active) {
-			Message msg = new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMDATA, streamName, payload);
-			msg.setCorrelation(remoteCorrelationId, remoteCorrelationSequence);
-			remoteCorrelationSequence++;
-			nodeCore.enqueue(msg);
+			send(new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMDATA, streamName, payload));
 		}
 	}
+
 	
 	public void close()
 	{
 		if(active) {
-			Message msg = new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMEND, streamName, null);
-			msg.setCorrelation(remoteCorrelationId, remoteCorrelationSequence);
-			remoteCorrelationSequence++;
-			nodeCore.enqueue(msg);
-			nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
+			send(new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMEND, streamName, null));
 			active = false;
 		}
 	}
@@ -91,7 +92,7 @@ public class StreamEndpoint implements CorrelationListener {
 	public synchronized void correlatedResponseReceived(Message outMsg, Message inMsg) {
 		if(inMsg.getType() == Message.MSGTYPE_STREAMEND) {
 			nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
-			active = false;
+			close();
 			if(streamHandler != null)
 				streamHandler.streamClosed(this);
 		} else if(streamHandler != null) {

@@ -26,9 +26,13 @@ public class CorrelationManager extends Thread
 	
 	protected synchronized int createEntry(long to)
 	{
+		CorrelationEntry entry = new CorrelationEntry(nodeCore, to); 
 		int c = nextCorrelation;
 		nextCorrelation++;
-		CorrelationEntry entry = new CorrelationEntry(nodeCore, to); 
+		while(entries.containsKey(c)) { //This should never happen but I'm trying to uncover up a bug
+			logger.severe("Correlation manager tried to create duplicate entry: " + c); 
+			nextCorrelation++;
+		}
 		entries.put(c, entry);
 		return c;
 	}
