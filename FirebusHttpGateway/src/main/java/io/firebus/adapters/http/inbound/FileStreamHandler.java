@@ -52,7 +52,7 @@ public class FileStreamHandler extends InboundHandler  {
 			new StreamReceiver(os, sep).sync();
 			os.flush();
 			os.close();
-			sep.close();
+			//sep.close(); // The sender will close the stream
 		} else if(action.equals("put")) {
 			InputStream is = null;
 			Iterator<Part> it = req.getParts().iterator();
