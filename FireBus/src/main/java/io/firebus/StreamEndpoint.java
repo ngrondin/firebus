@@ -84,17 +84,22 @@ public class StreamEndpoint implements CorrelationListener {
 	public void close()
 	{
 		if(active) {
+			deactivate();
 			send(new Message(remoteNodeId, nodeCore.getNodeId(), Message.MSGTYPE_STREAMEND, streamName, null));
-			active = false;
 		}
+	}
+	
+	private void deactivate() 
+	{
+		active = false;
+		nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
+		if(streamHandler != null)
+			streamHandler.streamClosed(this);		
 	}
 
 	public synchronized void correlatedResponseReceived(Message outMsg, Message inMsg) {
 		if(inMsg.getType() == Message.MSGTYPE_STREAMEND) {
-			nodeCore.getCorrelationManager().removeEntry(localCorrelationId);
-			close();
-			if(streamHandler != null)
-				streamHandler.streamClosed(this);
+			deactivate();
 		} else if(streamHandler != null) {
 			streamHandler.receiveStreamData(inMsg.getPayload(), this);
 		} else {
@@ -104,10 +109,6 @@ public class StreamEndpoint implements CorrelationListener {
 
 	public void correlationTimedout(Message outMsg) {
 		close();
-		if(streamHandler != null) {
-			streamHandler.streamClosed(this);
-		}
-		
 	}
 	
 	public String toString() {

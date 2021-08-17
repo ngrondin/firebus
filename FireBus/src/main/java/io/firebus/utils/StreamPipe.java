@@ -20,11 +20,12 @@ public class StreamPipe implements StreamHandler {
 			streamEndpoint2.send(payload);
 		else
 			streamEndpoint1.send(payload);
-		//System.out.println("pipe");
 	}
 
 	public void streamClosed(StreamEndpoint streamEndpoint) {
-		streamEndpoint1.close();
-		streamEndpoint2.close();
+		if(streamEndpoint == streamEndpoint1)
+			streamEndpoint2.close();
+		else
+			streamEndpoint1.close();
 	}
 }

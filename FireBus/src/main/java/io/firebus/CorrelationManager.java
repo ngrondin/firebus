@@ -164,7 +164,7 @@ public class CorrelationManager extends Thread
 			{
 				synchronized(entry)
 				{
-					logger.finer("Correlation " + ids[i] + " has expired");
+					logger.warning("Correlation " + ids[i] + " has expired");
 					entry.expire();
 					entry.notify();				
 					removeEntry(ids[i]);
