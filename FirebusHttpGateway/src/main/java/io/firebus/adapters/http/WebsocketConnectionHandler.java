@@ -76,6 +76,7 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 				onClose();
 				is.close();
 				os.close();
+				connection.close();
 				logger.fine("Websocket connection destroyed");
 			} catch(Exception e) {
 				logger.severe("Error destroying websocket connection " + id + ": " + e.getMessage());
@@ -185,17 +186,12 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 				}
 			}
 		} catch(Exception e) {
-			active = false;
-			logger.warning("Websocket connection " + id + " closed due to exception: " + e.getMessage());
+			if(active) {
+				active = false;
+				logger.warning("Websocket connection " + id + " closed due to exception: " + e.getMessage());
+			}
 		} finally {
 			destroy();
-			/*try {
-				is.close();
-				os.close();
-				connection.close();
-			} catch(Exception e) {
-				logger.severe("Websocket connection " + id + " closing exception: " + e.getMessage());
-			}*/
 		}
 	}
 	
