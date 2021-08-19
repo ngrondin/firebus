@@ -67,7 +67,6 @@ public class ServiceManager extends ExecutionManager {
 			{
 				nodeCore.getExecutionThreads().enqueue(new Runnable() {
 					public void run() {
-						//((FirebusThread)Thread.currentThread()).startFunctionExecution(fe.getName(), executionId);
 						logger.fine("Executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
 						sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_PROGRESS, msg.getSubject(), new Payload());
 						try
@@ -83,7 +82,6 @@ public class ServiceManager extends ExecutionManager {
 								sendError(e, msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_SERVICEERROR,  msg.getSubject());
 						}
 
-						//((FirebusThread)Thread.currentThread()).finishFunctionExecution();
 						fe.releaseExecutionId(executionId);
 					}
 				}, fe.getName(), executionId);

@@ -10,6 +10,7 @@ public class CorrelationEntry {
 	protected NodeCore nodeCore;
 	protected CorrelationListener correlationListener;
 	protected String listenerFunctionName;
+	protected long start;
 	protected long timeout;
 	protected long expiry;
 	
@@ -17,7 +18,8 @@ public class CorrelationEntry {
 	{
 		nodeCore = nc;
 		timeout = to;
-		expiry = System.currentTimeMillis() + to;
+		start = System.currentTimeMillis();
+		expiry = start + to;
 		sequence = 0;
 		inboundMessages = new Queue<Message>(100);
 	}
@@ -25,7 +27,8 @@ public class CorrelationEntry {
 	public void setListener(CorrelationListener cl, String fn, long to)
 	{
 		timeout = to;
-		expiry = System.currentTimeMillis() + timeout;
+		start = System.currentTimeMillis();
+		expiry = start + to;
 		correlationListener = cl;
 		listenerFunctionName = fn;
 		drainInboundQueue();

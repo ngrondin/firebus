@@ -88,7 +88,7 @@ public class CorrelationManager extends Thread
 					}
 					catch(InterruptedException e)
 					{
-						logger.severe("Correlation wait was interrupted : " + e.getMessage());
+						logger.severe("Correlation " + correlationId + " wait was interrupted");
 					}
 				}
 			}
@@ -164,7 +164,7 @@ public class CorrelationManager extends Thread
 			{
 				synchronized(entry)
 				{
-					logger.warning("Correlation " + ids[i] + " has expired");
+					logger.warning("Correlation " + ids[i] + " has expired after " + (currTime - entry.start) + "ms (" + entry.outboundMessage.getTypeString() + ":" + entry.outboundMessage.subject + (entry.listenerFunctionName != null ? " for " + entry.listenerFunctionName : "") + ")");
 					entry.expire();
 					entry.notify();				
 					removeEntry(ids[i]);

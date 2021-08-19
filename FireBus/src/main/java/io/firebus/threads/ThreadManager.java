@@ -43,7 +43,7 @@ public class ThreadManager extends Thread
 	
 	public void enqueue(Runnable runnable, String serviceName, long serviceExecutionId)
 	{
-		enqueue(runnable, serviceName, serviceExecutionId, 30000);
+		enqueue(runnable, serviceName, serviceExecutionId, 70000);
 	}
 	
 	public synchronized void enqueue(Runnable runnable, String serviceName, long serviceExecutionId, long timeout)
