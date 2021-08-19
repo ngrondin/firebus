@@ -62,6 +62,7 @@ public class ServiceRequest
 							String errorCodeStr = respMsg.getPayload().metadata.get("errorcode");
 							int errorCode = errorCodeStr != null ? Integer.parseInt(errorCodeStr) : 0;
 							functionInformation.returnedError();
+							nodeCore.getCorrelationManager().removeEntry(correlation);
 							throw new FunctionErrorException(errorMessage, errorCode);
 						}
 						else if(respMsg.getType() == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
