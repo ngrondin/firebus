@@ -79,7 +79,7 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 				connection.close();
 				logger.fine("Websocket connection destroyed");
 			} catch(Exception e) {
-				logger.severe("Error destroying websocket connection " + id + ": " + e.getMessage());
+				logger.fine("Error destroying websocket connection " + id + ": " + e.getMessage());
 			}
 		}
 	}

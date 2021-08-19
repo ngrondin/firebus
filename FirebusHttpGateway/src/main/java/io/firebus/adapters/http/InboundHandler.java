@@ -13,6 +13,7 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.exceptions.FunctionUnavailableException;
 import io.firebus.utils.DataMap;
+import io.firebus.utils.StackUtils;
 
 public abstract class InboundHandler extends HttpHandler 
 {
@@ -33,7 +34,7 @@ public abstract class InboundHandler extends HttpHandler
 		catch (Exception e)
 		{
 			if(!(e instanceof FunctionErrorException || e instanceof FunctionTimeoutException || e instanceof FunctionUnavailableException))
-				logger.severe("Error processing inbound : " + e.getMessage());
+				logger.severe("Error processing inbound : " + e.getMessage() + "\r\n" + StackUtils.toString(e.getStackTrace()));
 			int errorCode = (e instanceof FunctionErrorException ? ((FunctionErrorException)e).getErrorCode() : 0);
 			resp.reset();
 			resp.setStatus(errorCode > 0 ? errorCode : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
