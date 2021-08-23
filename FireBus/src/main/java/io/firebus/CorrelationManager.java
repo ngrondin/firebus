@@ -88,7 +88,7 @@ public class CorrelationManager extends Thread
 					}
 					catch(InterruptedException e)
 					{
-						logger.severe("Correlation " + correlationId + " wait was interrupted");
+						logger.warning("Correlation " + correlationId + " wait was interrupted");
 					}
 				}
 			}
