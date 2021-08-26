@@ -257,24 +257,22 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	
 	protected Connection getOrCreateConnectionForNode(NodeInformation ni) 
 	{
-		Connection c = getExistingConnectionForNode(ni);
-		if(c == null)
+		Connection conn = getExistingConnectionForNode(ni);
+		if(conn == null)
 		{
-			if(ni.getAddressCount() > 0)
-				for(int i = 0; i < ni.getAddressCount() && c == null; i++)
-					c = createConnection(ni.getAddress(i));
-				
-			if(c == null) 
+			for(int i = 0; i < ni.getAddressCount() && conn == null; i++)
+				conn = createConnection(ni.getAddress(i));
+			
+			if(conn == null) 
 			{
-				int rpt = ni.getRandomRepeater();
-				if(rpt != 0)
-				{
-					ni = nodeCore.getDirectory().getNodeById(rpt);
-					c = getOrCreateConnectionForNode(ni);
+				for(int i = 0; i < ni.getRepeaterCount() && conn == null; i++) {
+					NodeInformation repeater = nodeCore.getDirectory().getNodeById(ni.getRepeater(i));
+					for(int j = 0; j < repeater.getAddressCount() && conn == null; j++)
+						conn = createConnection(repeater.getAddress(j));
 				}
 			}
 		}
-		return c;
+		return conn;
 	}
 	
 	protected Connection getExistingConnectionForNode(NodeInformation ni)

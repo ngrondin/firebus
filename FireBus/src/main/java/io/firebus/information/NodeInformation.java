@@ -126,6 +126,19 @@ public class NodeInformation
 		return lastUpdated;
 	}
 	
+	public int getRepeaterCount() 
+	{
+		return repeaters.size();
+	}
+	
+	public int getRepeater(int i) 
+	{
+		if(i < repeaters.size() && i >= 0) 
+			return repeaters.get(i);
+		else 
+			return 0;
+	}
+	
 	public int getRandomRepeater()
 	{
 		Random r = new Random();
