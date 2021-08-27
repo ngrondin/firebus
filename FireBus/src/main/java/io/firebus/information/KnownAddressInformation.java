@@ -57,5 +57,9 @@ public class KnownAddressInformation {
 	public void setAsSelf() {
 		self = true;
 	}
+	
+	public String toString() {
+		return address.toString();
+	}
 
 }
