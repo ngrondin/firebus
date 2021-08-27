@@ -11,6 +11,7 @@ import io.firebus.information.FunctionInformation;
 import io.firebus.information.NodeInformation;
 import io.firebus.information.ServiceInformation;
 import io.firebus.information.StreamInformation;
+import io.firebus.utils.DataMap;
 
 public class Directory 
 {
@@ -187,5 +188,13 @@ public class Directory
 			}
 		}
 		return sb.toString();
+	}
+	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		for(NodeInformation ni: nodes) 
+			status.put(String.valueOf(ni.getNodeId()), ni.getStatus());
+		return status;
 	}
 }

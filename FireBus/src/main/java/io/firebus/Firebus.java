@@ -11,6 +11,7 @@ import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.ServiceRequestor;
 import io.firebus.interfaces.StreamProvider;
+import io.firebus.utils.DataMap;
 
 public class Firebus
 {
@@ -173,6 +174,11 @@ public class Firebus
 	public List<Statistics> getStatistics() 
 	{
 		return nodeCore.getStatistics();
+	}
+	
+	public DataMap getStatus()
+	{
+		return nodeCore.getStatus();
 	}
 	
 	public int getNodeId()

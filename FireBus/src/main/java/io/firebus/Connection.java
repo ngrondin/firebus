@@ -16,6 +16,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 import io.firebus.interfaces.ConnectionListener;
+import io.firebus.utils.DataMap;
 
 public class Connection extends Thread 
 {
@@ -48,7 +49,8 @@ public class Connection extends Thread
 	protected int msgCRC;
 	protected byte[] msg;
 	protected long timeMark;
-	protected int byteCount;
+	protected int sentCount;
+	protected int recvCount;
 	protected int load;
 	
 	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
@@ -100,11 +102,11 @@ public class Connection extends Thread
 		long now = System.currentTimeMillis();
 		long delta = now - timeMark;
 		if(delta > 0)
-			load = (int)(1000 * (long)byteCount / delta);
+			load = (int)(1000 * (long)sentCount / delta);
 		else
 			load = 0;
 		timeMark = now;
-		byteCount = 0;
+		sentCount = 0;
 		return load;
 	}
 
@@ -115,7 +117,8 @@ public class Connection extends Thread
 	
 	public void run()
 	{
-		byteCount = 0;
+		sentCount = 0;
+		recvCount = 0;
 		timeMark = System.currentTimeMillis();
 		load = 0;
 		initialise();
@@ -231,6 +234,7 @@ public class Connection extends Thread
 			try 
 			{
 				int i = is.read();
+				recvCount++;
 				if(i == -1)
 				{
 					close();
@@ -313,7 +317,7 @@ public class Connection extends Thread
 					crc = (crc ^ bytes[i]) & 0x00FF;
 				os.write(crc);
 				os.flush();
-				byteCount += bytes.length;
+				sentCount += bytes.length;
 				logger.finer("Sent message on connection " + getId() + " to remote node " + remoteNodeId + "(load: " + load + ")");
 			}
 			catch(Exception e)
@@ -345,6 +349,16 @@ public class Connection extends Thread
 	public String toString()
 	{
 		return "Connection " + getId() + " to node " + remoteNodeId + " at " + remoteAddress;
+	}
+	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		status.put("remoteNodeId", remoteNodeId);
+		status.put("remoteAddress", remoteAddress.toString());
+		status.put("sent", sentCount);
+		status.put("recv", recvCount);
+		return status;
 	}
 	
 }

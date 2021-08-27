@@ -7,6 +7,8 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import io.firebus.Address;
+import io.firebus.utils.DataList;
+import io.firebus.utils.DataMap;
 
 public class NodeInformation 
 {
@@ -18,8 +20,6 @@ public class NodeInformation
 	protected long lastSentDiscovery;
 	protected long lastUpdated;
 	protected int rating;
-	/*protected boolean unconnectable;
-	protected boolean unresponsive;*/
 
 	public NodeInformation(int ni)
 	{
@@ -32,8 +32,6 @@ public class NodeInformation
 		addresses = new ArrayList<Address>();
 		repeaters = new ArrayList<Integer>();
 		functions = new HashMap<String, FunctionInformation>();
-		/*unconnectable = false;
-		unresponsive = false;*/
 		rating = 100;
 	}
 
@@ -46,17 +44,7 @@ public class NodeInformation
 	{
 		lastUpdated = t;
 	}
-	/*
-	public void setUnconnectable()
-	{
-		unconnectable = true;
-	}
 	
-	public void setUnresponsive()
-	{
-		unresponsive = true;
-	}
-	*/
 	public void addAddress(Address a)
 	{
 		if(a != null  &&  !containsAddress(a))
@@ -190,6 +178,24 @@ public class NodeInformation
 			sb.append("Function   : " + fi + "\r\n");
 		}
 		return sb.toString();
+	}
+	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		DataList addList = new DataList();
+		for(Address a: addresses) 
+			addList.add(a.toString());
+		status.put("addresses", addList);
+		DataList rptList = new DataList();
+		for(Integer i: repeaters) 
+			rptList.add(i);
+		status.put("repeaters", rptList);		
+		DataMap funcMap = new DataMap();
+		for(String fn: functions.keySet()) 
+			funcMap.put(fn, functions.get(fn).getStatus());
+		status.put("functions", funcMap);		
+		return status;
 	}
 
 }

@@ -2,6 +2,8 @@ package io.firebus.information;
 
 import java.nio.ByteBuffer;
 
+import io.firebus.utils.DataMap;
+
 
 public class StreamInformation extends FunctionInformation
 {
@@ -143,5 +145,13 @@ public class StreamInformation extends FunctionInformation
 	public String toString() 
 	{
 		return "Stream   : " + name + " [" + rating + "]";
+	}
+	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		status.put("type", "stream");		
+		status.put("rating", rating);
+		return status;
 	}
 }

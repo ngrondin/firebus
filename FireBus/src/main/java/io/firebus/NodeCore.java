@@ -15,6 +15,7 @@ import javax.crypto.spec.PBEKeySpec;
 import io.firebus.discovery.DefaultDiscoveryAgent;
 import io.firebus.information.Statistics;
 import io.firebus.threads.ThreadManager;
+import io.firebus.utils.DataMap;
 
 
 public class NodeCore
@@ -296,6 +297,24 @@ public class NodeCore
 		list.addAll(serviceManager.getStatistics());
 		list.addAll(streamManager.getStatistics());
 		return list;
+	}
+	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		status.put("nodeid", this.nodeId);
+		status.put("connmgr", connectionManager.getStatus());
+		status.put("directory", directory.getStatus());
+		DataMap funcs = new DataMap();
+		funcs.put("services", serviceManager.getStatus());
+		funcs.put("streams", streamManager.getStatus());
+		funcs.put("consumers", consumerManager.getStatus());
+		status.put("functions", funcs);
+		DataMap threads = new DataMap();
+		threads.put("execution", executionThreads.getStatus());
+		threads.put("messaging", messageThreads.getStatus());
+		status.put("threads", threads);
+		return status;
 	}
 
 }

@@ -2,6 +2,7 @@ package io.firebus;
 
 import io.firebus.information.Statistics;
 import io.firebus.interfaces.BusFunction;
+import io.firebus.utils.DataMap;
 
 public class FunctionEntry
 {
@@ -72,5 +73,14 @@ public class FunctionEntry
 		Statistics stat = new Statistics(name, maxCountSinceReset, maxCountAllTime, limitConcurrent);
 		maxCountSinceReset = 0;
 		return stat;
+	}
+	
+	public DataMap getStatus() {
+		DataMap status = new DataMap();
+		status.put("limit", limitConcurrent);
+		status.put("current", currentCount);
+		status.put("maxSinceLast", maxCountSinceReset);
+		status.put("maxAllTime", maxCountAllTime);
+		return status;
 	}
 }

@@ -1,5 +1,7 @@
 package io.firebus.information;
 
+import io.firebus.utils.DataMap;
+
 public abstract class FunctionInformation
 {
 	protected NodeInformation nodeInformation;
@@ -91,4 +93,6 @@ public abstract class FunctionInformation
 	}
 	
 	public abstract String toString();
+	
+	public abstract DataMap getStatus();
 }

@@ -13,6 +13,8 @@ import javax.crypto.SecretKey;
 import io.firebus.information.KnownAddressInformation;
 import io.firebus.information.NodeInformation;
 import io.firebus.interfaces.ConnectionListener;
+import io.firebus.utils.DataList;
+import io.firebus.utils.DataMap;
 
 
 public class ConnectionManager extends Thread implements ConnectionListener
@@ -348,6 +350,22 @@ public class ConnectionManager extends Thread implements ConnectionListener
 			sb.append(connections.get(i) + "\r\n");
 		}
 		return sb.toString();
+	}
+	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		DataMap connMap = new DataMap();
+		for(Connection connection: connections) {
+			connMap.put(String.valueOf(connection.getId()), connection.getStatus());
+		}
+		status.put("connections", connMap);
+		DataList kaList = new DataList();
+		for(KnownAddressInformation ka: knownAddresses) {
+			kaList.add(ka.toString());
+		}
+		status.put("knownAddress", kaList);
+		return status;
 	}
 
 

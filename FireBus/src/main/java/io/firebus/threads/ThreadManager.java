@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import io.firebus.NodeCore;
+import io.firebus.utils.DataMap;
 import io.firebus.utils.Queue;
 
 public class ThreadManager extends Thread
@@ -113,4 +114,15 @@ public class ThreadManager extends Thread
 			threads.get(i).close();
 	}
 	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		DataMap tMap = new DataMap();
+		for(FirebusThread thread: threads) 
+			tMap.put(thread.getName(), thread.getStatus());
+		status.put("threads", tMap);
+		status.put("threadCount", threads.size());
+		status.put("queue", queue.getStatus());
+		return status;
+	}
 }

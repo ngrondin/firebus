@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.util.logging.Logger;
 
 import io.firebus.NodeCore;
+import io.firebus.utils.DataMap;
 
 public class FirebusThread extends Thread
 {
@@ -13,6 +14,8 @@ public class FirebusThread extends Thread
 	protected ThreadManager threadManager;
 	protected boolean quit;
 	protected boolean ready;
+	protected long lastStart;
+	protected long lastCompletion;
 	protected long expiry;
 	protected String functionName;
 	protected long functionExecutionId = -1;
@@ -25,6 +28,8 @@ public class FirebusThread extends Thread
 		quit = false;
 		ready = false;
 		expiry = -1;
+		lastStart = -1;
+		lastCompletion = -1;
 		setName("fbThread" + getId());
 	}
 	
@@ -38,10 +43,14 @@ public class FirebusThread extends Thread
 				FirebusRunnable fbRunnable = threadManager.getNext();
 				if(fbRunnable != null)
 				{
-					startFunctionExecution(fbRunnable.functionName, fbRunnable.functionExecutionId);
+					functionName = fbRunnable.functionName;
+					functionExecutionId = fbRunnable.functionExecutionId;
+					lastStart = System.currentTimeMillis();
 					expiry = fbRunnable.expiry;
 					fbRunnable.runnable.run();
-					finishFunctionExecution();
+					functionName = null;
+					functionExecutionId = -1;
+					lastCompletion = System.currentTimeMillis();
 				}
 				else
 				{
@@ -60,25 +69,15 @@ public class FirebusThread extends Thread
 			} 
 			catch (Exception e)
 			{
-				finishFunctionExecution();
+				functionName = null;
+				functionExecutionId = -1;
+				lastCompletion = System.currentTimeMillis();
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
 				e.printStackTrace(pw);
 				logger.severe(sw.toString());
 			}
 		}
-	}
-	
-	public void startFunctionExecution(String n, long id)
-	{
-		functionName = n;
-		functionExecutionId = id;
-	}
-	
-	public void finishFunctionExecution() 
-	{
-		functionName = null;
-		functionExecutionId = -1;
 	}
 
 	public String getFunctionName()
@@ -110,4 +109,19 @@ public class FirebusThread extends Thread
 		}
 	}
 
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		status.put("executing", !ready);
+		if(ready) {
+			status.put("idleSince", System.currentTimeMillis() - lastCompletion);
+		} else {
+			status.put("executingFunctionName", functionName);
+			status.put("executingFunctionId", functionExecutionId);
+			if(trackingId != null)
+				status.put("executingTrackingId", trackingId);
+			status.put("executingSince", System.currentTimeMillis() - lastStart);
+		}
+		return status;
+	}
 }

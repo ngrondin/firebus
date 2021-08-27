@@ -2,6 +2,7 @@ package io.firebus.utils;
 
 import java.util.logging.Logger;
 
+
 public class Queue<T>
 {
 	private Logger logger = Logger.getLogger("io.firebus");
@@ -10,6 +11,8 @@ public class Queue<T>
 	protected boolean canGrow;
 	protected int head;
 	protected int tail;
+	protected int depth;
+	protected int max;
 	
 	public Queue(int size)
 	{
@@ -28,13 +31,18 @@ public class Queue<T>
 	protected void init() {
 		items = new Object[increment];
 		head = 0;
-		tail = 0;		
+		tail = 0;	
+		depth = 0;
+		max = 0;
 	}
 	
 	public synchronized void push(T m)
 	{
 		items[head] = m;
 		head++;
+		depth++;
+		if(depth > max)
+			max = depth;
 		if(head >= items.length)
 			head = 0;
 		if(head == tail) 
@@ -48,6 +56,7 @@ public class Queue<T>
 				tail++;
 				if(tail >= items.length)
 					tail = 0;
+				depth--;
 				logger.severe("Dropped message from queue");
 			}
 		}
@@ -55,7 +64,8 @@ public class Queue<T>
 	
 	public synchronized int getDepth()
 	{
-		return (((head + items.length) - tail) % items.length);
+		return depth;
+		//return (((head + items.length) - tail) % items.length);
 	}
 	
 	protected void grow() 
@@ -80,10 +90,20 @@ public class Queue<T>
 			T item = (T)items[tail];
 			items[tail] = null;
 			tail++;
+			depth--;
 			if(tail >= items.length)
 				tail = 0;
 			return item;
 		}
 	}	
+	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		status.put("depth", getDepth());
+		status.put("size", items.length);
+		status.put("max", max);
+		return status;
+	}
 	
 }

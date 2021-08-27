@@ -2,6 +2,8 @@ package io.firebus.information;
 
 import java.nio.ByteBuffer;
 
+import io.firebus.utils.DataMap;
+
 
 public class ServiceInformation extends FunctionInformation
 {
@@ -125,5 +127,13 @@ public class ServiceInformation extends FunctionInformation
 	public String toString()
 	{
 		return "Service  : " + name + " [" + rating + "]";
+	}
+	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		status.put("type", "service");
+		status.put("rating", rating);
+		return status;
 	}
 }

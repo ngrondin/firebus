@@ -1,5 +1,6 @@
 package io.firebus.information;
 
+import io.firebus.utils.DataMap;
 
 public class ConsumerInformation extends FunctionInformation
 {
@@ -26,6 +27,13 @@ public class ConsumerInformation extends FunctionInformation
 	public String toString() 
 	{
 		return "Consumer : " + name;
+	}
+	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		status.put("type", "consumer");
+		return status;
 	}
 
 }

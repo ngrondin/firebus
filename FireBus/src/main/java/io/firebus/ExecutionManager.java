@@ -11,6 +11,7 @@ import io.firebus.interfaces.BusFunction;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.StreamProvider;
+import io.firebus.utils.DataMap;
 
 public abstract class ExecutionManager {
 	protected NodeCore nodeCore;
@@ -106,6 +107,14 @@ public abstract class ExecutionManager {
 			sb.append(fe.getName() + "\r\n");
 		}
 		return sb.toString();
-	}	
+	}
+	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		for(FunctionEntry func: getFunctionEntries()) 
+			status.put(func.getName(), func.getStatus());
+		return status;
+	}
 	
 }
