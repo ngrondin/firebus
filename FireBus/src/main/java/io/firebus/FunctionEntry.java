@@ -10,9 +10,13 @@ public class FunctionEntry
 	protected BusFunction function;
 	protected int limitConcurrent;
 	protected boolean[] reservedIds;
-	protected int currentCount;
-	protected int maxCountSinceReset;
-	protected int maxCountAllTime;
+	protected long[] start;
+	protected int concurrentCount;
+	protected int maxConcurrentCountSinceReset;
+	protected int maxConcurrentCountAllTime;
+	protected long entryStart;
+	protected long cumulExecutionTime;
+	protected long executionCount;
 	
 	public FunctionEntry(String n, BusFunction f, int mc)
 	{
@@ -20,9 +24,13 @@ public class FunctionEntry
 		function = f;
 		limitConcurrent = mc;
 		reservedIds = new boolean[limitConcurrent];
-		currentCount = 0;
-		maxCountSinceReset = 0;
-		maxCountAllTime = 0;
+		start = new long[limitConcurrent];
+		entryStart = System.currentTimeMillis();
+		concurrentCount = 0;
+		maxConcurrentCountSinceReset = 0;
+		maxConcurrentCountAllTime = 0;
+		cumulExecutionTime = 0;
+		executionCount = 0;
 	}
 	
 	public void setFunction(BusFunction f)
@@ -32,15 +40,17 @@ public class FunctionEntry
 	
 	public synchronized long getExecutionId()
 	{
-		if(currentCount < limitConcurrent) {
+		if(concurrentCount < limitConcurrent) {
 			for(int i = 0; i < limitConcurrent; i++) {
 				if(reservedIds[i] == false) {
 					reservedIds[i] = true;
-					currentCount++;
-					if(currentCount > maxCountSinceReset) {
-						maxCountSinceReset = currentCount;
-						if(maxCountSinceReset > maxCountAllTime)
-							maxCountAllTime = maxCountSinceReset;
+					start[i] = System.currentTimeMillis();
+					executionCount++;
+					concurrentCount++;
+					if(concurrentCount > maxConcurrentCountSinceReset) {
+						maxConcurrentCountSinceReset = concurrentCount;
+						if(maxConcurrentCountSinceReset > maxConcurrentCountAllTime)
+							maxConcurrentCountAllTime = maxConcurrentCountSinceReset;
 					}
 					return (long)i;
 				}
@@ -54,7 +64,9 @@ public class FunctionEntry
 		int i = (int)id;
 		if(reservedIds[i] == true) {
 			reservedIds[i] = false;
-			currentCount--;
+			concurrentCount--;
+			cumulExecutionTime += (System.currentTimeMillis() - start[i]);
+			start[i] = 0;
 		}
 	}
 	
@@ -65,22 +77,25 @@ public class FunctionEntry
 	
 	public int getExecutionCount()
 	{
-		return currentCount;
+		return concurrentCount;
 	}
 	
 	public Statistics getStatistics() 
 	{
-		Statistics stat = new Statistics(name, maxCountSinceReset, maxCountAllTime, limitConcurrent);
-		maxCountSinceReset = 0;
+		Statistics stat = new Statistics(name, maxConcurrentCountSinceReset, maxConcurrentCountAllTime, limitConcurrent);
+		maxConcurrentCountSinceReset = 0;
 		return stat;
 	}
 	
 	public DataMap getStatus() {
 		DataMap status = new DataMap();
-		status.put("limit", limitConcurrent);
-		status.put("current", currentCount);
-		status.put("maxSinceLast", maxCountSinceReset);
-		status.put("maxAllTime", maxCountAllTime);
+		status.put("concurrentLimit", limitConcurrent);
+		status.put("currentExecutions", concurrentCount);
+		status.put("maxConcurrentSinceLast", maxConcurrentCountSinceReset);
+		status.put("maxConcurrentAllTime", maxConcurrentCountAllTime);
+		status.put("totalExecutionCount", executionCount);
+		status.put("cumulExecutionTime", cumulExecutionTime);
+		status.put("utilisation", (100 * cumulExecutionTime / (System.currentTimeMillis() - entryStart)));
 		return status;
 	}
 }

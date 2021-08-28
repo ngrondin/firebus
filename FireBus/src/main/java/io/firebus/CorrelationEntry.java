@@ -1,6 +1,7 @@
 package io.firebus;
 
 import io.firebus.interfaces.CorrelationListener;
+import io.firebus.utils.DataMap;
 import io.firebus.utils.Queue;
 
 public class CorrelationEntry {
@@ -84,4 +85,16 @@ public class CorrelationEntry {
 		}
 	}
 
+	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		long now = System.currentTimeMillis();
+		status.put("startSince", (now - start));
+		status.put("expiryUntil", (expiry - now));
+		if(listenerFunctionName != null)
+			status.put("listenerFunctionName", listenerFunctionName);
+		status.put("queue", inboundMessages.getStatus());
+		return status;
+	}
 }

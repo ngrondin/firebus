@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 import io.firebus.interfaces.CorrelationListener;
+import io.firebus.utils.DataMap;
 import io.firebus.utils.StackUtils;
 
 public class CorrelationManager extends Thread
@@ -12,6 +13,8 @@ public class CorrelationManager extends Thread
 	protected HashMap<Integer, CorrelationEntry> entries;
 	protected NodeCore nodeCore;
 	protected boolean quit;
+	protected long lastExpiryCheck;
+	protected int expiredCount;
 	
 	protected int nextCorrelation = 1;
 	
@@ -155,39 +158,38 @@ public class CorrelationManager extends Thread
 	
 	public void checkExpiredCalls()
 	{
-		long currTime = System.currentTimeMillis();
+		long now = System.currentTimeMillis();
 		Integer[] ids = getEntryKeyArray();
 		for(int i = 0; i < ids.length; i++)
 		{
 			CorrelationEntry entry = getEntry(ids[i]);
-			if(entry != null && currTime > entry.expiry)
+			if(entry != null && now > entry.expiry)
 			{
 				synchronized(entry)
 				{
-					logger.warning("Correlation " + ids[i] + " has expired after " + (currTime - entry.start) + "ms (" + (entry.outboundMessage != null ? entry.outboundMessage.getTypeString() + ":" + entry.outboundMessage.subject : "") + (entry.listenerFunctionName != null ? " for " + entry.listenerFunctionName : "") + ") " + currTime + " " + entry.expiry + " " + entry.start + " " + entry.timeout);
+					logger.warning("Correlation " + ids[i] + " has expired after " + (now - entry.start) + "ms (" + (entry.outboundMessage != null ? entry.outboundMessage.getTypeString() + ":" + entry.outboundMessage.subject : "") + (entry.listenerFunctionName != null ? " for " + entry.listenerFunctionName : "") + ") " + now + " " + entry.expiry + " " + entry.start + " " + entry.timeout);
 					entry.expire();
 					entry.notify();				
 					removeEntry(ids[i]);
+					expiredCount++;
 				}
 			}
 		}
+		lastExpiryCheck = now;
 	}
 	
 	public void run()
 	{
 		while(!quit)
 		{
-			checkExpiredCalls();
 			try
 			{
-				synchronized(this)
-				{
-					wait(100);
-				}
+				checkExpiredCalls();
+				Thread.sleep(500);
 			}
 			catch(Exception e)
 			{
-				e.printStackTrace();
+				logger.severe(StackUtils.toString(e.getStackTrace()));
 			}
 		}
 	}
@@ -195,5 +197,18 @@ public class CorrelationManager extends Thread
 	public void close()
 	{
 		quit = true;
+	}
+	
+	public DataMap getStatus()
+	{
+		DataMap status = new DataMap();
+		DataMap entryMap = new DataMap();
+		for(Integer i: entries.keySet())
+			entryMap.put(String.valueOf(i), entries.get(i).getStatus());
+		status.put("entries", entryMap);
+		status.put("entryCount", entries.size());
+		status.put("expiredCount", expiredCount);
+		status.put("lastExpiryCheck", (System.currentTimeMillis() - lastExpiryCheck));
+		return status;
 	}
 }

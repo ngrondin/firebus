@@ -14,8 +14,10 @@ public class FirebusThread extends Thread
 	protected ThreadManager threadManager;
 	protected boolean quit;
 	protected boolean ready;
+	protected long threadStart;
 	protected long lastStart;
 	protected long lastCompletion;
+	protected long cumulExecutionTime;
 	protected long expiry;
 	protected String functionName;
 	protected long functionExecutionId = -1;
@@ -30,6 +32,7 @@ public class FirebusThread extends Thread
 		expiry = -1;
 		lastStart = -1;
 		lastCompletion = -1;
+		threadStart = System.currentTimeMillis();
 		setName("fbThread" + getId());
 	}
 	
@@ -46,11 +49,10 @@ public class FirebusThread extends Thread
 					functionName = fbRunnable.functionName;
 					functionExecutionId = fbRunnable.functionExecutionId;
 					lastStart = System.currentTimeMillis();
+					lastCompletion = -1;
 					expiry = fbRunnable.expiry;
 					fbRunnable.runnable.run();
-					functionName = null;
-					functionExecutionId = -1;
-					lastCompletion = System.currentTimeMillis();
+					completeExecution();
 				}
 				else
 				{
@@ -69,15 +71,22 @@ public class FirebusThread extends Thread
 			} 
 			catch (Exception e)
 			{
-				functionName = null;
-				functionExecutionId = -1;
-				lastCompletion = System.currentTimeMillis();
+				completeExecution();
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
 				e.printStackTrace(pw);
 				logger.severe(sw.toString());
 			}
 		}
+	}
+	
+	private void completeExecution()
+	{
+		functionName = null;
+		functionExecutionId = -1;
+		lastCompletion = System.currentTimeMillis();		
+		cumulExecutionTime += (lastCompletion - lastStart);
+		lastStart = -1;
 	}
 
 	public String getFunctionName()
@@ -122,6 +131,8 @@ public class FirebusThread extends Thread
 				status.put("executingTrackingId", trackingId);
 			status.put("executingSince", System.currentTimeMillis() - lastStart);
 		}
+		status.put("cumulExecutionTime", cumulExecutionTime);
+		status.put("utilisation", (100 * cumulExecutionTime / (System.currentTimeMillis() - threadStart)));
 		return status;
 	}
 }

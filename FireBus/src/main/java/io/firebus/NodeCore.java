@@ -314,6 +314,7 @@ public class NodeCore
 		threads.put("execution", executionThreads.getStatus());
 		threads.put("messaging", messageThreads.getStatus());
 		status.put("threads", threads);
+		status.put("correlation", correlationManager.getStatus());
 		return status;
 	}
 
