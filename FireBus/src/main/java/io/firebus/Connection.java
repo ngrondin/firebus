@@ -355,7 +355,7 @@ public class Connection extends Thread
 	{
 		DataMap status = new DataMap();
 		status.put("remoteNodeId", remoteNodeId);
-		status.put("remoteAddress", remoteAddress.toString());
+		status.put("remoteAddress", remoteAddress != null ? remoteAddress.toString() : null);
 		status.put("sent", sentCount);
 		status.put("recv", recvCount);
 		return status;
