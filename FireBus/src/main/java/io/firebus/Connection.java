@@ -17,6 +17,8 @@ import javax.crypto.spec.IvParameterSpec;
 
 import io.firebus.interfaces.ConnectionListener;
 import io.firebus.utils.DataMap;
+import io.firebus.utils.Queue;
+import io.firebus.utils.StackUtils;
 
 public class Connection extends Thread 
 {
@@ -35,6 +37,7 @@ public class Connection extends Thread
 	protected SecretKey secretKey;
 	protected InputStream is;
 	protected OutputStream os;
+	protected Queue<Message> queue;
 	protected ConnectionListener listener;
 	protected int localNodeId;
 	protected int localPort;
@@ -48,6 +51,8 @@ public class Connection extends Thread
 	protected int msgPos;
 	protected int msgCRC;
 	protected byte[] msg;
+	protected long initTime;
+	protected long lastActivity;
 	protected long timeMark;
 	protected int sentCount;
 	protected int recvCount;
@@ -56,29 +61,39 @@ public class Connection extends Thread
 	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
 		logger.fine("Initialising received connection from " + s.getRemoteSocketAddress());
-		state = STATE_NEW;
+		constructorSetup();
 		socket = s;
 		listener = cl;
 		networkName = net;
 		secretKey = k;
 		localNodeId = nid;
 		localPort = p;
-		setName("fbConn" + getId());
 		start();
 	}
 	
 	public Connection(Address a, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
 		logger.fine("Initialising connection to " + a);
-		state = STATE_NEW;
+		constructorSetup();
 		remoteAddress = a;
 		listener = cl;
 		networkName = net;
 		secretKey = k;
 		localNodeId = nid;
 		localPort = p;
-		setName("fbConn" + getId());
 		start();
+	}
+	
+	private void constructorSetup() 
+	{
+		state = STATE_NEW;
+		setName("fbConn" + getId() + "Recv");
+		queue = new Queue<Message>(100);
+		sentCount = 0;
+		recvCount = 0;
+		initTime = System.currentTimeMillis();
+		timeMark = initTime;
+		load = 0;
 	}
 
 	
@@ -117,19 +132,17 @@ public class Connection extends Thread
 	
 	public void run()
 	{
-		sentCount = 0;
-		recvCount = 0;
-		timeMark = System.currentTimeMillis();
-		load = 0;
 		initialise();
 		if(state == STATE_INITIALIZED)
 		{
 			listener.connectionCreated(this);
 			state = STATE_ACTIVE;
-			synchronized(this) {
-				notifyAll();
-			}			
-			listening();
+			new Thread(new Runnable() {
+				public void run() {
+					send();
+				}
+			}).start();
+			listen();
 		}
 		else
 		{
@@ -226,7 +239,7 @@ public class Connection extends Thread
 		}		
 	}
 	
-	protected void listening()
+	protected void listen()
 	{
 		msgState = 0;
 		while(state == STATE_ACTIVE)
@@ -275,6 +288,7 @@ public class Connection extends Thread
 						Message message = Message.deserialise(msg);
 						if(listener != null && message != null)
 							listener.messageReceived(message, this);
+						lastActivity = System.currentTimeMillis();
 					}
 					else
 					{
@@ -295,36 +309,57 @@ public class Connection extends Thread
 		}		
 	}
 	
-	public synchronized void sendMessage(Message msg)
+	protected void send() 
 	{
-		while(state == STATE_NEW || state == STATE_INITIALIZING || state == STATE_INITIALIZED) {
-			try { wait();} catch(Exception e) {}
-		}
-		
-		if(state == STATE_ACTIVE)
+		Thread.currentThread().setName("fbConn" + getId() + "Send");
+		while(state == STATE_ACTIVE)
 		{
-			try
-			{
-				byte[] bytes = msg.serialise();
-				os.write(0x7E);
-				os.write(bytes.length & 0x000000FF);
-				os.write((bytes.length >> 8) & 0x000000FF);
-				os.write((bytes.length >> 16) & 0x000000FF);
-				os.write((bytes.length >> 24) & 0x000000FF);
-				os.write(bytes);
-				int crc = 0;
-				for(int i = 0; i < bytes.length; i++)
-					crc = (crc ^ bytes[i]) & 0x00FF;
-				os.write(crc);
-				os.flush();
-				sentCount += bytes.length;
-				logger.finer("Sent message on connection " + getId() + " to remote node " + remoteNodeId + "(load: " + load + ")");
+			try {
+				Message msg = null;
+				synchronized(queue) {
+					if(queue.getDepth() > 0)
+						msg = queue.pop();
+				}
+				if(msg != null) {
+					try {
+						byte[] bytes = msg.serialise();
+						os.write(0x7E);
+						os.write(bytes.length & 0x000000FF);
+						os.write((bytes.length >> 8) & 0x000000FF);
+						os.write((bytes.length >> 16) & 0x000000FF);
+						os.write((bytes.length >> 24) & 0x000000FF);
+						os.write(bytes);
+						int crc = 0;
+						for(int i = 0; i < bytes.length; i++)
+							crc = (crc ^ bytes[i]) & 0x00FF;
+						os.write(crc);
+						os.flush();
+						sentCount += bytes.length;
+						lastActivity = System.currentTimeMillis();
+						logger.finer("Sent message on connection " + getId() + " to remote node " + remoteNodeId + "(load: " + load + ")");
+
+					} catch(Exception e1) {
+						logger.severe("Exception on connection while sending message : " + e1.getMessage());
+						close();
+					}
+				} else {
+					try {
+						synchronized(queue) {
+							queue.wait(1000);
+						}
+					} catch(InterruptedException e2) {}
+				}
+			} catch(Exception e) {
+				logger.severe("Exception in connection sender thread: " + StackUtils.toString(e.getStackTrace()));
 			}
-			catch(Exception e)
-			{
-				logger.severe("Exception on connection while sending message : " + e.getMessage());
-				close();
-			}
+		}		
+	}
+	
+	public void sendMessage(Message msg)
+	{
+		synchronized(queue) {
+			queue.push(msg);
+			queue.notify();
 		}
 	}
 	
@@ -353,11 +388,16 @@ public class Connection extends Thread
 	
 	public DataMap getStatus()
 	{
+		long now = System.currentTimeMillis();
 		DataMap status = new DataMap();
 		status.put("remoteNodeId", remoteNodeId);
 		status.put("remoteAddress", remoteAddress != null ? remoteAddress.toString() : null);
+		status.put("startedSince", (now - initTime));
+		status.put("lastActivity", (now - lastActivity));
 		status.put("sent", sentCount);
 		status.put("recv", recvCount);
+		status.put("state", state == STATE_NEW ? "new" : state == STATE_INITIALIZING ? "initializing" : state == STATE_INITIALIZED ? "initialized" : state == STATE_ACTIVE ? "active" : state == STATE_FAILED ? "failed" : state == STATE_CLOSING ? "closing" : state == STATE_DEAD ? "dead" : "unknown");
+		status.put("queue", queue.getStatus());
 		return status;
 	}
 	

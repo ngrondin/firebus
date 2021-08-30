@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -67,15 +68,6 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		return connectionServer.getPort();
 	}
 	
-	public int getConnectedNodeCount()
-	{
-		ArrayList<Integer> connectedNodeIds = new ArrayList<Integer>();
-		for(int i = 0; i < connections.size(); i++)
-			if(!connectedNodeIds.contains(connections.get(i).getRemoteNodeId()))
-					connectedNodeIds.add(connections.get(i).getRemoteNodeId());
-		return connectedNodeIds.size();
-	}
-	
 	public Address getAddress()
 	{
 		try
@@ -88,6 +80,30 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		}
 	}
 	
+	public boolean hasConnectionForAddress(Address a)
+	{
+		for(Connection connection: connections)
+			if(connection.remoteAddressEquals(a))
+				return true;
+		return false;
+	}
+	
+	public boolean hasConnectionForNode(NodeInformation ni) 
+	{
+		for(Connection connection: connections)
+			if(connection.getRemoteNodeId() == ni.getNodeId())
+				return true;
+		return false;
+	}
+	
+	public int getConnectedNodeCount()
+	{
+		ArrayList<Integer> connectedNodeIds = new ArrayList<Integer>();
+		for(Connection connection: connections)
+			if(!connectedNodeIds.contains(connection.getRemoteNodeId()))
+					connectedNodeIds.add(connection.getRemoteNodeId());
+		return connectedNodeIds.size();
+	}
 	
 	/******* Management Loop ************/
 	
@@ -109,14 +125,9 @@ public class ConnectionManager extends Thread implements ConnectionListener
 					}
 					else
 					{
-						boolean hasConnection = false;
-						for(int j = 0; j < connections.size(); j++)
-							if(connections.get(j).remoteAddressEquals(kai.getAddress()))
-								hasConnection = true;
-						
-						if(!hasConnection && kai.isDueToTry())
+						if(!hasConnectionForAddress(kai.getAddress()) && kai.isDueToTry())
 						{
-							logger.fine("Creating new connection from known address (try " + kai.tries() + ")");
+							logger.info("Creating new connection from known address (try " + kai.tries() + ")");
 							createConnection(kai.getAddress());
 						}						
 					}
@@ -126,19 +137,11 @@ public class ConnectionManager extends Thread implements ConnectionListener
 				for(int i = 0; i < nodeCore.getDirectory().getNodeCount()  &&  connectedNodeCount < minimumConnectedNodeCount; i++)
 				{
 					NodeInformation ni = nodeCore.getDirectory().getNode(i);
-					if(ni.getNodeId() != nodeId  &&  ni.getAddressCount() > 0)
+					if(ni.getNodeId() != nodeId  &&  ni.getAddressCount() > 0 && !hasConnectionForNode(ni))
 					{
-						boolean hasConnection = false;
-						for(int j = 0; j < connections.size(); j++)
-							for(int k = 0; k < ni.getAddressCount(); k++)
-								if(connections.get(j).remoteAddressEquals(ni.getAddress(k)))
-									hasConnection = true;
-						if(!hasConnection)
-						{
-							logger.fine("Creating new connection to maintain minimum node connectivity");
-							createConnection(ni.getAddress(0));
-							connectedNodeCount++;
-						}
+						logger.info("Creating new connection to maintain minimum node connectivity");
+						createConnection(ni.getAddress(0));
+						connectedNodeCount++;
 					}
 				}
 
@@ -259,33 +262,44 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	
 	protected Connection getOrCreateConnectionForNode(NodeInformation ni) 
 	{
-		Connection conn = getExistingConnectionForNode(ni);
-		if(conn == null)
+		Connection connection = getExistingConnectionForNode(ni);
+		if(connection == null)
 		{
-			for(int i = 0; i < ni.getAddressCount() && conn == null; i++)
-				conn = createConnection(ni.getAddress(i));
+			for(int i = 0; i < ni.getAddressCount() && connection == null; i++) {
+				logger.info("Creating a new connection for a direct message");
+				connection = createConnection(ni.getAddress(i));
+			}
 			
-			if(conn == null) 
+			if(connection == null) 
 			{
-				for(int i = 0; i < ni.getRepeaterCount() && conn == null; i++) {
+				for(int i = 0; i < ni.getRepeaterCount() && connection == null; i++) {
 					NodeInformation repeater = nodeCore.getDirectory().getNodeById(ni.getRepeater(i));
-					for(int j = 0; j < repeater.getAddressCount() && conn == null; j++)
-						conn = createConnection(repeater.getAddress(j));
+					for(int j = 0; j < repeater.getAddressCount() && connection == null; j++) {
+						logger.info("Creating a new connection for a repeater message");
+						connection = createConnection(repeater.getAddress(j));
+					}	
 				}
 			}
 		}
-		return conn;
+		return connection;
 	}
 	
 	protected Connection getExistingConnectionForNode(NodeInformation ni)
 	{
-		ArrayList<Connection> cons = new ArrayList<Connection>();
-		for(int i = 0; i < connections.size(); i++)
-			if(connections.get(i).getRemoteNodeId() == ni.getNodeId())
-					cons.add(connections.get(i));
+		ArrayList<Connection> readyConnections = new ArrayList<Connection>();
+		ArrayList<Connection> allConnections = new ArrayList<Connection>();
+		for(Connection connection: connections) {
+			if(connection.getRemoteNodeId() == ni.getNodeId()) {
+				allConnections.add(connection);
+				if(connection.isReady())
+					readyConnections.add(connection);
+			}
+		}
 					
-		if(cons.size() > 0)
-			return cons.get(rnd.nextInt(cons.size()));
+		if(readyConnections.size() > 0)
+			return readyConnections.get(rnd.nextInt(readyConnections.size()));
+		else if(allConnections.size() > 0)
+			return allConnections.get(rnd.nextInt(allConnections.size()));
 		else
 			return null;
 	}
@@ -293,7 +307,6 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	
 	protected Connection createConnection(Address a) 
 	{
-		logger.fine("Creating new connection");
 		Connection c = new Connection(a, networkName, secretKey, nodeId, connectionServer.getPort(), this);
 		connections.add(c);
 		return c;
@@ -303,11 +316,15 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	protected void broadcastToAllConnections(Message msg)
 	{
 		logger.finer("Broadcasting message to all connections");
+		List<Integer> sentToNodeIds = new ArrayList<Integer>();
 		for(int i = 0; i < connections.size(); i++)
 		{
 			Connection c = connections.get(i);
-			if(c.getRemoteNodeId() != msg.getOriginatorId())
+			int remoteNodeId = c.getRemoteNodeId();
+			if(remoteNodeId != msg.getOriginatorId() && !sentToNodeIds.contains(remoteNodeId)) {
 				c.sendMessage(msg);
+				sentToNodeIds.add(remoteNodeId);
+			}
 		}
 	}
 	

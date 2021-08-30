@@ -149,7 +149,7 @@ public class CorrelationManager extends Thread
 			else
 			{
 				if(inMsg.getType() != Message.MSGTYPE_FUNCTIONINFORMATION) 
-					logger.warning("No correlation entry found for '" + inMsg.getTypeString() + "' response from service " + inMsg.getSubject() + " (corr: " + correlationId + ")");
+					logger.warning("No correlation entry found for '" + inMsg.getTypeString() + "' response from service " + inMsg.getSubject() + " (corr: " + correlationId + " " + inMsg.getOriginatorId() + "->" + inMsg.getDestinationId() + ")");
 			}
 		}
 	}
@@ -167,7 +167,7 @@ public class CorrelationManager extends Thread
 			{
 				synchronized(entry)
 				{
-					logger.warning("Correlation " + ids[i] + " has expired after " + (now - entry.start) + "ms (" + (entry.outboundMessage != null ? entry.outboundMessage.getTypeString() + ":" + entry.outboundMessage.subject : "") + (entry.listenerFunctionName != null ? " for " + entry.listenerFunctionName : "") + ") " + now + " " + entry.expiry + " " + entry.start + " " + entry.timeout);
+					logger.warning("Correlation " + ids[i] + " has expired after " + (now - entry.start) + "ms (" + (entry.outboundMessage != null ? entry.outboundMessage.getTypeString() + ":" + entry.outboundMessage.subject + ":" + entry.outboundMessage.getOriginatorId() + "->" + entry.outboundMessage.getDestinationId() : "") + (entry.listenerFunctionName != null ? " for " + entry.listenerFunctionName : "") + ") exp:" + entry.expiry + " start:" + entry.start + " timeout:" + entry.timeout);
 					entry.expire();
 					entry.notify();				
 					removeEntry(ids[i]);
@@ -185,7 +185,7 @@ public class CorrelationManager extends Thread
 			try
 			{
 				checkExpiredCalls();
-				Thread.sleep(500);
+				Thread.sleep(100);
 			}
 			catch(Exception e)
 			{
