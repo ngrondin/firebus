@@ -80,6 +80,7 @@ public class NodeCore
 			consumerManager = new ConsumerManager(this);
 			correlationManager = new CorrelationManager(this);
 			messageThreads = new ThreadManager(this);
+			messageThreads.setPriority(10);
 			executionThreads = new ThreadManager(this);
 			historyQueue = new HistoryQueue(256);
 			discoveryAgents = new ArrayList<DiscoveryAgent>();

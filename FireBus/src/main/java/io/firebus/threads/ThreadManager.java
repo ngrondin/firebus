@@ -16,15 +16,22 @@ public class ThreadManager extends Thread
 	protected boolean quit;
 	protected ArrayList<FirebusThread> threads;
 	protected int maxThreadCount;
+	protected int priority;
 	
 	public ThreadManager(NodeCore c)
 	{
 		nodeCore = c;
 		quit = false;
 		maxThreadCount = 10;
+		priority = 5;
 		threads = new ArrayList<FirebusThread>();
 		queue = new Queue<FirebusRunnable>(1024);
 		start();
+	}
+	
+	public void setDefaultPriority(int p)
+	{
+		priority = p;
 	}
 	
 	public void setMaxThreadCount(int tc)
@@ -71,6 +78,7 @@ public class ThreadManager extends Thread
 		if(thread == null && threads.size() < maxThreadCount && !quit)
 		{
 			thread = new FirebusThread(this, nodeCore);
+			thread.setPriority(priority);
 			threads.add(thread);
 			thread.start();
 			logger.finest("Added thread " + thread.getId() + " ");

@@ -315,11 +315,7 @@ public class Connection extends Thread
 		while(state == STATE_ACTIVE)
 		{
 			try {
-				Message msg = null;
-				synchronized(queue) {
-					if(queue.getDepth() > 0)
-						msg = queue.pop();
-				}
+				Message msg = queue.pop();
 				if(msg != null) {
 					try {
 						byte[] bytes = msg.serialise();
@@ -357,10 +353,8 @@ public class Connection extends Thread
 	
 	public void sendMessage(Message msg)
 	{
-		synchronized(queue) {
-			queue.push(msg);
-			queue.notify();
-		}
+		queue.push(msg);
+		//queue.notify();
 	}
 	
 	public void close()

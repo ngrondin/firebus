@@ -60,6 +60,7 @@ public class Queue<T>
 				logger.severe("Dropped message from queue");
 			}
 		}
+		notify();
 	}
 	
 	public synchronized int getDepth()
