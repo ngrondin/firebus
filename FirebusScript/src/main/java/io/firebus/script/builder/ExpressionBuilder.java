@@ -22,7 +22,6 @@ import io.firebus.script.parser.JavaScriptParser.BitXOrExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.CoalesceExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.EqualityExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.ExpressionSequenceContext;
-import io.firebus.script.parser.JavaScriptParser.ExpressionStatementContext;
 import io.firebus.script.parser.JavaScriptParser.FunctionExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.IdentifierContext;
 import io.firebus.script.parser.JavaScriptParser.IdentifierExpressionContext;
@@ -82,17 +81,7 @@ import io.firebus.script.units.references.VariableReference;
 
 public class ExpressionBuilder extends Builder {
 	    
-	public static Expression buildExpressionStatement(ExpressionStatementContext ctx) throws ScriptBuildException {
-		ParseTree sub = ctx.getChild(0);
-		if(sub instanceof ExpressionSequenceContext) {
-			List<Expression> list = buildExpressionSequence((ExpressionSequenceContext)sub);
-			if(list.size() > 0) 
-				return list.get(0);
-			else
-				throw new ScriptBuildException("Empty expression sequence", sourceInfo(ctx));
-		} 
-		throw new ScriptBuildException("Unknown source element", sourceInfo(ctx));
-	}
+
 	
 	public static List<Expression> buildExpressionSequence(ExpressionSequenceContext ctx) throws ScriptBuildException {
 		List<Expression> ret = new ArrayList<Expression>();

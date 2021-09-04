@@ -25,8 +25,8 @@ import io.firebus.script.parser.JavaScriptParser.SourceElementsContext;
 import io.firebus.script.units.Block;
 import io.firebus.script.units.Call;
 import io.firebus.script.units.CallableDefinition;
-import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
+import io.firebus.script.units.Statement;
 import io.firebus.script.units.operators.New;
 import io.firebus.script.units.statements.Return;
 
@@ -95,7 +95,7 @@ public class CallableBuilder extends Builder {
 			SourceInfo uc = sourceInfo(ctx);
 			Expression expr = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub);
 			Return ret = new Return(expr, uc);
-			List<ExecutionUnit> list = new ArrayList<ExecutionUnit>();
+			List<Statement> list = new ArrayList<Statement>();
 			list.add(ret);
 			Block block = new Block(list, uc);
 			return block;

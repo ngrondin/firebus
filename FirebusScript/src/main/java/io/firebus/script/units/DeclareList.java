@@ -7,7 +7,7 @@ import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.abs.SValue;
 
-public class DeclareList extends ExecutionUnit {
+public class DeclareList extends Statement {
 	protected String modifier;
 	protected List<Declare> list;
 	

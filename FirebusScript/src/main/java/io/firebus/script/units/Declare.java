@@ -6,7 +6,7 @@ import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.SNull;
 import io.firebus.script.values.abs.SValue;
 
-public class Declare extends ExecutionUnit {
+public class Declare extends Statement {
 	protected String modifier;
 	protected String key;
 	protected Expression expression;

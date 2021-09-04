@@ -12,38 +12,34 @@ import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SBreak;
 import io.firebus.script.values.flow.SReturn;
 
-public class If extends Statement {
+public class Do extends Statement {
 	protected Expression condition;
 	protected ExecutionUnit unit;
-	protected ExecutionUnit elseUnit;
 	
-	public If(Expression c, ExecutionUnit u, ExecutionUnit eu, SourceInfo uc) {
+	public Do(ExecutionUnit u, Expression c, SourceInfo uc) {
 		super(uc);
 		condition = c;
 		unit = u;
-		elseUnit = eu;
 	}
 
 	public SValue eval(Scope scope) throws ScriptException {
+		Scope localScope = new Scope(scope);
+		do {
+			SValue ret = unit.eval(localScope);
+			if(ret instanceof SReturn) {
+				return ret;
+			} else if(ret instanceof SBreak) {
+				return new SNull();
+			}
+		} while(continueLoop(localScope));
+		return new SNull();
+	}
+	
+	protected boolean continueLoop(Scope scope) throws ScriptException {
 		SValue v = condition.eval(scope);
 		if(v instanceof SBoolean) {
 			SBoolean b = (SBoolean)v;
-			if(b.getBoolean() == true) {
-				Scope localScope = new Scope(scope);
-				SValue ret = unit.eval(localScope);
-				if(ret instanceof SReturn) {
-					return ret;
-				} else if(ret instanceof SBreak) {
-					return ret;
-				}
-			} else if(elseUnit != null) {
-				Scope localScope = new Scope(scope);
-				SValue ret = elseUnit.eval(localScope);
-				if(ret instanceof SReturn) {
-					return ret;
-				}					
-			}
-			return new SNull();
+			return b.getBoolean();
 		} else {
 			throw new ScriptException("Condition does not return a boolean", source);
 		}

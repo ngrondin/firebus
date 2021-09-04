@@ -10,10 +10,10 @@ import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SBreak;
 import io.firebus.script.values.flow.SReturn;
 
-public class Block extends ExecutionUnit {
-	protected List<ExecutionUnit> units;
+public class Block extends Statement {
+	protected List<Statement> units;
 	
-	public Block(List<ExecutionUnit> u, SourceInfo uc) {
+	public Block(List<Statement> u, SourceInfo uc) {
 		super(uc);
 		units = u;
 	}

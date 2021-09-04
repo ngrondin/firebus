@@ -8,39 +8,41 @@ import io.firebus.script.units.DeclareList;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Statement;
-import io.firebus.script.values.SArray;
 import io.firebus.script.values.SNull;
+import io.firebus.script.values.SString;
+import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SBreak;
 import io.firebus.script.values.flow.SReturn;
 
-public class ArrayLoop extends Statement {
+public class KeyLoop extends Statement {
 	protected DeclareList declares;
-	protected Expression arrayExpr;
+	protected Expression objectExpr;
 	protected ExecutionUnit unit;
 
-	public ArrayLoop(DeclareList d, Expression a, ExecutionUnit eu, SourceInfo uc) {
+	public KeyLoop(DeclareList d, Expression o, ExecutionUnit eu, SourceInfo uc) {
 		super(uc);
 		declares = d;
-		arrayExpr = a;
+		objectExpr = o;
 		unit = eu;
 	}
 	
 	public SValue eval(Scope scope) throws ScriptException {
-		SValue a = arrayExpr.eval(scope);
-		if(a instanceof SArray) {
+		SValue o = objectExpr.eval(scope);
+		if(o instanceof SObject) {
 			Scope localScope = new Scope(scope);
-			SArray array = (SArray)a;
+			SObject object = (SObject)o;
+			String[] keys = object.getMemberKeys();
 			int index = 0;
-			while(index < array.getSize()) {
+			while(index < keys.length) {
 				for(Declare declare: declares.getDeclares())
-					localScope.setValue(declare.getKey(), array.get(index));
+					localScope.setValue(declare.getKey(), new SString(keys[index]));
 				SValue ret = unit.eval(localScope);
 				if(ret instanceof SReturn) {
 					return ret;
 				} else if(ret instanceof SBreak) {
 					return new SNull();
-				}
+				}	
 				index++;
 			}
 			return new SNull();			
