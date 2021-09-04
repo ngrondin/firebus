@@ -1,8 +1,3 @@
-var o = {a: 1, b: 2, c: 3};
-for(var k in o) {
-	print(k);
-}
-var a = ['x', 'y', 'z'];
-for(var v of a) {
-	print(v);
-}
+var a = [4,1,5,9,3,4,6];
+var b = a.sort((a, b) => b - a);
+print(b);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptBuildException;
@@ -78,13 +79,20 @@ public class CallableBuilder extends Builder {
 	}
 	
 	public static List<String> buildArrowFunctionParameters(ArrowFunctionParametersContext ctx) throws ScriptBuildException {
-		if(ctx.getChildCount() == 3) {
-			return buildFormalParameterList((FormalParameterListContext)ctx.getChild(1));
-		} else if(ctx.getChildCount() == 2) {
-			return new ArrayList<String>();
+		if(ctx.getChild(0) instanceof TerminalNodeImpl) {
+			if(ctx.getChildCount() == 3) {
+				return buildFormalParameterList((FormalParameterListContext)ctx.getChild(1));
+			} else if(ctx.getChildCount() == 2) {
+				return new ArrayList<String>();
+			} else {
+				throw new ScriptBuildException("Error building arrow function parameters", sourceInfo(ctx));
+			}			
 		} else {
-			throw new ScriptBuildException("Error building arrow function parameters", sourceInfo(ctx));
+			List<String> list = new ArrayList<String>();
+			list.add(ctx.getChild(0).getText());
+			return list;
 		}
+
 	}
 	
 	public static Block buildArrowFunctionBody(ArrowFunctionBodyContext ctx) throws ScriptBuildException {

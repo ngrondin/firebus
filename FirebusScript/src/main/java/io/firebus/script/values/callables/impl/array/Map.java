@@ -1,4 +1,4 @@
-package io.firebus.script.values.callables;
+package io.firebus.script.values.callables.impl.array;
 
 import java.util.List;
 
@@ -6,10 +6,11 @@ import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.abs.SCallable;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.callables.impl.ArrayFunction;
 
-public class ArrayMap extends ArrayFunction {
+public class Map extends ArrayFunction {
 	
-	public ArrayMap(List<SValue> v) {
+	public Map(List<SValue> v) {
 		super(v);
 	}
 	

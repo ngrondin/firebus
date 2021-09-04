@@ -1,14 +1,15 @@
-package io.firebus.script.values.callables;
+package io.firebus.script.values.callables.impl.array;
 
 import java.util.List;
 
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.SString;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.callables.impl.ArrayFunction;
 
-public class ArrayJoin extends ArrayFunction {
+public class Join extends ArrayFunction {
 
-	public ArrayJoin(List<SValue> v) {
+	public Join(List<SValue> v) {
 		super(v);
 	}
 
