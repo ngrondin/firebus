@@ -35,8 +35,8 @@ import com.auth0.jwt.interfaces.ECDSAKeyProvider;
 import io.firebus.Firebus;
 import io.firebus.adapters.http.AuthValidationHandler;
 import io.firebus.adapters.http.HttpGateway;
-import io.firebus.utils.DataException;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataException;
+import io.firebus.data.DataMap;
 
 //TODO: Can all be generalised into the oAuth2CodeValidator
 public class AppleValidator extends AuthValidationHandler {

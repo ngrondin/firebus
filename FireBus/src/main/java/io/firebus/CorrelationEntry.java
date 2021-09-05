@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.firebus.interfaces.CorrelationListener;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class CorrelationEntry {
 	protected int sequence;

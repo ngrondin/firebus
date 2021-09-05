@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Payload;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public abstract class SecurityHandler {
 	protected HttpGateway httpGateway;

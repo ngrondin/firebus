@@ -1,4 +1,4 @@
-package io.firebus.utils;
+package io.firebus.data;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -378,12 +378,12 @@ public class DataLiteral extends DataEntity
 		else if(valueType == TYPE_NUMBER) 
 		{
 			if(numberValue instanceof Double)
-				return new DataLiteral(new Double(numberValue.doubleValue()));
+				return new DataLiteral(numberValue.doubleValue());
 			else
-				return new DataLiteral(new Long(numberValue.longValue()));
+				return new DataLiteral(numberValue.longValue());
 		}
 		else if(valueType == TYPE_BOOLEAN)
-			return new DataLiteral(new Boolean(boolValue));
+			return new DataLiteral(boolValue);
 		else if(valueType == TYPE_DATE)
 			return new DataLiteral(ZonedDateTime.ofInstant(dateValue.toInstant(), dateValue.getZone()) );
 		else if(valueType == TYPE_TIME)

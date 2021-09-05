@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import io.firebus.Firebus;
 import io.firebus.adapters.http.AuthValidationHandler;
 import io.firebus.adapters.http.HttpGateway;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class NoValidator extends AuthValidationHandler {
 	protected String loginUrl;

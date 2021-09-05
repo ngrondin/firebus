@@ -7,8 +7,8 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import io.firebus.Address;
-import io.firebus.utils.DataList;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataList;
+import io.firebus.data.DataMap;
 
 public class NodeInformation 
 {

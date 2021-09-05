@@ -16,7 +16,7 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class AzureBlobAdapter extends Adapter implements ServiceProvider, Consumer
 {

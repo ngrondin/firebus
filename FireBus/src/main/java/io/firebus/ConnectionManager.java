@@ -14,8 +14,8 @@ import javax.crypto.SecretKey;
 import io.firebus.information.KnownAddressInformation;
 import io.firebus.information.NodeInformation;
 import io.firebus.interfaces.ConnectionListener;
-import io.firebus.utils.DataList;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataList;
+import io.firebus.data.DataMap;
 
 
 public class ConnectionManager extends Thread implements ConnectionListener

@@ -15,7 +15,7 @@ import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public abstract class WebsocketConnectionHandler extends Thread implements HttpUpgradeHandler {
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");

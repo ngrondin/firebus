@@ -5,7 +5,7 @@ import java.io.StringWriter;
 import java.util.logging.Logger;
 
 import io.firebus.NodeCore;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class FirebusThread extends Thread
 {

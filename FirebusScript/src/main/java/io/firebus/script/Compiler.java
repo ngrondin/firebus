@@ -1,7 +1,6 @@
 package io.firebus.script;
 
 
-import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
 
@@ -13,8 +12,8 @@ import io.firebus.script.units.ExecutionUnit;
 
 public class Compiler {
 
-	public ExecutionUnit compile(String source) throws ScriptBuildException {
-		JavaScriptLexer lexer = new JavaScriptLexer(CharStreams.fromString(source));
+	public ExecutionUnit compile(Source source) throws ScriptBuildException {
+		JavaScriptLexer lexer = new JavaScriptLexer(source);
 		lexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		JavaScriptParser parser = new JavaScriptParser(tokens);

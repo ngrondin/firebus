@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class LogoutHandler extends HttpHandler {
 	protected List<SecurityHandler> securityHandlers;

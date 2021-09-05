@@ -1,6 +1,6 @@
 package io.firebus;
 
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public abstract class DiscoveryAgent extends Thread 
 {

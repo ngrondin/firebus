@@ -12,7 +12,7 @@ import org.apache.tomcat.util.security.ConcurrentMessageDigest;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class WebsocketHandler extends HttpHandler {
 	

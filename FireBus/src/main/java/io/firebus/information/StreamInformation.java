@@ -2,7 +2,7 @@ package io.firebus.information;
 
 import java.nio.ByteBuffer;
 
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 
 public class StreamInformation extends FunctionInformation

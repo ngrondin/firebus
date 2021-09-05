@@ -2,7 +2,7 @@ package io.firebus.adapters.http;
 
 
 import io.firebus.Firebus;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public abstract class AuthValidationHandler extends HttpHandler
 {

@@ -33,6 +33,14 @@
 	<properties>
 		<io.firebus.version>1.3.4</io.firebus.version>
 	</properties>	
+	
+	<dependencies>
+		<dependency>
+			<groupId>io.firebus</groupId>
+			<artifactId>firebus-data</artifactId>
+			<version>${io.firebus.version}</version>
+		</dependency>
+	</dependencies>	
 
 	<profiles>
 		<profile>

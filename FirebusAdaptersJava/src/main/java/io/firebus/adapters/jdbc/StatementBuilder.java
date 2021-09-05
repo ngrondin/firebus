@@ -5,8 +5,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.firebus.utils.DataEntity;
-import io.firebus.utils.DataLiteral;
+import io.firebus.data.DataEntity;
+import io.firebus.data.DataLiteral;
 
 public class StatementBuilder {
 	public StringBuilder statement;

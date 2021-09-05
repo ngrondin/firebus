@@ -12,7 +12,7 @@ import io.firebus.Firebus;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.exceptions.FunctionUnavailableException;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 import io.firebus.utils.StackUtils;
 
 public abstract class InboundHandler extends HttpHandler 

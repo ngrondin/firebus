@@ -5,12 +5,12 @@ import java.util.List;
 import io.firebus.script.Scope;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Block;
-import io.firebus.script.values.abs.SCallable;
+import io.firebus.script.values.abs.SContextCallable;
 import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SReturn;
 
-public class SInternalCallable extends SCallable {
+public class SInternalCallable extends SContextCallable {
 	protected List<String> paramNames;
 	protected Block body;
 	protected Scope definitionScope;
@@ -23,10 +23,6 @@ public class SInternalCallable extends SCallable {
 	
 	public Scope getDefinitionScope() {
 		return definitionScope;
-	}
-
-	public SValue call(SValue[] arguments) throws ScriptException {
-		return call(null, arguments);
 	}
 	
 	public SValue call(SObject thisObject, SValue[] arguments) throws ScriptException {

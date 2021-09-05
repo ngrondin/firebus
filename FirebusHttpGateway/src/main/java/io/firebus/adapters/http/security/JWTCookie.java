@@ -21,8 +21,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import io.firebus.Payload;
 import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.SecurityHandler;
-import io.firebus.utils.DataList;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataList;
+import io.firebus.data.DataMap;
 
 public class JWTCookie extends SecurityHandler {
 	protected String cookieName;

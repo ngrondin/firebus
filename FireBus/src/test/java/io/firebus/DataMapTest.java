@@ -2,7 +2,7 @@ package io.firebus;
 
 import java.nio.charset.StandardCharsets;
 
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class DataMapTest {
 

@@ -3,6 +3,7 @@ package io.firebus.script.values;
 
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.abs.SCallable;
+import io.firebus.script.values.abs.SContextCallable;
 import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
 
@@ -17,8 +18,8 @@ public class SMemberCallable extends SCallable {
 	}
 	
 	public SValue call(SValue[] arguments) throws ScriptException {
-		if(callable instanceof SInternalCallable) {
-			return ((SInternalCallable)callable).call(object, arguments);
+		if(callable instanceof SContextCallable) {
+			return ((SContextCallable)callable).call(object, arguments);
 		} else {
 			return callable.call(arguments);
 		}

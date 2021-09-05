@@ -11,7 +11,7 @@ import io.firebus.interfaces.BusFunction;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.StreamProvider;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public abstract class ExecutionManager {
 	protected NodeCore nodeCore;

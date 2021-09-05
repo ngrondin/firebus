@@ -8,11 +8,12 @@ import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.operators.abs.Operator;
-import io.firebus.script.values.SInternalCallable;
+import io.firebus.script.units.references.VariableReference;
 import io.firebus.script.values.SInternalObject;
-import io.firebus.script.values.SMemberCallable;
-import io.firebus.script.values.abs.SCallable;
+import io.firebus.script.values.abs.SContextCallable;
+import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.impl.SDate;
 
 public class New extends Operator {
 	protected Expression callableExpression;
@@ -26,20 +27,28 @@ public class New extends Operator {
 	}
 
 	public SValue eval(Scope scope) throws ScriptException {
-		SInternalObject o = new SInternalObject();
-		SValue c = callableExpression.eval(scope);
-		if(c instanceof SCallable) {
-			SCallable callable = (SCallable)c;
-			if(callable instanceof SInternalCallable)
-				callable = new SMemberCallable(o, callable);
-			SValue[] arguments = new SValue[paramExpressions.size()];
-			for(int i = 0; i < paramExpressions.size(); i++)
-				arguments[i] = paramExpressions.get(i).eval(scope);
-			callable.call(arguments);
-			return o;
-		} else {
-			throw new ScriptException("New operator required a callable", source);
+		SObject o = null;
+		SValue[] arguments = new SValue[paramExpressions.size()];
+		for(int i = 0; i < paramExpressions.size(); i++)
+			arguments[i] = paramExpressions.get(i).eval(scope);
+		
+		if(callableExpression instanceof VariableReference) {
+			String identifier = ((VariableReference)callableExpression).getName();
+			if(identifier.equals("Date")) {
+				o = new SDate(arguments);
+			}
 		}
-	}
 
+		if(o == null) {
+			o = new SInternalObject();
+			SValue c = callableExpression.eval(scope);
+			if(c instanceof SContextCallable) {
+				SContextCallable callable = (SContextCallable)c;
+				callable.call(o, arguments);
+			} else {
+				throw new ScriptException("New operator required a context callable", source);
+			}			
+		}
+		return o;
+	}
 }

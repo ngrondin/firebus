@@ -1,4 +1,4 @@
-package io.firebus.utils;
+package io.firebus.data;
 
 public class DataException extends Exception
 {

@@ -1,7 +1,7 @@
 package io.firebus.adapters;
 
 import io.firebus.Firebus;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class Adapter 
 {

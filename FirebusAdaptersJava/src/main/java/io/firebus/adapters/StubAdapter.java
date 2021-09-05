@@ -6,7 +6,7 @@ import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.ServiceProvider;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class StubAdapter extends Adapter implements ServiceProvider
 {

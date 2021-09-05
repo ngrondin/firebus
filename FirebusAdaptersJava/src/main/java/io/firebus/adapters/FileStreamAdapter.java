@@ -10,7 +10,7 @@ import io.firebus.StreamEndpoint;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.StreamInformation;
 import io.firebus.interfaces.StreamProvider;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 import io.firebus.utils.StreamReceiver;
 import io.firebus.utils.StreamSender;
 

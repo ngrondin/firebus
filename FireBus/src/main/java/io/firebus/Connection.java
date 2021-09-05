@@ -16,7 +16,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 import io.firebus.interfaces.ConnectionListener;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 import io.firebus.utils.Queue;
 import io.firebus.utils.StackUtils;
 

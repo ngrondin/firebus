@@ -15,7 +15,7 @@ import javax.crypto.spec.PBEKeySpec;
 import io.firebus.discovery.DefaultDiscoveryAgent;
 import io.firebus.information.Statistics;
 import io.firebus.threads.ThreadManager;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 
 public class NodeCore

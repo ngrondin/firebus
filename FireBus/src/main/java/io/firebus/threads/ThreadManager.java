@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import io.firebus.NodeCore;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 import io.firebus.utils.Queue;
 
 public class ThreadManager extends Thread

@@ -2,8 +2,8 @@ package io.firebus;
 
 import java.io.FileInputStream;
 
-import io.firebus.utils.DataFilter;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataFilter;
+import io.firebus.data.DataMap;
 
 public class FilterTest {
 	

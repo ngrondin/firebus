@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public abstract class InboundReqRespHandler  extends InboundHandler {
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");

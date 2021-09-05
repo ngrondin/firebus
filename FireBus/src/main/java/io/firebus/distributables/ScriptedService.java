@@ -14,7 +14,7 @@ import io.firebus.Payload;
 import io.firebus.ServiceRequest;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class ScriptedService extends DistributableService
 {

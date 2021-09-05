@@ -24,8 +24,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import io.firebus.Firebus;
 import io.firebus.adapters.http.AuthValidationHandler;
 import io.firebus.adapters.http.HttpGateway;
-import io.firebus.utils.DataException;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataException;
+import io.firebus.data.DataMap;
 
 public class OAuth2CodeValidator extends AuthValidationHandler
 {

@@ -11,7 +11,7 @@ import io.firebus.information.FunctionInformation;
 import io.firebus.information.NodeInformation;
 import io.firebus.information.ServiceInformation;
 import io.firebus.information.StreamInformation;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class Directory 
 {

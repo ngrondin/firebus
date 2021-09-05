@@ -2,7 +2,7 @@ package io.firebus;
 
 import io.firebus.information.Statistics;
 import io.firebus.interfaces.BusFunction;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class FunctionEntry
 {

@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 import io.firebus.NodeCore;
 import io.firebus.interfaces.ServiceProvider;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public abstract class DistributableService implements ServiceProvider
 {

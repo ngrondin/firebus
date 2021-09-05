@@ -13,7 +13,7 @@ import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.adapters.http.AuthValidationHandler;
 import io.firebus.adapters.http.HttpGateway;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class UserPassValidator extends AuthValidationHandler
 {

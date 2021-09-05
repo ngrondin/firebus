@@ -1,19 +1,9 @@
 package io.firebus;
 	
-import java.io.FileInputStream;
-
-import javax.script.Bindings;
-import javax.script.Compilable;
-import javax.script.CompiledScript;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.ServiceProvider;
-import io.firebus.utils.DataMap;
-import io.firebus.utils.FirebusDataUtil;
-import jdk.nashorn.api.scripting.JSObject;
 
 
 public class UnitTest

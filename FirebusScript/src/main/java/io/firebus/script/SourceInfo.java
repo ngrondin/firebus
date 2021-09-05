@@ -18,6 +18,6 @@ public class SourceInfo {
 	}
 	
 	public String getLineCol() {
-		return line + ":" + column;
+		return (sourceName != null ? sourceName + " " : "") + line + ":" + column;
 	}
 }

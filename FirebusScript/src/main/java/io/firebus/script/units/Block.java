@@ -18,6 +18,14 @@ public class Block extends Statement {
 		units = u;
 	}
 	
+	public int getStatementCount() {
+		return units.size();
+	}
+	
+	public Statement getStatement(int i) {
+		return units.get(i);
+	}
+	
 	public SValue eval(Scope scope) throws ScriptException {
 		for(ExecutionUnit unit : units) {
 			SValue ret = unit.eval(scope);

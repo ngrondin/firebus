@@ -10,7 +10,7 @@ import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.InboundReqRespHandler;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataMap;
 
 public class GetHandler extends InboundReqRespHandler 
 {

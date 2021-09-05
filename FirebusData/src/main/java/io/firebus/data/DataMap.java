@@ -1,4 +1,4 @@
-package io.firebus.utils;
+package io.firebus.data;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

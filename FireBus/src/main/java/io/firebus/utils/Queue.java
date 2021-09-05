@@ -2,6 +2,8 @@ package io.firebus.utils;
 
 import java.util.logging.Logger;
 
+import io.firebus.data.DataMap;
+
 
 public class Queue<T>
 {

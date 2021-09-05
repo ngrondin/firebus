@@ -25,9 +25,9 @@ import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.OutboundHandler;
-import io.firebus.utils.DataException;
-import io.firebus.utils.DataList;
-import io.firebus.utils.DataMap;
+import io.firebus.data.DataException;
+import io.firebus.data.DataList;
+import io.firebus.data.DataMap;
 
 public class GeneralOutboundHandler extends OutboundHandler {
 
