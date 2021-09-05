@@ -3,6 +3,7 @@ package io.firebus.script;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.flow.SReturn;
 
 public class Function {
 	protected Scope scope;
@@ -25,6 +26,9 @@ public class Function {
 			}
 		}
 		SValue ret = rootExecutionUnit.eval(localScope);
-		return converter.convertOut(ret);
+		if(ret instanceof SReturn)
+			return converter.convertOut(((SReturn)ret).getReturnedValue());
+		else
+			return null;
 	}
 }

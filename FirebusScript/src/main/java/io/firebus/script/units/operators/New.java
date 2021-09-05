@@ -9,11 +9,11 @@ import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.operators.abs.Operator;
 import io.firebus.script.units.references.VariableReference;
+import io.firebus.script.values.SDate;
 import io.firebus.script.values.SInternalObject;
 import io.firebus.script.values.abs.SContextCallable;
 import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
-import io.firebus.script.values.impl.SDate;
 
 public class New extends Operator {
 	protected Expression callableExpression;
@@ -46,7 +46,7 @@ public class New extends Operator {
 				SContextCallable callable = (SContextCallable)c;
 				callable.call(o, arguments);
 			} else {
-				throw new ScriptException("New operator required a context callable", source);
+				throw new ScriptException("New operator requires a context callable", source);
 			}			
 		}
 		return o;

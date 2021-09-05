@@ -3,6 +3,7 @@ package io.firebus.script;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.firebus.script.values.SUndefined;
 import io.firebus.script.values.abs.SValue;
 
 public class Scope {
@@ -23,7 +24,7 @@ public class Scope {
 	}
 	
 	public SValue getValue(String key) {
-		return values.containsKey(key) ? values.get(key) : parent != null ? parent.getValue(key) : null;
+		return values.containsKey(key) ? values.get(key) : parent != null ? parent.getValue(key) : new SUndefined();
 	}
 	
 	public void setValue(String key, SValue value) {

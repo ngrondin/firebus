@@ -20,19 +20,15 @@ public class Call extends Expression {
 
 	public SValue eval(Scope scope) throws ScriptException {
 		SValue c = callableExpression.eval(scope);
-		if(c != null) {
-			if(c instanceof SCallable) {
-				SValue[] arguments = new SValue[paramExpressions.size()];
-				for(int i = 0; i < paramExpressions.size(); i++)
-					arguments[i] = paramExpressions.get(i).eval(scope);
-				SValue ret = ((SCallable)c).call(arguments);
-				return ret;
-			} else {
-				throw new ScriptException("Not a callable", source);
-			}			
+		if(c instanceof SCallable) {
+			SValue[] arguments = new SValue[paramExpressions.size()];
+			for(int i = 0; i < paramExpressions.size(); i++)
+				arguments[i] = paramExpressions.get(i).eval(scope);
+			SValue ret = ((SCallable)c).call(arguments);
+			return ret;
 		} else {
-			throw new ScriptException("Unknown function reference", source);
-		}
+			throw new ScriptException("'" + callableExpression.toString() + "' is not a callable", source);
+		}			
 	}
 
 }

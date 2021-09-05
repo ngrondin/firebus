@@ -1,18 +1,22 @@
-package io.firebus.script.values.impl;
+package io.firebus.script.values;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Date;
 
 import io.firebus.script.exceptions.ScriptException;
-import io.firebus.script.values.SNumber;
-import io.firebus.script.values.SString;
+import io.firebus.script.exceptions.ScriptRuntimeException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.callables.impl.StaticGetter;
 
 public class SDate extends SPredefinedObject {
 	protected ZonedDateTime date;
+	
+	public SDate(Date d) {
+		date = d.toInstant().atZone(ZoneId.systemDefault());
+	}
 
 	public SDate(SValue ...arguments) throws ScriptException {
 		if(arguments.length == 0) {
@@ -21,8 +25,10 @@ public class SDate extends SPredefinedObject {
 			SValue arg = arguments[0];
 			if(arg instanceof SNumber) {
 				date = Instant.ofEpochMilli(((SNumber)arg).getNumber().longValue()).atZone(ZoneId.systemDefault());
-			} else {
+			} else if(!(arg instanceof SNull || arg instanceof SUndefined)){
 				date = ZonedDateTime.parse(arg.toString());
+			} else {
+				throw new ScriptRuntimeException("Invalid Date constructor parameter '" + arg + "'");
 			}
 		} else if(arguments.length == 3) {
 			int year = ((SNumber)arguments[0]).getNumber().intValue();
@@ -57,6 +63,10 @@ public class SDate extends SPredefinedObject {
 		return null;
 	}
 
+	public Date getDate() {
+		return Date.from(date.toInstant());
+	}
+	
 	public String toString() {
 		return date.toString();
 	}

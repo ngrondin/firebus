@@ -1,6 +1,7 @@
 package io.firebus.script;
 
 import io.firebus.script.exceptions.ScriptBuildException;
+import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Block;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.values.impl.Print;
@@ -15,6 +16,15 @@ public class ScriptFactory {
 		converter = new Converter();
 		rootScope = new Scope();
 		rootScope.setValue("print", new Print());
+	}
+	
+	public void executeInRootScope(String name, String source) throws ScriptException {
+		executeInRootScope(new Source(name, source));
+	}
+	
+	public void executeInRootScope(Source source) throws ScriptException {
+		ExecutionUnit eu = compiler.compile(source);
+		eu.eval(rootScope);
 	}
 	
 	public Program createProgram(String source) throws ScriptBuildException {

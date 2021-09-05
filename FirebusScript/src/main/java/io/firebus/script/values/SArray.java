@@ -3,7 +3,6 @@ package io.firebus.script.values;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.callables.impl.array.Concat;
@@ -49,14 +48,16 @@ public class SArray extends SPredefinedObject {
 		
 	}
 	
-	public void set(int i, SValue v) throws ScriptException {
+	public void set(int i, SValue v)  {
 		if(i == values.size()) {
 			values.add(v);
-		} else if(i < values.size()) {
+		} else if(i < values.size() && i >= 0) {
 			values.remove(i);
 			values.add(i, v);
-		} else {
-			throw new ScriptException("Array out of bound", null);
+		} else if(i > values.size()){
+			for(int j = values.size(); j < i; j++)
+				values.add(new SNull());
+			values.add(v);
 		}
 	}
 	

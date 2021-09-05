@@ -1,2 +1,2 @@
-var d = new Date();
-print(d.toISOString());
+var dt = new Date();
+return dt.getFullYear();
