@@ -1,7 +1,6 @@
 package io.firebus.threads;
 
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 import io.firebus.NodeCore;
 import io.firebus.data.DataMap;
@@ -9,29 +8,25 @@ import io.firebus.utils.Queue;
 
 public class ThreadManager extends Thread
 {
-	private static Logger logger = Logger.getLogger("io.firebus");
-	
 	protected NodeCore nodeCore;
 	protected Queue<FirebusRunnable> queue;
 	protected boolean quit;
 	protected ArrayList<FirebusThread> threads;
 	protected int maxThreadCount;
 	protected int priority;
+	protected String threadName;
 	
-	public ThreadManager(NodeCore c)
+	public ThreadManager(NodeCore c, int mtc, int dp, String tn)
 	{
 		nodeCore = c;
 		quit = false;
-		maxThreadCount = 10;
-		priority = 5;
+		maxThreadCount = mtc;
+		priority = dp;
+		threadName = tn;
 		threads = new ArrayList<FirebusThread>();
 		queue = new Queue<FirebusRunnable>(1024);
+		setName("fb" + threadName + "ThreadMgr");
 		start();
-	}
-	
-	public void setDefaultPriority(int p)
-	{
-		priority = p;
 	}
 	
 	public void setMaxThreadCount(int tc)
@@ -57,21 +52,16 @@ public class ThreadManager extends Thread
 	public synchronized void enqueue(Runnable runnable, String serviceName, long serviceExecutionId, long timeout)
 	{
 		queue.push(new FirebusRunnable(runnable, serviceName, serviceExecutionId, System.currentTimeMillis() + timeout));
-		logger.finest("Dropped runnable in thread queue (depth: " + queue.getDepth() + ")");
 		
 		FirebusThread thread = null;
-		for(int i = 0; i < threads.size(); i++)
+		for(int i = 0; i < threads.size() && thread == null; i++)
 		{
 			FirebusThread t = threads.get(i);
-			State s = t.getState();
-			if(s == State.WAITING && t.ready)
-			{
-				thread = t;
-				synchronized(thread) {
-					logger.finest("Notifying thread " + thread.getId() + " to start");
-					thread.notify();
+			synchronized(t) {
+				if(t.ready) {
+					thread = t;
+					t.notify();
 				}
-				break;
 			}
 		}
 		
@@ -79,9 +69,9 @@ public class ThreadManager extends Thread
 		{
 			thread = new FirebusThread(this, nodeCore);
 			thread.setPriority(priority);
+			thread.setName("fb" + threadName + "Thread" + threads.size());
 			threads.add(thread);
 			thread.start();
-			logger.finest("Added thread " + thread.getId() + " ");
 		}
 
 	}

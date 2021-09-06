@@ -33,7 +33,7 @@ public class FirebusThread extends Thread
 		lastStart = -1;
 		lastCompletion = -1;
 		threadStart = System.currentTimeMillis();
-		setName("fbThread" + getId());
+		//setName("fbThread" + getId());setName("fbThread" + getId());
 	}
 	
 		
@@ -56,15 +56,14 @@ public class FirebusThread extends Thread
 				}
 				else
 				{
-					synchronized(this)
+					if(!quit) 
 					{
-						if(!quit) 
+						synchronized(this)
 						{
 							expiry = -1;
 							ready = true;
 							wait();
 							ready = false;
-							logger.finest("Thread " + getId() + " has just woken up");
 						}
 					}
 				}

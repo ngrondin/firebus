@@ -79,9 +79,8 @@ public class NodeCore
 			streamManager = new StreamManager(this);
 			consumerManager = new ConsumerManager(this);
 			correlationManager = new CorrelationManager(this);
-			messageThreads = new ThreadManager(this);
-			messageThreads.setPriority(10);
-			executionThreads = new ThreadManager(this);
+			messageThreads = new ThreadManager(this, 10, 10, "Msg");
+			executionThreads = new ThreadManager(this, 50, 5, "Exec");
 			historyQueue = new HistoryQueue(256);
 			discoveryAgents = new ArrayList<DiscoveryAgent>();
 			discoveryAgents.add(new DefaultDiscoveryAgent(this));
