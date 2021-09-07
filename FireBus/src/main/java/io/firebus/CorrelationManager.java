@@ -157,15 +157,18 @@ public class CorrelationManager extends Thread
 		for(int i = 0; i < ids.length; i++)
 		{
 			CorrelationEntry entry = getEntry(ids[i]);
-			if(entry != null && now > entry.expiry)
+			if(entry != null)
 			{
 				synchronized(entry)
 				{
-					logger.warning("Correlation " + ids[i] + " has expired after " + (now - entry.start) + "ms (" + (entry.outboundMessage != null ? entry.outboundMessage.getTypeString() + ":" + entry.outboundMessage.subject + ":" + entry.outboundMessage.getOriginatorId() + "->" + entry.outboundMessage.getDestinationId() : "") + (entry.listenerFunctionName != null ? " for " + entry.listenerFunctionName : "") + ") exp:" + entry.expiry + " start:" + entry.start + " timeout:" + entry.timeout);
-					entry.expire();
-					entry.notify();				
-					removeEntry(ids[i]);
-					expiredCount++;
+					if(now > entry.expiry) 
+					{
+						logger.warning("Correlation " + ids[i] + " has expired after " + (now - entry.start) + "ms (" + (entry.outboundMessage != null ? entry.outboundMessage.getTypeString() + ":" + entry.outboundMessage.subject + ":" + entry.outboundMessage.getOriginatorId() + "->" + entry.outboundMessage.getDestinationId() : "") + (entry.listenerFunctionName != null ? " for " + entry.listenerFunctionName : "") + ") exp:" + entry.expiry + " start:" + entry.start + " timeout:" + entry.timeout);
+						entry.expire();
+						entry.notifyAll();				
+						removeEntry(ids[i]);
+						expiredCount++;
+					}
 				}
 			}
 		}
