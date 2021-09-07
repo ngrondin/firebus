@@ -92,10 +92,10 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		return false;
 	}
 	
-	public boolean hasConnectionForNode(NodeInformation ni) 
+	public boolean hasConnectionForNode(int nodeId) 
 	{
 		for(Connection connection: connections)
-			if(connection.getRemoteNodeId() == ni.getNodeId())
+			if(connection.getRemoteNodeId() == nodeId)
 				return true;
 		return false;
 	}
@@ -141,7 +141,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 				for(int i = 0; i < nodeCore.getDirectory().getNodeCount()  &&  connectedNodeCount < minimumConnectedNodeCount; i++)
 				{
 					NodeInformation ni = nodeCore.getDirectory().getNode(i);
-					if(ni.getNodeId() != nodeId  &&  ni.getAddressCount() > 0 && !hasConnectionForNode(ni))
+					if(ni.getNodeId() != nodeId  &&  ni.getAddressCount() > 0 && !hasConnectionForNode(ni.getNodeId()))
 					{
 						logger.info("Creating new connection to maintain minimum node connectivity");
 						createConnection(ni.getAddress(0));
@@ -279,10 +279,16 @@ public class ConnectionManager extends Thread implements ConnectionListener
 					if(connection == null) 
 					{
 						for(int i = 0; i < ni.getRepeaterCount() && connection == null; i++) {
-							NodeInformation repeater = nodeCore.getDirectory().getNodeById(ni.getRepeater(i));
-							for(int j = 0; j < repeater.getAddressCount() && connection == null; j++) {
-								logger.info("Creating a new connection for a repeater message");
-								connection = createConnection(repeater.getAddress(j));
+							connection = getReadyConnectionForNodeId(ni.getRepeater(i));
+						}
+						
+						if(connection == null) {
+							for(int i = 0; i < ni.getRepeaterCount() && connection == null; i++) {
+								NodeInformation repeater = nodeCore.getDirectory().getNodeById(ni.getRepeater(i));
+								for(int j = 0; j < repeater.getAddressCount() && connection == null; j++) {
+									logger.info("Creating a new connection for a repeater message");
+									connection = createConnection(repeater.getAddress(j));
+								}								
 							}	
 						}
 					}

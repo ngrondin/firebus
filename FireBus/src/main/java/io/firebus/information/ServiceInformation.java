@@ -134,6 +134,7 @@ public class ServiceInformation extends FunctionInformation
 		DataMap status = new DataMap();
 		status.put("type", "service");
 		status.put("rating", rating);
+		status.put("combinedRating", getCombinedRating());
 		return status;
 	}
 }

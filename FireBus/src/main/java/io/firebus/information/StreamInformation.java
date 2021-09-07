@@ -152,6 +152,7 @@ public class StreamInformation extends FunctionInformation
 		DataMap status = new DataMap();
 		status.put("type", "stream");		
 		status.put("rating", rating);
+		status.put("combinedRating", getCombinedRating());
 		return status;
 	}
 }

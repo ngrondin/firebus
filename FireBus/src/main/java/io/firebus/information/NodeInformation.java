@@ -194,7 +194,8 @@ public class NodeInformation
 		DataMap funcMap = new DataMap();
 		for(String fn: functions.keySet()) 
 			funcMap.put(fn, functions.get(fn).getStatus());
-		status.put("functions", funcMap);		
+		status.put("functions", funcMap);
+		status.put("rating", rating);
 		return status;
 	}
 
