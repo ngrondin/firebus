@@ -27,17 +27,13 @@ public class CorrelationManager extends Thread
 		start();
 	}
 	
-	protected synchronized int createEntry(long to)
+	protected synchronized CorrelationEntry createEntry(long to)
 	{
-		CorrelationEntry entry = new CorrelationEntry(nodeCore, to); 
 		int c = nextCorrelation;
-		nextCorrelation++;
-		while(entries.containsKey(c)) { //This should never happen but I'm trying to uncover up a bug
-			logger.severe("Correlation manager tried to create duplicate entry: " + c); 
-			nextCorrelation++;
-		}
+		CorrelationEntry entry = new CorrelationEntry(nodeCore, c, to); 
 		entries.put(c, entry);
-		return c;
+		nextCorrelation++;
+		return entry;
 	}
 	
 	protected synchronized CorrelationEntry getEntry(int correlationId)
@@ -118,13 +114,12 @@ public class CorrelationManager extends Thread
 	
 	public int send(Message outMsg, CorrelationListener cl, long timeout)
 	{
-		int c = createEntry(timeout);
-		CorrelationEntry entry = getEntry(c);
+		CorrelationEntry entry = createEntry(timeout);
 		entry.outboundMessage = outMsg;
 		entry.correlationListener = cl;
-		outMsg.setCorrelation(c, 0);
+		outMsg.setCorrelation(entry.id, 0);
 		nodeCore.enqueue(outMsg);
-		return c;
+		return entry.id;
 	}
 	
 	
@@ -133,7 +128,6 @@ public class CorrelationManager extends Thread
 	{
 		int correlationId = inMsg.getCorrelation();
 		int correlationSequence = inMsg.getCorrelationSequence();
-		//System.out.println(correlationId + " " + correlationSequence);
 		if(correlationId != 0)
 		{
 			CorrelationEntry entry = getEntry(correlationId);

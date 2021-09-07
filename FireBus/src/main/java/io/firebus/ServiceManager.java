@@ -81,7 +81,6 @@ public class ServiceManager extends ExecutionManager {
 							if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
 								sendError(e, msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_SERVICEERROR,  msg.getSubject());
 						}
-
 						fe.releaseExecutionId(executionId);
 					}
 				}, fe.getName(), executionId);

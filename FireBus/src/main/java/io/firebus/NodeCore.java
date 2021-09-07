@@ -4,7 +4,6 @@ import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
@@ -178,23 +177,19 @@ public class NodeCore
 		long msgUID = (msg.getOriginatorId() << 32) + msg.getid();
 		if(msg != null && historyQueue.check(msgUID))
 		{
-			if(logger.getLevel() == Level.FINEST)
-				logger.finest("\"****Routing**************\r\n" + msg + "\"");
-
 			int destinationNodeId = msg.getDestinationId();
 			if(destinationNodeId == nodeId  ||  destinationNodeId == 0)
 				process(msg);
 			if(destinationNodeId != nodeId  ||  destinationNodeId == 0)
 				connectionManager.sendMessage(msg);
 		}
-		logger.finer("Finished Routing Message " + msg.getid());
 	}
 	
 	protected void process(Message msg)
 	{
 		if(msg != null)
 		{
-			logger.finest("Processing Message " + msg.getid());		
+			//logger.finest("Processing Message " + msg.getid());		
 			if(msg.getDestinationId() == 0  ||  msg.getDestinationId() == nodeId)
 			{
 				switch(msg.getType())
@@ -258,7 +253,7 @@ public class NodeCore
 						break;
 				}
 			}
-			logger.finer("Finished Processing Message " + msg.getid());		
+			//logger.finer("Finished Processing Message " + msg.getid());		
 		}
 	}
 	

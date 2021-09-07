@@ -5,7 +5,9 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -27,7 +29,8 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	protected boolean quit;
 	protected NodeCore nodeCore;
 	protected ConnectionServer connectionServer;
-	protected ArrayList<Connection> connections;
+	protected List<Connection> connections;
+	protected Map<Integer, List<Connection>> connectionsForNodeId;
 	protected ArrayList<KnownAddressInformation> knownAddresses;
 	protected int minimumConnectedNodeCount;
 	protected int maxConnectionLoad;
@@ -47,6 +50,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	protected void initialise(NodeCore nc, int nid, String n, SecretKey k, int p) throws IOException 
 	{
 		connections = new ArrayList<Connection>();
+		connectionsForNodeId = new HashMap<Integer, List<Connection>>();
 		knownAddresses = new ArrayList<KnownAddressInformation>();
 		nodeCore = nc;
 		nodeId = nid;
@@ -172,6 +176,10 @@ public class ConnectionManager extends Thread implements ConnectionListener
 
 	public synchronized void connectionCreated(Connection c)
 	{
+		int nodeId = c.getRemoteNodeId();
+		if(!connectionsForNodeId.containsKey(nodeId)) 
+			connectionsForNodeId.put(nodeId, new ArrayList<Connection>());
+		connectionsForNodeId.get(nodeId).add(c);
 		nodeCore.getDirectory().processDiscoveredNode(c.getRemoteNodeId(),  c.getRemoteAddress());
 	}
 	
@@ -202,7 +210,6 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		int connectedId = c.getRemoteNodeId();
 		if(originatorId != nodeId)
 		{
-			logger.finest("Received message from node " + c.getRemoteNodeId());
 			if(connectedId != originatorId)
 			{
 				NodeInformation originatorNode = nodeCore.getDirectory().getOrCreateNodeInformation(originatorId);
@@ -220,6 +227,8 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	{
 		logger.fine("Connection " + c.getId() + " Closed");
 		connections.remove(c);
+		int nodeId = c.getRemoteNodeId();
+		connectionsForNodeId.get(nodeId).remove(c);
 	}
 	
 	
@@ -244,47 +253,64 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		int destinationNodeId = msg.getDestinationId();
 		Connection c = null;
 		if(destinationNodeId != 0)
-		{
-			NodeInformation ni = nodeCore.getDirectory().getNodeById(destinationNodeId);
-			if(ni != null)
-				c = getOrCreateConnectionForNode(ni);
-		}
+			c = getOrCreateConnectionForNode(destinationNodeId);
 
 		if(c != null)
-		{
 			c.sendMessage(msg);
-		}
 		else
-		{
 			broadcastToAllConnections(msg);
-		}
 	}
 	
-	protected Connection getOrCreateConnectionForNode(NodeInformation ni) 
+	protected Connection getOrCreateConnectionForNode(int nodeId) 
 	{
-		Connection connection = getExistingConnectionForNode(ni);
+		Connection connection = getReadyConnectionForNodeId(nodeId);
 		if(connection == null)
 		{
-			for(int i = 0; i < ni.getAddressCount() && connection == null; i++) {
-				logger.info("Creating a new connection for a direct message");
-				connection = createConnection(ni.getAddress(i));
-			}
-			
+			connection = getAnyConnectionForNodeId(nodeId);
 			if(connection == null) 
 			{
-				for(int i = 0; i < ni.getRepeaterCount() && connection == null; i++) {
-					NodeInformation repeater = nodeCore.getDirectory().getNodeById(ni.getRepeater(i));
-					for(int j = 0; j < repeater.getAddressCount() && connection == null; j++) {
-						logger.info("Creating a new connection for a repeater message");
-						connection = createConnection(repeater.getAddress(j));
-					}	
+				NodeInformation ni = nodeCore.getDirectory().getNodeById(nodeId);
+				if(ni != null) {
+					for(int i = 0; i < ni.getAddressCount() && connection == null; i++) {
+						logger.info("Creating a new connection for a direct message");
+						connection = createConnection(ni.getAddress(i));
+					}
+					
+					if(connection == null) 
+					{
+						for(int i = 0; i < ni.getRepeaterCount() && connection == null; i++) {
+							NodeInformation repeater = nodeCore.getDirectory().getNodeById(ni.getRepeater(i));
+							for(int j = 0; j < repeater.getAddressCount() && connection == null; j++) {
+								logger.info("Creating a new connection for a repeater message");
+								connection = createConnection(repeater.getAddress(j));
+							}	
+						}
+					}
 				}
 			}
 		}
 		return connection;
 	}
 	
-	protected Connection getExistingConnectionForNode(NodeInformation ni)
+	protected Connection getReadyConnectionForNodeId(int nodeId)
+	{
+		List<Connection> list = connectionsForNodeId.get(nodeId);
+		int size = list.size();
+		Connection connection = null;
+		if(size > 0)
+			connection = list.get(rnd.nextInt(size));
+		return connection;
+	}
+	
+	protected Connection getAnyConnectionForNodeId(int nodeId)
+	{
+		for(Connection connection: connections)
+			if(connection.getRemoteNodeId() == nodeId)  
+				return connection;
+		return null;
+	}
+	
+	/*protected Connection getExistingConnectionForNode(NodeInformation ni)
 	{
 		ArrayList<Connection> readyConnections = new ArrayList<Connection>();
 		ArrayList<Connection> allConnections = new ArrayList<Connection>();
@@ -302,7 +328,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 			return allConnections.get(rnd.nextInt(allConnections.size()));
 		else
 			return null;
-	}
+	}*/
 	
 	
 	protected Connection createConnection(Address a) 

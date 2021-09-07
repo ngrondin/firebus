@@ -119,6 +119,7 @@ public class FirebusThread extends Thread
 
 	public DataMap getStatus()
 	{
+		long now = System.currentTimeMillis();
 		DataMap status = new DataMap();
 		status.put("executing", !ready);
 		if(ready) {
@@ -128,10 +129,11 @@ public class FirebusThread extends Thread
 			status.put("executingFunctionId", functionExecutionId);
 			if(trackingId != null)
 				status.put("executingTrackingId", trackingId);
-			status.put("executingSince", System.currentTimeMillis() - lastStart);
+			status.put("executingSince", now - lastStart);
 		}
 		status.put("cumulExecutionTime", cumulExecutionTime);
-		status.put("utilisation", (100 * cumulExecutionTime / (System.currentTimeMillis() - threadStart)));
+		if(now > threadStart)
+			status.put("utilisation", (100 * cumulExecutionTime / (now - threadStart)));
 		return status;
 	}
 }

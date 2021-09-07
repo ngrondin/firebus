@@ -67,10 +67,10 @@ public class StreamManager extends ExecutionManager {
 				nodeCore.getExecutionThreads().enqueue(new Runnable() {
 					public void run() {
 						logger.fine("Executing Stream Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
-						//((FirebusThread)Thread.currentThread()).startFunctionExecution(fe.getName(), executionId);
 						StreamProvider streamProvider = (StreamProvider)fe.function;
 						long idleTimeout = streamProvider.getStreamIdleTimeout();
-						int localCorrelationId = nodeCore.getCorrelationManager().createEntry(idleTimeout);
+						CorrelationEntry corrEntry = nodeCore.getCorrelationManager().createEntry(idleTimeout);
+						int localCorrelationId = corrEntry.id;
 						StreamEndpoint streamEndpoint = new StreamEndpoint(nodeCore, name, localCorrelationId, msg.getCorrelation(), 1, msg.getOriginatorId());
 						streamEndpoint.setRequestPayload(inPayload);
 						try
@@ -90,8 +90,6 @@ public class StreamManager extends ExecutionManager {
 							sendError(e, msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMERROR,  msg.getSubject());
 						}
 
-						
-						//((FirebusThread)Thread.currentThread()).finishFunctionExecution();
 						fe.releaseExecutionId(executionId);
 					}
 				}, fe.getName(), executionId);

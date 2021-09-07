@@ -7,6 +7,7 @@ import io.firebus.interfaces.CorrelationListener;
 import io.firebus.data.DataMap;
 
 public class CorrelationEntry {
+	protected int id;
 	protected int sequence;
 	protected Message outboundMessage;
 	protected Map<Integer, Message> inboundMessages;
@@ -17,13 +18,14 @@ public class CorrelationEntry {
 	protected long timeout;
 	protected long expiry;
 	
-	public CorrelationEntry(NodeCore nc, long to)
+	public CorrelationEntry(NodeCore nc, int i, long to)
 	{
 		nodeCore = nc;
+		id = i;
+		sequence = 0;
 		timeout = to;
 		start = System.currentTimeMillis();
 		expiry = start + to;
-		sequence = 0;
 		inboundMessages = new HashMap<Integer, Message>();
 	}
 	

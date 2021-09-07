@@ -46,16 +46,13 @@ public class Connection extends Thread
 	protected IvParameterSpec IV;
 	protected Cipher encryptionCipher;
 	protected Cipher decryptionCipher;
-	protected int msgState;
-	protected int msgLen;
-	protected int msgPos;
-	protected int msgCRC;
-	protected byte[] msg;
 	protected long initTime;
 	protected long lastActivity;
 	protected long timeMark;
 	protected int sentCount;
+	protected int sentBytes;
 	protected int recvCount;
+	protected int recvBytes;
 	protected int load;
 	
 	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
@@ -90,7 +87,9 @@ public class Connection extends Thread
 		setName("fbConn" + getId() + "Recv");
 		queue = new Queue<Message>(100);
 		sentCount = 0;
+		sentBytes = 0;
 		recvCount = 0;
+		recvBytes = 0;
 		initTime = System.currentTimeMillis();
 		timeMark = initTime;
 		load = 0;
@@ -135,8 +134,8 @@ public class Connection extends Thread
 		initialise();
 		if(state == STATE_INITIALIZED)
 		{
-			listener.connectionCreated(this);
 			state = STATE_ACTIVE;
+			listener.connectionCreated(this);
 			new Thread(new Runnable() {
 				public void run() {
 					send();
@@ -162,6 +161,7 @@ public class Connection extends Thread
 
 			if(socket != null)
 			{
+				socket.setTcpNoDelay(true);
 				is = socket.getInputStream();
 				os = socket.getOutputStream();
 				
@@ -241,61 +241,68 @@ public class Connection extends Thread
 	
 	protected void listen()
 	{
-		msgState = 0;
-		while(state == STATE_ACTIVE)
-		{
-			try 
-			{
-				int i = is.read();
-				recvCount++;
-				if(i == -1)
-				{
+		int msgState = 0;
+		int msgLen = 0;
+		int msgPos = 0;
+		int msgCRC = 0;
+		byte[] msgData = null;
+		byte[] inBuf = new byte[1024];
+		while(state == STATE_ACTIVE) {
+			try  {
+				int r = is.read(inBuf, 0, 1024);
+				if(r > -1) {
+					recvBytes += r;
+					for(int j = 0; j < r; j++) {
+						int i = ((int)inBuf[j]) & 0xff;
+						if(msgState == 0)
+						{
+							if(i == 0x7E)
+							{
+								msgLen = 0;
+								msgPos = 0;
+								msgState = 1;
+							}
+						}
+						else if(msgState == 1)
+						{
+							msgLen |= i << (8 * msgPos);
+							msgPos++;
+							if(msgPos == 4)
+							{
+								msgData = new byte[msgLen];
+								msgPos = 0;
+								msgCRC = 0;
+								msgState = 2;
+							}
+						}
+						else if(msgState == 2)
+						{
+							msgData[msgPos] = (byte)i;
+							msgCRC = (msgCRC ^ i) & 0x00FF;
+							msgPos++;
+							if(msgPos == msgLen)
+								msgState = 3;
+						}
+						else if(msgState == 3)
+						{
+							if(i == msgCRC)
+							{
+								Message msg = Message.deserialise(msgData);
+								if(listener != null && msg != null)
+									listener.messageReceived(msg, this);
+								recvCount++;
+								lastActivity = System.currentTimeMillis();
+							}
+							else
+							{
+								logger.severe("Received corrupted message from connection " + getId() + " from node id " + remoteNodeId);
+								close();
+							}
+							msgState = 0;
+						}
+					}
+				} else {
 					close();
-				}
-				else if(msgState == 0)
-				{
-					if(i == 0x7E)
-					{
-						msgLen = 0;
-						msgPos = 0;
-						msgState = 1;
-					}
-				}
-				else if(msgState == 1)
-				{
-					msgLen |= i << (8 * msgPos);
-					msgPos++;
-					if(msgPos == 4)
-					{
-						msg = new byte[msgLen];
-						msgPos = 0;
-						msgCRC = 0;
-						msgState = 2;
-					}
-				}
-				else if(msgState == 2)
-				{
-					msg[msgPos] = (byte)i;
-					msgCRC = (msgCRC ^ i) & 0x00FF;
-					msgPos++;
-					if(msgPos == msgLen)
-						msgState = 3;
-				}
-				else if(msgState == 3)
-				{
-					if(i == msgCRC)
-					{
-						Message message = Message.deserialise(msg);
-						if(listener != null && message != null)
-							listener.messageReceived(message, this);
-						lastActivity = System.currentTimeMillis();
-					}
-					else
-					{
-						logger.severe("Received corrupted message from connection " + getId() + " from node id " + remoteNodeId);
-						close();
-					}
-					msgState = 0;
 				}
 			} 
 			catch (Exception e) 
@@ -317,23 +324,29 @@ public class Connection extends Thread
 			try {
 				Message msg = queue.pop();
 				if(msg != null) {
+					
+					
 					try {
-						byte[] bytes = msg.serialise();
-						os.write(0x7E);
-						os.write(bytes.length & 0x000000FF);
-						os.write((bytes.length >> 8) & 0x000000FF);
-						os.write((bytes.length >> 16) & 0x000000FF);
-						os.write((bytes.length >> 24) & 0x000000FF);
-						os.write(bytes);
+						byte[] msgData = msg.serialise();
 						int crc = 0;
-						for(int i = 0; i < bytes.length; i++)
-							crc = (crc ^ bytes[i]) & 0x00FF;
-						os.write(crc);
-						os.flush();
-						sentCount += bytes.length;
-						lastActivity = System.currentTimeMillis();
-						logger.finer("Sent message on connection " + getId() + " to remote node " + remoteNodeId + "(load: " + load + ")");
+						for(int i = 0; i < msgData.length; i++)
+							crc = (crc ^ msgData[i]) & 0x00FF;
+						int packetSize = msgData.length + 6;
+						packetSize += 16 - (packetSize % 16);
 
+						byte[] bytes = new byte[packetSize];
+						bytes[0] = 0x7E;
+						bytes[1] = (byte)(msgData.length & 0x000000FF);
+						bytes[2] = (byte)((msgData.length >> 8) & 0x000000FF);
+						bytes[3] = (byte)((msgData.length >> 16) & 0x000000FF);
+						bytes[4] = (byte)((msgData.length >> 24) & 0x000000FF);
+						for(int i = 0; i < msgData.length; i++) 
+							bytes[5 + i] = msgData[i];
+						bytes[msgData.length + 5] = (byte)crc;
+						os.write(bytes);
+						sentCount++;
+						sentBytes += bytes.length;
+						lastActivity = System.currentTimeMillis();
 					} catch(Exception e1) {
 						logger.severe("Exception on connection while sending message : " + e1.getMessage());
 						close();
@@ -341,7 +354,7 @@ public class Connection extends Thread
 				} else {
 					try {
 						synchronized(queue) {
-							queue.wait(1000);
+							queue.wait();
 						}
 					} catch(InterruptedException e2) {}
 				}
@@ -354,7 +367,6 @@ public class Connection extends Thread
 	public void sendMessage(Message msg)
 	{
 		queue.push(msg);
-		//queue.notify();
 	}
 	
 	public void close()
@@ -368,6 +380,9 @@ public class Connection extends Thread
 				is.close();
 			if(os != null)
 				os.close();
+			synchronized(queue) {
+				queue.notify();
+			}
 		} 
 		catch (IOException e) 
 		{
@@ -388,8 +403,14 @@ public class Connection extends Thread
 		status.put("remoteAddress", remoteAddress != null ? remoteAddress.toString() : null);
 		status.put("startedSince", (now - initTime));
 		status.put("lastActivity", (now - lastActivity));
-		status.put("sent", sentCount);
-		status.put("recv", recvCount);
+		DataMap sent = new DataMap();
+		sent.put("count", sentCount);
+		sent.put("bytes", sentBytes);
+		status.put("sent", sent);
+		DataMap recv = new DataMap();
+		recv.put("count", recvCount);
+		recv.put("bytes", recvBytes);
+		status.put("recv", recv);
 		status.put("state", state == STATE_NEW ? "new" : state == STATE_INITIALIZING ? "initializing" : state == STATE_INITIALIZED ? "initialized" : state == STATE_ACTIVE ? "active" : state == STATE_FAILED ? "failed" : state == STATE_CLOSING ? "closing" : state == STATE_DEAD ? "dead" : "unknown");
 		status.put("queue", queue.getStatus());
 		return status;
