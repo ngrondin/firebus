@@ -18,7 +18,7 @@ public class FirebusSimpleFormatter extends Formatter
 		//buf.append("\t");
 		if(Thread.currentThread() instanceof FirebusThread) {
 			FirebusThread fbt = (FirebusThread)Thread.currentThread();
-			buf.append(pad(fbt.getName(), 12));			
+			buf.append(pad(fbt.getName(), 19));			
 			buf.append(pad(fbt.getFunctionName(), 10));		
 			if(fbt.getFunctionExecutionId() > -1)
 				buf.append(pad(String.valueOf(fbt.getFunctionExecutionId()), 4));	
@@ -27,7 +27,7 @@ public class FirebusSimpleFormatter extends Formatter
 			buf.append(pad(fbt.getTrackingId(), 12));			
 			
 		} else {
-			buf.append(pad(Thread.currentThread().getName(), 38));			
+			buf.append(pad(Thread.currentThread().getName(), 45));			
 		}
 		String msg = rec.getMessage() != null ? rec.getMessage() : "";
 		buf.append(msg.replaceAll("\r", "").replaceAll("\n", "\u2028"));
