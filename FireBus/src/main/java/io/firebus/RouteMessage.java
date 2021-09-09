@@ -20,7 +20,7 @@ public class RouteMessage implements Runnable {
 		long end = System.currentTimeMillis();
 		long dur = end - start;
 		if(dur > 1) {
-			System.err.println("Message routing (trackingId) took a long time: " + dur + "ms");
+			System.err.println("Message routing (" + trackingId + ") took a long time: " + dur + "ms");
 		}
 	}
 
