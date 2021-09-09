@@ -15,6 +15,7 @@ public class Queue<T>
 	protected int tail;
 	protected int depth;
 	protected int max;
+	protected int count;
 	
 	public Queue(int size)
 	{
@@ -36,6 +37,7 @@ public class Queue<T>
 		tail = 0;	
 		depth = 0;
 		max = 0;
+		count = 0;
 	}
 	
 	public synchronized void push(T m)
@@ -43,6 +45,7 @@ public class Queue<T>
 		items[head] = m;
 		head++;
 		depth++;
+		count++;
 		if(depth > max)
 			max = depth;
 		if(head >= items.length)
@@ -106,6 +109,7 @@ public class Queue<T>
 		status.put("depth", getDepth());
 		status.put("size", items.length);
 		status.put("max", max);
+		status.put("count", count);
 		return status;
 	}
 	

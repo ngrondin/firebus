@@ -56,7 +56,7 @@ public class ConsumerManager extends ExecutionManager {
 		for(FunctionEntry fe: consumers)
 		{
 			if(fe.getName().equals(name)) {
-				nodeCore.getExecutionThreads().enqueue(new Runnable() {
+				nodeCore.getStreamExecutionThreads().enqueue(new Runnable() {
 					public void run() {
 						logger.finer("Executing Consumer"); //This is not checking the function's capacity... it probably should
 						((Consumer)fe.function).consume(inPayload);

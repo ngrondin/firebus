@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.firebus.interfaces.CorrelationListener;
+import io.firebus.threads.ThreadManager;
 import io.firebus.data.DataMap;
 
 public class CorrelationEntry {
@@ -62,7 +63,13 @@ public class CorrelationEntry {
 			Message next = null;
 			while((next = popNext()) != null) {
 				final Message inboundMessage = next;
-				nodeCore.getExecutionThreads().enqueue(new Runnable() {
+				int type = inboundMessage.getType();
+				ThreadManager threads = null;
+				if(type == Message.MSGTYPE_STREAMDATA || type == Message.MSGTYPE_STREAMEND) 
+					threads = nodeCore.getStreamExecutionThreads();
+				else
+					threads = nodeCore.getServiceExecutionThreads();
+				threads.enqueue(new Runnable() {
 					public void run() {
 						correlationListener.correlatedResponseReceived(outboundMessage, inboundMessage);
 					}
@@ -74,7 +81,7 @@ public class CorrelationEntry {
 	public void expire()
 	{
 		if(correlationListener != null) {
-			nodeCore.getExecutionThreads().enqueue(new Runnable() {
+			nodeCore.getServiceExecutionThreads().enqueue(new Runnable() {
 				public void run() {
 					correlationListener.correlationTimedout(outboundMessage);
 				}

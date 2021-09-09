@@ -15,14 +15,18 @@ public class FirebusThread extends Thread
 	protected boolean quit;
 	protected boolean ready;
 	protected long threadStart;
-	protected long lastStart;
-	protected long lastCompletion;
-	protected long cumulExecutionTime;
 	protected long expiry;
 	protected String functionName;
 	protected long functionExecutionId = -1;
 	protected String trackingId;
-
+	protected long lastStart;
+	protected long lastCompletion;
+	protected int totalExecutionCount;
+	protected long cumulExecutionTime;
+	protected long maxExecutionTime;
+	protected String maxExecutionTrackingId;
+	
+	
 	public FirebusThread(ThreadManager tm, NodeCore c)
 	{
 		threadManager = tm;
@@ -33,7 +37,6 @@ public class FirebusThread extends Thread
 		lastStart = -1;
 		lastCompletion = -1;
 		threadStart = System.currentTimeMillis();
-		//setName("fbThread" + getId());setName("fbThread" + getId());
 	}
 	
 		
@@ -81,11 +84,18 @@ public class FirebusThread extends Thread
 	
 	private void completeExecution()
 	{
+		totalExecutionCount++;
+		lastCompletion = System.currentTimeMillis();	
+		long dur = lastCompletion - lastStart;
+		cumulExecutionTime += dur;
+		if(dur > maxExecutionTime) {
+			maxExecutionTime = dur;
+			maxExecutionTrackingId = trackingId;
+		}
+		lastStart = -1;
 		functionName = null;
 		functionExecutionId = -1;
-		lastCompletion = System.currentTimeMillis();		
-		cumulExecutionTime += (lastCompletion - lastStart);
-		lastStart = -1;
+		trackingId = null;
 	}
 
 	public String getFunctionName()
@@ -131,9 +141,14 @@ public class FirebusThread extends Thread
 				status.put("executingTrackingId", trackingId);
 			status.put("executingSince", now - lastStart);
 		}
+		status.put("totalExecutionCount", totalExecutionCount);
 		status.put("cumulExecutionTime", cumulExecutionTime);
 		if(now > threadStart)
 			status.put("utilisation", (100 * cumulExecutionTime / (now - threadStart)));
+		DataMap max = new DataMap();
+		max.put("time", maxExecutionTime);
+		max.put("trackingId", maxExecutionTrackingId);
+		status.put("max", max);
 		return status;
 	}
 }

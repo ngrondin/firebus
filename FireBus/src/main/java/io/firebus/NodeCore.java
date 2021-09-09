@@ -32,7 +32,8 @@ public class NodeCore
 	protected List<DiscoveryAgent> discoveryAgents;
 	protected CorrelationManager correlationManager;
 	protected ThreadManager messageThreads;
-	protected ThreadManager executionThreads;
+	protected ThreadManager serviceExecutionThreads;
+	protected ThreadManager streamExecutionThreads;
 	protected Cipher cipher;
 	protected HistoryQueue historyQueue;
 	
@@ -79,7 +80,8 @@ public class NodeCore
 			consumerManager = new ConsumerManager(this);
 			correlationManager = new CorrelationManager(this);
 			messageThreads = new ThreadManager(this, 10, 10, "Msg");
-			executionThreads = new ThreadManager(this, 50, 5, "Exec");
+			serviceExecutionThreads = new ThreadManager(this, 50, 5, "ServExec");
+			streamExecutionThreads = new ThreadManager(this, 10, 2, "StrmExec");
 			historyQueue = new HistoryQueue(256);
 			discoveryAgents = new ArrayList<DiscoveryAgent>();
 			discoveryAgents.add(new DefaultDiscoveryAgent(this));
@@ -96,7 +98,7 @@ public class NodeCore
 		connectionManager.close();
 		correlationManager.close();
 		messageThreads.close();
-		executionThreads.close();
+		serviceExecutionThreads.close();
 		for(DiscoveryAgent agent : discoveryAgents)
 			agent.close();
 		quit = true;
@@ -146,14 +148,24 @@ public class NodeCore
 		return correlationManager;
 	}
 	
-	public ThreadManager getExecutionThreads() 
+	public ThreadManager getServiceExecutionThreads() 
 	{
-		return executionThreads;
+		return serviceExecutionThreads;
 	}
 	
-	public void setMaxThreadCount(int c)
+	public ThreadManager getStreamExecutionThreads() 
 	{
-		executionThreads.setMaxThreadCount(c);
+		return streamExecutionThreads;
+	}
+	
+	public void setMaxServiceThreadCount(int c)
+	{
+		serviceExecutionThreads.setMaxThreadCount(c);
+	}
+	
+	public void setMaxStreamThreadCount(int c)
+	{
+		streamExecutionThreads.setMaxThreadCount(c);
 	}
 	
 	public void addKnownNodeAddress(String a, int p)
@@ -169,7 +181,7 @@ public class NodeCore
 	
 	protected void enqueue(Message msg)
 	{
-		messageThreads.enqueue(new RouteMessage(this, msg), "rte", -1);
+		messageThreads.enqueue(new RouteMessage(this, msg), "msg", -1);
 	}
 	
 	protected void route(Message msg)
@@ -188,8 +200,7 @@ public class NodeCore
 	protected void process(Message msg)
 	{
 		if(msg != null)
-		{
-			//logger.finest("Processing Message " + msg.getid());		
+		{	
 			if(msg.getDestinationId() == 0  ||  msg.getDestinationId() == nodeId)
 			{
 				switch(msg.getType())
@@ -252,8 +263,7 @@ public class NodeCore
 						correlationManager.receiveResponse(msg);
 						break;
 				}
-			}
-			//logger.finer("Finished Processing Message " + msg.getid());		
+			}	
 		}
 	}
 	
@@ -306,7 +316,8 @@ public class NodeCore
 		funcs.put("consumers", consumerManager.getStatus());
 		status.put("functions", funcs);
 		DataMap threads = new DataMap();
-		threads.put("execution", executionThreads.getStatus());
+		threads.put("services", serviceExecutionThreads.getStatus());
+		threads.put("streams", streamExecutionThreads.getStatus());
 		threads.put("messaging", messageThreads.getStatus());
 		status.put("threads", threads);
 		status.put("correlation", correlationManager.getStatus());

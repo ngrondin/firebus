@@ -65,10 +65,10 @@ public class ServiceManager extends ExecutionManager {
 			final long executionId = fe.getExecutionId();
 			if(executionId != -1) 
 			{
-				nodeCore.getExecutionThreads().enqueue(new Runnable() {
+				sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_PROGRESS, msg.getSubject(), new Payload());
+				nodeCore.getServiceExecutionThreads().enqueue(new Runnable() {
 					public void run() {
 						logger.fine("Executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
-						sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_PROGRESS, msg.getSubject(), new Payload());
 						try
 						{
 							Payload returnPayload = ((ServiceProvider)fe.function).service(inPayload);

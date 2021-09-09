@@ -64,7 +64,7 @@ public class StreamManager extends ExecutionManager {
 			long executionId = fe.getExecutionId();
 			if(executionId != -1) 
 			{
-				nodeCore.getExecutionThreads().enqueue(new Runnable() {
+				nodeCore.getServiceExecutionThreads().enqueue(new Runnable() {
 					public void run() {
 						logger.fine("Executing Stream Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
 						StreamProvider streamProvider = (StreamProvider)fe.function;
