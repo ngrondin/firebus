@@ -70,6 +70,7 @@ public class ThreadManager extends Thread
 			String name = "fb" + threadName + "Thread" + String.format("%1$" + (maxThreadCount >= 100 ? 3 : 2) + "s", threads.size()).replace(' ', '0');
 			thread = new FirebusThread(this, nodeCore);
 			thread.setPriority(priority);
+			thread.setDaemon(false);
 			thread.setName(name);
 			threads.add(thread);
 			thread.start();
