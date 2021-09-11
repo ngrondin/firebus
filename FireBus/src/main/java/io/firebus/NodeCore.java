@@ -99,6 +99,7 @@ public class NodeCore
 		correlationManager.close();
 		messageThreads.close();
 		serviceExecutionThreads.close();
+		streamExecutionThreads.close();
 		for(DiscoveryAgent agent : discoveryAgents)
 			agent.close();
 		quit = true;
@@ -160,12 +161,12 @@ public class NodeCore
 	
 	public void setMaxServiceThreadCount(int c)
 	{
-		serviceExecutionThreads.setMaxThreadCount(c);
+		serviceExecutionThreads.setThreadCount(c);
 	}
 	
 	public void setMaxStreamThreadCount(int c)
 	{
-		streamExecutionThreads.setMaxThreadCount(c);
+		streamExecutionThreads.setThreadCount(c);
 	}
 	
 	public void addKnownNodeAddress(String a, int p)

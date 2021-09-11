@@ -12,6 +12,7 @@ public class FirebusThread extends Thread
 	private Logger logger = Logger.getLogger("io.firebus");
 	protected NodeCore nodeCore;
 	protected ThreadManager threadManager;
+	protected int id;
 	protected boolean quit;
 	protected boolean ready;
 	protected long threadStart;
@@ -27,16 +28,22 @@ public class FirebusThread extends Thread
 	protected String maxExecutionTrackingId;
 	
 	
-	public FirebusThread(ThreadManager tm, NodeCore c)
+	public FirebusThread(ThreadManager tm, NodeCore c, int i, String namePart, int p)
 	{
 		threadManager = tm;
 		nodeCore = c;
+		id = i;
 		quit = false;
 		ready = false;
 		expiry = -1;
 		lastStart = -1;
 		lastCompletion = -1;
 		threadStart = System.currentTimeMillis();
+		String name = "fb" + namePart + "Thread" + String.format("%1$" + 2 + "s", id).replace(' ', '0');
+		setName(name);
+		setPriority(p);
+		setDaemon(false);
+		start();
 	}
 	
 		
@@ -55,47 +62,38 @@ public class FirebusThread extends Thread
 					lastCompletion = -1;
 					expiry = fbRunnable.expiry;
 					fbRunnable.runnable.run();
-					completeExecution();
-				}
-				else
-				{
-					if(!quit) 
-					{
-						synchronized(this)
-						{
-							expiry = -1;
-							ready = true;
-							wait();
-							ready = false;
-						}
-					}
 				}
 			} 
 			catch (Exception e)
 			{
-				completeExecution();
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
 				e.printStackTrace(pw);
 				logger.severe(sw.toString());
 			}
+			finally 
+			{
+				totalExecutionCount++;
+				lastCompletion = System.currentTimeMillis();	
+				long dur = lastCompletion - lastStart;
+				cumulExecutionTime += dur;
+				if(dur > maxExecutionTime) {
+					maxExecutionTime = dur;
+					maxExecutionTrackingId = trackingId;
+				}
+				lastStart = -1;
+				functionName = null;
+				functionExecutionId = -1;
+				trackingId = null;
+			}
 		}
 	}
 	
-	private void completeExecution()
+	public synchronized void checkExpiry() 
 	{
-		totalExecutionCount++;
-		lastCompletion = System.currentTimeMillis();	
-		long dur = lastCompletion - lastStart;
-		cumulExecutionTime += dur;
-		if(dur > maxExecutionTime) {
-			maxExecutionTime = dur;
-			maxExecutionTrackingId = trackingId;
+		if(lastStart > -1 && System.currentTimeMillis() > expiry) {
+			interrupt();
 		}
-		lastStart = -1;
-		functionName = null;
-		functionExecutionId = -1;
-		trackingId = null;
 	}
 
 	public String getFunctionName()
@@ -123,7 +121,7 @@ public class FirebusThread extends Thread
 		synchronized(this)
 		{
 			quit = true;
-			notify();
+			interrupt();
 		}
 	}
 

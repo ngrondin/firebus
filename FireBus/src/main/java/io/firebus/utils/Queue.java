@@ -40,7 +40,7 @@ public class Queue<T>
 		count = 0;
 	}
 	
-	public synchronized void push(T m)
+	public synchronized int push(T m)
 	{
 		items[head] = m;
 		head++;
@@ -66,12 +66,12 @@ public class Queue<T>
 			}
 		}
 		notify();
+		return depth;
 	}
 	
 	public synchronized int getDepth()
 	{
 		return depth;
-		//return (((head + items.length) - tail) % items.length);
 	}
 	
 	protected void grow() 
@@ -102,6 +102,17 @@ public class Queue<T>
 			return item;
 		}
 	}	
+	
+	public synchronized T popWait()
+	{
+		T item = null;
+		try {
+			while((item = pop()) == null) {
+				wait();
+			}
+		} catch(InterruptedException e) { }
+		return item;
+	}
 	
 	public DataMap getStatus()
 	{

@@ -12,32 +12,38 @@ public class ThreadManager extends Thread
 	protected Queue<FirebusRunnable> queue;
 	protected boolean quit;
 	protected ArrayList<FirebusThread> threads;
-	protected int maxThreadCount;
+	protected int threadCount;
 	protected int priority;
 	protected String threadName;
 	
-	public ThreadManager(NodeCore c, int mtc, int dp, String tn)
+	public ThreadManager(NodeCore c, int tc, int dp, String tn)
 	{
 		nodeCore = c;
 		quit = false;
-		maxThreadCount = mtc;
+		threadCount = tc;
 		priority = dp;
 		threadName = tn;
-		threads = new ArrayList<FirebusThread>();
 		queue = new Queue<FirebusRunnable>(1024);
+		threads = new ArrayList<FirebusThread>();
+		setThreadCount(tc);
 		setName("fb" + threadName + "ThreadMgr");
 		start();
 	}
 	
-	public void setMaxThreadCount(int tc)
+	public void setThreadCount(int tc)
 	{
-		maxThreadCount = tc;
+		threadCount = tc;	
+		while(threads.size() < threadCount) 
+			createThread();
+		while(threads.size() > threadCount)
+			removeThread();
 	}
 	
 	public int getThreadCount()
 	{
-		return maxThreadCount;
+		return threadCount;
 	}
+	
 	
 	public int getQueueDepth()
 	{
@@ -49,38 +55,14 @@ public class ThreadManager extends Thread
 		enqueue(runnable, serviceName, serviceExecutionId, 70000);
 	}
 	
-	public synchronized void enqueue(Runnable runnable, String serviceName, long serviceExecutionId, long timeout)
+	public void enqueue(Runnable runnable, String serviceName, long serviceExecutionId, long timeout)
 	{
 		queue.push(new FirebusRunnable(runnable, serviceName, serviceExecutionId, System.currentTimeMillis() + timeout));
-		
-		FirebusThread thread = null;
-		for(int i = 0; i < threads.size() && thread == null; i++)
-		{
-			FirebusThread t = threads.get(i);
-			synchronized(t) {
-				if(t.ready) {
-					thread = t;
-					t.notify();
-				}
-			}
-		}
-		
-		if(thread == null && threads.size() < maxThreadCount && !quit)
-		{
-			String name = "fb" + threadName + "Thread" + String.format("%1$" + (maxThreadCount >= 100 ? 3 : 2) + "s", threads.size()).replace(' ', '0');
-			thread = new FirebusThread(this, nodeCore);
-			thread.setPriority(priority);
-			thread.setDaemon(false);
-			thread.setName(name);
-			threads.add(thread);
-			thread.start();
-		}
-
 	}
 	
-	public synchronized FirebusRunnable getNext()
+	public FirebusRunnable getNext()
 	{
-		return queue.pop();
+		return queue.popWait();
 	}
 	
 	public void run() 
@@ -89,17 +71,9 @@ public class ThreadManager extends Thread
 		{
 			try 
 			{
-				long now = System.currentTimeMillis();
-				for(int i = 0; i < threads.size(); i++)
-				{
-					FirebusThread t = threads.get(i);
-					State s = t.getState();
-					if(s == State.WAITING && !t.ready && t.expiry < now)
-					{
-						t.interrupt();
-					}
-				}				
-				Thread.sleep(2000);
+				for(int i = 0; i < threads.size(); i++) 
+					threads.get(i).checkExpiry();
+				Thread.sleep(1000);
 			} 
 			catch(Exception e) {
 				
@@ -107,11 +81,27 @@ public class ThreadManager extends Thread
 		}
 	}
 	
+	private void createThread()
+	{
+		int id = threads.size();
+		FirebusThread thread = new FirebusThread(this, nodeCore, id, threadName, priority);
+		threads.add(thread);
+	}
+	
+	private void removeThread() 
+	{
+		if(threads.size() > 0) {
+			int id = threads.size() - 1;
+			FirebusThread thread = threads.get(id);
+			threads.remove(id);
+			thread.close();
+		}
+	}
+	
 	public void close()
 	{
 		quit = true;
-		for(int i = 0; i < threads.size(); i++)
-			threads.get(i).close();
+		setThreadCount(0);
 	}
 	
 	public DataMap getStatus()
