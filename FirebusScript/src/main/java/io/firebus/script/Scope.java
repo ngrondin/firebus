@@ -35,17 +35,12 @@ public class Scope {
 		return values.containsKey(key) ? this : parent != null ? parent.getScopeOf(key) : null;
 	}
 	
-	/*public String toString() {
-		return toString("");
-	}*/
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		//sb.append(indent);
 		sb.append("{");
 		sb.append("\r\n");
 		for(String key : values.keySet()) {
-			//sb.append(indent);
 			sb.append(" ");
 			sb.append(key);
 			sb.append(":");
@@ -56,7 +51,6 @@ public class Scope {
 			sb.append(parent.toString().replaceAll("(?m)^", " "));
 			sb.append("\r\n");
 		}
-		//sb.append(indent);
 		sb.append("}");
 		return sb.toString();
 	}

@@ -112,7 +112,8 @@ public class CallableBuilder extends Builder {
 	}
 	
 	public static Block buildFunctionBody(FunctionBodyContext ctx) throws ScriptBuildException {
-		return MasterBuilder.buildSourceElements((SourceElementsContext)ctx.getChild(1));
+		List<Statement> list = MasterBuilder.buildSourceElements((SourceElementsContext)ctx.getChild(1));
+		return new Block(list, sourceInfo(ctx));
 	}
 	
 	public static List<String> buildFormalParameterList(FormalParameterListContext ctx) throws ScriptBuildException {

@@ -7,6 +7,7 @@ import java.util.Map;
 import io.firebus.data.DataList;
 import io.firebus.data.DataLiteral;
 import io.firebus.data.DataMap;
+import io.firebus.data.ZonedTime;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.SBoolean;
@@ -14,13 +15,22 @@ import io.firebus.script.values.SInternalObject;
 import io.firebus.script.values.SNull;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.SString;
+import io.firebus.script.values.STime;
 import io.firebus.script.values.SDate;
 import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
 
 public class Converter {
+	
+	public static SValue tryConvertIn(Object o) {
+		try {
+			return convertIn(o);
+		} catch(ScriptException e) {
+			return null;
+		}
+	}
 
-	protected SValue convertIn(Object o) throws ScriptException {
+	public static SValue convertIn(Object o) throws ScriptException {
 		if(o == null) {
 			return new SNull();
 		} else if(o instanceof SValue) {
@@ -33,6 +43,8 @@ public class Converter {
 			return new SBoolean((Boolean)o);
 		} else if(o instanceof Date) {
 			return new SDate((Date)o);
+		} else if(o instanceof ZonedTime) {
+			return new STime((ZonedTime)o);
 		} else if(o instanceof Map) {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> m = (Map<String, Object>)o;
@@ -60,7 +72,15 @@ public class Converter {
 		}
 	}
 	
-	protected Object convertOut(SValue v) throws ScriptException {
+	public static Object tryConvertOut(SValue v) {
+		try {
+			return convertOut(v);
+		} catch(ScriptException e) {
+			return null;
+		}
+	}
+	
+	public static Object convertOut(SValue v) throws ScriptException {
 		if(v instanceof SNull) {
 			return null;
 		} else if(v instanceof SNumber) {
@@ -81,6 +101,8 @@ public class Converter {
 			return ((SBoolean)v).getBoolean();
 		} else if(v instanceof SDate) {
 			return ((SDate)v).getDate();
+		} else if(v instanceof STime) {
+			return ((STime)v).getTime();
 		} else if(v instanceof SArray) {
 			SArray a = (SArray)v;
 			DataList list = new DataList();

@@ -12,4 +12,7 @@ public abstract class SFlow extends SValue {
 		return false;
 	}
 
+	public String typeOf() {
+		return "statement";
+	}
 }

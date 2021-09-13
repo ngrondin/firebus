@@ -13,7 +13,7 @@ public class Of extends ArrayFunction {
 		super(v);
 	}
 	
-	public SValue call(SValue[] arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptException {
 		SArray ret = new SArray();
 		int index = 0;
 		for(int i = 0; i < arguments.length; i++) {

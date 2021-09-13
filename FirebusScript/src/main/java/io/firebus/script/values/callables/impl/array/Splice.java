@@ -15,7 +15,7 @@ public class Splice extends ArrayFunction {
 		super(v);
 	}
 	
-	public SValue call(SValue[] arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptException {
 		SValue start = arguments[0];
 		SValue len = arguments.length >= 2 ? arguments[1] : new SNumber(1);
 		if(start instanceof SNumber && len instanceof SNumber) {

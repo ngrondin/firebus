@@ -3,7 +3,9 @@ package io.firebus.script.builder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import io.firebus.script.units.Block;
 import io.firebus.script.units.Statement;
@@ -15,11 +17,17 @@ public class MasterBuilder extends Builder {
 
 	
 	public static Block buildProgram(ParseTree ctx) throws ScriptBuildException {
+		List<Statement> list = null;
 		ParseTree sub = ctx.getChild(0);
-		return buildSourceElements((SourceElementsContext)sub);
+		if(sub instanceof TerminalNode) {
+			list = new ArrayList<Statement>();
+		} else {
+			list = buildSourceElements((SourceElementsContext)sub);
+		}
+		return new Block(list, sourceInfo((ParserRuleContext)ctx));
 	}
 	
-	public static Block buildSourceElements(SourceElementsContext ctx) throws ScriptBuildException {
+	public static List<Statement> buildSourceElements(SourceElementsContext ctx) throws ScriptBuildException {
 		List<Statement> list = new ArrayList<Statement>();
 		for(int i = 0; i < ctx.getChildCount(); i++) {
 			ParseTree sub = ctx.getChild(i);
@@ -27,7 +35,7 @@ public class MasterBuilder extends Builder {
 				list.add(buildSourceElement((SourceElementContext)sub));
 			}
 		}
-		return new Block(list, sourceInfo(ctx));
+		return list;
 	}
 	
 	public static Statement buildSourceElement(SourceElementContext ctx) throws ScriptBuildException {

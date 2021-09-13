@@ -19,4 +19,7 @@ public class SNull extends SValue {
 		return other instanceof SNull;
 	}
     
+	public String typeOf() {
+		return "null";
+	}
 }

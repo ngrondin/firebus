@@ -13,7 +13,7 @@ public class Push extends ArrayFunction {
 		super(v);
 	}
 	
-	public SValue call(SValue[] arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptException {
 		if(arguments.length > 0) {
 			SValue val = arguments[0];
 			values.add(val);

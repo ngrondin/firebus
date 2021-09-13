@@ -23,6 +23,7 @@ import io.firebus.script.units.literals.NullLiteral;
 import io.firebus.script.units.literals.NumericLiteral;
 import io.firebus.script.units.literals.ObjectLiteral;
 import io.firebus.script.units.literals.StringLiteral;
+import io.firebus.script.units.operators.Spread;
 
 public class LiteralBuilder extends Builder {
     
@@ -76,6 +77,8 @@ public class LiteralBuilder extends Builder {
     	for(ParseTree sub: ctx.children) {
     		if(sub instanceof PropertyAssignmentContext) {
     			String key = sub.getChild(0).getText();
+    			if(key.startsWith("'") && key.endsWith("'")) 
+    				key = key.substring(1, key.length() - 1);
     			Expression val = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub.getChild(2));
     			ol.addSetter(key, val);
     		}
@@ -86,12 +89,19 @@ public class LiteralBuilder extends Builder {
     public static ArrayLiteral buildArrayLiteral(ArrayLiteralContext ctx) throws ScriptBuildException {
     	ArrayLiteral al = new ArrayLiteral(sourceInfo(ctx));
     	ElementListContext el = (ElementListContext)ctx.getChild(1);
-    	for(ParseTree sub: el.children) {
-    		if(sub instanceof ArrayElementContext) {
-    			Expression val = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub.getChild(0));
-    			al.addExpression(val);
-    		}
-    	}    	
+    	if(el.getChildCount() > 0) {
+	    	for(ParseTree sub: el.children) {
+	    		if(sub instanceof ArrayElementContext) {
+	    			if(sub.getChildCount() == 1) {
+	    				Expression val = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub.getChild(0));
+		    			al.addExpression(val);	    				
+	    			} else if(sub.getChildCount() == 2 && sub.getChild(0).getText().equals("...")) {
+	    				Expression val = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub.getChild(1));
+	    				al.addExpression(new Spread(val, sourceInfo(ctx)));
+	    			}
+	    		}
+	    	}
+    	}
     	return al;
     }
 }

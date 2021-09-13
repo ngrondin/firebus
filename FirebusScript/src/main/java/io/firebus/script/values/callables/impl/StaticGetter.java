@@ -11,7 +11,7 @@ public class StaticGetter extends SCallable {
 		value = v;
 	}
 	
-	public SValue call(SValue[] arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptException {
 		return value;
 	}
 

@@ -11,6 +11,7 @@ import io.firebus.script.units.operators.abs.Operator;
 import io.firebus.script.units.references.VariableReference;
 import io.firebus.script.values.SDate;
 import io.firebus.script.values.SInternalObject;
+import io.firebus.script.values.STime;
 import io.firebus.script.values.abs.SContextCallable;
 import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
@@ -36,6 +37,8 @@ public class New extends Operator {
 			String identifier = ((VariableReference)callableExpression).getName();
 			if(identifier.equals("Date")) {
 				o = new SDate(arguments);
+			} else if(identifier.equals("Time")) {
+				o = new STime(arguments);
 			}
 		}
 

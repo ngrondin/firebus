@@ -300,11 +300,13 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	
 	protected Connection getReadyConnectionForNodeId(int nodeId)
 	{
-		List<Connection> list = connectionsForNodeId.get(nodeId);
-		int size = list.size();
 		Connection connection = null;
-		if(size > 0)
-			connection = list.get(rnd.nextInt(size));
+		List<Connection> list = connectionsForNodeId.get(nodeId);
+		if(list != null) {
+			int size = list.size();
+			if(size > 0)
+				connection = list.get(rnd.nextInt(size));
+		}
 		return connection;
 	}
 	
@@ -315,26 +317,6 @@ public class ConnectionManager extends Thread implements ConnectionListener
 				return connection;
 		return null;
 	}
-	
-	/*protected Connection getExistingConnectionForNode(NodeInformation ni)
-	{
-		ArrayList<Connection> readyConnections = new ArrayList<Connection>();
-		ArrayList<Connection> allConnections = new ArrayList<Connection>();
-		for(Connection connection: connections) {
-			if(connection.getRemoteNodeId() == ni.getNodeId()) {
-				allConnections.add(connection);
-				if(connection.isReady())
-					readyConnections.add(connection);
-			}
-		}
-					
-		if(readyConnections.size() > 0)
-			return readyConnections.get(rnd.nextInt(readyConnections.size()));
-		else if(allConnections.size() > 0)
-			return allConnections.get(rnd.nextInt(allConnections.size()));
-		else
-			return null;
-	}*/
 	
 	
 	protected Connection createConnection(Address a) 

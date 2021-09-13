@@ -15,6 +15,10 @@ public class ScriptException extends Exception {
 		context = c;
 	}
 	
+	public ScriptException(String m, Throwable t) {
+		super(m, t);
+	}
+	
 	public ScriptException(String m, Throwable t, SourceInfo c) {
 		super(m, t);
 		context = c;

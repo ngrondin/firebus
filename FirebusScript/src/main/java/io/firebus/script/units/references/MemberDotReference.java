@@ -5,6 +5,7 @@ import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.values.SMemberCallable;
+import io.firebus.script.values.SNull;
 import io.firebus.script.values.SUndefined;
 import io.firebus.script.values.abs.SCallable;
 import io.firebus.script.values.abs.SDynamicObject;
@@ -32,9 +33,11 @@ public class MemberDotReference extends Reference {
 				ret = new SUndefined();
 			return ret;
 		} else if(o instanceof SUndefined) {
-			throw new ScriptException("'" + objectExpr.toString() + "' is not defined", source);
+			throw new ScriptException("Cannot get member '" + key + "' of undefined", source);
+		} else if(o instanceof SNull) {
+			throw new ScriptException("Cannot get member '" + key + "' of null", source);
 		} else {
-			throw new ScriptException("Base of a dot reference must be an object", source);
+			throw new ScriptException("Cannot get member '" + key + "' of '" + objectExpr.toString() + "' as it is not an object", source);
 		}
 	}
 

@@ -8,6 +8,7 @@ import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Literal;
+import io.firebus.script.units.operators.Spread;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.abs.SValue;
 
@@ -26,7 +27,14 @@ public class ArrayLiteral extends Literal {
 	public SValue eval(Scope scope) throws ScriptException {
 		List<SValue> list = new ArrayList<SValue>();
 		for(Expression expr : expressions) {
-			list.add(expr.eval(scope));
+			if(expr instanceof Spread) {
+				SArray subArray = (SArray)((Spread)expr).eval(scope);
+				for(int i = 0; i < subArray.getSize(); i++) {
+					list.add(subArray.get(i));
+				}
+			} else {
+				list.add(expr.eval(scope));
+			}
 		}
 		return new SArray(list);
 	}

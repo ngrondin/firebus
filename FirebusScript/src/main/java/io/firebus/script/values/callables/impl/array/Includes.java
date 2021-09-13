@@ -13,7 +13,7 @@ public class Includes extends ArrayFunction {
 		super(v);
 	}
 	
-	public SValue call(SValue[] arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptException {
 		SValue v = (SValue)arguments[0];
 		for(int i = 0; i < values.size(); i++) {
 			SValue item = values.get(i);

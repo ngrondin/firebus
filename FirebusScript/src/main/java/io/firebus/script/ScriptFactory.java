@@ -1,5 +1,7 @@
 package io.firebus.script;
 
+import java.util.Map;
+
 import io.firebus.script.exceptions.ScriptBuildException;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Block;
@@ -9,13 +11,21 @@ import io.firebus.script.values.impl.Print;
 public class ScriptFactory {
 	protected Scope rootScope;
 	protected Compiler compiler;
-	protected Converter converter;
 	
 	public ScriptFactory() {
 		compiler = new Compiler();
-		converter = new Converter();
 		rootScope = new Scope();
 		rootScope.setValue("print", new Print());
+	}
+	
+	public void setGlobals(Map<String, Object> globals) throws ScriptException {
+		for(String key: globals.keySet()) {
+			rootScope.setValue(key, Converter.convertIn(globals.get(key)));
+		}
+	}
+	
+	public void setInRootScope(String name, Object val) throws ScriptException {
+		rootScope.setValue(name, Converter.convertIn(val));
 	}
 	
 	public void executeInRootScope(String name, String source) throws ScriptException {
@@ -59,7 +69,7 @@ public class ScriptFactory {
 	
 	public Function createFunction(String[] params, Source source) throws ScriptBuildException {
 		ExecutionUnit eu = compiler.compile(source);
-		Function func = new Function(rootScope, params, eu, converter);
+		Function func = new Function(rootScope, params, eu);
 		return func;
 	}
 	
@@ -78,7 +88,7 @@ public class ScriptFactory {
 			if(block.getStatementCount() == 1)
 				eu = block.getStatement(0);
 		}
-		Expression expr = new Expression(rootScope, eu, converter);
+		Expression expr = new Expression(rootScope, eu);
 		return expr;
 	}
 }

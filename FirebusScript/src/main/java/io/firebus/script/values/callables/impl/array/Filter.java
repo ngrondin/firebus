@@ -15,7 +15,7 @@ public class Filter extends ArrayFunction {
 		super(v);
 	}
 	
-	public SValue call(SValue[] arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptException {
 		SArray ret = new SArray();
 		SCallable c = (SCallable)arguments[0];
 		int index = 0;

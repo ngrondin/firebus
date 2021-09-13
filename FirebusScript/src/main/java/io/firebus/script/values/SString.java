@@ -44,4 +44,7 @@ public class SString extends SPredefinedObject {
 		return null;
 	}
 
+	public String typeOf() {
+		return "string";
+	}
 }

@@ -43,5 +43,9 @@ public class SBoolean extends SPredefinedObject {
 	public SValue getMember(String name) {
 		return null;
 	}
+	
+	public String typeOf() {
+		return "boolean";
+	}
     
 }

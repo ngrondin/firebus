@@ -14,7 +14,7 @@ public class Reduce extends ArrayFunction {
 		super(v);
 	}
 	
-	public SValue call(SValue[] arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptException {
 		SCallable c = (SCallable)arguments[0];
 		SValue initial = arguments.length >= 2 ? arguments[1] : new SNull();
 		SValue value = initial;

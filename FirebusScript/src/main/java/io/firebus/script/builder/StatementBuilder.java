@@ -115,12 +115,14 @@ public class StatementBuilder extends Builder {
 	}
 	
 	public static Block buildBlock(BlockContext ctx) throws ScriptBuildException {
-		ParseTree sub = ctx.getChild(1);
-		if(sub instanceof StatementListContext) {
-			List<Statement> list = buildStatementList((StatementListContext)sub);
-			return new Block(list, sourceInfo(ctx));
+		List<Statement> list = null;
+		if(ctx.getChildCount() == 2) {
+			list = new ArrayList<Statement>();
+		} else if(ctx.getChildCount() == 3 && ctx.getChild(1) instanceof StatementListContext) {
+			list = buildStatementList((StatementListContext)(ctx.getChild(1)));
+			
 		} 
-		throw new ScriptBuildException("Unknown source element", sourceInfo(ctx));
+		return new Block(list, sourceInfo(ctx));
 	}
 	
 	public static Statement buildIterationStatement(IterationStatementContext ctx)  throws ScriptBuildException {
@@ -138,11 +140,17 @@ public class StatementBuilder extends Builder {
 				return loop;
 		} else if(tn.getSymbol().getType() == JavaScriptParser.For) {
 			if(ctx.getChild(3).getText().equals(";")) {
-				DeclareList declareList = DeclarationBuilder.buildVariableDeclarationList((VariableDeclarationListContext)ctx.getChild(2));
 				List<Expression> condES = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(4));
 				List<Expression> opES = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(6));
 				ExecutionUnit unit = buildStatement((StatementContext)ctx.getChild(8));
-				ForLoop loop = new ForLoop(declareList, condES.get(0), (Operator)opES.get(0), unit, uc);
+				ForLoop loop = null;
+				if(ctx.getChild(2) instanceof VariableDeclarationListContext) {
+					DeclareList declareList = DeclarationBuilder.buildVariableDeclarationList((VariableDeclarationListContext)ctx.getChild(2));
+					loop = new ForLoop(declareList, condES.get(0), (Operator)opES.get(0), unit, uc);
+				} else if(ctx.getChild(2) instanceof ExpressionSequenceContext) {
+					List<Expression> initialES = ExpressionBuilder.buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(2));
+					loop = new ForLoop(initialES.get(0), condES.get(0), (Operator)opES.get(0), unit, uc);
+				}
 				return loop;				
 			} else if(ctx.getChild(3).getText().equals("of")) {
 				DeclareList declareList = DeclarationBuilder.buildVariableDeclarationList((VariableDeclarationListContext)ctx.getChild(2));

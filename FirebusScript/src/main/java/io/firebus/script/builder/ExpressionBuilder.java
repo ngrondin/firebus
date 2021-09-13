@@ -14,6 +14,8 @@ import io.firebus.script.parser.JavaScriptParser.ArgumentsExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.ArrayLiteralContext;
 import io.firebus.script.parser.JavaScriptParser.ArrayLiteralExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.AssignmentExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.AssignmentOperatorContext;
+import io.firebus.script.parser.JavaScriptParser.AssignmentOperatorExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.BitAndExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.BitNotExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.BitOrExpressionContext;
@@ -44,12 +46,16 @@ import io.firebus.script.parser.JavaScriptParser.PreDecreaseExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.PreIncrementExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.RelationalExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.SingleExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.TernaryExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.ThisExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.TypeofExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.UnaryMinusExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.UnaryPlusExpressionContext;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Setter;
+import io.firebus.script.units.TernaryExpression;
 import io.firebus.script.units.operators.Add;
+import io.firebus.script.units.operators.AddSet;
 import io.firebus.script.units.operators.BitAnd;
 import io.firebus.script.units.operators.BitNot;
 import io.firebus.script.units.operators.BitOr;
@@ -60,18 +66,22 @@ import io.firebus.script.units.operators.BitXOr;
 import io.firebus.script.units.operators.Coalesce;
 import io.firebus.script.units.operators.Decrease;
 import io.firebus.script.units.operators.Divide;
+import io.firebus.script.units.operators.DivideSet;
 import io.firebus.script.units.operators.EqualityCompare;
 import io.firebus.script.units.operators.Increase;
 import io.firebus.script.units.operators.LogicalAnd;
 import io.firebus.script.units.operators.LogicalOr;
 import io.firebus.script.units.operators.Modulus;
 import io.firebus.script.units.operators.Multiply;
+import io.firebus.script.units.operators.MultiplySet;
 import io.firebus.script.units.operators.Not;
 import io.firebus.script.units.operators.Power;
 import io.firebus.script.units.operators.PreDecrease;
 import io.firebus.script.units.operators.PreIncrease;
 import io.firebus.script.units.operators.RelationalCompare;
 import io.firebus.script.units.operators.Substract;
+import io.firebus.script.units.operators.SubstractSet;
+import io.firebus.script.units.operators.Typeof;
 import io.firebus.script.units.operators.UnaryMinus;
 import io.firebus.script.units.operators.UnaryPlus;
 import io.firebus.script.units.references.MemberDotReference;
@@ -126,9 +136,9 @@ public class ExpressionBuilder extends Builder {
 		} else if(ctx instanceof PreDecreaseExpressionContext) {
 			return new PreDecrease((Reference)buildSingleExpressionFromChild(ctx, 1), uc);
 		} else if(ctx instanceof UnaryPlusExpressionContext) {
-			return new UnaryPlus(buildSingleExpressionFromChild(ctx, 0), uc);
+			return new UnaryPlus(buildSingleExpressionFromChild(ctx, 1), uc);
 		} else if(ctx instanceof UnaryMinusExpressionContext) {
-			return new UnaryMinus(buildSingleExpressionFromChild(ctx, 0), uc);
+			return new UnaryMinus(buildSingleExpressionFromChild(ctx, 1), uc);
 		} else if(ctx instanceof BitNotExpressionContext) {
 			return new BitNot(buildSingleExpressionFromChild(ctx, 0), uc);
 		} else if(ctx instanceof BitAndExpressionContext) {
@@ -165,6 +175,16 @@ public class ExpressionBuilder extends Builder {
 				return new Add(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
 			else if(op.getSymbol().getType() == JavaScriptParser.Minus)
 				return new Substract(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
+		} else if(ctx instanceof AssignmentOperatorExpressionContext) {
+			AssignmentOperatorContext aoc = (AssignmentOperatorContext)ctx.getChild(1);
+			if(aoc.getText().equals("+=")) 
+				return new AddSet((Reference)buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
+			else if(aoc.getText().equals("-=")) 
+				return new SubstractSet((Reference)buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
+			else if(aoc.getText().equals("*=")) 
+				return new MultiplySet((Reference)buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
+			else if(aoc.getText().equals("/=")) 
+				return new DivideSet((Reference)buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
 		} else if(ctx instanceof PowerExpressionContext) {
 			return new Power(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
 		} else if(ctx instanceof CoalesceExpressionContext) {
@@ -180,7 +200,11 @@ public class ExpressionBuilder extends Builder {
 			return CallableBuilder.buildNewOperator((NewExpressionContext)ctx);
 		} else if(ctx instanceof ThisExpressionContext) {
 			return new VariableReference("this", uc);
-		}
+		} else if(ctx instanceof TernaryExpressionContext) {
+			return new TernaryExpression(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), buildSingleExpressionFromChild(ctx, 4), uc);
+		}  else if(ctx instanceof TypeofExpressionContext) {
+			return new Typeof(buildSingleExpressionFromChild(ctx, 1), uc);
+		} 
 		throw new ScriptBuildException("Unknown source element", sourceInfo(ctx));
 	}
 	

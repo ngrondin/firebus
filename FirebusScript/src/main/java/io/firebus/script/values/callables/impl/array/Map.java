@@ -14,7 +14,7 @@ public class Map extends ArrayFunction {
 		super(v);
 	}
 	
-	public SValue call(SValue[] arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptException {
 		SArray ret = new SArray();
 		SCallable c = (SCallable)arguments[0];
 		for(int i = 0; i < values.size(); i++)

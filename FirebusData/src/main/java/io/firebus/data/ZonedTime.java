@@ -11,6 +11,15 @@ public class ZonedTime {
 	protected int nano;
 	protected ZoneId zoneId;
 	
+	public ZonedTime() {
+		ZonedDateTime zdt = ZonedDateTime.now();
+		hours = zdt.getHour();
+		minutes = zdt.getMinute();
+		seconds = zdt.getSecond();
+		nano = zdt.getNano();
+		zoneId = zdt.getZone();
+	}
+	
 	public ZonedTime(int h, int m, int s, int n, String zoneStr) {
 		hours = h;
 		minutes = m;

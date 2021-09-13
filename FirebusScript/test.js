@@ -1,2 +1,3 @@
-var dt = new Date();
-return dt.getFullYear();
+var a = 2;
+a /= 3;
+print(a);

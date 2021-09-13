@@ -70,4 +70,8 @@ public class SDate extends SPredefinedObject {
 	public String toString() {
 		return date.toString();
 	}
+	
+	public String typeOf() {
+		return "date";
+	}
 }

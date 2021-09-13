@@ -19,4 +19,7 @@ public class SUndefined extends SValue {
 		return other instanceof SUndefined;
 	}
     
+	public String typeOf() {
+		return "undefined";
+	}
 }

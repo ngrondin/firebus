@@ -11,6 +11,7 @@ import io.firebus.script.units.statements.abs.ConditionalIterator;
 
 public class ForLoop extends ConditionalIterator {
 	protected DeclareList declares;
+	protected Expression initial;
 	protected Operator operator;
 	
 	public ForLoop(DeclareList d, Expression c, Operator o, ExecutionUnit eu, SourceInfo uc) {
@@ -18,9 +19,18 @@ public class ForLoop extends ConditionalIterator {
 		declares = d;
 		operator = o;
 	}
+	
+	public ForLoop(Expression i, Expression c, Operator o, ExecutionUnit eu, SourceInfo uc) {
+		super(c, eu, uc);
+		initial = i;
+		operator = o;
+	}
 
 	protected void before(Scope scope) throws ScriptException {
-		declares.eval(scope);
+		if(declares != null)
+			declares.eval(scope);
+		else if(initial != null)
+			initial.eval(scope);
 	}
 
 	protected void afterIteration(Scope scope) throws ScriptException {

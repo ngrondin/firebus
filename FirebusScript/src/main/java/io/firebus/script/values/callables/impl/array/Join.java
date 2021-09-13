@@ -13,7 +13,7 @@ public class Join extends ArrayFunction {
 		super(v);
 	}
 
-	public SValue call(SValue[] arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptException {
 		String joiner = arguments.length > 0 ? arguments[0].toString() : ",";
 		StringBuilder sb = new StringBuilder();
 		for(int i = 0; i < values.size(); i++) {

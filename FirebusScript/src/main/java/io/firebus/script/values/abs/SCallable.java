@@ -5,7 +5,7 @@ import io.firebus.script.exceptions.ScriptException;
 
 public abstract class SCallable extends SValue {
 
-	public abstract SValue call(SValue[] arguments) throws ScriptException;
+	public abstract SValue call(SValue... arguments) throws ScriptException;
 
 
 	public boolean equals(SValue other) {
@@ -18,5 +18,9 @@ public abstract class SCallable extends SValue {
 	
 	public String toString() {
 		return "callable()";
+	}
+	
+	public String typeOf() {
+		return "function";
 	}
 }

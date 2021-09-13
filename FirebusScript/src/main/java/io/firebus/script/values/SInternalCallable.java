@@ -25,7 +25,7 @@ public class SInternalCallable extends SContextCallable {
 		return definitionScope;
 	}
 	
-	public SValue call(SObject thisObject, SValue[] arguments) throws ScriptException {
+	public SValue call(SObject thisObject, SValue... arguments) throws ScriptException {
 		Scope runScope = new Scope(definitionScope);
 		for(int i = 0; i < paramNames.size(); i++) {
 			String paramName = paramNames.get(i);

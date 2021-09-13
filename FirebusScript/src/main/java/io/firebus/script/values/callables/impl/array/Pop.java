@@ -13,7 +13,7 @@ public class Pop extends ArrayFunction {
 		super(v);
 	}
 	
-	public SValue call(SValue[] arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptException {
 		if(this.values.size() > 0) {
 			int lastIndex = values.size() - 1;
 			SValue val = values.get(lastIndex);

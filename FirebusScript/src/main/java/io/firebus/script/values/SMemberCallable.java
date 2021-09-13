@@ -17,7 +17,7 @@ public class SMemberCallable extends SCallable {
 		callable = c;
 	}
 	
-	public SValue call(SValue[] arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptException {
 		if(callable instanceof SContextCallable) {
 			return ((SContextCallable)callable).call(object, arguments);
 		} else {
