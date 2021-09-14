@@ -159,14 +159,19 @@ public class NodeCore
 		return streamExecutionThreads;
 	}
 	
-	public void setMaxServiceThreadCount(int c)
+	public void setServiceThreadCount(int c)
 	{
 		serviceExecutionThreads.setThreadCount(c);
 	}
 	
-	public void setMaxStreamThreadCount(int c)
+	public void setStreamThreadCount(int c)
 	{
 		streamExecutionThreads.setThreadCount(c);
+	}
+	
+	public void setMessageThreadCount(int c)
+	{
+		messageThreads.setThreadCount(c);
 	}
 	
 	public void addKnownNodeAddress(String a, int p)
