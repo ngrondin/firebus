@@ -61,7 +61,7 @@ public class ServiceRequestAsync implements CorrelationListener {
 					{
 						requestInProgress = true;
 						functionInformation.returnedProgress();
-						nodeCore.getCorrelationManager().setListenerOnEntry(correlation, this, requestorFunctionName, requestTimeout);
+						nodeCore.getCorrelationManager().setListenerOnEntry(correlation, this, requestorFunctionName, nodeCore.getServiceExecutionThreads(), requestTimeout);
 					}
 					else //Will always only be Function Unavailable 
 					{
