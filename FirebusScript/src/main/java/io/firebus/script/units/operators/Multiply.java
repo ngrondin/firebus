@@ -2,23 +2,22 @@ package io.firebus.script.units.operators;
 
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.tools.Operations;
 import io.firebus.script.units.Expression;
-import io.firebus.script.units.operators.abs.TwoNumberOperator;
-import io.firebus.script.values.SNumber;
+import io.firebus.script.units.operators.abs.TwoExpressionOperator;
 import io.firebus.script.values.abs.SValue;
 
-public class Multiply extends TwoNumberOperator {
+public class Multiply extends TwoExpressionOperator {
 
 	public Multiply(Expression e1, Expression e2, SourceInfo uc) {
 		super(e1, e2, uc);
 	}
 
-	protected SValue evalWithNumbers(Number n1, Number n2) throws ScriptException {
-		double v = n1.doubleValue() * n2.doubleValue();
-		if(v == (int)v) {
-			return new SNumber((int)v);
-		} else {
-			return new SNumber(v);
+	protected SValue evalWithValues(SValue v1, SValue v2) throws ScriptException {
+		try {
+			return Operations.multiply(v1, v2);
+		} catch(ScriptException e) {
+			throw new ScriptException(e.getMessage(), source);
 		}
 	}
 

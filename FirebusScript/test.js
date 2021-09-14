@@ -1,3 +1,3 @@
-var a = 2;
-a /= 3;
+var a = 4;
+a += "allo";
 print(a);

@@ -21,4 +21,5 @@ public class Increase extends NumberReferenceOperator {
 	protected Number getReturnNumber(Number originalNumber, Number updatedNumber) throws ScriptException {
 		return originalNumber;
 	}
+
 }

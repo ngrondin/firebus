@@ -76,7 +76,7 @@ public class StreamRequest
 							streamEndpoint = new StreamEndpoint(nodeCore, streamName, correlation, remoteCorrelation, 0, functionInformation.getNodeId());
 							streamEndpoint.setAcceptPayload(acceptPayload);
 							streamEndpoint.setRequestPayload(requestPayload);
-							nodeCore.getCorrelationManager().setListenerOnEntry(correlation, streamEndpoint, requestorFunctionName, idleTimeout);
+							nodeCore.getCorrelationManager().setListenerOnEntry(correlation, streamEndpoint, requestorFunctionName, nodeCore.getStreamExecutionThreads(), idleTimeout);
 							functionInformation.wasSuccesful();
 							break;
 						}

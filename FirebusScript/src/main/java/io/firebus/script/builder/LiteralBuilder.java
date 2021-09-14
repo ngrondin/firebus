@@ -54,11 +54,11 @@ public class LiteralBuilder extends Builder {
 		TerminalNode tn = (TerminalNode)ctx.getChild(0);
 		Number number = null;
 		if(tn.getSymbol().getType() == JavaScriptParser.DecimalLiteral) {
-			double d = Double.parseDouble(tn.getText());
-			if(d == (int)d) {
-				number = (int)d;
+			String txt = tn.getText();
+			if(txt.contains(".")) {
+				number = Double.parseDouble(txt);
 			} else {
-				number = d;
+				number = Integer.parseInt(txt);
 			}
 		} else if(tn.getSymbol().getType() == JavaScriptParser.HexIntegerLiteral) {
 			number = Integer.decode(tn.getText());
