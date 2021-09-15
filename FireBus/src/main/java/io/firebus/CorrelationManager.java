@@ -61,42 +61,20 @@ public class CorrelationManager extends Thread
 	{
 		CorrelationEntry entry = getEntry(correlationId);
 		if(entry != null)
-		{
 			entry.setListener(cl, fn, tm, timeout);
-		}
 		else
-		{
 			logger.severe("Correlation " + correlationId + " not found to set listener on");
-		}
 	}
+
 
 	public Message waitForResponse(int correlationId, int timeout)
 	{
 		CorrelationEntry entry = getEntry(correlationId);
 		Message message = null;
 		if(entry != null)
-		{
-			synchronized(entry)
-			{
-				entry.timeout = timeout;
-				entry.expiry = System.currentTimeMillis() + timeout;
-				while(System.currentTimeMillis() < entry.expiry  &&  (message = entry.popNext()) == null)
-				{
-					try
-					{
-						entry.wait();
-					}
-					catch(InterruptedException e)
-					{
-						logger.warning("Correlation " + correlationId + " wait was interrupted");
-					}
-				}
-			}
-		}
+			message = entry.waitForNext(timeout);
 		else
-		{
 			logger.severe("Correlation " + correlationId + " not found to wait for\r\n" + StackUtils.getStackString());
-		}
 		return message;
 	}
 	
@@ -177,7 +155,7 @@ public class CorrelationManager extends Thread
 		quit = true;
 	}
 	
-	public DataMap getStatus()
+	public synchronized DataMap getStatus()
 	{
 		DataMap status = new DataMap();
 		DataMap entryMap = new DataMap();

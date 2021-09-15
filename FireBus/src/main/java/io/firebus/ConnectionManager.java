@@ -228,7 +228,9 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		logger.fine("Connection " + c.getId() + " Closed");
 		connections.remove(c);
 		int nodeId = c.getRemoteNodeId();
-		connectionsForNodeId.get(nodeId).remove(c);
+		List<Connection> list = connectionsForNodeId.get(nodeId);
+		if(list != null)
+			list.remove(c);
 	}
 	
 	

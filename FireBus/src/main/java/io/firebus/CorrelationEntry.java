@@ -53,6 +53,23 @@ public class CorrelationEntry {
 		}
 		return next;
 	}
+	
+	public synchronized Message waitForNext(int to)
+	{
+		timeout = to;
+		expiry = System.currentTimeMillis() + timeout;
+		Message message = null;
+		try
+		{
+			while(System.currentTimeMillis() < expiry  &&  (message = popNext()) == null)
+				wait();
+		}
+		catch(InterruptedException e)
+		{
+			logger.warning("Correlation " + id + " wait was interrupted");
+		}
+		return message;
+	}
 
 	public synchronized void push(Message msg) {
 		int seq = msg.getCorrelationSequence();
