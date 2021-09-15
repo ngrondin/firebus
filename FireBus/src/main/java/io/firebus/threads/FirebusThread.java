@@ -129,8 +129,8 @@ public class FirebusThread extends Thread
 	{
 		long now = System.currentTimeMillis();
 		DataMap status = new DataMap();
-		status.put("executing", !ready);
-		if(ready) {
+		status.put("executing", lastStart > -1);
+		if(lastStart == -1) {
 			status.put("idleSince", System.currentTimeMillis() - lastCompletion);
 		} else {
 			status.put("executingFunctionName", functionName);
