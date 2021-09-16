@@ -21,6 +21,7 @@ public class CorrelationEntry {
 	protected long start;
 	protected long timeout;
 	protected long expiry;
+	protected boolean expired;
 	
 	public CorrelationEntry(NodeCore nc, int i, long to)
 	{
@@ -30,6 +31,7 @@ public class CorrelationEntry {
 		timeout = to;
 		start = System.currentTimeMillis();
 		expiry = start + to;
+		expired = false;
 		inboundMessages = new HashMap<Integer, Message>();
 	}
 	
@@ -56,17 +58,19 @@ public class CorrelationEntry {
 	
 	public synchronized Message waitForNext(int to)
 	{
-		timeout = to;
-		expiry = System.currentTimeMillis() + timeout;
 		Message message = null;
-		try
-		{
-			while(System.currentTimeMillis() < expiry  &&  (message = popNext()) == null)
-				wait();
-		}
-		catch(InterruptedException e)
-		{
-			logger.warning("Correlation " + id + " wait was interrupted");
+		if(expired == false) {
+			timeout = to;
+			expiry = System.currentTimeMillis() + timeout;
+			try
+			{
+				while(expired == false  &&  (message = popNext()) == null)
+					wait();
+			}
+			catch(InterruptedException e)
+			{
+				logger.warning("Correlation " + id + " wait was interrupted");
+			}
 		}
 		return message;
 	}
@@ -96,29 +100,23 @@ public class CorrelationEntry {
 		}
 	}
 	
-	public synchronized boolean checkExipry() 
+	public synchronized boolean checkExipred() 
 	{
 		long now = System.currentTimeMillis();
-		if(now > expiry) 
+		if(expired == false && now > expiry) 
 		{
 			logger.warning("Correlation " + id + " has expired after " + (now - start) + "ms (" + (outboundMessage != null ? outboundMessage.getTypeString() + ":" + outboundMessage.subject + ":" + outboundMessage.getOriginatorId() + "->" + outboundMessage.getDestinationId() : "") + (listenerFunctionName != null ? " for " + listenerFunctionName : "") + ") exp:" + expiry + " start:" + start + " timeout:" + timeout);
-			expire();
+			expired = true;
+			if(correlationListener != null) {
+				threadManager.enqueue(new Runnable() {
+					public void run() {
+						correlationListener.correlationTimedout(outboundMessage);
+					}
+				}, listenerFunctionName, -1);
+			}
 			notifyAll();				
-			return true;
-		} else {
-			return false;
 		}
-	}
-	
-	public void expire()
-	{
-		if(correlationListener != null) {
-			threadManager.enqueue(new Runnable() {
-				public void run() {
-					correlationListener.correlationTimedout(outboundMessage);
-				}
-			}, listenerFunctionName, -1);
-		}
+		return expired;
 	}
 	
 	public DataMap getStatus()

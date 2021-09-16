@@ -134,7 +134,7 @@ public class CorrelationManager extends Thread
 				List<CorrelationEntry> list = getEntryList();
 				for(CorrelationEntry entry: list) 
 				{
-					if(entry.checkExipry()) 
+					if(entry.checkExipred()) 
 					{
 						removeEntry(entry.id);
 						expiredCount++;
