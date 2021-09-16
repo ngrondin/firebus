@@ -54,7 +54,7 @@ public class ServiceRequest
 				Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
 				if(respMsg != null)
 				{
-					while(System.currentTimeMillis() < expiry)
+					while(respMsg != null && System.currentTimeMillis() < expiry)
 					{
 						if(respMsg.getType() == Message.MSGTYPE_SERVICEERROR)
 						{
