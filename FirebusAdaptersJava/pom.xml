@@ -29,7 +29,7 @@
 			<email>ngrondin78@gmail.com</email>
 		</developer>
 	</developers>
-	
+
 	<properties>
 		<io.firebus.version>1.3.4</io.firebus.version>
 	</properties>
@@ -42,8 +42,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>
-			<artifactId>mongo-java-driver</artifactId>
-			<version>3.11.0</version>
+			<artifactId>mongodb-driver-sync</artifactId>
+			<version>4.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-dbcp</groupId>
@@ -56,9 +56,9 @@
 			<version>12.0.0</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.amazonaws</groupId>
-		    <artifactId>aws-java-sdk-s3</artifactId>
-		    <version>1.11.837</version>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
+			<version>1.11.837</version>
 		</dependency>
 	</dependencies>
 	<profiles>
@@ -134,10 +134,10 @@
 								<goals>
 									<goal>jar</goal>
 								</goals>
-								<configuration> 
+								<configuration>
 									<doclint>none</doclint>
-									<source>8</source>						
-					            </configuration>
+									<source>8</source>
+								</configuration>
 							</execution>
 						</executions>
 					</plugin>

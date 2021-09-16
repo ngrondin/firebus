@@ -12,8 +12,13 @@ import org.bson.json.Converter;
 import org.bson.json.JsonWriterSettings;
 import org.bson.json.StrictJsonWriter;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.TransactionOptions;
+import com.mongodb.WriteConcern;
+import com.mongodb.client.ClientSession;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -67,12 +72,18 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			client.close();
 			client = null;
 		}
-		MongoClientOptions mongoClientOptions = MongoClientOptions.builder()
+		/*MongoClientOptions mongoClientOptions = MongoClientOptions.builder()
                 .connectTimeout(2000)
                 .maxWaitTime(waitTimeout)
                 .serverSelectionTimeout(waitTimeout)
-                .build();
-		client =  new MongoClient(connectionString, mongoClientOptions);
+                .build();*/
+		//client =  new MongoClient(connectionString, mongoClientOptions);
+		MongoClientSettings settings = MongoClientSettings.builder()
+				.applyConnectionString(new ConnectionString(connectionString))
+				.applyToClusterSettings(builder -> builder.serverSelectionTimeout(waitTimeout, TimeUnit.MILLISECONDS))
+				.applyToSocketSettings(builder -> builder.connectTimeout(2000, TimeUnit.MILLISECONDS))
+				.build();
+		client = MongoClients.create(settings);
 		database = client.getDatabase(databaseName);
 	}
 	
@@ -109,9 +120,27 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 				DataList list = get(request);
 				responseJSON.put("result", list);
 			}
-			else if(request.containsKey("key"))
+			else if(request.containsKey("key") || request.containsKey("multi"))
 			{
-				upsert(request);
+				ClientSession session = null;
+				try {
+					session = client.startSession();
+					if(request.containsKey("key")) {
+						upsert(session, request);
+					} else if(request.containsKey("multi")) {
+						DataList multi = request.getList("multi");
+						session.startTransaction(TransactionOptions.builder().writeConcern(WriteConcern.MAJORITY).build());
+						for(int i = 0; i < multi.size(); i++) 
+							upsert(session, multi.getObject(i));
+						session.commitTransaction();						
+					}
+					responseJSON.put("result", "ok");	
+				} catch(Exception e) {
+					if(session != null) session.abortTransaction();
+					throw new FunctionErrorException("Error in db transaction", e);
+				} finally {
+					if(session != null) session.close();
+				}
 				responseJSON.put("result", "ok");
 			}
 			response = new Payload(null, responseJSON.toString().getBytes());
@@ -280,6 +309,11 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 	
 	private void upsert(DataMap packet)
 	{
+		upsert(null, packet);
+	}
+	
+	private void upsert(ClientSession session, DataMap packet)
+	{
 		String objectName = packet.getString("object");
 		String operation = packet.getString("operation");
 		DataMap data = packet.getObject("data");
@@ -300,16 +334,16 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 						{
 							Document incomingDoc = Document.parse(data.toString());
 							if(operation == null || (operation != null && operation.equals("insert")) || (operation !=null && operation.equals("update")))
-								collection.updateOne(existingDoc, new Document("$set", incomingDoc));
+								collection.updateOne(session, existingDoc, new Document("$set", incomingDoc));
 							else if(operation != null  && operation.equals("replace"))
-								collection.replaceOne(existingDoc, incomingDoc);
+								collection.replaceOne(session, existingDoc, incomingDoc);
 							else if(operation != null  && operation.equals("delete"))
-								collection.deleteOne(existingDoc);
+								collection.deleteOne(session, existingDoc);
 						}
 						else
 						{
 							if(operation != null  && operation.equals("delete"))
-								collection.deleteOne(existingDoc);
+								collection.deleteOne(session, existingDoc);
 						}
 					}
 					else
@@ -323,7 +357,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 						}
 						Document incomingDoc = Document.parse(data.toString());
 						if(operation == null || (operation !=null && operation.equals("insert")) || (operation !=null && operation.equals("update")) || (operation !=null && operation.equals("replace")))
-							collection.insertOne(incomingDoc);
+							collection.insertOne(session, incomingDoc);
 					}
 				}
 			}
@@ -337,6 +371,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			logger.severe("Database as not been specificied in the configuration");
 		}
 	}
+
 	
 	protected void recordQuery(String object, DataMap filter) {
 		if(queryColumns != null) {
