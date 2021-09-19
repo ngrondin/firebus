@@ -1,13 +1,13 @@
 package io.firebus.script.values.callables.impl.math;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.abs.SCallable;
 import io.firebus.script.values.abs.SValue;
 
 public class Max extends SCallable {
 
-	public SValue call(SValue... arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptCallException {
 		if(arguments.length >= 2) {
 			SValue max = null;
 			double maxD = 0;
@@ -20,12 +20,12 @@ public class Max extends SCallable {
 						maxD = d;
 					} 
 				} else {
-					throw new ScriptException("max requires only numeric arguments");
+					throw new ScriptCallException("max requires only numeric arguments");
 				}
 			}
 			return max;
 		} else {
-			throw new ScriptException("max requires at least 2 arguments");
+			throw new ScriptCallException("max requires at least 2 arguments");
 		}
 	}
 

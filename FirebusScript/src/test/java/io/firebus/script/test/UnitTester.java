@@ -1,20 +1,5 @@
 package io.firebus.script.test;
 
-import java.util.Arrays;
-
-import io.firebus.script.Scope;
-import io.firebus.script.units.Block;
-import io.firebus.script.units.Call;
-import io.firebus.script.units.CallableDefinition;
-import io.firebus.script.units.ExecutionUnit;
-import io.firebus.script.units.Expression;
-import io.firebus.script.units.Setter;
-import io.firebus.script.units.literals.StringLiteral;
-import io.firebus.script.units.operators.Add;
-import io.firebus.script.units.references.Reference;
-import io.firebus.script.units.references.VariableReference;
-import io.firebus.script.values.impl.Print;
-
 public class UnitTester {
 
 	public static void main(String[] args) {

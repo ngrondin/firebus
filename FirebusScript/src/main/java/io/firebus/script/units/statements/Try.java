@@ -2,7 +2,7 @@ package io.firebus.script.units.statements;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Block;
 import io.firebus.script.units.Statement;
 import io.firebus.script.values.SException;
@@ -21,7 +21,7 @@ public class Try extends Statement {
 		finallyProd = f;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		try {
 			return block.eval(scope);
 		} catch(Exception e) {

@@ -4,7 +4,7 @@ import java.util.List;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.values.abs.SValue;
 
 public class DeclareList extends Statement {
@@ -24,7 +24,7 @@ public class DeclareList extends Statement {
 		return list;
 	}
 	
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		for(Declare d : list)
 			d.eval(scope);
 		return null;

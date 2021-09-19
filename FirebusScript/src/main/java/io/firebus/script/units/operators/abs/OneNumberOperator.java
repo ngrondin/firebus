@@ -1,9 +1,9 @@
 package io.firebus.script.units.operators.abs;
 
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.units.Expression;
-import io.firebus.script.values.SNumber;
 import io.firebus.script.values.abs.SValue;
 
 public abstract class OneNumberOperator extends OneExpressionOperator {
@@ -12,15 +12,15 @@ public abstract class OneNumberOperator extends OneExpressionOperator {
 		super(e, uc);
 	}
 
-	protected SValue evalWithValue(SValue v) throws ScriptException {
-		if(v instanceof SNumber) {
-			Number n = ((SNumber)v).getNumber();
+	protected SValue evalWithValue(SValue v) throws ScriptExecutionException {
+		try {
+			Number n = v.toNumber();
 			return evalWithNumber(n);
-		} else {
-			throw new ScriptException(this.getClass().getSimpleName() + " operator requries 1 numeric value", source);
+		} catch(ScriptValueException e) {
+			throw new ScriptExecutionException(e.getMessage() + " in '" + this.toString() + "'", source);
 		}
 	}
 
-	protected abstract SValue evalWithNumber(Number n) throws ScriptException;
+	protected abstract SValue evalWithNumber(Number n) throws ScriptExecutionException;
 
 }

@@ -1,8 +1,10 @@
 package io.firebus.script.parser;
 
-import org.antlr.v4.runtime.*;
-
 import java.util.Stack;
+
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Token;
 
 /**
  * All lexer methods that used in grammar (IsStrictMode)

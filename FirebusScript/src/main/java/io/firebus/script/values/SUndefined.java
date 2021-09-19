@@ -1,6 +1,6 @@
 package io.firebus.script.values;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SValue;
 
 public class SUndefined extends SValue {
@@ -24,11 +24,11 @@ public class SUndefined extends SValue {
         return "undefined";
     }
 
-	public Number toNumber() throws ScriptException {
-		throw new ScriptException("Undefined cannot be converted to number");
+	public Number toNumber() throws ScriptValueException {
+		throw new ScriptValueException("Undefined cannot be converted to number");
 	}
 
-	public boolean toBoolean() throws ScriptException {
-		throw new ScriptException("Undefined cannot be converted to boolean");
+	public boolean toBoolean() throws ScriptValueException {
+		throw new ScriptValueException("Undefined cannot be converted to boolean");
 	}
 }

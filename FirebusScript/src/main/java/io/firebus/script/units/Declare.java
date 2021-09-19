@@ -2,7 +2,7 @@ package io.firebus.script.units;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.values.SNull;
 import io.firebus.script.values.abs.SValue;
 
@@ -25,7 +25,7 @@ public class Declare extends Statement {
 		return key;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue val = expression != null ? expression.eval(scope) : new SNull();
 		scope.setValue(key, val);
 		return val;

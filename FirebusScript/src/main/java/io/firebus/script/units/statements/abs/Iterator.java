@@ -2,7 +2,7 @@ package io.firebus.script.units.statements.abs;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Statement;
 import io.firebus.script.values.SNull;
@@ -18,7 +18,7 @@ public abstract class Iterator extends Statement {
 		unit = eu;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		Scope localScope = new Scope(scope);
 		before(localScope);
 		while(continueLoop(localScope)) {
@@ -33,10 +33,10 @@ public abstract class Iterator extends Statement {
 		return new SNull();
 	}
 	
-	protected abstract void before(Scope scope) throws ScriptException;
+	protected abstract void before(Scope scope) throws ScriptExecutionException;
 	
-	protected abstract boolean continueLoop(Scope scope) throws ScriptException;
+	protected abstract boolean continueLoop(Scope scope) throws ScriptExecutionException;
 	
-	protected abstract void afterIteration(Scope scope) throws ScriptException;
+	protected abstract void afterIteration(Scope scope) throws ScriptExecutionException;
 
 }

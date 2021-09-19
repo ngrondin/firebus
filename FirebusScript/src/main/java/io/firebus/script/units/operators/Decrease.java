@@ -1,7 +1,7 @@
 package io.firebus.script.units.operators;
 
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.operators.abs.NumberReferenceOperator;
 import io.firebus.script.units.references.Reference;
 
@@ -11,7 +11,7 @@ public class Decrease extends NumberReferenceOperator {
 		super(r, uc);
 	}
 
-	protected Number getUpdateNumber(Number originalNumber) throws ScriptException {
+	protected Number getUpdateNumber(Number originalNumber) throws ScriptExecutionException {
 		if(originalNumber instanceof Integer) {
 			return originalNumber.intValue() - 1;
 		} else {
@@ -19,7 +19,7 @@ public class Decrease extends NumberReferenceOperator {
 		}
 	}
 
-	protected Number getReturnNumber(Number originalNumber, Number updatedNumber) throws ScriptException {
+	protected Number getReturnNumber(Number originalNumber, Number updatedNumber) throws ScriptExecutionException {
 		return originalNumber;
 	}
 

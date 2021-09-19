@@ -5,7 +5,8 @@ import java.util.List;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptCallException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.operators.abs.Operator;
 import io.firebus.script.values.SInternalObject;
@@ -25,7 +26,7 @@ public class New extends Operator {
 		paramExpressions = p;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SObject o = null;
 		SValue[] arguments = new SValue[paramExpressions.size()];
 		for(int i = 0; i < paramExpressions.size(); i++)
@@ -33,21 +34,25 @@ public class New extends Operator {
 
 		SValue c = callableExpression.eval(scope);
 		if(c instanceof SCallable) {
-			if(c instanceof SContextCallable) {
-				SContextCallable callable = (SContextCallable)c;
-				o = new SInternalObject();
-				callable.call(o, arguments);	
-			} else {
-				SCallable callable = (SCallable)c;
-				SValue v = callable.call(arguments);
-				if(v instanceof SObject) {
-					o = (SObject)v;
+			try {
+				if(c instanceof SContextCallable) {
+					SContextCallable callable = (SContextCallable)c;
+					o = new SInternalObject();
+					callable.call(o, arguments);	
 				} else {
-					throw new ScriptException("External callable used with a 'new' operator should return an object");
+					SCallable callable = (SCallable)c;
+					SValue v = callable.call(arguments);
+					if(v instanceof SObject) {
+						o = (SObject)v;
+					} else {
+						throw new ScriptExecutionException("External callable used with a 'new' operator should return an object", source);
+					}
 				}
+			} catch(ScriptCallException e) {
+				throw new ScriptExecutionException("Error calling '" + this.toString() + "'", source);
 			}
 		} else {
-			throw new ScriptException("'new' operator expects a callable", source);
+			throw new ScriptExecutionException("'new' operator expects a callable", source);
 		}
 		return o;
 	}

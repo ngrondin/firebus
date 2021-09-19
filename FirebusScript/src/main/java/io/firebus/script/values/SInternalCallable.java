@@ -3,7 +3,8 @@ package io.firebus.script.values;
 import java.util.List;
 
 import io.firebus.script.Scope;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptCallException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Block;
 import io.firebus.script.values.abs.SContextCallable;
 import io.firebus.script.values.abs.SObject;
@@ -25,7 +26,7 @@ public class SInternalCallable extends SContextCallable {
 		return definitionScope;
 	}
 	
-	public SValue call(SObject thisObject, SValue... arguments) throws ScriptException {
+	public SValue call(SObject thisObject, SValue... arguments) throws ScriptCallException {
 		Scope runScope = new Scope(definitionScope);
 		for(int i = 0; i < paramNames.size(); i++) {
 			String paramName = paramNames.get(i);
@@ -35,11 +36,15 @@ public class SInternalCallable extends SContextCallable {
 		if(thisObject != null) {
 			runScope.setValue("this", thisObject);
 		}
-		SValue ret = body.eval(runScope);
-		if(ret instanceof SReturn) {
-			return ((SReturn)ret).getReturnedValue();
-		} else {
-			return new SNull();
+		try {
+			SValue ret = body.eval(runScope);
+			if(ret instanceof SReturn) {
+				return ((SReturn)ret).getReturnedValue();
+			} else {
+				return new SNull();
+			}
+		} catch(ScriptExecutionException e) {
+			throw new ScriptCallException("Error on call", e);
 		}
 	}
 	

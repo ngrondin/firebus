@@ -27,6 +27,8 @@ public class Compiler {
 				return root;
 			} catch(ScriptBuildException e) {
 				throw new ScriptBuildException(e.getMessageText(), e.getSourceInfo());
+			} catch(Exception e) {
+				throw new ScriptBuildException("Error building execution units", e);
 			}
 		} else {
 			StringBuilder sb = new StringBuilder();

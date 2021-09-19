@@ -2,7 +2,7 @@ package io.firebus.script.units.statements;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Declare;
 import io.firebus.script.units.DeclareList;
 import io.firebus.script.units.ExecutionUnit;
@@ -26,7 +26,7 @@ public class ArrayLoop extends Statement {
 		unit = eu;
 	}
 	
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue a = arrayExpr.eval(scope);
 		if(a instanceof SArray) {
 			Scope localScope = new Scope(scope);
@@ -45,7 +45,7 @@ public class ArrayLoop extends Statement {
 			}
 			return new SNull();			
 		} else {
-			throw new ScriptException("Expression must be an array", source);
+			throw new ScriptExecutionException("Expression must be an array", source);
 		}
 	}
 }

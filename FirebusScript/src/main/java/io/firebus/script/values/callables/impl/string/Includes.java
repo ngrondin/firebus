@@ -1,6 +1,6 @@
 package io.firebus.script.values.callables.impl.string;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.SString;
 import io.firebus.script.values.abs.SValue;
@@ -12,7 +12,7 @@ public class Includes extends StringFunction {
 		super(s);
 	}
 
-	public SValue call(SValue... arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptCallException {
 		if(arguments.length > 0) {
 			SValue ss = arguments[0];
 			if(string.getString().startsWith(ss.toString()))
@@ -20,7 +20,7 @@ public class Includes extends StringFunction {
 			else 
 				return new SBoolean(false);
 		} else {
-			throw new ScriptException("startsWith requires at least 1 argument");
+			throw new ScriptCallException("startsWith requires at least 1 argument");
 		}
 	}
 

@@ -2,7 +2,7 @@ package io.firebus.script.units.references;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.values.SMemberCallable;
 import io.firebus.script.values.SNull;
@@ -22,7 +22,7 @@ public class MemberDotReference extends Reference {
 		key = k;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue o = objectExpr.eval(scope);
 		if(o instanceof SObject) {
 			SObject obj = (SObject)o;
@@ -33,22 +33,30 @@ public class MemberDotReference extends Reference {
 				ret = new SUndefined();
 			return ret;
 		} else if(o instanceof SUndefined) {
-			throw new ScriptException("Cannot get member '" + key + "' of undefined", source);
+			throw new ScriptExecutionException("Cannot get member '" + key + "' of undefined", source);
 		} else if(o instanceof SNull) {
-			throw new ScriptException("Cannot get member '" + key + "' of null", source);
+			throw new ScriptExecutionException("Cannot get member '" + key + "' of null", source);
 		} else {
-			throw new ScriptException("Cannot get member '" + key + "' of '" + objectExpr.toString() + "' as it is not an object", source);
+			throw new ScriptExecutionException("Cannot get member '" + key + "' of '" + objectExpr.toString() + "' as it is not an object", source);
 		}
 	}
 
-	public void setValue(Scope scope, SValue val) throws ScriptException {
+	public void setValue(Scope scope, SValue val) throws ScriptExecutionException {
 		SValue o = objectExpr.eval(scope);
 		if(o instanceof SDynamicObject) {
 			SDynamicObject obj = (SDynamicObject)o;
 			obj.putMember(key, val);
 		} else {
-			throw new ScriptException("Base of a dot reference must be a dynamic object", source);
+			throw new ScriptExecutionException("Base of a dot reference must be a dynamic object", source);
 		}
+	}
+	
+	public SObject getObject(Scope scope) throws ScriptExecutionException {
+		return (SObject)objectExpr.eval(scope);
+	}
+	
+	public String getKey() {
+		return key;
 	}
 
 }

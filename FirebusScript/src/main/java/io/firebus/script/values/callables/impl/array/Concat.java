@@ -2,7 +2,7 @@ package io.firebus.script.values.callables.impl.array;
 
 import java.util.List;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.callables.impl.ArrayFunction;
@@ -13,7 +13,7 @@ public class Concat extends ArrayFunction {
 		super(v);
 	}
 	
-	public SValue call(SValue... arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptCallException {
 		SArray ret = new SArray();
 		int index = 0;
 		for(int j = 0; j < this.values.size(); j++)

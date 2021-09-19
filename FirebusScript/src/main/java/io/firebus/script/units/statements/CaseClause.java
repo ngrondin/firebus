@@ -4,7 +4,7 @@ import java.util.List;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Statement;
 import io.firebus.script.values.abs.SValue;
@@ -21,12 +21,12 @@ public class CaseClause extends Statement {
 		statementList = sl;
 	}
 	
-	public boolean expressionMatches(SValue value, Scope scope) throws ScriptException {
+	public boolean expressionMatches(SValue value, Scope scope) throws ScriptExecutionException {
 		SValue caseValue = expression.eval(scope);
 		return caseValue.equals(value);
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		for(Statement statement: statementList) {
 			SValue ret = statement.eval(scope);
 			if(ret instanceof SReturn) {

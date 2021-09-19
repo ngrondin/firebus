@@ -1,6 +1,6 @@
 package io.firebus.script.values.callables.impl.string;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.SString;
 import io.firebus.script.values.abs.SValue;
@@ -12,7 +12,7 @@ public class CharAt extends StringFunction {
 		super(s);
 	}
 
-	public SValue call(SValue... arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptCallException {
 		if(arguments.length > 0) {
 			SValue v = arguments[0];
 			if(v instanceof SNumber) {
@@ -21,13 +21,13 @@ public class CharAt extends StringFunction {
 					String s = string.getString().substring(i, 1);
 					return new SString(s);
 				} else {
-					throw new ScriptException("index out of range"); 
+					throw new ScriptCallException("index out of range"); 
 				}
 			} else {
-				throw new ScriptException("charAt requies number arguments");
+				throw new ScriptCallException("charAt requies number arguments");
 			}
 		} else {
-			throw new ScriptException("charAt requires at least 1 argument");
+			throw new ScriptCallException("charAt requires at least 1 argument");
 		}
 	}
 

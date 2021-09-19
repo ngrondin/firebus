@@ -3,7 +3,7 @@ package io.firebus.script.values.callables.impl.array;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.abs.SCallable;
@@ -16,7 +16,7 @@ public class Sort extends ArrayFunction {
 		super(v);
 	}
 	
-	public SValue call(SValue... arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptCallException {
 		SCallable c = (SCallable)arguments[0];
 		List<SValue> out = new ArrayList<SValue>();
 		for(int i = 0; i < values.size(); i++) {

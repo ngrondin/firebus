@@ -22,6 +22,7 @@ import io.firebus.script.parser.JavaScriptParser.BitOrExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.BitShiftExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.BitXOrExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.CoalesceExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.DeleteExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.EqualityExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.ExpressionSequenceContext;
 import io.firebus.script.parser.JavaScriptParser.FunctionExpressionContext;
@@ -65,6 +66,7 @@ import io.firebus.script.units.operators.BitShiftRightLogical;
 import io.firebus.script.units.operators.BitXOr;
 import io.firebus.script.units.operators.Coalesce;
 import io.firebus.script.units.operators.Decrease;
+import io.firebus.script.units.operators.Delete;
 import io.firebus.script.units.operators.Divide;
 import io.firebus.script.units.operators.DivideSet;
 import io.firebus.script.units.operators.EqualityCompare;
@@ -198,6 +200,8 @@ public class ExpressionBuilder extends Builder {
 			return seq.get(0);
 		} else if(ctx instanceof NewExpressionContext) {
 			return CallableBuilder.buildNewOperator((NewExpressionContext)ctx);
+		} else if(ctx instanceof DeleteExpressionContext) {
+			return new Delete(buildSingleExpressionFromChild(ctx, 1), uc);
 		} else if(ctx instanceof ThisExpressionContext) {
 			return new VariableReference("this", uc);
 		} else if(ctx instanceof TernaryExpressionContext) {

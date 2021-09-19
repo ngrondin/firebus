@@ -1,6 +1,6 @@
 package io.firebus.script.values.abs;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptValueException;
 
 public abstract class SValue {
 
@@ -12,7 +12,7 @@ public abstract class SValue {
 	
 	public abstract String toString();
 	
-	public abstract Number toNumber() throws ScriptException;
+	public abstract Number toNumber() throws ScriptValueException;
 	
-	public abstract boolean toBoolean() throws ScriptException;
+	public abstract boolean toBoolean() throws ScriptValueException;
 }

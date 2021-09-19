@@ -1,7 +1,7 @@
 package io.firebus.script.units.operators;
 
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.operators.abs.TwoExpressionOperator;
 import io.firebus.script.values.SBoolean;
@@ -32,7 +32,7 @@ public class EqualityCompare extends TwoExpressionOperator {
 		}
 	}
 
-	protected SValue evalWithValues(SValue v1, SValue v2) throws ScriptException {
+	protected SValue evalWithValues(SValue v1, SValue v2) throws ScriptExecutionException {
 		boolean ret = false;
 		switch(type) {
 			case Equals :

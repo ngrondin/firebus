@@ -2,7 +2,7 @@ package io.firebus.script.values;
 
 import java.util.Map;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.callables.impl.string.CharAt;
@@ -77,7 +77,7 @@ public class SString extends SPredefinedObject {
 		return str;
 	}
 
-	public Number toNumber() throws ScriptException {
+	public Number toNumber() throws ScriptValueException {
 		try {
 			Number number = null;
 			if(str.contains(".")) {
@@ -90,11 +90,11 @@ public class SString extends SPredefinedObject {
 			}	
 			return number;
 		} catch(Exception e) {
-			throw new ScriptException("Cannot convert '" + str + "' to number");
+			throw new ScriptValueException("Cannot convert '" + str + "' to number");
 		}
 	}
 	
-	public boolean toBoolean() throws ScriptException {
+	public boolean toBoolean() throws ScriptValueException {
 		if(str.equalsIgnoreCase("true"))
 			return true;
 		else 

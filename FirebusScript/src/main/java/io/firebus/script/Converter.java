@@ -9,14 +9,15 @@ import io.firebus.data.DataLiteral;
 import io.firebus.data.DataMap;
 import io.firebus.data.ZonedTime;
 import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.SBoolean;
+import io.firebus.script.values.SDate;
 import io.firebus.script.values.SInternalObject;
 import io.firebus.script.values.SNull;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.SString;
 import io.firebus.script.values.STime;
-import io.firebus.script.values.SDate;
 import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
 
@@ -68,7 +69,7 @@ public class Converter {
 			DataLiteral dl = (DataLiteral)o;
 			return convertIn(dl.getObject());
 		} else {
-			throw new ScriptException("Cannot convert '" + o.toString() + "' to script space");
+			throw new ScriptValueException("Cannot convert '" + o.toString() + "' to script space");
 		}
 	}
 	
@@ -117,7 +118,7 @@ public class Converter {
 				map.put(keys[i], convertOut(o.getMember(keys[i])));
 			return map;
 		} else {
-			throw new ScriptException("Cannot convert '" + v.toString() + "' to java space");
+			throw new ScriptValueException("Cannot convert '" + v.toString() + "' to java space");
 		}
 	}
 }

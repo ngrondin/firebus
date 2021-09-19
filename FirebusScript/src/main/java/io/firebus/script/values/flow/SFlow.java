@@ -1,6 +1,6 @@
 package io.firebus.script.values.flow;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SValue;
 
 public abstract class SFlow extends SValue {
@@ -17,12 +17,12 @@ public abstract class SFlow extends SValue {
 		return "statement";
 	}
 	
-	public Number toNumber() throws ScriptException {
-		throw new ScriptException("Flow statement cannot be converted to number");
+	public Number toNumber() throws ScriptValueException {
+		throw new ScriptValueException("Flow statement cannot be converted to number");
 	}
 
-	public boolean toBoolean() throws ScriptException {
-		throw new ScriptException("Flow statement cannot be converted to boolean");
+	public boolean toBoolean() throws ScriptValueException {
+		throw new ScriptValueException("Flow statement cannot be converted to boolean");
 	}
 	
 }

@@ -1,7 +1,7 @@
 package io.firebus.script.units.operators;
 
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.operators.abs.OneBooleanOperator;
 import io.firebus.script.values.SBoolean;
@@ -13,7 +13,7 @@ public class Not extends OneBooleanOperator {
 		super(e, uc);
 	}
 
-	protected SValue evalWithBoolean(boolean b) throws ScriptException {
+	protected SValue evalWithBoolean(boolean b) throws ScriptExecutionException {
 		return new SBoolean(!b);
 	}
 

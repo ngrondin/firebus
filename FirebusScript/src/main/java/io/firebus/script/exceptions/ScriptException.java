@@ -2,7 +2,7 @@ package io.firebus.script.exceptions;
 
 import io.firebus.script.SourceInfo;
 
-public class ScriptException extends Exception {
+public abstract class ScriptException extends Exception {
 	private static final long serialVersionUID = 1L;
 	protected SourceInfo context;
 

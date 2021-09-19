@@ -2,7 +2,7 @@ package io.firebus.script.units;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.values.abs.SValue;
 
 public class ExpressionStatement extends Statement {
@@ -13,7 +13,7 @@ public class ExpressionStatement extends Statement {
 		expression = e;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		return expression.eval(scope);
 	}
 

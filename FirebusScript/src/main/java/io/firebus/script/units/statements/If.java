@@ -2,7 +2,7 @@ package io.firebus.script.units.statements;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Statement;
@@ -24,7 +24,7 @@ public class If extends Statement {
 		elseUnit = eu;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue v = condition.eval(scope);
 		if(v instanceof SBoolean) {
 			SBoolean b = (SBoolean)v;
@@ -45,7 +45,7 @@ public class If extends Statement {
 			}
 			return new SNull();
 		} else {
-			throw new ScriptException("Condition does not return a boolean", source);
+			throw new ScriptExecutionException("Condition does not return a boolean", source);
 		}
 	}
 

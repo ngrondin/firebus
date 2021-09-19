@@ -1,11 +1,5 @@
 package io.firebus.script.test;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
-
-
 public class ParseTest {
 
 	public static void main(String[] args) {

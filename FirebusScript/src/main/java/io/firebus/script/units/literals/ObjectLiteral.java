@@ -5,7 +5,7 @@ import java.util.List;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Literal;
 import io.firebus.script.values.SInternalObject;
@@ -31,7 +31,7 @@ public class ObjectLiteral extends Literal {
 		setters.add(setter);
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SInternalObject obj = new SInternalObject();
 		Scope local = new Scope(scope);
 		local.setValue("this", obj);

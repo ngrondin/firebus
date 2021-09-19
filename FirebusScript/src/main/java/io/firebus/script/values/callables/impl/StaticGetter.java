@@ -1,6 +1,6 @@
 package io.firebus.script.values.callables.impl;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.abs.SCallable;
 import io.firebus.script.values.abs.SValue;
 
@@ -11,7 +11,7 @@ public class StaticGetter extends SCallable {
 		value = v;
 	}
 	
-	public SValue call(SValue... arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptCallException {
 		return value;
 	}
 

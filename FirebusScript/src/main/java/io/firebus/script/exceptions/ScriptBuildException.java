@@ -16,4 +16,8 @@ public class ScriptBuildException extends ScriptException {
 	public ScriptBuildException(String m, Throwable t, SourceInfo c) {
 		super(m, t, c);
 	}
+	
+	public ScriptBuildException(String m, Throwable t) {
+		super(m, t);
+	}
 }

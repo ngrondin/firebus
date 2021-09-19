@@ -2,7 +2,7 @@ package io.firebus.script.units.operators.abs;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.values.abs.SValue;
 
@@ -16,11 +16,11 @@ public abstract class TwoExpressionOperator extends Operator {
 		expr2 = e2;
 	}
 	
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue v1 = expr1.eval(scope);
 		SValue v2 = expr2.eval(scope);
 		return evalWithValues(v1, v2);
 	}
 	
-	protected abstract SValue evalWithValues(SValue v1, SValue v2) throws ScriptException;
+	protected abstract SValue evalWithValues(SValue v1, SValue v2) throws ScriptExecutionException;
 }

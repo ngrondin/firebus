@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.values.SInternalCallable;
 import io.firebus.script.values.abs.SValue;
 
@@ -17,7 +18,7 @@ public class CallableDefinition extends Expression {
 		body = b;
 	}
 	
-	public SValue eval(Scope scope) {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		Scope local = new Scope(scope);
 		return new SInternalCallable(params, body, local);
 	}

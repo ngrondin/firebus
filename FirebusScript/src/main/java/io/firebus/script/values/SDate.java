@@ -5,8 +5,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
-import io.firebus.script.exceptions.ScriptException;
-import io.firebus.script.exceptions.ScriptRuntimeException;
+import io.firebus.script.exceptions.ScriptCallException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.callables.impl.date.GetDate;
@@ -36,8 +36,12 @@ public class SDate extends SPredefinedObject {
 	public SDate(Date d) {
 		date = d.toInstant().atZone(ZoneId.systemDefault());
 	}
+	
+	public SDate(ZonedDateTime d) {
+		date = d;
+	}
 
-	public SDate(SValue ...arguments) throws ScriptException {
+	public SDate(SValue ...arguments) throws ScriptCallException {
 		if(arguments.length == 0) {
 			date = ZonedDateTime.now();
 		} else if(arguments.length == 1) {
@@ -47,7 +51,7 @@ public class SDate extends SPredefinedObject {
 			} else if(!(arg instanceof SNull || arg instanceof SUndefined)){
 				date = ZonedDateTime.parse(arg.toString());
 			} else {
-				throw new ScriptRuntimeException("Invalid Date constructor parameter '" + arg + "'");
+				throw new ScriptCallException("Invalid Date constructor parameter '" + arg + "'");
 			}
 		} else if(arguments.length == 3) {
 			int year = ((SNumber)arguments[0]).getNumber().intValue();
@@ -63,7 +67,7 @@ public class SDate extends SPredefinedObject {
 			int seconds = ((SNumber)arguments[5]).getNumber().intValue();
 			date = ZonedDateTime.of(year, month, dayOfMonth, hours, minutes, seconds, 0, ZoneId.systemDefault());			
 		} else {
-			throw new ScriptException("Unknow Date constructor");
+			throw new ScriptCallException("Unknow Date constructor");
 		}
 	}
 	
@@ -134,12 +138,12 @@ public class SDate extends SPredefinedObject {
 		return date.toString();
 	}
 	
-	public Number toNumber() throws ScriptException {
+	public Number toNumber() throws ScriptValueException {
 		return date.toInstant().getEpochSecond();
 	}
 	
-	public boolean toBoolean() throws ScriptException {
-		throw new ScriptException("Date cannot be converted to boolean");
+	public boolean toBoolean() throws ScriptValueException {
+		throw new ScriptValueException("Date cannot be converted to boolean");
 	}
 	
 	public String typeOf() {

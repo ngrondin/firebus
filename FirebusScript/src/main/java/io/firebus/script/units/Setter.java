@@ -2,7 +2,7 @@ package io.firebus.script.units;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.references.Reference;
 import io.firebus.script.values.abs.SValue;
 
@@ -16,13 +16,9 @@ public class Setter extends Expression {
 		expression = exp;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue val = expression.eval(scope);
-		try {
-			ref.setValue(scope, val);
-		} catch(ScriptException e) {
-			throw new ScriptException(e.getMessage(), source);
-		}
+		ref.setValue(scope, val);
 		return val;
 	}
 

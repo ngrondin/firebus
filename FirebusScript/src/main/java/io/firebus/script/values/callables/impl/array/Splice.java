@@ -2,8 +2,7 @@ package io.firebus.script.values.callables.impl.array;
 
 import java.util.List;
 
-import io.firebus.script.exceptions.ScriptException;
-import io.firebus.script.exceptions.ScriptRuntimeException;
+import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.abs.SValue;
@@ -15,7 +14,7 @@ public class Splice extends ArrayFunction {
 		super(v);
 	}
 	
-	public SValue call(SValue... arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptCallException {
 		SValue start = arguments[0];
 		SValue len = arguments.length >= 2 ? arguments[1] : new SNumber(1);
 		if(start instanceof SNumber && len instanceof SNumber) {
@@ -29,7 +28,7 @@ public class Splice extends ArrayFunction {
 			}
 			return ret;
 		} else {
-			throw new ScriptRuntimeException("Arguments of splice must be numbers");
+			throw new ScriptCallException("Arguments of splice must be numbers");
 		}
 	}
 

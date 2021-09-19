@@ -1,12 +1,12 @@
 package io.firebus.script.values.callables.impl;
 
-import io.firebus.data.ZonedTime;
+import io.firebus.script.values.STime;
 import io.firebus.script.values.abs.SCallable;
 
 public abstract class TimeFunction extends SCallable {
-	protected ZonedTime time;
+	protected STime time;
 	
-	public TimeFunction(ZonedTime zt) {
-		time = zt;
+	public TimeFunction(STime t) {
+		time = t;
 	}
 }

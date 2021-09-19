@@ -4,7 +4,7 @@ import java.util.List;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Statement;
 import io.firebus.script.values.SNull;
@@ -20,7 +20,7 @@ public class Switch extends Statement {
 		caseClauseList = ccl;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue value = expression.eval(scope);
 		for(CaseClause caseClause: caseClauseList) {
 			if(caseClause.expressionMatches(value, scope)) {

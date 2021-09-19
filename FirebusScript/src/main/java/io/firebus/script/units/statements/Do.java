@@ -2,7 +2,7 @@ package io.firebus.script.units.statements;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Statement;
@@ -22,7 +22,7 @@ public class Do extends Statement {
 		unit = u;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		Scope localScope = new Scope(scope);
 		do {
 			SValue ret = unit.eval(localScope);
@@ -35,13 +35,13 @@ public class Do extends Statement {
 		return new SNull();
 	}
 	
-	protected boolean continueLoop(Scope scope) throws ScriptException {
+	protected boolean continueLoop(Scope scope) throws ScriptExecutionException {
 		SValue v = condition.eval(scope);
 		if(v instanceof SBoolean) {
 			SBoolean b = (SBoolean)v;
 			return b.getBoolean();
 		} else {
-			throw new ScriptException("Condition does not return a boolean", source);
+			throw new ScriptExecutionException("Condition does not return a boolean", source);
 		}
 	}
 

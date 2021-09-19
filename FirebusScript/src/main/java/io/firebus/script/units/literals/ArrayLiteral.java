@@ -5,7 +5,7 @@ import java.util.List;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.Literal;
 import io.firebus.script.units.operators.Spread;
@@ -24,7 +24,7 @@ public class ArrayLiteral extends Literal {
 		expressions.add(e);
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		List<SValue> list = new ArrayList<SValue>();
 		for(Expression expr : expressions) {
 			if(expr instanceof Spread) {

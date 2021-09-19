@@ -1,6 +1,6 @@
 package io.firebus.script.values.callables.impl.string;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.SString;
 import io.firebus.script.values.abs.SValue;
@@ -12,7 +12,7 @@ public class Substr extends StringFunction {
 		super(s);
 	}
 
-	public SValue call(SValue... arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptCallException {
 		if(arguments.length > 0) {
 			SValue bv = arguments[0];
 			if(bv instanceof SNumber) {
@@ -24,16 +24,16 @@ public class Substr extends StringFunction {
 						int l = ((SNumber)lv).getNumber().intValue();
 						return new SString(string.getString().substring(b, b + l));
 					} else {
-						throw new ScriptException("substr requies number arguments");
+						throw new ScriptCallException("substr requies number arguments");
 					}
 				} else {
 					return new SString(string.getString().substring(b));
 				}
 			} else {
-				throw new ScriptException("substr requies number arguments");
+				throw new ScriptCallException("substr requies number arguments");
 			}
 		} else {
-			throw new ScriptException("substr requires at least 1 argument");
+			throw new ScriptCallException("substr requires at least 1 argument");
 		}
 	}
 

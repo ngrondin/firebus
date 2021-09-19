@@ -2,7 +2,7 @@ package io.firebus.script.units;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.abs.SValue;
 
@@ -19,7 +19,7 @@ public class TernaryExpression extends Expression {
 		elseExpr = e;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue res = condition.eval(scope);
 		if(res instanceof SBoolean) {
 			boolean r = ((SBoolean)res).getBoolean();
@@ -28,7 +28,7 @@ public class TernaryExpression extends Expression {
 			else
 				return elseExpr.eval(scope);
 		} else {
-			throw new ScriptException("Ternary condition must return a boolean");
+			throw new ScriptExecutionException("Ternary condition must return a boolean", source);
 		}
 	}
 }

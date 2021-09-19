@@ -3,10 +3,10 @@ package io.firebus.script.test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import io.firebus.script.ScriptFactory;
 import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
 import io.firebus.script.Function;
+import io.firebus.script.ScriptFactory;
 import io.firebus.script.Source;
 
 public class ScriptTester {

@@ -70,8 +70,15 @@ public class CallableBuilder extends Builder {
 			CallableDefinition callDef = new CallableDefinition(params, body, sourceInfo(ctx));
 			return callDef;
 		} else if(sub instanceof AnoymousFunctionDeclContext) {
-			List<String> params = buildFormalParameterList((FormalParameterListContext)sub.getChild(2));
-			Block body = buildFunctionBody((FunctionBodyContext)sub.getChild(4));
+			List<String> params = null;
+			Block body = null;
+			if(sub.getChildCount() ==  4) {
+				params = new ArrayList<String>();
+				body = buildFunctionBody((FunctionBodyContext)sub.getChild(3));
+			} else if(sub.getChildCount() == 5) {
+				params = buildFormalParameterList((FormalParameterListContext)sub.getChild(2));
+				body = buildFunctionBody((FunctionBodyContext)sub.getChild(4));
+			}
 			CallableDefinition callDef = new CallableDefinition(params, body, sourceInfo(ctx));
 			return callDef;			
 		}

@@ -2,6 +2,7 @@ package io.firebus.script.units.operators;
 
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.tools.Operations;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.operators.abs.TwoExpressionOperator;
@@ -13,11 +14,11 @@ public class Multiply extends TwoExpressionOperator {
 		super(e1, e2, uc);
 	}
 
-	protected SValue evalWithValues(SValue v1, SValue v2) throws ScriptException {
+	protected SValue evalWithValues(SValue v1, SValue v2) throws ScriptExecutionException {
 		try {
 			return Operations.multiply(v1, v2);
 		} catch(ScriptException e) {
-			throw new ScriptException(e.getMessage(), source);
+			throw new ScriptExecutionException(e.getMessage(), source);
 		}
 	}
 

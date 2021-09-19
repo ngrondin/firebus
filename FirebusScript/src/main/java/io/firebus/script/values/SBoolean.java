@@ -2,7 +2,7 @@ package io.firebus.script.values;
 
 import java.util.Map;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
 
@@ -25,11 +25,11 @@ public class SBoolean extends SPredefinedObject {
         return value == true ? "true" : "false";
     }
     
-	public Number toNumber() throws ScriptException {
-		throw new ScriptException("Boolean cannot be converted to number");
+	public Number toNumber() throws ScriptValueException {
+		throw new ScriptValueException("Boolean cannot be converted to number");
 	}
 	
-	public boolean toBoolean() throws ScriptException {
+	public boolean toBoolean() throws ScriptValueException {
 		return value;
 	}
 

@@ -2,7 +2,7 @@ package io.firebus.script.units.references;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.SMemberCallable;
@@ -22,7 +22,7 @@ public class MemberIndexReference extends Reference {
 		indexExpr = ie;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue base = baseExpr.eval(scope);
 		if(base instanceof SArray) {
 			SArray a = (SArray)base;
@@ -33,7 +33,7 @@ public class MemberIndexReference extends Reference {
 					ret = new SMemberCallable(a, (SCallable)ret);
 				return ret;
 			} else {
-				throw new ScriptException("Index needs to be an integer on an array", source);
+				throw new ScriptExecutionException("Index needs to be an integer on an array", source);
 			}
 		} else if(base instanceof SObject) {
 			SObject o = (SObject)base;
@@ -43,11 +43,11 @@ public class MemberIndexReference extends Reference {
 				ret = new SMemberCallable(o, (SCallable)ret);
 			return ret;
 		} else {
-			throw new ScriptException("Index reference base must be an array or an object", source);
+			throw new ScriptExecutionException("Index reference base must be an array or an object", source);
 		}
 	}
 
-	public void setValue(Scope scope, SValue val) throws ScriptException {
+	public void setValue(Scope scope, SValue val) throws ScriptExecutionException {
 		SValue base = baseExpr.eval(scope);
 		if(base instanceof SArray) {
 			SArray a = (SArray)base;
@@ -56,14 +56,14 @@ public class MemberIndexReference extends Reference {
 				int i = ((SNumber)index).getNumber().intValue();
 				a.set(i, val);
 			} else {
-				throw new ScriptException("Index needs to be an integer on an array", source);
+				throw new ScriptExecutionException("Index needs to be an integer on an array", source);
 			}
 		} else if(base instanceof SDynamicObject) {
 			SDynamicObject o = (SDynamicObject)base;
 			SValue key = indexExpr.eval(scope);
 			o.putMember(key.toString(), val);
 		} else {
-			throw new ScriptException("Index reference base must be an array or an object", source);
+			throw new ScriptExecutionException("Index reference base must be an array or an object", source);
 		}
 	}
 

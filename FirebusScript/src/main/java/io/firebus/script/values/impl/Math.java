@@ -1,6 +1,5 @@
 package io.firebus.script.values.impl;
 
-import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.callables.impl.math.Ceil;
@@ -18,7 +17,7 @@ public class Math extends SPredefinedObject {
 		return null;
 	}
 
-	public SValue getMember(String name) throws ScriptException {
+	public SValue getMember(String name)  {
 		if(name.equals("min")) {
 			return new Min();
 		} else if(name.equals("max")) {

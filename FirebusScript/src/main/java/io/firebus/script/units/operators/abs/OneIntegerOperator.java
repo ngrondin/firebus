@@ -1,7 +1,7 @@
 package io.firebus.script.units.operators.abs;
 
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.values.abs.SValue;
 
@@ -11,15 +11,15 @@ public abstract class OneIntegerOperator extends OneNumberOperator {
 		super(e, uc);
 	}
 
-	protected SValue evalWithNumber(Number n) throws ScriptException {
+	protected SValue evalWithNumber(Number n) throws ScriptExecutionException {
 		int i = n.intValue();
 		if(n.doubleValue() == i) {
 			return evalWithInt(i);
 		} else {
-			throw new ScriptException(this.getClass().getSimpleName() + " operator requries an integer", source);
+			throw new ScriptExecutionException(this.getClass().getSimpleName() + " operator requries an integer", source);
 		}
 	}
 	
-	protected abstract SValue evalWithInt(int i) throws ScriptException;
+	protected abstract SValue evalWithInt(int i) throws ScriptExecutionException;
 
 }

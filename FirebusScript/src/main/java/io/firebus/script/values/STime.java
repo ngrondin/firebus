@@ -2,10 +2,10 @@ package io.firebus.script.values;
 
 
 import io.firebus.data.ZonedTime;
-import io.firebus.script.exceptions.ScriptException;
-import io.firebus.script.exceptions.ScriptRuntimeException;
+import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.callables.impl.time.AtDate;
 
 public class STime extends SPredefinedObject {
 	protected ZonedTime time;
@@ -14,7 +14,7 @@ public class STime extends SPredefinedObject {
 		time = t;
 	}
 
-	public STime(SValue ...arguments) throws ScriptException {
+	public STime(SValue ...arguments) throws ScriptCallException {
 		if(arguments.length == 0) {
 			time = new ZonedTime();
 		} else if(arguments.length == 1) {
@@ -22,7 +22,7 @@ public class STime extends SPredefinedObject {
 			if(!(arg instanceof SNull || arg instanceof SUndefined)){
 				time = ZonedTime.parse(arg.toString());
 			} else {
-				throw new ScriptRuntimeException("Invalid Time constructor parameter '" + arg + "'");
+				throw new ScriptCallException("Invalid Time constructor parameter '" + arg + "'");
 			}
 		} else if(arguments.length == 4) {
 			int hours = ((SNumber)arguments[0]).getNumber().intValue();
@@ -31,7 +31,7 @@ public class STime extends SPredefinedObject {
 			String tz = ((SString)arguments[3]).getString();
 			time = new ZonedTime(hours, minutes, seconds, 0, tz);			
 		} else {
-			throw new ScriptException("Unknow Time constructor");
+			throw new ScriptCallException("Unknow Time constructor");
 		}
 	}
 	
@@ -40,7 +40,9 @@ public class STime extends SPredefinedObject {
 	}
 
 	public SValue getMember(String name) {
-
+		if(name.equals("atDate")) {
+			return new AtDate(this);
+		}
 		return null;
 	}
 

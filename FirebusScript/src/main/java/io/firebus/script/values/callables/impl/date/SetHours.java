@@ -2,7 +2,7 @@ package io.firebus.script.values.callables.impl.date;
 
 import java.time.ZonedDateTime;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.SDate;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.abs.SValue;
@@ -14,7 +14,7 @@ public class SetHours extends DateFunction {
 		super(d);
 	}
 
-	public SValue call(SValue... arguments) throws ScriptException {
+	public SValue call(SValue... arguments) throws ScriptCallException {
 		if(arguments.length > 0) {
 			SValue v = arguments[0];
 			if(v instanceof SNumber) {
@@ -24,10 +24,10 @@ public class SetHours extends DateFunction {
 				date.setZonedDateTime(nzdt);
 				return new SNumber(nzdt.toInstant().toEpochMilli());
 			} else {
-				throw new ScriptException("setHours requires a number");
+				throw new ScriptCallException("setHours requires a number");
 			}
 		} else {
-			throw new ScriptException("setHours requires at lease 1 argument");
+			throw new ScriptCallException("setHours requires at lease 1 argument");
 		}
 	}
 

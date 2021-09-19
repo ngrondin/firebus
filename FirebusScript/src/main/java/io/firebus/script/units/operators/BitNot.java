@@ -1,7 +1,7 @@
 package io.firebus.script.units.operators;
 
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.operators.abs.OneIntegerOperator;
 import io.firebus.script.values.SNumber;
@@ -13,7 +13,7 @@ public class BitNot extends OneIntegerOperator {
 		super(e, uc);
 	}
 
-	protected SValue evalWithInt(int i) throws ScriptException {
+	protected SValue evalWithInt(int i) throws ScriptExecutionException {
 		return new SNumber(~i);
 	}
 }

@@ -2,7 +2,7 @@ package io.firebus.script.units.statements;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.DeclareList;
 import io.firebus.script.units.ExecutionUnit;
 import io.firebus.script.units.Expression;
@@ -26,14 +26,14 @@ public class ForLoop extends ConditionalIterator {
 		operator = o;
 	}
 
-	protected void before(Scope scope) throws ScriptException {
+	protected void before(Scope scope) throws ScriptExecutionException {
 		if(declares != null)
 			declares.eval(scope);
 		else if(initial != null)
 			initial.eval(scope);
 	}
 
-	protected void afterIteration(Scope scope) throws ScriptException {
+	protected void afterIteration(Scope scope) throws ScriptExecutionException {
 		operator.eval(scope);
 	}
 

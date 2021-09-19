@@ -2,7 +2,7 @@ package io.firebus.script.units.operators;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.operators.abs.Operator;
 import io.firebus.script.values.SBoolean;
@@ -18,7 +18,7 @@ public class LogicalAnd extends Operator {
 		expr2 = e2;
 	}
 
-	public SValue eval(Scope scope) throws ScriptException {
+	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue v1 = expr1.eval(scope);
 		if(v1 instanceof SBoolean) {
 			SBoolean b1 = (SBoolean)v1;
@@ -32,13 +32,13 @@ public class LogicalAnd extends Operator {
 						return new SBoolean(false);
 					}
 				} else {
-					throw new ScriptException("'" + expr2.toString() + "' is not a boolean expression", source);
+					throw new ScriptExecutionException("'" + expr2.toString() + "' is not a boolean expression", source);
 				}
 			} else {
 				return new SBoolean(false);
 			}
 		} else {
-			throw new ScriptException("'" + expr1.toString() + "' is not a boolean expression", source);
+			throw new ScriptExecutionException("'" + expr1.toString() + "' is not a boolean expression", source);
 		}
 	}
 }

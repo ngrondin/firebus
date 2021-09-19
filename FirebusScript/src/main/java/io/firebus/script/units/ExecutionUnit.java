@@ -2,7 +2,7 @@ package io.firebus.script.units;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.values.abs.SValue;
 
 public abstract class ExecutionUnit {
@@ -12,7 +12,7 @@ public abstract class ExecutionUnit {
 		source = uc;
 	}
 	
-	public abstract SValue eval(Scope scope) throws ScriptException;
+	public abstract SValue eval(Scope scope) throws ScriptExecutionException;
 	
 	public String toString() {
 		return source.toString();

@@ -3,7 +3,7 @@ package io.firebus.script.values;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.callables.impl.array.Concat;
@@ -123,12 +123,12 @@ public class SArray extends SPredefinedObject {
 		return sb.toString();
 	}
 	
-	public Number toNumber() throws ScriptException {
-		throw new ScriptException("Array cannot be converted to number");
+	public Number toNumber() throws ScriptValueException {
+		throw new ScriptValueException("Array cannot be converted to number");
 	}
 	
-	public boolean toBoolean() throws ScriptException {
-		throw new ScriptException("Array cannot be converted to boolean");
+	public boolean toBoolean() throws ScriptValueException {
+		throw new ScriptValueException("Array cannot be converted to boolean");
 	}
 	
 }

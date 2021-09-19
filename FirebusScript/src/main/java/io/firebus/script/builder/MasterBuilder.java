@@ -7,10 +7,12 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import io.firebus.script.exceptions.ScriptBuildException;
+import io.firebus.script.parser.JavaScriptParser.SourceElementContext;
+import io.firebus.script.parser.JavaScriptParser.SourceElementsContext;
+import io.firebus.script.parser.JavaScriptParser.StatementContext;
 import io.firebus.script.units.Block;
 import io.firebus.script.units.Statement;
-import io.firebus.script.exceptions.ScriptBuildException;
-import io.firebus.script.parser.JavaScriptParser.*;
 
 public class MasterBuilder extends Builder {
 
