@@ -1,1 +1,2 @@
-print("56.4" % 6.4);
+var a = {k1: "allo", k2: "toi"};
+print(a);
