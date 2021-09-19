@@ -38,8 +38,15 @@ public class LiteralBuilder extends Builder {
 			if(tn.getSymbol().getType() == JavaScriptParser.StringLiteral) {
 				String str = tn.getText();
 				if((str.startsWith("\"") && str.endsWith("\"")) || (str.startsWith("'") && str.endsWith("'"))) {
-					ret = new StringLiteral(str.substring(1, str.length() - 1), uc);
-				}			
+					str = str.substring(1, str.length() - 1);
+					str = str
+						.replace("\\r", "\r")
+						.replace("\\n", "\n")
+						.replace("\\t", "\t")
+						.replace("\\\"", "\"")
+						.replace("\\/", "/");
+				}	
+				ret = new StringLiteral(str, uc);
 			} else if(tn.getSymbol().getType() == JavaScriptParser.NullLiteral) {
 				ret = new NullLiteral(uc);
 			} else if(tn.getSymbol().getType() == JavaScriptParser.BooleanLiteral) {
@@ -58,7 +65,10 @@ public class LiteralBuilder extends Builder {
 			if(txt.contains(".")) {
 				number = Double.parseDouble(txt);
 			} else {
-				number = Integer.parseInt(txt);
+				number = Long.parseLong(txt);
+				long l = number.longValue();
+				if(l <= 2147483647 && l >= -2147483648) 
+					number = (int)l;
 			}
 		} else if(tn.getSymbol().getType() == JavaScriptParser.HexIntegerLiteral) {
 			number = Integer.decode(tn.getText());

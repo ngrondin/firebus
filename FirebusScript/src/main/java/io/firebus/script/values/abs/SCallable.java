@@ -20,7 +20,16 @@ public abstract class SCallable extends SValue {
 		return "callable()";
 	}
 	
-	public String typeOf() {
-		return "function";
+	public Number toNumber() throws ScriptException {
+		throw new ScriptException("Callable cannot be converted to number");
 	}
+	
+	public boolean toBoolean() throws ScriptException {
+		throw new ScriptException("Callable cannot be converted to boolean");
+	}
+	
+	public String typeOf() {
+		return "callable";
+	}
+
 }

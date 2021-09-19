@@ -6,7 +6,11 @@ import io.firebus.script.exceptions.ScriptBuildException;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.Block;
 import io.firebus.script.units.ExecutionUnit;
+import io.firebus.script.values.impl.DateConstructor;
+import io.firebus.script.values.impl.ParseInt;
 import io.firebus.script.values.impl.Print;
+import io.firebus.script.values.impl.Math;
+import io.firebus.script.values.impl.TimeConstructor;
 
 public class ScriptFactory {
 	protected Scope rootScope;
@@ -16,6 +20,10 @@ public class ScriptFactory {
 		compiler = new Compiler();
 		rootScope = new Scope();
 		rootScope.setValue("print", new Print());
+		rootScope.setValue("parseInt", new ParseInt());
+		rootScope.setValue("Date", new DateConstructor());
+		rootScope.setValue("Time", new TimeConstructor());
+		rootScope.setValue("Math", new Math());
 	}
 	
 	public void setGlobals(Map<String, Object> globals) throws ScriptException {
@@ -78,10 +86,10 @@ public class ScriptFactory {
 	}
 	
 	public Expression createExpression(String name, String source) throws ScriptBuildException {
-		return createExpression(new Source(name, source));
+		return createExpression(new ExpressionSource(name, source));
 	}
 	
-	public Expression createExpression(Source source) throws ScriptBuildException {
+	public Expression createExpression(ExpressionSource source) throws ScriptBuildException {
 		ExecutionUnit eu = compiler.compile(source);
 		if(eu instanceof Block) {
 			Block block = (Block)eu;

@@ -1,5 +1,7 @@
 package io.firebus.script.values.abs;
 
+import io.firebus.script.exceptions.ScriptException;
+
 public abstract class SValue {
 
 	public abstract boolean equals(SValue other);
@@ -8,7 +10,9 @@ public abstract class SValue {
 	
 	public abstract String typeOf();
 	
-	public String asString() {
-		return toString();
-	}
+	public abstract String toString();
+	
+	public abstract Number toNumber() throws ScriptException;
+	
+	public abstract boolean toBoolean() throws ScriptException;
 }

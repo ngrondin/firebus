@@ -1,5 +1,6 @@
 package io.firebus.script.values;
 
+import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.abs.SValue;
 
 public class SNull extends SValue {
@@ -7,9 +8,6 @@ public class SNull extends SValue {
     public SNull() {
     }
 
-    public String toString() {
-        return "null";
-    }
 
 	public boolean equals(SValue other) {
 		return other instanceof SNull;
@@ -21,5 +19,18 @@ public class SNull extends SValue {
     
 	public String typeOf() {
 		return "null";
+	}
+
+
+    public String toString() {
+        return "null";
+    }
+    
+    public Number toNumber() throws ScriptException {
+		return 0;
+	}
+	
+	public boolean toBoolean() throws ScriptException {
+		return false;
 	}
 }

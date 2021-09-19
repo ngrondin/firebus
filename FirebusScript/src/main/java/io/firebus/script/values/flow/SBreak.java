@@ -7,4 +7,8 @@ public class SBreak extends SFlow {
 		
 	}
 
+	public String toString() {
+		return "break";
+	}
+
 }

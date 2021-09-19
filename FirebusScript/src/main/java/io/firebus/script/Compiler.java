@@ -30,6 +30,7 @@ public class Compiler {
 			}
 		} else {
 			StringBuilder sb = new StringBuilder();
+			sb.append("Error compiling '" + source.getSourceName() + "'\r\n");
 			for(String error: el.getErrors()) {
 				sb.append(error);
 				sb.append("\r\n");

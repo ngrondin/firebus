@@ -9,7 +9,26 @@ import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.exceptions.ScriptRuntimeException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
-import io.firebus.script.values.callables.impl.StaticGetter;
+import io.firebus.script.values.callables.impl.date.GetDate;
+import io.firebus.script.values.callables.impl.date.GetDay;
+import io.firebus.script.values.callables.impl.date.GetFullYear;
+import io.firebus.script.values.callables.impl.date.GetHours;
+import io.firebus.script.values.callables.impl.date.GetMilliseconds;
+import io.firebus.script.values.callables.impl.date.GetMinutes;
+import io.firebus.script.values.callables.impl.date.GetMonth;
+import io.firebus.script.values.callables.impl.date.GetSeconds;
+import io.firebus.script.values.callables.impl.date.GetTime;
+import io.firebus.script.values.callables.impl.date.GetTimezoneOffset;
+import io.firebus.script.values.callables.impl.date.GetYear;
+import io.firebus.script.values.callables.impl.date.SetDate;
+import io.firebus.script.values.callables.impl.date.SetFullYear;
+import io.firebus.script.values.callables.impl.date.SetHours;
+import io.firebus.script.values.callables.impl.date.SetMilliseconds;
+import io.firebus.script.values.callables.impl.date.SetMinutes;
+import io.firebus.script.values.callables.impl.date.SetMonth;
+import io.firebus.script.values.callables.impl.date.SetSeconds;
+import io.firebus.script.values.callables.impl.date.SetYear;
+import io.firebus.script.values.callables.impl.date.ToString;
 
 public class SDate extends SPredefinedObject {
 	protected ZonedDateTime date;
@@ -54,12 +73,48 @@ public class SDate extends SPredefinedObject {
 
 	public SValue getMember(String name) {
 		if(name.equals("toString")) {
-			return new StaticGetter(new SString(date.toString()));
+			return new ToString(this);
 		} else if(name.equals("toISOString")) {
-			return new StaticGetter(new SString(date.toOffsetDateTime().toString()));
+			return new ToString(this);
+		} else if(name.equals("getTimezoneOffset")) {
+			return new GetTimezoneOffset(this);
 		} else if(name.equals("getTime")) {
-			return new StaticGetter(new SNumber(date.toInstant().toEpochMilli()));
-		}
+			return new GetTime(this);
+		} else if(name.equals("getDay")) {
+			return new GetDay(this);
+		} else if(name.equals("getDate")) {
+			return new GetDate(this);			
+		} else if(name.equals("getFullYear")) {
+			return new GetFullYear(this);
+		} else if(name.equals("getHours")) {
+			return new GetHours(this);
+		} else if(name.equals("getMilliseconds")) {
+			return new GetMilliseconds(this);
+		} else if(name.equals("getMinutes")) {
+			return new GetMinutes(this);
+		} else if(name.equals("getMonth")) {
+			return new GetMonth(this);
+		} else if(name.equals("getSeconds")) {
+			return new GetSeconds(this);
+		} else if(name.equals("getYear")) {
+			return new GetYear(this);
+		} else if(name.equals("setFullYear")) {
+			return new SetFullYear(this);
+		} else if(name.equals("setDate")) {
+			return new SetDate(this);			
+		} else if(name.equals("setHours")) {
+			return new SetHours(this);
+		} else if(name.equals("setMilliseconds")) {
+			return new SetMilliseconds(this);
+		} else if(name.equals("setMinutes")) {
+			return new SetMinutes(this);
+		} else if(name.equals("setMonth")) {
+			return new SetMonth(this);
+		} else if(name.equals("setSeconds")) {
+			return new SetSeconds(this);
+		} else if(name.equals("setYear")) {
+			return new SetYear(this);
+		} 
 		return null;
 	}
 
@@ -67,8 +122,24 @@ public class SDate extends SPredefinedObject {
 		return Date.from(date.toInstant());
 	}
 	
+	public ZonedDateTime getZonedDateTime() {
+		return date;
+	}
+	
+	public void setZonedDateTime(ZonedDateTime zdt) {
+		date = zdt;
+	}
+	
 	public String toString() {
 		return date.toString();
+	}
+	
+	public Number toNumber() throws ScriptException {
+		return date.toInstant().getEpochSecond();
+	}
+	
+	public boolean toBoolean() throws ScriptException {
+		throw new ScriptException("Date cannot be converted to boolean");
 	}
 	
 	public String typeOf() {

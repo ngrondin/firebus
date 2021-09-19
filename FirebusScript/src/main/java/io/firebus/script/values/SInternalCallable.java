@@ -42,6 +42,20 @@ public class SInternalCallable extends SContextCallable {
 			return new SNull();
 		}
 	}
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("(");
+		for(String param: paramNames) {
+			if(sb.length() > 1)
+				sb.append(",");
+			sb.append(param);
+		}
+		sb.append(") {");
+		sb.append(body.toString());
+		sb.append("}");
+		return sb.toString();
+	}
 
 
 }

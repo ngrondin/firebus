@@ -13,4 +13,8 @@ public class SReturn extends SFlow {
 		return returnedValue;
 	}
 
+	public String toString() {
+		return "Return";
+	}
+
 }

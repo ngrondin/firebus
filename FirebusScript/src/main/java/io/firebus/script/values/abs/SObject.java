@@ -54,4 +54,13 @@ public abstract class SObject extends SValue {
 		}
 		return sb.toString();
 	}
+	
+	public Number toNumber() throws ScriptException {
+		throw new ScriptException("Object cannot be converted to number");
+	}
+	
+	public boolean toBoolean() throws ScriptException {
+		throw new ScriptException("Object cannot be converted to boolean");
+	}
+	
 }

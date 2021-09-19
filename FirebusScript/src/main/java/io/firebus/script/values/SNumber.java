@@ -2,6 +2,7 @@ package io.firebus.script.values;
 
 import java.util.Map;
 
+import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
 
@@ -18,10 +19,6 @@ public class SNumber extends SPredefinedObject {
 
     public Number getNumber() {
         return number;
-    }
-
-    public String toString() {
-        return number.toString();
     }
 
 	public boolean equals(SValue other) {
@@ -47,4 +44,17 @@ public class SNumber extends SPredefinedObject {
 	public String typeOf() {
 		return "number";
 	}
+	
+    public String toString() {
+        return number.toString();
+    }
+
+	public Number toNumber() throws ScriptException {
+		return getNumber();
+	}
+	
+	public boolean toBoolean() throws ScriptException {
+		return number.doubleValue() <= 0 ? false : true;
+	}
+
 }

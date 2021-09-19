@@ -1,3 +1,1 @@
-var a = 4;
-a += "allo";
-print(a);
+print("56.4" % 6.4);

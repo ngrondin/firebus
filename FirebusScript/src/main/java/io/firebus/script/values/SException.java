@@ -1,5 +1,6 @@
 package io.firebus.script.values;
 
+import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
 
@@ -22,4 +23,19 @@ public class SException extends SPredefinedObject {
 		return null;
 	}
 
+	public String typeOf() {
+		return "exception";
+	}
+	
+	public String toString() {
+		return exception.getMessage();
+	}
+	
+	public Number toNumber() throws ScriptException {
+		throw new ScriptException("Exception cannot be converted to number");
+	}
+	
+	public boolean toBoolean() throws ScriptException {
+		throw new ScriptException("Exception cannot be converted to boolean");
+	}
 }
