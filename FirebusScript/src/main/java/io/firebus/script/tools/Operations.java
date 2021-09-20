@@ -71,5 +71,27 @@ public class Operations {
 		return new SNumber(r);
 	}
 	
+	public static SValue bitOr(SValue v1, SValue v2) throws ScriptValueException {
+		Number n1 = v1.toNumber();
+		Number n2 = v2.toNumber();
+		return new SNumber(n1.intValue() | n2.intValue());
+	}
+	
+	public static SValue bitAnd(SValue v1, SValue v2) throws ScriptValueException {
+		Number n1 = v1.toNumber();
+		Number n2 = v2.toNumber();
+		return new SNumber(n1.intValue() & n2.intValue());
+	}
+	
+	public static SValue bitXor(SValue v1, SValue v2) throws ScriptValueException {
+		Number n1 = v1.toNumber();
+		Number n2 = v2.toNumber();
+		return new SNumber(n1.intValue() ^ n2.intValue());
+	}
+	
+	public static SValue bitNot(SValue v1) throws ScriptValueException {
+		Number n1 = v1.toNumber();
+		return new SNumber(~(n1.intValue()));
+	}
 	
 }

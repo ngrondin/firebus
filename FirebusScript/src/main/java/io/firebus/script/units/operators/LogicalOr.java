@@ -3,6 +3,7 @@ package io.firebus.script.units.operators;
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptExecutionException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.units.Expression;
 import io.firebus.script.units.operators.abs.Operator;
 import io.firebus.script.values.SBoolean;
@@ -19,26 +20,22 @@ public class LogicalOr extends Operator {
 	}
 
 	public SValue eval(Scope scope) throws ScriptExecutionException {
-		SValue v1 = expr1.eval(scope);
-		if(v1 instanceof SBoolean) {
-			SBoolean b1 = (SBoolean)v1;
-			if(b1.getBoolean() == false) {
+		try {
+			SValue v1 = expr1.eval(scope);
+			boolean b1 = v1.toBoolean();
+			if(b1 == false) {
 				SValue v2 = expr2.eval(scope);
-				if(v2 instanceof SBoolean) {
-					SBoolean b2 = (SBoolean)v2;
-					if(b2.getBoolean() == false) {
-						return new SBoolean(false);
-					} else {
-						return new SBoolean(true);
-					}
+				boolean b2 = v2.toBoolean();
+				if(b2 == false) {
+					return new SBoolean(false);
 				} else {
-					throw new ScriptExecutionException("'" + expr2.toString() + "' is not a boolean expression", source);
+					return new SBoolean(true);
 				}
 			} else {
 				return new SBoolean(true);
 			}
-		} else {
-			throw new ScriptExecutionException("'" + expr1.toString() + "' is not a boolean expression", source);
+		} catch(ScriptValueException e) {
+			throw new ScriptExecutionException(e.getMessage() + " in '" + this.toString() + "'", source);
 		}
 	}
 }

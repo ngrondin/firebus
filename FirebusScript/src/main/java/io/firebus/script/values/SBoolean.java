@@ -26,7 +26,7 @@ public class SBoolean extends SPredefinedObject {
     }
     
 	public Number toNumber() throws ScriptValueException {
-		throw new ScriptValueException("Boolean cannot be converted to number");
+		return value == true ? 1 : 0;
 	}
 	
 	public boolean toBoolean() throws ScriptValueException {

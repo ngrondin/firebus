@@ -3,7 +3,7 @@ package io.firebus.script.units;
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptExecutionException;
-import io.firebus.script.values.SBoolean;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SValue;
 
 public class TernaryExpression extends Expression {
@@ -21,14 +21,14 @@ public class TernaryExpression extends Expression {
 
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue res = condition.eval(scope);
-		if(res instanceof SBoolean) {
-			boolean r = ((SBoolean)res).getBoolean();
+		try {
+			boolean r = res.toBoolean();
 			if(r) 
 				return thenExpr.eval(scope);
 			else
 				return elseExpr.eval(scope);
-		} else {
-			throw new ScriptExecutionException("Ternary condition must return a boolean", source);
+		} catch(ScriptValueException e) {
+			throw new ScriptExecutionException("Ternary condition (" + res.toString() + ") cannot be evaluated to boolean", source);
 		}
 	}
 }
