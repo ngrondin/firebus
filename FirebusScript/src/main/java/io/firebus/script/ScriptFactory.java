@@ -90,13 +90,18 @@ public class ScriptFactory {
 	}
 	
 	public Expression createExpression(ExpressionSource source) throws ScriptBuildException {
-		ExecutionUnit eu = compiler.compile(source);
-		if(eu instanceof Block) {
-			Block block = (Block)eu;
-			if(block.getStatementCount() == 1)
-				eu = block.getStatement(0);
+		if(source.isFixedValue()) {
+			return new FixedExpression(source.getFixedValue());
+		} else {
+			ExecutionUnit eu = compiler.compile(source);
+			if(eu instanceof Block) {
+				Block block = (Block)eu;
+				if(block.getStatementCount() == 1)
+					eu = block.getStatement(0);
+			}
+			Expression expr = new Expression(rootScope, eu);
+			return expr;			
 		}
-		Expression expr = new Expression(rootScope, eu);
-		return expr;
+
 	}
 }

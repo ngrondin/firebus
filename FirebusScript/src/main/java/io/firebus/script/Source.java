@@ -8,7 +8,7 @@ public class Source extends ANTLRInputStream {
 	protected String name;
 	
 	public Source(String n, String b) {
-		super(b != null ? b : "null");
+		super(b != null ? b : "");
 		name = n;
 	}
 
