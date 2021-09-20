@@ -1,2 +1,3 @@
-var a = 15 ^ true;
+
+var a = {k1: "allo", k2: "toi"};
 print(a);
