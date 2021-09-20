@@ -1,3 +1,3 @@
-var a = "24a";
-var b = a | 8;
-print(b);
+
+var a = {k1: "allo", k2: "toi"};
+print(a);
