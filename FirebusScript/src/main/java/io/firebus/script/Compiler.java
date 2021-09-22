@@ -8,7 +8,7 @@ import io.firebus.script.builder.MasterBuilder;
 import io.firebus.script.exceptions.ScriptBuildException;
 import io.firebus.script.parser.JavaScriptLexer;
 import io.firebus.script.parser.JavaScriptParser;
-import io.firebus.script.units.ExecutionUnit;
+import io.firebus.script.units.abs.ExecutionUnit;
 
 public class Compiler {
 

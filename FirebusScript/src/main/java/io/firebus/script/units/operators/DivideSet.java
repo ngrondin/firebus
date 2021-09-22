@@ -4,7 +4,7 @@ import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.tools.Operations;
-import io.firebus.script.units.Expression;
+import io.firebus.script.units.abs.Expression;
 import io.firebus.script.units.operators.abs.ReferenceExpressionOperator;
 import io.firebus.script.units.references.Reference;
 import io.firebus.script.values.abs.SValue;

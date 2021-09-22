@@ -11,8 +11,8 @@ import io.firebus.script.exceptions.ScriptBuildException;
 import io.firebus.script.parser.JavaScriptParser.SourceElementContext;
 import io.firebus.script.parser.JavaScriptParser.SourceElementsContext;
 import io.firebus.script.parser.JavaScriptParser.StatementContext;
-import io.firebus.script.units.Block;
-import io.firebus.script.units.Statement;
+import io.firebus.script.units.abs.Statement;
+import io.firebus.script.units.statements.Block;
 
 public class MasterBuilder extends Builder {
 

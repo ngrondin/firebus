@@ -3,8 +3,8 @@ package io.firebus.script.units.statements.abs;
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptExecutionException;
-import io.firebus.script.units.ExecutionUnit;
-import io.firebus.script.units.Expression;
+import io.firebus.script.units.abs.ExecutionUnit;
+import io.firebus.script.units.abs.Expression;
 import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.abs.SValue;
 

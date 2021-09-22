@@ -3,7 +3,7 @@ package io.firebus.script.units.references;
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptExecutionException;
-import io.firebus.script.units.Expression;
+import io.firebus.script.units.abs.Expression;
 import io.firebus.script.values.SMemberCallable;
 import io.firebus.script.values.SNull;
 import io.firebus.script.values.SUndefined;
