@@ -23,12 +23,12 @@ import io.firebus.script.parser.JavaScriptParser.IdentifierContext;
 import io.firebus.script.parser.JavaScriptParser.NewExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.SingleExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.SourceElementsContext;
-import io.firebus.script.units.Block;
-import io.firebus.script.units.Call;
-import io.firebus.script.units.CallableDefinition;
-import io.firebus.script.units.Expression;
-import io.firebus.script.units.Statement;
+import io.firebus.script.units.abs.Expression;
+import io.firebus.script.units.abs.Statement;
+import io.firebus.script.units.expressions.Call;
 import io.firebus.script.units.operators.New;
+import io.firebus.script.units.setters.CallableDefinition;
+import io.firebus.script.units.statements.Block;
 import io.firebus.script.units.statements.Return;
 
 public class CallableBuilder extends Builder {

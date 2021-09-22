@@ -2,8 +2,10 @@ package io.firebus.script.units.operators;
 
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptExecutionException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.units.operators.abs.NumberReferenceOperator;
 import io.firebus.script.units.references.Reference;
+import io.firebus.script.values.abs.SValue;
 
 public class Decrease extends NumberReferenceOperator {
 
@@ -19,8 +21,9 @@ public class Decrease extends NumberReferenceOperator {
 		}
 	}
 
-	protected Number getReturnNumber(Number originalNumber, Number updatedNumber) throws ScriptExecutionException {
-		return originalNumber;
+	protected SValue getReturnValue(SValue originalValue, SValue updatedValue) throws ScriptExecutionException, ScriptValueException {
+		return originalValue;
 	}
+
 
 }

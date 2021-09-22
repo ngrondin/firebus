@@ -13,25 +13,12 @@ public abstract class NumberReferenceOperator extends ReferenceOperator {
 		super(r, uc);
 	}
 
-	protected SValue getUpdateValue(SValue originalValue) throws ScriptExecutionException {
-		try {
-			Number originalNumber = originalValue.toNumber();
-			Number updateNumber = getUpdateNumber(originalNumber);
-			return new SNumber(updateNumber);
-		} catch(ScriptValueException e) {
-			throw new ScriptExecutionException(this.getClass().getSimpleName() + " operator requires a reference to a number", source);			
-		}
+	protected SValue getUpdateValue(SValue originalValue) throws ScriptExecutionException, ScriptValueException {
+		Number originalNumber = originalValue.toNumber();
+		Number updateNumber = getUpdateNumber(originalNumber);
+		return new SNumber(updateNumber);
 	}
 
-	protected SValue getReturnValue(SValue originalValue, SValue updatedValue) throws ScriptExecutionException {
-		if(originalValue instanceof SNumber && updatedValue instanceof SNumber) {
-			return new SNumber(getReturnNumber(((SNumber)originalValue).getNumber(), ((SNumber)updatedValue).getNumber()));
-		} else {
-			throw new ScriptExecutionException(this.getClass().getSimpleName() + " operator requires a reference to a number", source);
-		}
-	}
-
-	protected abstract Number getUpdateNumber(Number originalNumber) throws ScriptExecutionException;
+	protected abstract Number getUpdateNumber(Number originalNumber) throws ScriptExecutionException, ScriptValueException;
 	
-	protected abstract Number getReturnNumber(Number originalNumber, Number updatedNumber) throws ScriptExecutionException;
 }

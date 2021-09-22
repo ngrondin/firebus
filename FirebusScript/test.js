@@ -1,3 +1,5 @@
-
-var a = {k1: "allo", k2: "toi"};
-print(a);
+var i = 0;
+while(i < 5) {
+	print("allo " + i);
+	i++;
+}

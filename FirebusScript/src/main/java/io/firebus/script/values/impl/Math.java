@@ -14,7 +14,7 @@ public class Math extends SPredefinedObject {
 	}
 	
 	public String[] getMemberKeys() {
-		return null;
+		return new String[] {"min", "max", "floor", "ceil"};
 	}
 
 	public SValue getMember(String name)  {

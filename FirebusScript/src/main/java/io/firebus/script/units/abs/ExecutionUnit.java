@@ -1,4 +1,4 @@
-package io.firebus.script.units;
+package io.firebus.script.units.abs;
 
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;

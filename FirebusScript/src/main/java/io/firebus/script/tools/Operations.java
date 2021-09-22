@@ -71,6 +71,13 @@ public class Operations {
 		return new SNumber(r);
 	}
 	
+	public static SValue pow(SValue v1, SValue v2) throws ScriptValueException {
+		Number n1 = v1.toNumber();
+		Number n2 = v2.toNumber();
+		Number r = Math.pow(n1.doubleValue(),  n2.doubleValue());
+		return new SNumber(r);
+	}
+	
 	public static SValue bitOr(SValue v1, SValue v2) throws ScriptValueException {
 		Number n1 = v1.toNumber();
 		Number n2 = v2.toNumber();
@@ -92,6 +99,27 @@ public class Operations {
 	public static SValue bitNot(SValue v1) throws ScriptValueException {
 		Number n1 = v1.toNumber();
 		return new SNumber(~(n1.intValue()));
+	}
+	
+	public static SValue bitShiftLeft(SValue v1, SValue v2) throws ScriptValueException {
+		Number n1 = v1.toNumber();
+		Number n2 = v2.toNumber();
+		long r = n1.longValue() << n2.longValue();
+		return new SNumber(r);
+	}
+	
+	public static SValue bitShiftRight(SValue v1, SValue v2) throws ScriptValueException {
+		Number n1 = v1.toNumber();
+		Number n2 = v2.toNumber();
+		long r = n1.longValue() >> n2.longValue();
+		return new SNumber(r);
+	}
+	
+	public static SValue bitShiftRightLogical(SValue v1, SValue v2) throws ScriptValueException {
+		Number n1 = v1.toNumber();
+		Number n2 = v2.toNumber();
+		long r = n1.longValue() >>> n2.longValue();
+		return new SNumber(r);
 	}
 	
 }

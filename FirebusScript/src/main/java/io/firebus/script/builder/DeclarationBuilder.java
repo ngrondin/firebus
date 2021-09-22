@@ -13,11 +13,11 @@ import io.firebus.script.parser.JavaScriptParser.SingleExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.VarModifierContext;
 import io.firebus.script.parser.JavaScriptParser.VariableDeclarationContext;
 import io.firebus.script.parser.JavaScriptParser.VariableDeclarationListContext;
-import io.firebus.script.units.Block;
-import io.firebus.script.units.CallableDefinition;
-import io.firebus.script.units.Declare;
-import io.firebus.script.units.DeclareList;
-import io.firebus.script.units.Expression;
+import io.firebus.script.units.abs.Expression;
+import io.firebus.script.units.setters.CallableDefinition;
+import io.firebus.script.units.setters.Declare;
+import io.firebus.script.units.setters.DeclareList;
+import io.firebus.script.units.statements.Block;
 
 public class DeclarationBuilder extends Builder {
 

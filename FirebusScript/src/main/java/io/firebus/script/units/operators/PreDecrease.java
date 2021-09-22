@@ -2,8 +2,10 @@ package io.firebus.script.units.operators;
 
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptExecutionException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.units.operators.abs.NumberReferenceOperator;
 import io.firebus.script.units.references.Reference;
+import io.firebus.script.values.abs.SValue;
 
 public class PreDecrease extends NumberReferenceOperator {
 	public PreDecrease(Reference r, SourceInfo uc) {
@@ -18,7 +20,8 @@ public class PreDecrease extends NumberReferenceOperator {
 		}
 	}
 
-	protected Number getReturnNumber(Number originalNumber, Number updatedNumber) throws ScriptExecutionException {
-		return updatedNumber;
+	protected SValue getReturnValue(SValue originalValue, SValue updatedValue) throws ScriptExecutionException, ScriptValueException {
+		return updatedValue;
 	}
+
 }

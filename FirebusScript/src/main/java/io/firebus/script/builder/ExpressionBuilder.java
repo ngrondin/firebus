@@ -52,9 +52,8 @@ import io.firebus.script.parser.JavaScriptParser.ThisExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.TypeofExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.UnaryMinusExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.UnaryPlusExpressionContext;
-import io.firebus.script.units.Expression;
-import io.firebus.script.units.Setter;
-import io.firebus.script.units.TernaryExpression;
+import io.firebus.script.units.abs.Expression;
+import io.firebus.script.units.expressions.TernaryExpression;
 import io.firebus.script.units.operators.Add;
 import io.firebus.script.units.operators.AddSet;
 import io.firebus.script.units.operators.BitAnd;
@@ -90,6 +89,7 @@ import io.firebus.script.units.references.MemberDotReference;
 import io.firebus.script.units.references.MemberIndexReference;
 import io.firebus.script.units.references.Reference;
 import io.firebus.script.units.references.VariableReference;
+import io.firebus.script.units.setters.Setter;
 
 public class ExpressionBuilder extends Builder {
 	    

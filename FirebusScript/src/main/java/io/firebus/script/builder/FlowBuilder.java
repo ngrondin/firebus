@@ -5,7 +5,7 @@ import java.util.List;
 import io.firebus.script.exceptions.ScriptBuildException;
 import io.firebus.script.parser.JavaScriptParser.ExpressionSequenceContext;
 import io.firebus.script.parser.JavaScriptParser.ReturnStatementContext;
-import io.firebus.script.units.Expression;
+import io.firebus.script.units.abs.Expression;
 import io.firebus.script.units.statements.Return;
 
 public class FlowBuilder extends Builder {
