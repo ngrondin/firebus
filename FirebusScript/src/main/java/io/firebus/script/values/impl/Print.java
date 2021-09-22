@@ -11,7 +11,7 @@ public class Print extends SCallable {
 	public SValue call(SValue... arguments) throws ScriptCallException {
 		SValue obj = arguments.length > 0 ? arguments[0] : null;
 		System.out.println(obj != null ? obj.toString() : "");
-		return new SNull();
+		return SNull.get();
 	}
 
 }

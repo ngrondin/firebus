@@ -1,5 +1,3 @@
-var i = 0;
-while(i < 5) {
+for(var i = 0; i < 5; i++) {
 	print("allo " + i);
-	i++;
 }

@@ -14,7 +14,7 @@ public class Not extends OneBooleanOperator {
 	}
 
 	protected SValue evalWithBoolean(boolean b) throws ScriptExecutionException {
-		return new SBoolean(!b);
+		return SBoolean.get(!b);
 	}
 
 

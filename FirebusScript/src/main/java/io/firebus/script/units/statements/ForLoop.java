@@ -50,13 +50,13 @@ public class ForLoop extends Statement {
 				if(ret instanceof SReturn) {
 					return ret;
 				} else if(ret instanceof SBreak) {
-					return new SNull();
+					return SNull.get();
 				}
 				operator.eval(localScope);
 			}
 		} catch(ScriptValueException e) {
 			throw new ScriptExecutionException(e.getMessage(), source);
 		}
-		return new SNull();
+		return SNull.get();
 	}
 }

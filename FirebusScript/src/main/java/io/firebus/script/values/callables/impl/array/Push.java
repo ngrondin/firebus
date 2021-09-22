@@ -18,7 +18,7 @@ public class Push extends ArrayFunction {
 			SValue val = arguments[0];
 			values.add(val);
 		} 
-		return new SNull();
+		return SNull.get();
 	}
 
 }

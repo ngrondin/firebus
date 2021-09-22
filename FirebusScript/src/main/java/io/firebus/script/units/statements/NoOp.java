@@ -14,7 +14,7 @@ public class NoOp extends Statement {
 	}
 
 	public SValue eval(Scope scope) throws ScriptExecutionException {
-		return new SNull();
+		return SNull.get();
 	}
 
 }

@@ -16,7 +16,7 @@ public class Reduce extends ArrayFunction {
 	
 	public SValue call(SValue... arguments) throws ScriptCallException {
 		SCallable c = (SCallable)arguments[0];
-		SValue initial = arguments.length >= 2 ? arguments[1] : new SNull();
+		SValue initial = arguments.length >= 2 ? arguments[1] : SNull.get();
 		SValue value = initial;
 		for(int i = 0; i < values.size(); i++) {
 			SValue item = values.get(i);

@@ -1,8 +1,10 @@
 package io.firebus.script.values;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.firebus.script.Scope;
+import io.firebus.script.VariableId;
 import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.statements.Block;
@@ -12,14 +14,16 @@ import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SReturn;
 
 public class SInternalCallable extends SContextCallable {
-	protected List<String> paramNames;
+	protected List<VariableId> paramIds;
 	protected Block body;
 	protected Scope definitionScope;
 
 	public SInternalCallable(List<String> p, Block b, Scope s) {
-		paramNames = p;
 		body = b;
 		definitionScope = s;
+		paramIds = new ArrayList<VariableId>();
+		for(String pn: p)
+			paramIds.add(new VariableId(pn));
 	}
 	
 	public Scope getDefinitionScope() {
@@ -28,20 +32,19 @@ public class SInternalCallable extends SContextCallable {
 	
 	public SValue call(SObject thisObject, SValue... arguments) throws ScriptCallException {
 		Scope runScope = new Scope(definitionScope);
-		for(int i = 0; i < paramNames.size(); i++) {
-			String paramName = paramNames.get(i);
+		for(int i = 0; i < paramIds.size(); i++) {
 			SValue so = arguments != null && arguments.length > i ? arguments[i] : null;
-			runScope.setValue(paramName, so);			
+			runScope.setValue(paramIds.get(i), so);			
 		}
 		if(thisObject != null) {
-			runScope.setValue("this", thisObject);
+			runScope.setValue(new VariableId("this"), thisObject);
 		}
 		try {
 			SValue ret = body.eval(runScope);
 			if(ret instanceof SReturn) {
 				return ((SReturn)ret).getReturnedValue();
 			} else {
-				return new SNull();
+				return SNull.get();
 			}
 		} catch(ScriptExecutionException e) {
 			throw new ScriptCallException("Error on call", e);
@@ -51,10 +54,10 @@ public class SInternalCallable extends SContextCallable {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(");
-		for(String param: paramNames) {
+		for(VariableId param: paramIds) {
 			if(sb.length() > 1)
 				sb.append(",");
-			sb.append(param);
+			sb.append(param.name);
 		}
 		sb.append(") {");
 		sb.append(body.toString());

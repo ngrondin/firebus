@@ -27,7 +27,7 @@ public class Switch extends Statement {
 				return caseClause.eval(scope);
 			}
 		}
-		return new SNull();
+		return SNull.get();
 	}
 
 }

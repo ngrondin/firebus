@@ -18,9 +18,9 @@ public class Includes extends ArrayFunction {
 		for(int i = 0; i < values.size(); i++) {
 			SValue item = values.get(i);
 			if(item.equals(v))
-				return new SBoolean(true);
+				return SBoolean.get(true);
 		}
-		return new SBoolean(false);
+		return SBoolean.get(false);
 	}
 
 }

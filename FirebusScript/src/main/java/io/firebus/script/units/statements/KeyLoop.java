@@ -41,11 +41,11 @@ public class KeyLoop extends Statement {
 				if(ret instanceof SReturn) {
 					return ret;
 				} else if(ret instanceof SBreak) {
-					return new SNull();
+					return SNull.get();
 				}	
 				index++;
 			}
-			return new SNull();			
+			return SNull.get();			
 		} else {
 			throw new ScriptExecutionException("Expression must be an array", source);
 		}

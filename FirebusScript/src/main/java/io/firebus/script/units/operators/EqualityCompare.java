@@ -48,7 +48,7 @@ public class EqualityCompare extends TwoExpressionOperator {
 				ret = !v1.identical(v2);
 				break;
 		}		
-		return new SBoolean(ret);
+		return SBoolean.get(ret);
 	}
 
 

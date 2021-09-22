@@ -16,9 +16,9 @@ public class EndsWith extends StringFunction {
 		if(arguments.length > 0) {
 			SValue ss = arguments[0];
 			if(string.getString().endsWith(ss.toString()))
-				return new SBoolean(true);
+				return SBoolean.get(true);
 			else 
-				return new SBoolean(false);
+				return SBoolean.get(false);
 		} else {
 			throw new ScriptCallException("endsWith requires at least 1 argument");
 		}

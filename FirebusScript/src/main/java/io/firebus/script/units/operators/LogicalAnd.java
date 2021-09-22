@@ -27,12 +27,12 @@ public class LogicalAnd extends Operator {
 				SValue v2 = expr2.eval(scope);
 				boolean b2 = v2.toBoolean();
 				if(b2 == true) {
-					return new SBoolean(true);
+					return SBoolean.get(true);
 				} else {
-					return new SBoolean(false);
+					return SBoolean.get(false);
 				}
 			} else {
-				return new SBoolean(false);
+				return SBoolean.get(false);
 			}
 		} catch(ScriptValueException e) {
 			throw new ScriptExecutionException(e.getMessage() + " in '" + this.toString() + "'", source);

@@ -33,7 +33,7 @@ public class Converter {
 
 	public static SValue convertIn(Object o) throws ScriptException {
 		if(o == null) {
-			return new SNull();
+			return SNull.get();
 		} else if(o instanceof SValue) {
 			return (SValue)o;
 		} else if(o instanceof Number) {
@@ -41,7 +41,7 @@ public class Converter {
 		} else if(o instanceof String) {
 			return new SString((String)o);
 		} else if(o instanceof Boolean) {
-			return new SBoolean((Boolean)o);
+			return SBoolean.get((Boolean)o);
 		} else if(o instanceof Date) {
 			return new SDate((Date)o);
 		} else if(o instanceof ZonedTime) {

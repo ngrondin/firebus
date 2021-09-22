@@ -33,6 +33,6 @@ public class Delete extends Operator {
 		} else {
 			throw new ScriptExecutionException("Delete requires a member dot expression", source);
 		}
-		return new SNull();
+		return SNull.get();
 	}
 }

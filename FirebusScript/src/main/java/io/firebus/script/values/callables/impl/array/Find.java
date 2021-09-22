@@ -26,7 +26,7 @@ public class Find extends ArrayFunction {
 					return item;
 			}
 		}
-		return new SNull();
+		return SNull.get();
 	}
 
 }

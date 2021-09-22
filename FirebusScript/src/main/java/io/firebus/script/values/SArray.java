@@ -57,7 +57,7 @@ public class SArray extends SPredefinedObject {
 			values.add(i, v);
 		} else if(i > values.size()){
 			for(int j = values.size(); j < i; j++)
-				values.add(new SNull());
+				values.add(SNull.get());
 			values.add(v);
 		}
 	}

@@ -18,7 +18,7 @@ public class Expression {
 	public Object eval(Map<String, Object> context) throws ScriptException {
 		Scope localScope = new Scope(scope);
 		for(String key: context.keySet())
-			localScope.setValue(key, Converter.convertIn(context.get(key)));
+			localScope.setValue(new VariableId(key), Converter.convertIn(context.get(key)));
 		SValue ret = rootExecutionUnit.eval(localScope);
 		return Converter.convertOut(ret);
 	}

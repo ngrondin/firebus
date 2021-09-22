@@ -16,9 +16,9 @@ public class StartsWith extends StringFunction {
 		if(arguments.length > 0) {
 			SValue ss = arguments[0];
 			if(string.getString().indexOf(ss.toString()) > -1)
-				return new SBoolean(true);
+				return SBoolean.get(true);
 			else 
-				return new SBoolean(false);
+				return SBoolean.get(false);
 		} else {
 			throw new ScriptCallException("includes requires at least 1 argument");
 		}

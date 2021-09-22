@@ -4,10 +4,15 @@ import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SValue;
 
 public class SUndefined extends SValue {
-
-    public SUndefined() {
+	private static SUndefined singelton = new SUndefined();
+	
+    private SUndefined() {
     }
 
+    public static SUndefined get() {
+    	return singelton;
+    }
+    
  	public boolean equals(SValue other) {
 		return other instanceof SUndefined;
 	}

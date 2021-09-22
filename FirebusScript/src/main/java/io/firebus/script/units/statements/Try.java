@@ -26,10 +26,10 @@ public class Try extends Statement {
 		} catch(Exception e) {
 			if(catchProd != null) {
 				Scope local = new Scope(scope);
-				local.setValue(catchProd.getName(), new SException(e));
+				local.setValue(catchProd.getKey(), new SException(e));
 				return catchProd.eval(local);
 			} else {
-				return new SNull();
+				return SNull.get();
 			}
 		} finally {
 			if(finallyProd != null)

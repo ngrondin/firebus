@@ -8,9 +8,16 @@ import io.firebus.script.values.abs.SValue;
 
 public class SBoolean extends SPredefinedObject {
     protected boolean value;
+    private static SBoolean sTrue = new SBoolean(true);
+    private static SBoolean sFalse = new SBoolean(false);
 
-    public SBoolean(boolean v) {
+    private SBoolean(boolean v) {
     	value = v;
+    }
+    
+    public static SBoolean get(boolean v) {
+    	if(v == true) return sTrue;
+    	else return sFalse;
     }
     
     protected Map<String, SValue> defineMembers() {

@@ -1,6 +1,6 @@
 package io.firebus.script;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import io.firebus.script.values.SUndefined;
@@ -8,43 +8,66 @@ import io.firebus.script.values.abs.SValue;
 
 public class Scope {
 	protected Scope parent;
-	protected Map<String, SValue> values;
+	protected Map<Integer, SValue> values;
+	protected Map<Integer, VariableId> ids;
 	
 	public Scope() {
-		values = new HashMap<String, SValue>();
+		values = new LinkedHashMap<Integer, SValue>();
+		ids = new LinkedHashMap<Integer, VariableId>();
 	}
 	
 	public Scope(Scope p) {
 		parent = p;
-		values = new HashMap<String, SValue>();
+		values = new LinkedHashMap<Integer, SValue>();
+		ids = new LinkedHashMap<Integer, VariableId>();
 	}
 	
-	public boolean contains(String key) {
-		return values.containsKey(key);
+	public SValue getValue(VariableId id) {
+		SValue ret = values.get(id.hash);
+		if(ret != null) {
+			return ret;
+		} else {
+			if(parent != null) {
+				ret = parent.getValue(id);
+				if(ret != null) {
+					return ret;
+				} else {
+					return SUndefined.get();
+				}
+			} else {
+				return SUndefined.get();
+			}
+		}
 	}
 	
-	public SValue getValue(String key) {
-		return values.containsKey(key) ? values.get(key) : parent != null ? parent.getValue(key) : new SUndefined();
+	public void setValue(VariableId id, SValue value) {
+		if(!updateValueIfExists(id, value)) {
+			values.put(id.hash, value);
+			ids.put(id.hash, id);
+		}
 	}
 	
-	public void setValue(String key, SValue value) {
-		values.put(key, value);
-	}
-
-	public Scope getScopeOf(String key) {
-		return values.containsKey(key) ? this : parent != null ? parent.getScopeOf(key) : null;
-	}
-	
+	protected boolean updateValueIfExists(VariableId id, SValue value) {
+		if(values.containsKey(id.hash)) {
+			values.put(id.hash, value);
+			return true;
+		} else if(parent != null) {
+			return parent.updateValueIfExists(id, value);
+		} else {
+			return false;
+		}
+	}	
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
 		sb.append("\r\n");
-		for(String key : values.keySet()) {
+		for(Integer hash : ids.keySet()) {
+			VariableId id = ids.get(hash);
 			sb.append(" ");
-			sb.append(key);
+			sb.append(id.name);
 			sb.append(":");
-			sb.append(values.get(key).toString().replaceAll("(?m)^", " "));
+			sb.append(values.get(hash).toString().replaceAll("(?m)^", " "));
 			sb.append(",\r\n");
 		}
 		if(parent != null) {

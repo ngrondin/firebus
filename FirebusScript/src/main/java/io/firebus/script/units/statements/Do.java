@@ -29,10 +29,10 @@ public class Do extends Statement {
 			if(ret instanceof SReturn) {
 				return ret;
 			} else if(ret instanceof SBreak) {
-				return new SNull();
+				return SNull.get();
 			}
 		} while(continueLoop(localScope));
-		return new SNull();
+		return SNull.get();
 	}
 	
 	protected boolean continueLoop(Scope scope) throws ScriptExecutionException {

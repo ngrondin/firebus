@@ -20,7 +20,7 @@ public class ForEach extends ArrayFunction {
 			SValue item = values.get(i);
 			c.call(new SValue[] {item});
 		}
-		return new SNull();
+		return SNull.get();
 	}
 
 }

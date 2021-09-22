@@ -43,7 +43,7 @@ public class If extends Statement {
 					return ret;
 				}					
 			}
-			return new SNull();
+			return SNull.get();
 		} else {
 			throw new ScriptExecutionException("Condition does not return a boolean", source);
 		}

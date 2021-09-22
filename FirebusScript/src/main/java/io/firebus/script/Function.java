@@ -29,7 +29,7 @@ public class Function {
 		Scope localScope = new Scope(scope);
 		for(int i = 0; i < arguments.length; i++) {
 			if(i < parameters.length) {
-				localScope.setValue(parameters[i], Converter.convertIn(arguments[i]));
+				localScope.setValue(new VariableId(parameters[i]), Converter.convertIn(arguments[i]));
 			}
 		}
 		SValue ret = rootExecutionUnit.eval(localScope);

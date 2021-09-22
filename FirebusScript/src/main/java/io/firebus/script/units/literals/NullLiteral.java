@@ -14,7 +14,7 @@ public class NullLiteral extends Literal {
     }
 
     public SValue eval(Scope scope) throws ScriptExecutionException {
-        return new SNull();
+        return SNull.get();
     }
     
 }

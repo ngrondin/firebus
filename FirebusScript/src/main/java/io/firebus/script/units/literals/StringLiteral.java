@@ -9,14 +9,16 @@ import io.firebus.script.values.abs.SValue;
 
 public class StringLiteral extends Literal {
 	protected String str;
+	protected SString sStr;
 	
 	public StringLiteral(String s, SourceInfo uc) {
 		super(uc);
 		str = s;
+		sStr = new SString(str);
 	}
 	
 	public SValue eval(Scope scope) throws ScriptExecutionException {
-		return new SString(str);
+		return sStr;
 	}
 
 }

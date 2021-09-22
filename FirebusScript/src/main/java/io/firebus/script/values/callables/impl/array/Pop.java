@@ -20,7 +20,7 @@ public class Pop extends ArrayFunction {
 			values.remove(lastIndex);
 			return val;
 		} else {
-			return new SNull();
+			return SNull.get();
 		}
 	}
 

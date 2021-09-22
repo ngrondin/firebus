@@ -12,16 +12,12 @@ public abstract class TwoNumberOperator extends TwoExpressionOperator {
 		super(e1, e2, uc);
 	}
 
-	protected SValue evalWithValues(SValue v1, SValue v2) throws ScriptExecutionException {
-		try {
-			Number n1 = v1.toNumber();
-			Number n2 = v2.toNumber();
-			return evalWithNumbers(n1, n2);
-		} catch(ScriptValueException e) {
-			throw new ScriptExecutionException(e.getMessage() + " in '" + this.toString() + "'", source);
-		}
+	protected SValue evalWithValues(SValue v1, SValue v2) throws ScriptExecutionException, ScriptValueException {
+		Number n1 = v1.toNumber();
+		Number n2 = v2.toNumber();
+		return evalWithNumbers(n1, n2);
 	}
 
-	protected abstract SValue evalWithNumbers(Number n1, Number n2) throws ScriptExecutionException;
+	protected abstract SValue evalWithNumbers(Number n1, Number n2) throws ScriptExecutionException, ScriptValueException;
 
 }

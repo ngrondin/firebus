@@ -30,7 +30,7 @@ public class MemberDotReference extends Reference {
 			if(ret instanceof SCallable) 
 				ret = new SMemberCallable(obj, (SCallable)ret);
 			else if(ret == null) 
-				ret = new SUndefined();
+				ret = SUndefined.get();
 			return ret;
 		} else if(o instanceof SUndefined) {
 			throw new ScriptExecutionException("Cannot get member '" + key + "' of undefined", source);

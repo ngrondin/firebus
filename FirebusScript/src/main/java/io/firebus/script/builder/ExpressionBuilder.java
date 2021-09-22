@@ -69,7 +69,11 @@ import io.firebus.script.units.operators.Delete;
 import io.firebus.script.units.operators.Divide;
 import io.firebus.script.units.operators.DivideSet;
 import io.firebus.script.units.operators.EqualityCompare;
+import io.firebus.script.units.operators.GreaterEqualThan;
+import io.firebus.script.units.operators.GreaterThan;
 import io.firebus.script.units.operators.Increase;
+import io.firebus.script.units.operators.LessEqualThan;
+import io.firebus.script.units.operators.LessThan;
 import io.firebus.script.units.operators.LogicalAnd;
 import io.firebus.script.units.operators.LogicalOr;
 import io.firebus.script.units.operators.Modulus;
@@ -79,7 +83,6 @@ import io.firebus.script.units.operators.Not;
 import io.firebus.script.units.operators.Power;
 import io.firebus.script.units.operators.PreDecrease;
 import io.firebus.script.units.operators.PreIncrease;
-import io.firebus.script.units.operators.RelationalCompare;
 import io.firebus.script.units.operators.Substract;
 import io.firebus.script.units.operators.SubstractSet;
 import io.firebus.script.units.operators.Typeof;
@@ -192,7 +195,15 @@ public class ExpressionBuilder extends Builder {
 		} else if(ctx instanceof CoalesceExpressionContext) {
 			return new Coalesce(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
 		} else if(ctx instanceof RelationalExpressionContext) {
-			return new RelationalCompare(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), ctx.getChild(1).getText(), uc);
+			String op =  ctx.getChild(1).getText();
+			if(op.equals(">"))
+				return new GreaterThan(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
+			else if(op.equals(">="))
+				return new GreaterEqualThan(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
+			else if(op.equals("<"))
+				return new LessThan(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
+			else if(op.equals("<="))
+				return new LessEqualThan(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
 		} else if(ctx instanceof EqualityExpressionContext) {
 			return new EqualityCompare(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), ctx.getChild(1).getText(), uc);
 		} else if(ctx instanceof ParenthesizedExpressionContext) {

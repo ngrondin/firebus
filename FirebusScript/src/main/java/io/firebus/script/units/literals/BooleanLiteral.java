@@ -9,14 +9,16 @@ import io.firebus.script.values.abs.SValue;
 
 public class BooleanLiteral extends Literal {
     protected boolean value;
+    protected SBoolean sBoolean;
 
     public BooleanLiteral(boolean v, SourceInfo uc) {
     	super(uc);
     	value = v;
+    	sBoolean = SBoolean.get(v);
     }
 
     public SValue eval(Scope scope) throws ScriptExecutionException {
-        return new SBoolean(value);
+        return sBoolean;
     }
     
 }

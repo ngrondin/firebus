@@ -5,9 +5,15 @@ import io.firebus.script.values.abs.SValue;
 
 public class SNull extends SValue {
 
-    public SNull() {
-    }
-
+	private static SNull singleton = new SNull();
+	
+	private SNull() {
+		
+	}
+	
+	public static SNull get() {
+		return singleton;
+	}
 
 	public boolean equals(SValue other) {
 		return other instanceof SNull;

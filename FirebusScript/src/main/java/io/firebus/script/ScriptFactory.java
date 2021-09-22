@@ -19,21 +19,21 @@ public class ScriptFactory {
 	public ScriptFactory() {
 		compiler = new Compiler();
 		rootScope = new Scope();
-		rootScope.setValue("print", new Print());
-		rootScope.setValue("parseInt", new ParseInt());
-		rootScope.setValue("Date", new DateConstructor());
-		rootScope.setValue("Time", new TimeConstructor());
-		rootScope.setValue("Math", new Math());
+		rootScope.setValue(new VariableId("print"), new Print());
+		rootScope.setValue(new VariableId("parseInt"), new ParseInt());
+		rootScope.setValue(new VariableId("Date"), new DateConstructor());
+		rootScope.setValue(new VariableId("Time"), new TimeConstructor());
+		rootScope.setValue(new VariableId("Math"), new Math());
 	}
 	
 	public void setGlobals(Map<String, Object> globals) throws ScriptException {
 		for(String key: globals.keySet()) {
-			rootScope.setValue(key, Converter.convertIn(globals.get(key)));
+			rootScope.setValue(new VariableId(key), Converter.convertIn(globals.get(key)));
 		}
 	}
 	
 	public void setInRootScope(String name, Object val) throws ScriptException {
-		rootScope.setValue(name, Converter.convertIn(val));
+		rootScope.setValue(new VariableId(name), Converter.convertIn(val));
 	}
 	
 	public void executeInRootScope(String name, String source) throws ScriptException {

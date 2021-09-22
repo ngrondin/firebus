@@ -6,7 +6,6 @@ import java.util.List;
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptExecutionException;
-import io.firebus.script.units.abs.ExecutionUnit;
 import io.firebus.script.units.abs.Statement;
 import io.firebus.script.units.setters.Declare;
 import io.firebus.script.units.setters.DeclareList;
@@ -16,42 +15,44 @@ import io.firebus.script.values.flow.SBreak;
 import io.firebus.script.values.flow.SReturn;
 
 public class Block extends Statement {
-	protected List<Statement> declareUnits;
-	protected List<Statement> executionUnits;
+	protected Statement[] declareUnits;
+	protected Statement[] executionUnits;
 	
 	public Block(List<Statement> u, SourceInfo uc) {
 		super(uc);
-		declareUnits = new ArrayList<Statement>();
-		executionUnits = new ArrayList<Statement>();
+		List<Statement> du = new ArrayList<Statement>();
+		List<Statement> eu = new ArrayList<Statement>();
 		for(Statement s: u) {
 			if(s instanceof Declare || s instanceof DeclareList) 
-				declareUnits.add(s);
+				du.add(s);
 			else
-				executionUnits.add(s);
+				eu.add(s);
 		}
+		declareUnits = du.toArray(new Statement[0]);
+		executionUnits = eu.toArray(new Statement[0]);
 	}
 	
 	public int getStatementCount() {
-		return executionUnits.size();
+		return executionUnits.length;
 	}
 	
 	public Statement getStatement(int i) {
-		return executionUnits.get(i);
+		return executionUnits[i];
 	}
 	
 	public SValue eval(Scope scope) throws ScriptExecutionException {
-		for(ExecutionUnit unit : declareUnits)
-			unit.eval(scope);
+		for(int i = 0; i < declareUnits.length; i++)
+			declareUnits[i].eval(scope);
 		
-		for(ExecutionUnit unit : executionUnits) {
-			SValue ret = unit.eval(scope);
+		for(int i = 0; i < executionUnits.length; i++) {
+			SValue ret = executionUnits[i].eval(scope);
 			if(ret instanceof SReturn) {
 				return ret;
 			} else if(ret instanceof SBreak) {
 				return ret;
 			}
 		}
-		return new SNull();
+		return SNull.get();
 	}
 
 }
