@@ -30,7 +30,7 @@ public class Call extends Expression {
 				SValue ret = ((SCallable)c).call(arguments);
 				return ret;
 			} catch(ScriptCallException e) {
-				throw new ScriptExecutionException("Error calling '"+ callableExpression.toString() + "'", source);
+				throw new ScriptExecutionException("Error calling '"+ callableExpression.toString() + "'", e, source);
 			}
 		} else {
 			throw new ScriptExecutionException("'" + callableExpression.toString() + "' is not a callable", source);

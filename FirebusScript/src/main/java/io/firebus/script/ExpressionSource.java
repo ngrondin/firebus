@@ -19,6 +19,9 @@ public class ExpressionSource extends Source {
 		if(b == null) {
 			isFixed = true;
 			fixedValue = null;
+		} else if(b.equals("null")) {
+			isFixed = true;
+			fixedValue = null;
 		} else if(b.equalsIgnoreCase("true")) {
 			isFixed = true;
 			fixedValue = true;

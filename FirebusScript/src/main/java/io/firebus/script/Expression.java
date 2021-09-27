@@ -16,10 +16,15 @@ public class Expression {
 	}
 	
 	public Object eval(Map<String, Object> context) throws ScriptException {
+		//System.out.println(this);
 		Scope localScope = new Scope(scope);
 		for(String key: context.keySet())
 			localScope.setValue(new VariableId(key), Converter.convertIn(context.get(key)));
 		SValue ret = rootExecutionUnit.eval(localScope);
 		return Converter.convertOut(ret);
+	}
+	
+	public String toString() {
+		return rootExecutionUnit.toString();
 	}
 }

@@ -16,7 +16,7 @@ public class GetTimezoneOffset extends DateFunction {
 
 	public SValue call(SValue... arguments) throws ScriptCallException {
 		ZonedDateTime zdt = date.getZonedDateTime();
-		return new SNumber(zdt.getZone().getRules().getOffset(zdt.toInstant()).getTotalSeconds() * 1000);
+		return new SNumber(zdt.getZone().getRules().getOffset(zdt.toInstant()).getTotalSeconds() / -60);
 	}
 
 }

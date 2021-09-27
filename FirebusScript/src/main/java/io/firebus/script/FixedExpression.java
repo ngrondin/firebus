@@ -9,9 +9,14 @@ public class FixedExpression extends Expression {
 
 	protected FixedExpression(Object fv) {
 		super(null, null);
+		fixedValue = fv;
 	}
 
 	public Object eval(Map<String, Object> context) throws ScriptException {
 		return fixedValue;
 	}	
+	
+	public String toString() {
+		return fixedValue.toString();
+	}
 }

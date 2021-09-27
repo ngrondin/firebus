@@ -28,6 +28,7 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.utils.StackUtils;
 import io.firebus.data.DataException;
 import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
@@ -137,7 +138,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					responseJSON.put("result", "ok");	
 				} catch(Exception e) {
 					if(session != null) session.abortTransaction();
-					throw new FunctionErrorException("Error in db transaction", e);
+					throw new FunctionErrorException("Error in db multi transaction", e);
 				} finally {
 					if(session != null) session.close();
 				}
@@ -151,7 +152,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		}
 		catch(Exception e)
 		{
-			logger.severe("Error processing data request: " + e.getMessage());
+			logger.severe("Error processing data request\r\n" + StackUtils.toString(e.getStackTrace()));
 			throw new FunctionErrorException(e.getMessage());
 		}		
 		return response;

@@ -17,6 +17,10 @@ public class StringLiteral extends Literal {
 		sStr = new SString(str);
 	}
 	
+	public String getString() {
+		return str;
+	}
+	
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		return sStr;
 	}
