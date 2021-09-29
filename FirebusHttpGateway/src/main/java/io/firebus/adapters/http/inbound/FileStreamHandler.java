@@ -46,6 +46,7 @@ public class FileStreamHandler extends InboundHandler  {
 				request.put(paramName, req.getParameter(paramName));
 			}
 			payload.setData(request.toString());
+			payload.metadata.put("mime", "application/json");
 			StreamEndpoint sep = firebus.requestStream(streamName, payload, 10000);
 			resp.setStatus(200);
 			OutputStream os = resp.getOutputStream();
@@ -100,6 +101,7 @@ public class FileStreamHandler extends InboundHandler  {
 			
 			if(is != null) {
 				payload.setData(request.toString());
+				payload.metadata.put("mime", "application/json");
 				StreamEndpoint sep = firebus.requestStream(streamName, payload, 10000);
 				new StreamSender(is, sep).sync();
 				resp.setStatus(200);
