@@ -22,7 +22,7 @@ public class RouteMessage implements Runnable {
 		long end = System.currentTimeMillis();
 		long dur = end - start;
 		long totalDur = end - created;
-		if(dur > 3 || totalDur > 4) {
+		if(dur > 3 || totalDur > 10) {
 			System.err.println("Message routing (" + trackingId + ") took a long time: " + totalDur + "ms (" + dur + "ms)");
 		}
 	}

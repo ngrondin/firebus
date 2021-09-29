@@ -7,9 +7,9 @@ import io.firebus.script.values.callables.impl.math.Floor;
 import io.firebus.script.values.callables.impl.math.Max;
 import io.firebus.script.values.callables.impl.math.Min;
 
-public class Math extends SPredefinedObject {
+public class MathStaticPackage extends SPredefinedObject {
 
-	public Math() {
+	public MathStaticPackage() {
 		
 	}
 	

@@ -3,10 +3,10 @@ package io.firebus.script.units.statements;
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptExecutionException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.units.abs.ExecutionUnit;
 import io.firebus.script.units.abs.Expression;
 import io.firebus.script.units.abs.Statement;
-import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.SNull;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SBreak;
@@ -26,9 +26,8 @@ public class If extends Statement {
 
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue v = condition.eval(scope);
-		if(v instanceof SBoolean) {
-			SBoolean b = (SBoolean)v;
-			if(b.getBoolean() == true) {
+		try {
+			if(v.toBoolean() == true) {
 				Scope localScope = new Scope(scope);
 				SValue ret = unit.eval(localScope);
 				if(ret instanceof SReturn) {
@@ -44,8 +43,8 @@ public class If extends Statement {
 				}					
 			}
 			return SNull.get();
-		} else {
-			throw new ScriptExecutionException("Condition does not return a boolean", source);
+		} catch(ScriptValueException e) {
+			throw new ScriptExecutionException("Condition does not return a boolean", e, source);
 		}
 	}
 

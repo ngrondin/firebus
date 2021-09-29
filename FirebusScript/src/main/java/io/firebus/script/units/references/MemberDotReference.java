@@ -3,6 +3,7 @@ package io.firebus.script.units.references;
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptExecutionException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.units.abs.Expression;
 import io.firebus.script.values.SMemberCallable;
 import io.firebus.script.values.SNull;
@@ -45,7 +46,11 @@ public class MemberDotReference extends Reference {
 		SValue o = objectExpr.eval(scope);
 		if(o instanceof SDynamicObject) {
 			SDynamicObject obj = (SDynamicObject)o;
-			obj.putMember(key, val);
+			try {
+				obj.putMember(key, val);
+			} catch(ScriptValueException e) {
+				throw new ScriptExecutionException("Error setting property of object", e, source);
+			}
 		} else {
 			throw new ScriptExecutionException("Base of a dot reference must be a dynamic object", source);
 		}

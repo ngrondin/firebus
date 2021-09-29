@@ -24,6 +24,10 @@ public class Declare extends Statement {
 		modifier = m;
 	}
 	
+	public String getModifier() {
+		return modifier;
+	}
+	
 	public VariableId getKey() {
 		return key;
 	}

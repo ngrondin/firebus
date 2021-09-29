@@ -54,6 +54,8 @@ public class DeclarationBuilder extends Builder {
 		}
 		Block body = CallableBuilder.buildFunctionBody((FunctionBodyContext)ctx.getChild(ctx.getChildCount() - 1));
 		CallableDefinition callDef = new CallableDefinition(params, body, sourceInfo(ctx));
-		return new Declare(key, callDef, sourceInfo(ctx));
+		Declare declare = new Declare(key, callDef, sourceInfo(ctx));
+		declare.setModifier("function");
+		return declare;
 	}
 }

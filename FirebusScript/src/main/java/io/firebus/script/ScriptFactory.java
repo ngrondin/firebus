@@ -6,8 +6,11 @@ import io.firebus.script.exceptions.ScriptBuildException;
 import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.units.abs.ExecutionUnit;
 import io.firebus.script.units.statements.Block;
+import io.firebus.script.values.impl.ArrayStaticPackage;
 import io.firebus.script.values.impl.DateConstructor;
-import io.firebus.script.values.impl.Math;
+import io.firebus.script.values.impl.JSONStaticPackage;
+import io.firebus.script.values.impl.MathStaticPackage;
+import io.firebus.script.values.impl.ObjectStaticPackage;
 import io.firebus.script.values.impl.ParseInt;
 import io.firebus.script.values.impl.Print;
 import io.firebus.script.values.impl.TimeConstructor;
@@ -23,7 +26,10 @@ public class ScriptFactory {
 		rootScope.setValue(new VariableId("parseInt"), new ParseInt());
 		rootScope.setValue(new VariableId("Date"), new DateConstructor());
 		rootScope.setValue(new VariableId("Time"), new TimeConstructor());
-		rootScope.setValue(new VariableId("Math"), new Math());
+		rootScope.setValue(new VariableId("Math"), new MathStaticPackage());
+		rootScope.setValue(new VariableId("Object"), new ObjectStaticPackage());
+		rootScope.setValue(new VariableId("Array"), new ArrayStaticPackage());
+		rootScope.setValue(new VariableId("JSON"), new JSONStaticPackage());
 	}
 	
 	public void setGlobals(Map<String, Object> globals) throws ScriptException {

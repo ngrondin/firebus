@@ -18,6 +18,7 @@ import io.firebus.script.values.SNull;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.SString;
 import io.firebus.script.values.STime;
+import io.firebus.script.values.abs.SCallable;
 import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
 
@@ -57,12 +58,12 @@ public class Converter {
 			DataList list = (DataList)o;
 			SArray a = new SArray();
 			for(int i = 0; i < list.size(); i++)
-				a.set(i, convertIn(list.get(i)));
+					a.set(i, convertIn(list.get(i)));
 			return a;
 		} else if(o instanceof List) {
 			List<?> list = (List<?>)o;
 			SArray a = new SArray();
-			for(int i = 0; i < list.size(); i++)
+			for(int i = 0; i < list.size(); i++) 
 				a.set(i, convertIn(list.get(i)));
 			return a;	
 		} else if(o instanceof DataLiteral) {
@@ -114,8 +115,11 @@ public class Converter {
 			SObject o = (SObject)v;
 			DataMap map = new DataMap();
 			String[] keys = o.getMemberKeys();
-			for(int i = 0; i < keys.length; i++) 
-				map.put(keys[i], convertOut(o.getMember(keys[i])));
+			for(int i = 0; i < keys.length; i++) {
+				SValue prop = o.getMember(keys[i]);
+				if(!(prop instanceof SCallable))
+					map.put(keys[i], convertOut(o.getMember(keys[i])));
+			}
 			return map;
 		} else {
 			throw new ScriptValueException("Cannot convert '" + v.toString() + "' to java space");

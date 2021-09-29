@@ -1,3 +1,7 @@
+var dt = new Date();
+var dur = 3600000;
+var newdt = dateAddDuration(dt, dur);
+print(dateDiff(newdt, dt));
 
 function now() {
 	var dt = new Date();
@@ -72,7 +76,7 @@ function getTimezoneDiff(dt, zoneId) {
 	var diff = 0;
 	if(zoneId != null && zoneId != '') {
 		var localOffset = dt.getTimezoneOffset() * 60000;
-		var targetOffset = 36000000;
+		var targetOffset = rbutils.getTimezoneOffset(zoneId);
 		diff = targetOffset - localOffset;
 	}
 	return diff;
@@ -127,6 +131,3 @@ function getIsoDateTimeAtTimezone(dt, zoneId) {
 }
 
 
-var timeofday = new Time();
-var r = getTimeLabelAtTimezone(timeofday.atDate(new Date()), "Australia/Sydney");
-print(r);

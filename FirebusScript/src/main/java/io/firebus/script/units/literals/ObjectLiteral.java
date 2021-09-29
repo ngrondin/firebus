@@ -7,6 +7,7 @@ import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.VariableId;
 import io.firebus.script.exceptions.ScriptExecutionException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.units.abs.Expression;
 import io.firebus.script.units.abs.Literal;
 import io.firebus.script.values.SInternalObject;
@@ -36,11 +37,15 @@ public class ObjectLiteral extends Literal {
 		SInternalObject obj = new SInternalObject();
 		Scope local = new Scope(scope);
 		local.setValue(new VariableId("this"), obj);
-		for(Setter setter: setters) {
-			SValue val = setter.expr.eval(local);
-			obj.putMember(setter.key, val);
+		try {
+			for(Setter setter: setters) {
+				SValue val = setter.expr.eval(local);
+				obj.putMember(setter.key, val);
+			}
+			return obj;
+		} catch(ScriptValueException e) {
+			throw new ScriptExecutionException("Error in object literal initialisation of properties", e, source);
 		}
-		return obj;
 	}
 
 }

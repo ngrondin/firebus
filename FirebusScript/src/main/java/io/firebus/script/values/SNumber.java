@@ -21,12 +21,20 @@ public class SNumber extends SPredefinedObject {
         return number;
     }
 
-	public boolean equals(SValue other) {
-		return other instanceof SNumber && number.doubleValue() == ((SNumber)other).getNumber().doubleValue();
+	public boolean equals(SValue other)  {
+		try {
+			return number == other.toNumber();
+		} catch(ScriptValueException e) {
+			return false;
+		}
 	}
 
 	public boolean identical(SValue other) {
-		return this == other;
+		try {
+			return other instanceof SNumber && other.toNumber() == number;
+		} catch(ScriptValueException e) {
+			return false;
+		}	
 	}
     
 	public boolean hasMember(String key) {
@@ -54,7 +62,7 @@ public class SNumber extends SPredefinedObject {
 	}
 	
 	public boolean toBoolean() throws ScriptValueException {
-		return number.doubleValue() <= 0 ? false : true;
+		return number.doubleValue() == 1 ? true : false;
 	}
 
 }

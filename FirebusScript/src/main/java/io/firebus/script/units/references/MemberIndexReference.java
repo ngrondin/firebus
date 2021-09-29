@@ -3,6 +3,7 @@ package io.firebus.script.units.references;
 import io.firebus.script.Scope;
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptExecutionException;
+import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.units.abs.Expression;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.SMemberCallable;
@@ -61,7 +62,11 @@ public class MemberIndexReference extends Reference {
 		} else if(base instanceof SDynamicObject) {
 			SDynamicObject o = (SDynamicObject)base;
 			SValue key = indexExpr.eval(scope);
-			o.putMember(key.toString(), val);
+			try {
+				o.putMember(key.toString(), val);
+			} catch(ScriptValueException e) {
+				throw new ScriptExecutionException("Error setting property of object", e, source);
+			}
 		} else {
 			throw new ScriptExecutionException("Index reference base must be an array or an object", source);
 		}
