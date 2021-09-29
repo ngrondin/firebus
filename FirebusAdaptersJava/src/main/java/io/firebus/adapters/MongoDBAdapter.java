@@ -1,6 +1,8 @@
 package io.firebus.adapters;
 
 import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.UUID;
@@ -24,14 +26,13 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 import io.firebus.Payload;
+import io.firebus.data.DataException;
+import io.firebus.data.DataList;
+import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
-import io.firebus.utils.StackUtils;
-import io.firebus.data.DataException;
-import io.firebus.data.DataList;
-import io.firebus.data.DataMap;
 
 public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consumer
 {
@@ -152,8 +153,9 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		}
 		catch(Exception e)
 		{
-			logger.severe("Error processing data request\r\n" + StackUtils.toString(e.getStackTrace()));
-			throw new FunctionErrorException(e.getMessage());
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			logger.severe("Error processing data request\r\n" + sw.toString());
 		}		
 		return response;
 	}
