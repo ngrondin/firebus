@@ -1,7 +1,6 @@
 var dt = new Date();
-var dur = 3600000;
-var newdt = dateAddDuration(dt, dur);
-print(dateDiff(newdt, dt));
+var r = dt.setDate(32);
+print(dt);
 
 function now() {
 	var dt = new Date();

@@ -3,6 +3,7 @@ package io.firebus.script.values;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import io.firebus.script.exceptions.ScriptCallException;
@@ -126,6 +127,10 @@ public class SDate extends SPredefinedObject {
 		return Date.from(date.toInstant());
 	}
 	
+	public void setDate(Date dt) {
+		date = ZonedDateTime.ofInstant(dt.toInstant(), date.getZone());
+	}
+	
 	public ZonedDateTime getZonedDateTime() {
 		return date;
 	}
@@ -135,7 +140,7 @@ public class SDate extends SPredefinedObject {
 	}
 	
 	public String toString() {
-		return date.toString();
+		return DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(date);
 	}
 	
 	public Number toNumber() throws ScriptValueException {

@@ -14,8 +14,8 @@ public class Operations {
 			Number n1 = v1.toNumber();
 			Number n2 = v2.toNumber();
 			Number r = null;
-			if(n1 instanceof Integer && n2 instanceof Integer) {
-				r = n1.intValue() + n2.intValue();
+			if(n1 instanceof Long && n2 instanceof Long) {
+				r = n1.longValue() + n2.longValue();
 			} else {
 				r = n1.doubleValue() + n2.doubleValue();
 			}
@@ -27,8 +27,8 @@ public class Operations {
 		Number n1 = v1.toNumber();
 		Number n2 = v2.toNumber();
 		Number r = null;
-		if(n1 instanceof Integer && n2 instanceof Integer) {
-			r = n1.intValue() - n2.intValue();
+		if(n1 instanceof Long && n2 instanceof Long) {
+			r = n1.longValue() - n2.longValue();
 		} else {
 			r = n1.doubleValue() - n2.doubleValue();
 		}
@@ -39,8 +39,8 @@ public class Operations {
 		Number n1 = v1.toNumber();
 		Number n2 = v2.toNumber();
 		Number r = null;
-		if(n1 instanceof Integer && n2 instanceof Integer) {
-			r = n1.intValue() * n2.intValue();
+		if(n1 instanceof Long && n2 instanceof Long) {
+			r = n1.longValue() * n2.longValue();
 		} else {
 			r = n1.doubleValue() * n2.doubleValue();
 		}
@@ -51,8 +51,8 @@ public class Operations {
 		Number n1 = v1.toNumber();
 		Number n2 = v2.toNumber();
 		Number r = null;
-		if(n1 instanceof Integer && n2 instanceof Integer) {
-			r = n1.intValue() / n2.intValue();
+		if(n1 instanceof Long && n2 instanceof Long) {
+			r = n1.longValue() / n2.longValue();
 		} else {
 			r = n1.doubleValue() / n2.doubleValue();
 		}
@@ -63,8 +63,8 @@ public class Operations {
 		Number n1 = v1.toNumber();
 		Number n2 = v2.toNumber();
 		Number r = null;
-		if(n1 instanceof Integer && n2 instanceof Integer) {
-			r = n1.intValue() % n2.intValue();
+		if(n1 instanceof Long && n2 instanceof Long) {
+			r = n1.longValue() % n2.longValue();
 		} else {
 			r = n1.doubleValue() % n2.doubleValue();
 		}
@@ -81,24 +81,24 @@ public class Operations {
 	public static SValue bitOr(SValue v1, SValue v2) throws ScriptValueException {
 		Number n1 = v1.toNumber();
 		Number n2 = v2.toNumber();
-		return new SNumber(n1.intValue() | n2.intValue());
+		return new SNumber(n1.longValue() | n2.longValue());
 	}
 	
 	public static SValue bitAnd(SValue v1, SValue v2) throws ScriptValueException {
 		Number n1 = v1.toNumber();
 		Number n2 = v2.toNumber();
-		return new SNumber(n1.intValue() & n2.intValue());
+		return new SNumber(n1.longValue() & n2.longValue());
 	}
 	
 	public static SValue bitXor(SValue v1, SValue v2) throws ScriptValueException {
 		Number n1 = v1.toNumber();
 		Number n2 = v2.toNumber();
-		return new SNumber(n1.intValue() ^ n2.intValue());
+		return new SNumber(n1.longValue() ^ n2.longValue());
 	}
 	
 	public static SValue bitNot(SValue v1) throws ScriptValueException {
 		Number n1 = v1.toNumber();
-		return new SNumber(~(n1.intValue()));
+		return new SNumber(~(n1.longValue()));
 	}
 	
 	public static SValue bitShiftLeft(SValue v1, SValue v2) throws ScriptValueException {

@@ -21,10 +21,7 @@ public class ParseInt extends SCallable {
 			} else {
 				throw new ScriptCallException("Invalid argument for parseInt. Should be string.");				
 			}
-			if(l <= 2147483647 && l >= -2147483648) 
-				return new SNumber((int)l);
-			else
-				return new SNumber(l);
+			return new SNumber(l);
 		} else {
 			throw new ScriptCallException("parseInt requires at least 1 argument");
 		}

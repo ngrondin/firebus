@@ -87,12 +87,8 @@ public class Converter {
 			return null;
 		} else if(v instanceof SNumber) {
 			Number n = ((SNumber)v).getNumber();
-			if(n instanceof Integer)
-				return n.intValue();
-			else if(n instanceof Long)
+			if(n instanceof Long)
 				return n.longValue();			
-			else if(n instanceof Float)
-				return n.floatValue();
 			else if(n instanceof Double)
 				return n.doubleValue();
 			else

@@ -20,6 +20,6 @@ public abstract class OneIntegerOperator extends OneNumberOperator {
 		}
 	}
 	
-	protected abstract SValue evalWithInt(int i) throws ScriptExecutionException;
+	protected abstract SValue evalWithInt(long i) throws ScriptExecutionException;
 
 }

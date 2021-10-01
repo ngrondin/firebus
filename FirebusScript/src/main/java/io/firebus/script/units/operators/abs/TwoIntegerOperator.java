@@ -22,6 +22,6 @@ public abstract class TwoIntegerOperator extends TwoNumberOperator {
 		}
 	}
 	
-	protected abstract SValue evalWithInts(int i1, int i2) throws ScriptExecutionException;
+	protected abstract SValue evalWithInts(long i1, long i2) throws ScriptExecutionException;
 
 }

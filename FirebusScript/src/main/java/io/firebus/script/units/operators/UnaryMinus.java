@@ -14,10 +14,10 @@ public class UnaryMinus extends OneNumberOperator {
 	}
 
 	protected SValue evalWithNumber(Number n) throws ScriptExecutionException {
-		if(n instanceof Integer) {
-			return new SNumber(-1 * n.intValue());
+		if(n instanceof Long) {
+			return new SNumber(-1L * n.longValue());
 		} else {
-			return new SNumber(-1 * n.doubleValue());
+			return new SNumber(-1D * n.doubleValue());
 		}
 	}
 }

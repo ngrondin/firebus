@@ -66,18 +66,15 @@ public class LiteralBuilder extends Builder {
 				number = Double.parseDouble(txt);
 			} else {
 				number = Long.parseLong(txt);
-				long l = number.longValue();
-				if(l <= 2147483647 && l >= -2147483648) 
-					number = (int)l;
 			}
 		} else if(tn.getSymbol().getType() == JavaScriptParser.HexIntegerLiteral) {
-			number = Integer.decode(tn.getText());
+			number = Long.decode(tn.getText());
 		} else if(tn.getSymbol().getType() == JavaScriptParser.OctalIntegerLiteral) {
-			number = Integer.parseInt(tn.getText(), 8);
+			number = Long.parseLong(tn.getText(), 8);
 		} else if(tn.getSymbol().getType() == JavaScriptParser.OctalIntegerLiteral2) {
-			number = Integer.parseInt(tn.getText().substring(2), 8);
+			number = Long.parseLong(tn.getText().substring(2), 8);
 		} else if(tn.getSymbol().getType() == JavaScriptParser.BinaryIntegerLiteral) {
-			number = Integer.parseInt(tn.getText().substring(2), 2);
+			number = Long.parseLong(tn.getText().substring(2), 2);
 		} 
 		return new NumericLiteral(number, uc);
     }

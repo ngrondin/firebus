@@ -84,9 +84,6 @@ public class SString extends SPredefinedObject {
 				number = Double.parseDouble(str);
 			} else {
 				number = Long.parseLong(str);
-				long l = number.longValue();
-				if(l <= 2147483647 && l >= -2147483648) 
-					number = (int)l;
 			}	
 			return number;
 		} catch(Exception e) {
