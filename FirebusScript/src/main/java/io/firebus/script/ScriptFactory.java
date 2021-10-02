@@ -13,6 +13,7 @@ import io.firebus.script.values.impl.MathStaticPackage;
 import io.firebus.script.values.impl.ObjectStaticPackage;
 import io.firebus.script.values.impl.ParseInt;
 import io.firebus.script.values.impl.Print;
+import io.firebus.script.values.impl.StringStaticPackage;
 import io.firebus.script.values.impl.TimeConstructor;
 
 public class ScriptFactory {
@@ -29,6 +30,7 @@ public class ScriptFactory {
 		rootScope.setValue(new VariableId("Math"), new MathStaticPackage());
 		rootScope.setValue(new VariableId("Object"), new ObjectStaticPackage());
 		rootScope.setValue(new VariableId("Array"), new ArrayStaticPackage());
+		rootScope.setValue(new VariableId("String"), new StringStaticPackage());
 		rootScope.setValue(new VariableId("JSON"), new JSONStaticPackage());
 	}
 	

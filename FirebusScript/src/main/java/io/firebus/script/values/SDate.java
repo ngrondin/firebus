@@ -120,7 +120,7 @@ public class SDate extends SPredefinedObject {
 		} else if(name.equals("setYear")) {
 			return new SetYear(this);
 		} 
-		return null;
+		return SUndefined.get();
 	}
 
 	public Date getDate() {

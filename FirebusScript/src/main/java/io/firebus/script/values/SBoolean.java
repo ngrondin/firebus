@@ -5,6 +5,7 @@ import java.util.Map;
 import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.callables.impl.ToString;
 
 public class SBoolean extends SPredefinedObject {
     protected boolean value;
@@ -57,7 +58,10 @@ public class SBoolean extends SPredefinedObject {
 	}
 
 	public SValue getMember(String name) {
-		return null;
+		if(name.equals("toString")) {
+			return new ToString(this);
+		}
+		return SUndefined.get();
 	}
 	
 	public String typeOf() {

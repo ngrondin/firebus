@@ -5,12 +5,14 @@ import java.util.Map;
 import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.callables.impl.ToString;
 import io.firebus.script.values.callables.impl.string.CharAt;
 import io.firebus.script.values.callables.impl.string.CharCodeAt;
 import io.firebus.script.values.callables.impl.string.Concat;
 import io.firebus.script.values.callables.impl.string.EndsWith;
 import io.firebus.script.values.callables.impl.string.Includes;
 import io.firebus.script.values.callables.impl.string.IndexOf;
+import io.firebus.script.values.callables.impl.string.PadStart;
 import io.firebus.script.values.callables.impl.string.Slice;
 import io.firebus.script.values.callables.impl.string.StartsWith;
 import io.firebus.script.values.callables.impl.string.Substr;
@@ -65,8 +67,14 @@ public class SString extends SPredefinedObject {
 			return new IndexOf(this);
 		} else if(name.equals("substr")) {
 			return new Substr(this);
+		} else if(name.equals("padStart")) {
+			return new PadStart(this);
+		} else if(name.equals("toString")) {
+			return new ToString(this);
+		} else if(name.equals("length")) {
+			return new SNumber(str.length());
 		}
-		return null;
+		return SUndefined.get();
 	}
 
 	public String typeOf() {

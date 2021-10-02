@@ -84,7 +84,7 @@ public class LiteralBuilder extends Builder {
     	for(ParseTree sub: ctx.children) {
     		if(sub instanceof PropertyAssignmentContext) {
     			String key = sub.getChild(0).getText();
-    			if(key.startsWith("'") && key.endsWith("'")) 
+    			if((key.startsWith("'") && key.endsWith("'")) || (key.startsWith("\"") && key.endsWith("\""))) 
     				key = key.substring(1, key.length() - 1);
     			Expression val = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub.getChild(2));
     			ol.addSetter(key, val);

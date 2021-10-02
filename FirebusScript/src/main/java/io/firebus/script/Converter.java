@@ -18,6 +18,7 @@ import io.firebus.script.values.SNull;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.SString;
 import io.firebus.script.values.STime;
+import io.firebus.script.values.SUndefined;
 import io.firebus.script.values.abs.SCallable;
 import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
@@ -84,6 +85,8 @@ public class Converter {
 	
 	public static Object convertOut(SValue v) throws ScriptException {
 		if(v instanceof SNull) {
+			return null;
+		} else if(v instanceof SUndefined) {
 			return null;
 		} else if(v instanceof SNumber) {
 			Number n = ((SNumber)v).getNumber();
