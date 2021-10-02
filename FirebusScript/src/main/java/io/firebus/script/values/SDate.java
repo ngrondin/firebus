@@ -3,7 +3,6 @@ package io.firebus.script.values;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import io.firebus.script.exceptions.ScriptCallException;
@@ -29,6 +28,7 @@ import io.firebus.script.values.callables.impl.date.SetMinutes;
 import io.firebus.script.values.callables.impl.date.SetMonth;
 import io.firebus.script.values.callables.impl.date.SetSeconds;
 import io.firebus.script.values.callables.impl.date.SetYear;
+import io.firebus.script.values.callables.impl.date.ToISOString;
 import io.firebus.script.values.callables.impl.date.ToString;
 
 public class SDate extends SPredefinedObject {
@@ -80,7 +80,7 @@ public class SDate extends SPredefinedObject {
 		if(name.equals("toString")) {
 			return new ToString(this);
 		} else if(name.equals("toISOString")) {
-			return new ToString(this);
+			return new ToISOString(this);
 		} else if(name.equals("getTimezoneOffset")) {
 			return new GetTimezoneOffset(this);
 		} else if(name.equals("getTime")) {
@@ -120,7 +120,7 @@ public class SDate extends SPredefinedObject {
 		} else if(name.equals("setYear")) {
 			return new SetYear(this);
 		} 
-		return null;
+		return SUndefined.get();
 	}
 
 	public Date getDate() {
@@ -140,7 +140,7 @@ public class SDate extends SPredefinedObject {
 	}
 	
 	public String toString() {
-		return DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(date);
+		return Date.from(date.toInstant()).toString();
 	}
 	
 	public Number toNumber() throws ScriptValueException {

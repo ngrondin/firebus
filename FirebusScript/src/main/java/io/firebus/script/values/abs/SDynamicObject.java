@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.firebus.script.exceptions.ScriptValueException;
+import io.firebus.script.values.SUndefined;
 
 
 public abstract class SDynamicObject extends SObject {
@@ -22,7 +23,8 @@ public abstract class SDynamicObject extends SObject {
 	}
 
 	public SValue getMember(String key) {
-		return members.get(key);
+		SValue m = members.get(key);
+		return m != null ? m : SUndefined.get();
 	}
 			
 	public void putMember(String key, SValue value) throws ScriptValueException {

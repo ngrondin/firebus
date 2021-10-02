@@ -11,8 +11,10 @@ import io.firebus.script.values.impl.DateConstructor;
 import io.firebus.script.values.impl.JSONStaticPackage;
 import io.firebus.script.values.impl.MathStaticPackage;
 import io.firebus.script.values.impl.ObjectStaticPackage;
+import io.firebus.script.values.impl.ParseFloat;
 import io.firebus.script.values.impl.ParseInt;
 import io.firebus.script.values.impl.Print;
+import io.firebus.script.values.impl.StringStaticPackage;
 import io.firebus.script.values.impl.TimeConstructor;
 
 public class ScriptFactory {
@@ -24,11 +26,13 @@ public class ScriptFactory {
 		rootScope = new Scope();
 		rootScope.setValue(new VariableId("print"), new Print());
 		rootScope.setValue(new VariableId("parseInt"), new ParseInt());
+		rootScope.setValue(new VariableId("parseFloat"), new ParseFloat());
 		rootScope.setValue(new VariableId("Date"), new DateConstructor());
 		rootScope.setValue(new VariableId("Time"), new TimeConstructor());
 		rootScope.setValue(new VariableId("Math"), new MathStaticPackage());
 		rootScope.setValue(new VariableId("Object"), new ObjectStaticPackage());
 		rootScope.setValue(new VariableId("Array"), new ArrayStaticPackage());
+		rootScope.setValue(new VariableId("String"), new StringStaticPackage());
 		rootScope.setValue(new VariableId("JSON"), new JSONStaticPackage());
 	}
 	

@@ -102,9 +102,11 @@ public class SArray extends SPredefinedObject {
 				return new Sort(values);
 			} else if(key.equals("splice")) {
 				return new Splice(values);
+			} else if(key.contentEquals("length")) {
+				return new SNumber(values.size());
 			}
 		} 
-		return null;
+		return SUndefined.get();
 	}
 
 	public String toString() {

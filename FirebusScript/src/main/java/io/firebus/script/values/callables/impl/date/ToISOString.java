@@ -13,7 +13,7 @@ public class ToISOString extends DateFunction {
 	}
 
 	public SValue call(SValue... arguments) throws ScriptCallException {
-		return new SString(date.getZonedDateTime().toOffsetDateTime().toString());
+		return new SString(date.getZonedDateTime().toInstant().toString());
 	}
 
 }

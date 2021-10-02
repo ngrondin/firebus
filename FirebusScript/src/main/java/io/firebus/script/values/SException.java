@@ -20,7 +20,7 @@ public class SException extends SPredefinedObject {
 		if(name.equals("message")) {
 			return new SString(exception.getMessage());
 		}
-		return null;
+		return SUndefined.get();
 	}
 
 	public String typeOf() {

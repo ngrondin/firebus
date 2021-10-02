@@ -5,12 +5,20 @@ import java.util.Map;
 import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.callables.impl.ToString;
 
 public class SNumber extends SPredefinedObject {
     protected Number number;
 
-    public SNumber(Number n) {   	
-   		number = n;
+    public SNumber(Number n) {
+    	if(n instanceof Long) 
+    		number = n;
+    	else if(n instanceof Integer)
+    		number = ((Integer)n).longValue();
+    	else if(n instanceof Double)
+    		number = n;
+    	else if(n instanceof Float)
+    		number = ((Float)n).doubleValue();
     }
     
     protected Map<String, SValue> defineMembers() {
@@ -46,7 +54,10 @@ public class SNumber extends SPredefinedObject {
 	}
 
 	public SValue getMember(String name) {
-		return null;
+		if(name.equals("toString")) {
+			return new ToString(this);
+		}
+		return SUndefined.get();
 	}
 	
 	public String typeOf() {

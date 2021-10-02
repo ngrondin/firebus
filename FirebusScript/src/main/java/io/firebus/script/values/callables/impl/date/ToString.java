@@ -14,7 +14,7 @@ public class ToString extends DateFunction {
 	}
 
 	public SValue call(SValue... arguments) throws ScriptCallException {
-		return new SString(date.getZonedDateTime().toString());
+		return new SString(date.toString());
 	}
 
 }

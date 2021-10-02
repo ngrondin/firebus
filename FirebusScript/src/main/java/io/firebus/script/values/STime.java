@@ -43,7 +43,7 @@ public class STime extends SPredefinedObject {
 		if(name.equals("atDate")) {
 			return new AtDate(this);
 		}
-		return null;
+		return SUndefined.get();
 	}
 
 	public ZonedTime getTime() {

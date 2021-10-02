@@ -7,6 +7,8 @@ import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.abs.Expression;
+import io.firebus.script.values.SNull;
+import io.firebus.script.values.SUndefined;
 import io.firebus.script.values.abs.SCallable;
 import io.firebus.script.values.abs.SValue;
 
@@ -32,6 +34,10 @@ public class Call extends Expression {
 			} catch(ScriptCallException e) {
 				throw new ScriptExecutionException("Error calling '"+ callableExpression.toString() + "'", e, source);
 			}
+		} else if(c instanceof SUndefined) {
+			throw new ScriptExecutionException("'" + callableExpression.toString() + "' is undefined", source);
+		} else if(c instanceof SNull) {
+			throw new ScriptExecutionException("'" + callableExpression.toString() + "' is null", source);
 		} else {
 			throw new ScriptExecutionException("'" + callableExpression.toString() + "' is not a callable", source);
 		}			

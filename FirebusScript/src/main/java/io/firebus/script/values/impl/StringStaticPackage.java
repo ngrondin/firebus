@@ -3,22 +3,22 @@ package io.firebus.script.values.impl;
 import io.firebus.script.values.SUndefined;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
-import io.firebus.script.values.callables.impl.object.Keys;
+import io.firebus.script.values.callables.impl.string.FromCharCode;
 
-public class ObjectStaticPackage extends SPredefinedObject {
+public class StringStaticPackage extends SPredefinedObject {
 
-	public ObjectStaticPackage() {
+	public StringStaticPackage() {
 		
 	}
 	
 	public String[] getMemberKeys() {
-		return new String[] {"keys"};
+		return new String[] {"fromCharCode"};
 	}
 
 	public SValue getMember(String name)  {
-		if(name.equals("keys")) {
-			return new Keys();
-		}
+		if(name.equals("fromCharCode")) {
+			return new FromCharCode();
+		} 
 		return SUndefined.get();
 	}
 

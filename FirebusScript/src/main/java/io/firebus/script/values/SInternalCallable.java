@@ -1,6 +1,5 @@
 package io.firebus.script.values;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import io.firebus.script.Scope;
@@ -14,27 +13,38 @@ import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SReturn;
 
 public class SInternalCallable extends SContextCallable {
-	protected List<VariableId> paramIds;
+	protected VariableId[] paramIds;
 	protected Block body;
 	protected Scope definitionScope;
 
 	public SInternalCallable(List<String> p, Block b, Scope s) {
 		body = b;
 		definitionScope = s;
-		paramIds = new ArrayList<VariableId>();
-		for(String pn: p)
-			paramIds.add(new VariableId(pn));
+		paramIds = new VariableId[p.size()];
+		for(int i = 0; i < p.size(); i++)
+			paramIds[i] = new VariableId(p.get(i));
 	}
 	
 	public Scope getDefinitionScope() {
 		return definitionScope;
 	}
+
+	public String[] getParameters() {
+		String[] ret = new String[paramIds.length];
+		for(int i = 0; i < ret.length; i++)
+			ret[i] = paramIds[i].name;
+		return ret;
+	}
+	
+	public Block getBody() {
+		return body;
+	}
 	
 	public SValue call(SObject thisObject, SValue... arguments) throws ScriptCallException {
 		Scope runScope = new Scope(definitionScope);
-		for(int i = 0; i < paramIds.size(); i++) {
+		for(int i = 0; i < paramIds.length; i++) {
 			SValue so = arguments != null && arguments.length > i ? arguments[i] : null;
-			runScope.setValue(paramIds.get(i), so);			
+			runScope.setValue(paramIds[i], so);			
 		}
 		if(thisObject != null) {
 			runScope.setValue(new VariableId("this"), thisObject);

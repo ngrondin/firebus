@@ -14,7 +14,7 @@ public class SUndefined extends SValue {
     }
     
  	public boolean equals(SValue other) {
-		return other instanceof SUndefined;
+		return other instanceof SUndefined || other instanceof SNull;
 	}
 
 	public boolean identical(SValue other) {

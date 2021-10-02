@@ -12,7 +12,7 @@ public abstract class OneIntegerOperator extends OneNumberOperator {
 	}
 
 	protected SValue evalWithNumber(Number n) throws ScriptExecutionException {
-		int i = n.intValue();
+		long i = n.longValue();
 		if(n.doubleValue() == i) {
 			return evalWithInt(i);
 		} else {

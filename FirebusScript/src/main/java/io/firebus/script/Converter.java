@@ -13,11 +13,13 @@ import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.SDate;
+import io.firebus.script.values.SInternalCallable;
 import io.firebus.script.values.SInternalObject;
 import io.firebus.script.values.SNull;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.SString;
 import io.firebus.script.values.STime;
+import io.firebus.script.values.SUndefined;
 import io.firebus.script.values.abs.SCallable;
 import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
@@ -38,7 +40,10 @@ public class Converter {
 		} else if(o instanceof SValue) {
 			return (SValue)o;
 		} else if(o instanceof Number) {
-			return new SNumber((Number)o);
+			if(o instanceof Integer || o instanceof Long)
+				return new SNumber(((Number)o).longValue());
+			else
+				return new SNumber(((Number)o).doubleValue());
 		} else if(o instanceof String) {
 			return new SString((String)o);
 		} else if(o instanceof Boolean) {
@@ -85,6 +90,8 @@ public class Converter {
 	public static Object convertOut(SValue v) throws ScriptException {
 		if(v instanceof SNull) {
 			return null;
+		} else if(v instanceof SUndefined) {
+			return null;
 		} else if(v instanceof SNumber) {
 			Number n = ((SNumber)v).getNumber();
 			if(n instanceof Long)
@@ -117,6 +124,10 @@ public class Converter {
 					map.put(keys[i], convertOut(o.getMember(keys[i])));
 			}
 			return map;
+		} else if(v instanceof SInternalCallable) {
+			SInternalCallable callable = (SInternalCallable)v;
+			Function func = new Function(callable.getDefinitionScope(), callable.getParameters(), callable.getBody());
+			return func;
 		} else {
 			throw new ScriptValueException("Cannot convert '" + v.toString() + "' to java space");
 		}

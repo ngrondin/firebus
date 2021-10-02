@@ -13,8 +13,8 @@ public abstract class TwoIntegerOperator extends TwoNumberOperator {
 
 	@Override
 	protected SValue evalWithNumbers(Number n1, Number n2) throws ScriptExecutionException {
-		int i1 = n1.intValue();
-		int i2 = n2.intValue();
+		long i1 = n1.longValue();
+		long i2 = n2.longValue();
 		if(n1.doubleValue() == i1 && n2.doubleValue() == i2) {
 			return evalWithInts(i1, i2);
 		} else {
