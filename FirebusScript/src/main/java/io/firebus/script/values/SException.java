@@ -35,7 +35,7 @@ public class SException extends SPredefinedObject {
 		throw new ScriptValueException("Exception cannot be converted to number");
 	}
 	
-	public boolean toBoolean() throws ScriptValueException {
+	public Boolean toBoolean() throws ScriptValueException {
 		throw new ScriptValueException("Exception cannot be converted to boolean");
 	}
 }

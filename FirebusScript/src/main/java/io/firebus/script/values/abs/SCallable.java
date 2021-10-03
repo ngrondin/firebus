@@ -25,7 +25,7 @@ public abstract class SCallable extends SValue {
 		throw new ScriptValueException("Callable cannot be converted to number");
 	}
 	
-	public boolean toBoolean() throws ScriptValueException {
+	public Boolean toBoolean() throws ScriptValueException {
 		throw new ScriptValueException("Callable cannot be converted to boolean");
 	}
 	

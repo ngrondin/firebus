@@ -21,7 +21,7 @@ public abstract class SFlow extends SValue {
 		throw new ScriptValueException("Flow statement cannot be converted to number");
 	}
 
-	public boolean toBoolean() throws ScriptValueException {
+	public Boolean toBoolean() throws ScriptValueException {
 		throw new ScriptValueException("Flow statement cannot be converted to boolean");
 	}
 	

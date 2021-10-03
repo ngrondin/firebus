@@ -31,7 +31,12 @@ public class SNumber extends SPredefinedObject {
 
 	public boolean equals(SValue other)  {
 		try {
-			return number == other.toNumber();
+			Number on = other.toNumber();
+			if(on != null) {
+				return number == on;
+			} else {
+				return false;//number.longValue() == 0;
+			} 
 		} catch(ScriptValueException e) {
 			return false;
 		}
@@ -72,8 +77,13 @@ public class SNumber extends SPredefinedObject {
 		return getNumber();
 	}
 	
-	public boolean toBoolean() throws ScriptValueException {
-		return number.doubleValue() == 1 ? true : false;
+	public Boolean toBoolean() throws ScriptValueException {
+		if(number.longValue() == 1L)
+			return true;
+		else if(number.longValue() == 0L)
+			return false;
+		else 
+			return null;
 	}
 
 }

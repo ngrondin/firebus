@@ -147,8 +147,8 @@ public class SDate extends SPredefinedObject {
 		return date.toInstant().getEpochSecond();
 	}
 	
-	public boolean toBoolean() throws ScriptValueException {
-		throw new ScriptValueException("Date cannot be converted to boolean");
+	public Boolean toBoolean() throws ScriptValueException {
+		throw null;
 	}
 	
 	public String typeOf() {

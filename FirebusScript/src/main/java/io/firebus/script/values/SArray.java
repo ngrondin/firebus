@@ -129,7 +129,7 @@ public class SArray extends SPredefinedObject {
 		throw new ScriptValueException("Array cannot be converted to number");
 	}
 	
-	public boolean toBoolean() throws ScriptValueException {
+	public Boolean toBoolean() throws ScriptValueException {
 		throw new ScriptValueException("Array cannot be converted to boolean");
 	}
 	

@@ -1,7 +1,6 @@
 package io.firebus.script.units.operators;
 
 import io.firebus.script.SourceInfo;
-import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.tools.Operations;

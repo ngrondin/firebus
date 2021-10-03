@@ -27,16 +27,15 @@ public class SNull extends SValue {
 		return "null";
 	}
 
-
     public String toString() {
         return "null";
     }
     
     public Number toNumber() throws ScriptValueException {
-		return 0;
+		return null;
 	}
 	
-	public boolean toBoolean() throws ScriptValueException {
-		return false;
+	public Boolean toBoolean() throws ScriptValueException {
+		return null;
 	}
 }

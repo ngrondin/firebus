@@ -29,20 +29,17 @@ public class SBoolean extends SPredefinedObject {
         return value;
     }
 
-    public String toString() {
-        return value == true ? "true" : "false";
-    }
-    
-	public Number toNumber() throws ScriptValueException {
-		return value == true ? 1 : 0;
-	}
-	
-	public boolean toBoolean() throws ScriptValueException {
-		return value;
-	}
-
 	public boolean equals(SValue other) {
-		return other instanceof SBoolean && value == ((SBoolean)other).getBoolean();
+		try {
+			Boolean ob = other.toBoolean();
+			if(ob != null) {
+				return value == ob;
+			} else {
+				return false;
+			}
+		} catch(ScriptValueException e) {
+			return false;
+		}
 	}
 
 	public boolean identical(SValue other) {
@@ -67,5 +64,16 @@ public class SBoolean extends SPredefinedObject {
 	public String typeOf() {
 		return "boolean";
 	}
+	
+    public String toString() {
+        return value == true ? "true" : "false";
+    }
     
+	public Number toNumber() throws ScriptValueException {
+		return value == true ? 1L : 0L;
+	}
+	
+	public Boolean toBoolean() throws ScriptValueException {
+		return value;
+	}
 }

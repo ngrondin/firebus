@@ -33,7 +33,8 @@ public class SString extends SPredefinedObject {
 	}
 
 	public boolean equals(SValue other) {
-		return other instanceof SString && str.equals(((SString)other).getString());
+		String os = other.toString();
+		return str.equals(os);
 	}
 
 	public boolean identical(SValue other) {
@@ -88,21 +89,28 @@ public class SString extends SPredefinedObject {
 	public Number toNumber() throws ScriptValueException {
 		try {
 			Number number = null;
-			if(str.contains(".")) {
-				number = Double.parseDouble(str);
+			if(str.length() > 0) {
+				if(str.contains(".")) {
+					number = Double.parseDouble(str);
+				} else {
+					number = Long.parseLong(str);
+				}	
 			} else {
-				number = Long.parseLong(str);
-			}	
+				number = 0L;
+			}
 			return number;
 		} catch(Exception e) {
-			throw new ScriptValueException("Cannot convert '" + str + "' to number");
+			return null;
+			//throw new ScriptValueException("Cannot convert '" + str + "' to number");
 		}
 	}
 	
-	public boolean toBoolean() throws ScriptValueException {
-		if(str.equalsIgnoreCase("true"))
+	public Boolean toBoolean() throws ScriptValueException {
+		if(str.equalsIgnoreCase("true") || str.equalsIgnoreCase("1"))
 			return true;
-		else 
+		else if(str.equalsIgnoreCase("false") || str.equalsIgnoreCase("0"))
 			return false;
+		else 
+			return null;
 	}
 }

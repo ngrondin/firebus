@@ -14,5 +14,5 @@ public abstract class SValue {
 	
 	public abstract Number toNumber() throws ScriptValueException;
 	
-	public abstract boolean toBoolean() throws ScriptValueException;
+	public abstract Boolean toBoolean() throws ScriptValueException;
 }
