@@ -30,15 +30,32 @@ public class SBoolean extends SPredefinedObject {
     }
 
 	public boolean equals(SValue other) {
-		try {
-			Boolean ob = other.toBoolean();
-			if(ob != null) {
-				return value == ob;
-			} else {
-				return false;
-			}
-		} catch(ScriptValueException e) {
+		if(other instanceof SNull) {
 			return false;
+		} else if(other instanceof SNumber) {
+			Number on = ((SNumber)other).getNumber();
+			if(value == true && on.longValue() == 1L)
+				return true;
+			else if(value == false && on.longValue() == 0L)
+				return true;
+			else
+				return false;
+		} else if(other instanceof SString) {
+			String os = ((SString)other).getString();
+			if(value == true && (os.equals("true") || os.equals("1")))
+				return true;
+			else if(value == false && (os.equals("false") || os.equals("0") || os.equals("")))
+				return true;
+			else
+				return false;
+		} else if(other instanceof SBoolean) {
+			Boolean ob = ((SBoolean)other).getBoolean();
+			if(value == ob)
+				return true;
+			else
+				return false;
+		} else {
+			return false;				
 		}
 	}
 

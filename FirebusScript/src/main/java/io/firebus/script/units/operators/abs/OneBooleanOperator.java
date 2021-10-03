@@ -14,10 +14,9 @@ public abstract class OneBooleanOperator extends OneExpressionOperator {
 
 	protected SValue evalWithValue(SValue v) throws ScriptExecutionException {
 		try {
-			boolean b = v.toBoolean();
-			return evalWithBoolean(b);
+			return evalWithBoolean(v.toBoolean());
 		} catch(ScriptValueException e) {
-			throw new ScriptExecutionException(this.getClass().getSimpleName() + " operator requries 1 boolean value", source);
+			throw new ScriptExecutionException(this.getClass().getSimpleName() + " operator requries 1 non-null boolean value", source);
 		}
 	}
 

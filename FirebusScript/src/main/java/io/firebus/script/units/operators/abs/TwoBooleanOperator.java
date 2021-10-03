@@ -13,9 +13,7 @@ public abstract class TwoBooleanOperator extends TwoExpressionOperator {
 	}
 
 	protected SValue evalWithValues(SValue v1, SValue v2) throws ScriptExecutionException, ScriptValueException {
-		boolean b1 = v1.toBoolean();
-		boolean b2 = v2.toBoolean();
-		return evalWithBools(b1, b2);
+		return evalWithBools(v1.toBoolean(), v2.toBoolean());
 	}
 
 	protected abstract SValue evalWithBools(boolean b1, boolean b2) throws ScriptExecutionException, ScriptValueException;

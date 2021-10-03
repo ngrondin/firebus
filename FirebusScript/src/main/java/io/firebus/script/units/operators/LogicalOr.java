@@ -22,18 +22,16 @@ public class LogicalOr extends Operator {
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		try {
 			SValue v1 = expr1.eval(scope);
-			boolean b1 = v1.toBoolean();
-			if(b1 == false) {
-				SValue v2 = expr2.eval(scope);
-				boolean b2 = v2.toBoolean();
-				if(b2 == false) {
-					return SBoolean.get(false);
-				} else {
-					return SBoolean.get(true);
-				}
-			} else {
+			if(v1.toBoolean() == true) {
 				return SBoolean.get(true);
-			}
+			} else {
+				SValue v2 = expr2.eval(scope);
+				if(v2.toBoolean() == true) {
+					return SBoolean.get(true);
+				} else {
+					return SBoolean.get(false);
+				}
+			} 
 		} catch(ScriptValueException e) {
 			throw new ScriptExecutionException(e.getMessage() + " in '" + this.toString() + "'", source);
 		}

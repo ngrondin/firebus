@@ -148,7 +148,7 @@ public class SDate extends SPredefinedObject {
 	}
 	
 	public Boolean toBoolean() throws ScriptValueException {
-		throw null;
+		return true;
 	}
 	
 	public String typeOf() {

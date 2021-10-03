@@ -33,8 +33,24 @@ public class SString extends SPredefinedObject {
 	}
 
 	public boolean equals(SValue other) {
-		String os = other.toString();
-		return str.equals(os);
+		if(other instanceof SBoolean) {
+			Boolean ob = ((SBoolean)other).getBoolean();
+			if(ob == false && (str.equals("0") || str.equals("")))
+				return true;
+			else if(ob == true && str.equals("1"))
+				return true;
+			else
+				return false;
+		} if(other instanceof SNumber) {
+			Number on = ((SNumber) other).getNumber();
+			if(on.longValue() == 0 && str.equals(""))
+				return true;
+			else 
+				return str.equals(on.toString());
+		} else {
+			String os = other.toString();
+			return str.equals(os);
+		}
 	}
 
 	public boolean identical(SValue other) {
@@ -100,7 +116,7 @@ public class SString extends SPredefinedObject {
 			}
 			return number;
 		} catch(Exception e) {
-			return null;
+			return Double.NaN;
 			//throw new ScriptValueException("Cannot convert '" + str + "' to number");
 		}
 	}

@@ -32,10 +32,10 @@ public class SNull extends SValue {
     }
     
     public Number toNumber() throws ScriptValueException {
-		return null;
+		return 0L;
 	}
 	
 	public Boolean toBoolean() throws ScriptValueException {
-		return null;
+		return false;
 	}
 }

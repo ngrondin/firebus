@@ -23,8 +23,7 @@ public class TernaryExpression extends Expression {
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue res = condition.eval(scope);
 		try {
-			boolean r = res.toBoolean();
-			if(r) 
+			if(res.toBoolean() == true) 
 				return thenExpr.eval(scope);
 			else
 				return elseExpr.eval(scope);
