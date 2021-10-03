@@ -8,7 +8,8 @@ import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 
 import io.firebus.script.SourceInfo;
 import io.firebus.script.exceptions.ScriptBuildException;
-import io.firebus.script.parser.JavaScriptParser.AnoymousFunctionDeclContext;
+import io.firebus.script.parser.JavaScriptParser.AnonymousFunctionContext;
+//import io.firebus.script.parser.JavaScriptParser.AnoymousFunctionDeclContext;
 import io.firebus.script.parser.JavaScriptParser.ArgumentContext;
 import io.firebus.script.parser.JavaScriptParser.ArgumentsContext;
 import io.firebus.script.parser.JavaScriptParser.ArgumentsExpressionContext;
@@ -69,7 +70,7 @@ public class CallableBuilder extends Builder {
 			Block body = buildArrowFunctionBody((ArrowFunctionBodyContext)sub.getChild(2));
 			CallableDefinition callDef = new CallableDefinition(params, body, sourceInfo(ctx));
 			return callDef;
-		} else if(sub instanceof AnoymousFunctionDeclContext) {
+		} else if(sub instanceof AnonymousFunctionContext) {
 			List<String> params = null;
 			Block body = null;
 			if(sub.getChildCount() ==  4) {
@@ -134,8 +135,8 @@ public class CallableBuilder extends Builder {
 	}
 	
 	public static New buildNewOperator(NewExpressionContext ctx) throws ScriptBuildException {
-		Expression callable = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)ctx.getChild(1).getChild(0));
-		List<Expression> args = buildArguments((ArgumentsContext)ctx.getChild(1).getChild(1));
+		Expression callable = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)ctx.getChild(1));
+		List<Expression> args = buildArguments((ArgumentsContext)ctx.getChild(2));
 		return new New(callable, args, sourceInfo(ctx));
 	}
 }

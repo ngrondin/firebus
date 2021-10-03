@@ -9,16 +9,16 @@ import io.firebus.script.values.abs.SValue;
 public class FromCharCode extends SCallable {
 
 	public SValue call(SValue... arguments) throws ScriptCallException {
-		if(arguments.length == 1) {
-			SValue v = arguments[0];
-			try {
-				int i = v.toNumber().intValue();
-				return new SString(Character.toString(i));
-			} catch(ScriptValueException e) {
-				throw new ScriptCallException("Error in fromCharCode", e);
+		try {
+			StringBuilder sb = new StringBuilder();
+			for(int i = 0; i < arguments.length; i++) {
+				SValue v = arguments[i];
+				int c = v.toNumber().intValue();
+				sb.append(Character.toString(c));
 			}
-		} else {
-			throw new ScriptCallException("fromCharCode requires 1 argument");
+			return new SString(sb.toString());
+		} catch(ScriptValueException e) {
+			throw new ScriptCallException("Error in fromCharCode", e);
 		}
 	}
 

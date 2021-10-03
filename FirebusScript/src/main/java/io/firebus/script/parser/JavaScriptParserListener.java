@@ -1,5 +1,4 @@
 package io.firebus.script.parser;
-
 // Generated from JavaScriptParser.g4 by ANTLR 4.9.2
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -1278,37 +1277,37 @@ public interface JavaScriptParserListener extends ParseTreeListener {
 	void exitObjectLiteral(JavaScriptParser.ObjectLiteralContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code FunctionDecl}
-	 * labeled alternative in {@link JavaScriptParser#anoymousFunction}.
+	 * labeled alternative in {@link JavaScriptParser#anonymousFunction}.
 	 * @param ctx the parse tree
 	 */
 	void enterFunctionDecl(JavaScriptParser.FunctionDeclContext ctx);
 	/**
 	 * Exit a parse tree produced by the {@code FunctionDecl}
-	 * labeled alternative in {@link JavaScriptParser#anoymousFunction}.
+	 * labeled alternative in {@link JavaScriptParser#anonymousFunction}.
 	 * @param ctx the parse tree
 	 */
 	void exitFunctionDecl(JavaScriptParser.FunctionDeclContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code AnoymousFunctionDecl}
-	 * labeled alternative in {@link JavaScriptParser#anoymousFunction}.
+	 * Enter a parse tree produced by the {@code AnonymousFunctionDecl}
+	 * labeled alternative in {@link JavaScriptParser#anonymousFunction}.
 	 * @param ctx the parse tree
 	 */
-	void enterAnoymousFunctionDecl(JavaScriptParser.AnoymousFunctionDeclContext ctx);
+	void enterAnonymousFunctionDecl(JavaScriptParser.AnonymousFunctionDeclContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code AnoymousFunctionDecl}
-	 * labeled alternative in {@link JavaScriptParser#anoymousFunction}.
+	 * Exit a parse tree produced by the {@code AnonymousFunctionDecl}
+	 * labeled alternative in {@link JavaScriptParser#anonymousFunction}.
 	 * @param ctx the parse tree
 	 */
-	void exitAnoymousFunctionDecl(JavaScriptParser.AnoymousFunctionDeclContext ctx);
+	void exitAnonymousFunctionDecl(JavaScriptParser.AnonymousFunctionDeclContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code ArrowFunction}
-	 * labeled alternative in {@link JavaScriptParser#anoymousFunction}.
+	 * labeled alternative in {@link JavaScriptParser#anonymousFunction}.
 	 * @param ctx the parse tree
 	 */
 	void enterArrowFunction(JavaScriptParser.ArrowFunctionContext ctx);
 	/**
 	 * Exit a parse tree produced by the {@code ArrowFunction}
-	 * labeled alternative in {@link JavaScriptParser#anoymousFunction}.
+	 * labeled alternative in {@link JavaScriptParser#anonymousFunction}.
 	 * @param ctx the parse tree
 	 */
 	void exitArrowFunction(JavaScriptParser.ArrowFunctionContext ctx);
@@ -1352,6 +1351,26 @@ public interface JavaScriptParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitLiteral(JavaScriptParser.LiteralContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaScriptParser#templateStringLiteral}.
+	 * @param ctx the parse tree
+	 */
+	void enterTemplateStringLiteral(JavaScriptParser.TemplateStringLiteralContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaScriptParser#templateStringLiteral}.
+	 * @param ctx the parse tree
+	 */
+	void exitTemplateStringLiteral(JavaScriptParser.TemplateStringLiteralContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaScriptParser#templateStringAtom}.
+	 * @param ctx the parse tree
+	 */
+	void enterTemplateStringAtom(JavaScriptParser.TemplateStringAtomContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaScriptParser#templateStringAtom}.
+	 * @param ctx the parse tree
+	 */
+	void exitTemplateStringAtom(JavaScriptParser.TemplateStringAtomContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link JavaScriptParser#numericLiteral}.
 	 * @param ctx the parse tree

@@ -122,11 +122,9 @@ public class SString extends SPredefinedObject {
 	}
 	
 	public Boolean toBoolean() throws ScriptValueException {
-		if(str.equalsIgnoreCase("true") || str.equalsIgnoreCase("1"))
-			return true;
-		else if(str.equalsIgnoreCase("false") || str.equalsIgnoreCase("0"))
+		if(str.length() == 0) 
 			return false;
-		else 
-			return null;
+		else
+			return true;
 	}
 }

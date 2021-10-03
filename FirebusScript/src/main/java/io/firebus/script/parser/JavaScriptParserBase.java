@@ -1,9 +1,5 @@
 package io.firebus.script.parser;
-
-import org.antlr.v4.runtime.Lexer;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.*;
 
 /**
  * All parser methods that used in grammar (p, prev, notLineTerminator, etc.)
@@ -49,7 +45,7 @@ public abstract class JavaScriptParserBase extends Parser
 
     protected boolean notOpenBraceAndNotFunction() {
         int nextTokenType = _input.LT(1).getType();
-        return nextTokenType != JavaScriptParser.OpenBrace && nextTokenType != JavaScriptParser.Function;
+        return nextTokenType != JavaScriptParser.OpenBrace && nextTokenType != JavaScriptParser.Function_;
     }
 
     protected boolean closeBrace() {
