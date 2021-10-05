@@ -58,26 +58,6 @@ public interface JavaScriptParserListener extends ParseTreeListener {
 	 */
 	void exitStatementList(JavaScriptParser.StatementListContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link JavaScriptParser#importStatement}.
-	 * @param ctx the parse tree
-	 */
-	void enterImportStatement(JavaScriptParser.ImportStatementContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link JavaScriptParser#importStatement}.
-	 * @param ctx the parse tree
-	 */
-	void exitImportStatement(JavaScriptParser.ImportStatementContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link JavaScriptParser#importFromBlock}.
-	 * @param ctx the parse tree
-	 */
-	void enterImportFromBlock(JavaScriptParser.ImportFromBlockContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link JavaScriptParser#importFromBlock}.
-	 * @param ctx the parse tree
-	 */
-	void exitImportFromBlock(JavaScriptParser.ImportFromBlockContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link JavaScriptParser#moduleItems}.
 	 * @param ctx the parse tree
 	 */
@@ -108,16 +88,6 @@ public interface JavaScriptParserListener extends ParseTreeListener {
 	 */
 	void exitImportNamespace(JavaScriptParser.ImportNamespaceContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link JavaScriptParser#importFrom}.
-	 * @param ctx the parse tree
-	 */
-	void enterImportFrom(JavaScriptParser.ImportFromContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link JavaScriptParser#importFrom}.
-	 * @param ctx the parse tree
-	 */
-	void exitImportFrom(JavaScriptParser.ImportFromContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link JavaScriptParser#aliasName}.
 	 * @param ctx the parse tree
 	 */
@@ -127,40 +97,6 @@ public interface JavaScriptParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAliasName(JavaScriptParser.AliasNameContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code ExportDeclaration}
-	 * labeled alternative in {@link JavaScriptParser#exportStatement}.
-	 * @param ctx the parse tree
-	 */
-	void enterExportDeclaration(JavaScriptParser.ExportDeclarationContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code ExportDeclaration}
-	 * labeled alternative in {@link JavaScriptParser#exportStatement}.
-	 * @param ctx the parse tree
-	 */
-	void exitExportDeclaration(JavaScriptParser.ExportDeclarationContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code ExportDefaultDeclaration}
-	 * labeled alternative in {@link JavaScriptParser#exportStatement}.
-	 * @param ctx the parse tree
-	 */
-	void enterExportDefaultDeclaration(JavaScriptParser.ExportDefaultDeclarationContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code ExportDefaultDeclaration}
-	 * labeled alternative in {@link JavaScriptParser#exportStatement}.
-	 * @param ctx the parse tree
-	 */
-	void exitExportDefaultDeclaration(JavaScriptParser.ExportDefaultDeclarationContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link JavaScriptParser#exportFromBlock}.
-	 * @param ctx the parse tree
-	 */
-	void enterExportFromBlock(JavaScriptParser.ExportFromBlockContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link JavaScriptParser#exportFromBlock}.
-	 * @param ctx the parse tree
-	 */
-	void exitExportFromBlock(JavaScriptParser.ExportFromBlockContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link JavaScriptParser#declaration}.
 	 * @param ctx the parse tree
