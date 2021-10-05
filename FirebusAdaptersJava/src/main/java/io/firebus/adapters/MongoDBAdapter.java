@@ -233,8 +233,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					Object source = null;
 					if(tuple.get(i) instanceof DataMap) {
 						key = tuple.getObject(i).getString("attribute");
-						interval = tuple.getObject(i).getNumber("interval");
-						source = new DataMap("{$dateToString:{date:{$toDate:{$subtract:[{$toLong:{$toDate:\"$" + key + "\"}},{$mod:[{$toLong:{$toDate:\"$" + key + "\"}}," + interval + "]}]}}}}");
+						interval = tuple.getObject(i).getNumber("interval").longValue();
+						source = new DataMap("{$dateToString:{date:{$toDate:{$subtract:[{$toLong:{$toDate:\"$" + key + "\"}},{$mod:[{$toLong:{$toDate:\"$" + key + "\"}}," + interval.toString() + "]}]}}}}");
 					} else {
 						key = tuple.getString(i);
 						source = "$" + key;
