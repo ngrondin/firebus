@@ -13,11 +13,13 @@ import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SReturn;
 
 public class SInternalCallable extends SContextCallable {
+	protected String name;
 	protected VariableId[] paramIds;
 	protected Block body;
 	protected Scope definitionScope;
 
-	public SInternalCallable(List<String> p, Block b, Scope s) {
+	public SInternalCallable(String n, List<String> p, Block b, Scope s) {
+		name = n;
 		body = b;
 		definitionScope = s;
 		paramIds = new VariableId[p.size()];
@@ -57,7 +59,7 @@ public class SInternalCallable extends SContextCallable {
 				return SNull.get();
 			}
 		} catch(ScriptExecutionException e) {
-			throw new ScriptCallException("Error on call", e);
+			throw new ScriptCallException("Error calling " + (name != null ? name : "anonymous"), name, e);
 		}
 	}
 	

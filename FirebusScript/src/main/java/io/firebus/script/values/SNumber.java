@@ -6,6 +6,7 @@ import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.callables.impl.ToString;
+import io.firebus.script.values.callables.impl.number.ToFixed;
 
 public class SNumber extends SPredefinedObject {
     protected Number number;
@@ -65,6 +66,8 @@ public class SNumber extends SPredefinedObject {
 	public SValue getMember(String name) {
 		if(name.equals("toString")) {
 			return new ToString(this);
+		} else if(name.equals("toFixed")) {
+			return new ToFixed(this);
 		}
 		return SUndefined.get();
 	}

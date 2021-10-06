@@ -22,6 +22,7 @@ import io.firebus.script.values.callables.impl.array.Reduce;
 import io.firebus.script.values.callables.impl.array.Slice;
 import io.firebus.script.values.callables.impl.array.Sort;
 import io.firebus.script.values.callables.impl.array.Splice;
+import io.firebus.script.values.callables.impl.array.ToString;
 
 public class SArray extends SPredefinedObject {
 	protected List<SValue> values;
@@ -104,6 +105,8 @@ public class SArray extends SPredefinedObject {
 				return new Splice(values);
 			} else if(key.contentEquals("length")) {
 				return new SNumber(values.size());
+			} else if(key.contentEquals("toString")) {
+				return new ToString(values);
 			}
 		} 
 		return SUndefined.get();

@@ -11,18 +11,20 @@ import io.firebus.script.values.SInternalCallable;
 import io.firebus.script.values.abs.SValue;
 
 public class CallableDefinition extends Expression {
+	protected String name;
 	protected List<String> params;
 	protected Block body;
 	
-	public CallableDefinition(List<String> p, Block b, SourceInfo uc) {
+	public CallableDefinition(String n, List<String> p, Block b, SourceInfo uc) {
 		super(uc);
+		name = n;
 		params = p;
 		body = b;
 	}
 	
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		Scope local = new Scope(scope);
-		return new SInternalCallable(params, body, local);
+		return new SInternalCallable(name, params, body, local);
 	}
 
 }

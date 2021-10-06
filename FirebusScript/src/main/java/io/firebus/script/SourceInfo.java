@@ -13,6 +13,18 @@ public class SourceInfo {
 		column = c;
 	}
 	
+	public String getSourceName() {
+		return sourceName;
+	}
+	
+	public int getLine() {
+		return line;
+	}
+	
+	public int getColumn() {
+		return column;
+	}
+	
 	public String toString() {
 		return text;
 	}

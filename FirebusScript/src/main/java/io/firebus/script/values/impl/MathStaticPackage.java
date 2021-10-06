@@ -3,6 +3,7 @@ package io.firebus.script.values.impl;
 import io.firebus.script.values.SUndefined;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.callables.impl.math.Abs;
 import io.firebus.script.values.callables.impl.math.Ceil;
 import io.firebus.script.values.callables.impl.math.Floor;
 import io.firebus.script.values.callables.impl.math.Max;
@@ -30,6 +31,8 @@ public class MathStaticPackage extends SPredefinedObject {
 			return new Ceil();
 		} else if(name.equals("round")) {
 			return new Round();
+		} else if(name.equals("abs")) {
+			return new Abs();
 		}
 		return SUndefined.get();
 	}

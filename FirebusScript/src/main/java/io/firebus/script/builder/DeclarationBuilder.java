@@ -53,7 +53,7 @@ public class DeclarationBuilder extends Builder {
 			params = new ArrayList<String>();
 		}
 		Block body = CallableBuilder.buildFunctionBody((FunctionBodyContext)ctx.getChild(ctx.getChildCount() - 1));
-		CallableDefinition callDef = new CallableDefinition(params, body, sourceInfo(ctx));
+		CallableDefinition callDef = new CallableDefinition(key, params, body, sourceInfo(ctx));
 		Declare declare = new Declare(key, callDef, sourceInfo(ctx));
 		declare.setModifier("function");
 		return declare;

@@ -11,17 +11,19 @@ public class ParseInt extends SCallable {
 	public SValue call(SValue... arguments) throws ScriptCallException {
 		if(arguments.length > 0) {
 			SValue v = arguments[0];
-			long l = 0;
 			if(v instanceof SString) {
 				String s = ((SString)v).getString();
-				l = Long.parseLong(s);
+				try {
+					return new SNumber(Long.parseLong(s));
+				} catch(Exception e) {
+					return new SNumber(Double.NaN);
+				}
 			} else if(v instanceof SNumber) {
 				Number n = ((SNumber)v).getNumber();
-				l = n.longValue();
+				return new SNumber(n.longValue());
 			} else {
-				throw new ScriptCallException("Invalid argument for parseInt. Should be string.");				
-			}
-			return new SNumber(l);
+				return new SNumber(Double.NaN);
+			}			
 		} else {
 			throw new ScriptCallException("parseInt requires at least 1 argument");
 		}

@@ -1,1 +1,2 @@
-getTimeLabelAtTimezone(from, session.timezone) + ' to ' + getTimeLabelAtTimezone(to, session.timezone)
+var i = "allo";
+print(i);

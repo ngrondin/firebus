@@ -70,11 +70,11 @@ public class Scope {
 			sb.append(values.get(hash).toString().replaceAll("(?m)^", " "));
 			sb.append(",\r\n");
 		}
-		if(parent != null) {
-			sb.append(parent.toString().replaceAll("(?m)^", " "));
-			sb.append("\r\n");
-		}
 		sb.append("}");
+		if(parent != null) {
+			sb.append(parent.toString());
+			sb.append("\r\n");
+		}		
 		return sb.toString();
 	}
 }

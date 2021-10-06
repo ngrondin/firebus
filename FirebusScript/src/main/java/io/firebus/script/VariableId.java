@@ -8,5 +8,9 @@ public class VariableId {
 		name = n;
 		hash = n.hashCode();
 	}
+	
+	public int hashCode() {
+		return hash;
+	}
 
 }

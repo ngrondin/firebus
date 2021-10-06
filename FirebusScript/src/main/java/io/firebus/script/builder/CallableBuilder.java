@@ -68,7 +68,7 @@ public class CallableBuilder extends Builder {
 		if(sub instanceof ArrowFunctionContext) {
 			List<String> params = buildArrowFunctionParameters((ArrowFunctionParametersContext)sub.getChild(0));
 			Block body = buildArrowFunctionBody((ArrowFunctionBodyContext)sub.getChild(2));
-			CallableDefinition callDef = new CallableDefinition(params, body, sourceInfo(ctx));
+			CallableDefinition callDef = new CallableDefinition(null, params, body, sourceInfo(ctx));
 			return callDef;
 		} else if(sub instanceof AnonymousFunctionContext) {
 			List<String> params = null;
@@ -80,7 +80,7 @@ public class CallableBuilder extends Builder {
 				params = buildFormalParameterList((FormalParameterListContext)sub.getChild(2));
 				body = buildFunctionBody((FunctionBodyContext)sub.getChild(4));
 			}
-			CallableDefinition callDef = new CallableDefinition(params, body, sourceInfo(ctx));
+			CallableDefinition callDef = new CallableDefinition(null, params, body, sourceInfo(ctx));
 			return callDef;			
 		}
 		throw new ScriptBuildException("Unknown source element", sourceInfo(ctx));

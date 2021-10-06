@@ -3,14 +3,16 @@ package io.firebus.script;
 import java.util.Map;
 
 import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.abs.ExecutionUnit;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SReturn;
 
-public class Function {
+public class Function extends Executor {
 	protected Scope scope;
 	protected String[] parameters;
 	protected ExecutionUnit rootExecutionUnit;
+	protected boolean fullExceptions = false;
 	
 	protected Function(Scope s, String[] p, ExecutionUnit eu) {
 		rootExecutionUnit = eu;
@@ -32,7 +34,16 @@ public class Function {
 				localScope.setValue(new VariableId(parameters[i]), Converter.convertIn(arguments[i]));
 			}
 		}
-		SValue ret = rootExecutionUnit.eval(localScope);
+		SValue ret = null;
+		try {
+			ret = rootExecutionUnit.eval(localScope);
+		} catch(ScriptExecutionException e) {
+ 			if(fullExceptions) {
+ 				throw e;
+ 			} else {
+ 				throw ScriptException.flatten(e, Function.class);
+ 			}
+		}
 		if(ret instanceof SReturn)
 			return Converter.convertOut(((SReturn)ret).getReturnedValue());
 		else
