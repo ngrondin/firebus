@@ -1,7 +1,5 @@
 package io.firebus.script.values.callables.impl.array;
 
-import java.util.List;
-
 import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.abs.SValue;
@@ -9,8 +7,8 @@ import io.firebus.script.values.callables.impl.ArrayFunction;
 
 public class Of extends ArrayFunction {
 	
-	public Of(List<SValue> v) {
-		super(v);
+	public Of(SArray a) {
+		super(a);
 	}
 	
 	public SValue call(SValue... arguments) throws ScriptCallException {

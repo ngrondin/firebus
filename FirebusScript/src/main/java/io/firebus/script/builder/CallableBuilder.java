@@ -120,7 +120,11 @@ public class CallableBuilder extends Builder {
 	}
 	
 	public static Block buildFunctionBody(FunctionBodyContext ctx) throws ScriptBuildException {
-		List<Statement> list = MasterBuilder.buildSourceElements((SourceElementsContext)ctx.getChild(1));
+		List<Statement> list = null;
+		if(ctx.getChildCount() == 3)
+			list = MasterBuilder.buildSourceElements((SourceElementsContext)ctx.getChild(1));
+		else 
+			list = new ArrayList<Statement>();
 		return new Block(list, sourceInfo(ctx));
 	}
 	

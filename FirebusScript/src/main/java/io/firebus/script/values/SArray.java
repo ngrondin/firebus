@@ -46,8 +46,17 @@ public class SArray extends SPredefinedObject {
 		return values.size();
 	}
 	
-	public void remove(int i) {
-		
+	public List<SValue> getValues() {
+		return values;
+	}
+	
+	public SValue remove(int i) {
+		SValue ret = values.remove(i);
+		return ret;
+	}
+	
+	public void add(SValue v) {
+		values.add(v);
 	}
 	
 	public void set(int i, SValue v)  {
@@ -72,41 +81,41 @@ public class SArray extends SPredefinedObject {
 			if(key.equals("length")) {
 				return new SNumber(values.size());
 			} else if(key.equals("map")) {
-				return new Map(values);
+				return new Map(this);
 			} else if(key.equals("join")) {
-				return new Join(values);
+				return new Join(this);
 			} else if(key.equals("concat")) {
-				return new Concat(values);
+				return new Concat(this);
 			} else if(key.equals("filter")) {
-				return new Filter(values);
+				return new Filter(this);
 			} else if(key.equals("find")) {
-				return new Find(values);
+				return new Find(this);
 			} else if(key.equals("forEach")) {
-				return new ForEach(values);
+				return new ForEach(this);
 			} else if(key.equals("includes")) {
-				return new Includes(values);
+				return new Includes(this);
 			} else if(key.equals("indexOf")) {
-				return new IndexOf(values);
+				return new IndexOf(this);
 			} else if(key.equals("lastIndexOf")) {
-				return new LastIndexOf(values);
+				return new LastIndexOf(this);
 			} else if(key.equals("of")) {
-				return new Of(values);
+				return new Of(this);
 			} else if(key.equals("push")) {
-				return new Push(values);
+				return new Push(this);
 			} else if(key.equals("pop")) {
-				return new Pop(values);
+				return new Pop(this);
 			} else if(key.equals("reduce")) {
-				return new Reduce(values);
+				return new Reduce(this);
 			} else if(key.equals("slice")) {
-				return new Slice(values);
+				return new Slice(this);
 			} else if(key.equals("sort")) {
-				return new Sort(values);
+				return new Sort(this);
 			} else if(key.equals("splice")) {
-				return new Splice(values);
+				return new Splice(this);
 			} else if(key.contentEquals("length")) {
 				return new SNumber(values.size());
 			} else if(key.contentEquals("toString")) {
-				return new ToString(values);
+				return new ToString(this);
 			}
 		} 
 		return SUndefined.get();

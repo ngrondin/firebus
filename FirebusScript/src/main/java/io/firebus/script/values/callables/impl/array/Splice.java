@@ -1,7 +1,5 @@
 package io.firebus.script.values.callables.impl.array;
 
-import java.util.List;
-
 import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.SNumber;
@@ -10,8 +8,8 @@ import io.firebus.script.values.callables.impl.ArrayFunction;
 
 public class Splice extends ArrayFunction {
 	
-	public Splice(List<SValue> v) {
-		super(v);
+	public Splice(SArray a) {
+		super(a);
 	}
 	
 	public SValue call(SValue... arguments) throws ScriptCallException {
@@ -23,7 +21,7 @@ public class Splice extends ArrayFunction {
 			int e = s + ((SNumber)len).getNumber().intValue();
 			int index = 0;
 			for(int i = s; i < e; i++) {
-				SValue val = values.remove(s);
+				SValue val = array.remove(s);
 				ret.set(index++, val);
 			}
 			return ret;

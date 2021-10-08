@@ -49,6 +49,8 @@ public class SDate extends SPredefinedObject {
 			SValue arg = arguments[0];
 			if(arg instanceof SNumber) {
 				date = Instant.ofEpochMilli(((SNumber)arg).getNumber().longValue()).atZone(ZoneId.systemDefault());
+			} else if(arg instanceof SDate) {
+				date = ((SDate)arg).getZonedDateTime();
 			} else if(!(arg instanceof SNull || arg instanceof SUndefined)){
 				date = ZonedDateTime.parse(arg.toString());
 			} else {

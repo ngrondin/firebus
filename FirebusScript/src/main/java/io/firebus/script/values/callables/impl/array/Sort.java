@@ -12,15 +12,15 @@ import io.firebus.script.values.callables.impl.ArrayFunction;
 
 public class Sort extends ArrayFunction {
 	
-	public Sort(List<SValue> v) {
-		super(v);
+	public Sort(SArray a) {
+		super(a);
 	}
 	
 	public SValue call(SValue... arguments) throws ScriptCallException {
 		SCallable c = (SCallable)arguments[0];
 		List<SValue> out = new ArrayList<SValue>();
-		for(int i = 0; i < values.size(); i++) {
-			SValue itema = values.get(i);
+		for(int i = 0; i < array.getSize(); i++) {
+			SValue itema = array.get(i);
 			boolean inserted = false;
 			for(int j = 0; j < out.size(); j++) {
 				SValue itemb = out.get(j);
