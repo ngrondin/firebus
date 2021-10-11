@@ -16,6 +16,7 @@ import org.bson.json.StrictJsonWriter;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoCommandException;
 import com.mongodb.TransactionOptions;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.ClientSession;
@@ -125,25 +126,34 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			else if(request.containsKey("key") || request.containsKey("multi"))
 			{
 				ClientSession session = null;
-				try {
-					session = client.startSession();
-					if(request.containsKey("key")) {
-						upsert(session, request);
-					} else if(request.containsKey("multi")) {
-						DataList multi = request.getList("multi");
-						session.startTransaction(TransactionOptions.builder().writeConcern(WriteConcern.MAJORITY).build());
-						for(int i = 0; i < multi.size(); i++) 
-							upsert(session, multi.getObject(i));
-						session.commitTransaction();						
+				int tries = 0;
+				boolean success = false;
+				while(!success) {
+					try {
+						session = client.startSession();
+						if(request.containsKey("key")) {
+							upsert(session, request);
+						} else if(request.containsKey("multi")) {
+							DataList multi = request.getList("multi");
+							session.startTransaction(TransactionOptions.builder().writeConcern(WriteConcern.MAJORITY).build());
+							for(int i = 0; i < multi.size(); i++) 
+								upsert(session, multi.getObject(i));
+							session.commitTransaction();						
+						}
+						success = true;
+						responseJSON.put("result", "ok");	
+					} catch(Exception e) {
+						if(session != null) session.abortTransaction();
+						if(e instanceof MongoCommandException && ((MongoCommandException) e).getCode() == 112 && tries < 3) {
+							logger.warning("Error in db multi transaction: " + e.getMessage());
+							tries++;
+						} else {
+							throw new FunctionErrorException("Error in db multi transaction", e);
+						}
+					} finally {
+						if(session != null) session.close();
 					}
-					responseJSON.put("result", "ok");	
-				} catch(Exception e) {
-					if(session != null) session.abortTransaction();
-					throw new FunctionErrorException("Error in db multi transaction", e);
-				} finally {
-					if(session != null) session.close();
 				}
-				responseJSON.put("result", "ok");
 			}
 			response = new Payload(null, responseJSON.toString().getBytes());
 			long duration = System.currentTimeMillis() - start;
