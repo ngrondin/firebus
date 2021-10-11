@@ -40,9 +40,10 @@ public abstract class SObject extends SValue {
 			sb.append(": ");
 			SValue val = getMember(key);
 			if(val instanceof SString) {
-				sb.append("\"" + val + "\"");
+				sb.append("\"" + val.toString().replace("\r", "\\r").replace("\n", "\\n") + "\"");
 			} else {
-				sb.append(val);
+				//sb.append(val.toString().replaceAll("(?m)^", "\t"));
+				sb.append(val.toString().replace("\r\n", "\r\n\t"));
 			}
 			sb.append("\r\n");
 		}
