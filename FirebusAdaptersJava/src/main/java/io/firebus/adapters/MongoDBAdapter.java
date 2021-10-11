@@ -156,6 +156,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			logger.severe("Error processing data request\r\n" + sw.toString());
+			throw new FunctionErrorException("Error in db service", e);
 		}		
 		return response;
 	}
