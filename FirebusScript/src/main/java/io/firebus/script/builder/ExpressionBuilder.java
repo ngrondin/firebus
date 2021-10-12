@@ -28,6 +28,7 @@ import io.firebus.script.parser.JavaScriptParser.ExpressionSequenceContext;
 import io.firebus.script.parser.JavaScriptParser.FunctionExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.IdentifierContext;
 import io.firebus.script.parser.JavaScriptParser.IdentifierExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.InExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.LiteralContext;
 import io.firebus.script.parser.JavaScriptParser.LiteralExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.LogicalAndExpressionContext;
@@ -72,6 +73,7 @@ import io.firebus.script.units.operators.Equals;
 import io.firebus.script.units.operators.GreaterEqualThan;
 import io.firebus.script.units.operators.GreaterThan;
 import io.firebus.script.units.operators.Identical;
+import io.firebus.script.units.operators.In;
 import io.firebus.script.units.operators.Increase;
 import io.firebus.script.units.operators.LessEqualThan;
 import io.firebus.script.units.operators.LessThan;
@@ -228,9 +230,11 @@ public class ExpressionBuilder extends Builder {
 			return new VariableReference("this", uc);
 		} else if(ctx instanceof TernaryExpressionContext) {
 			return new TernaryExpression(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), buildSingleExpressionFromChild(ctx, 4), uc);
-		}  else if(ctx instanceof TypeofExpressionContext) {
+		} else if(ctx instanceof TypeofExpressionContext) {
 			return new Typeof(buildSingleExpressionFromChild(ctx, 1), uc);
-		} 
+		} else if(ctx instanceof InExpressionContext) {
+			return new In(buildSingleExpressionFromChild(ctx, 0), buildSingleExpressionFromChild(ctx, 2), uc);
+		}
 		throw new ScriptBuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
