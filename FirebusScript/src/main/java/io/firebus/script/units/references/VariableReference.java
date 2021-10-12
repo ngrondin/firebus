@@ -13,9 +13,9 @@ public class VariableReference extends Reference {
 		key = n;
 	}
 	
-	/*public String getName() {
+	public String getName() {
 		return key;
-	}*/
+	}
 	
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		return scope.getValue(key);
