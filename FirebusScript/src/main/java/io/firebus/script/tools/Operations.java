@@ -51,10 +51,14 @@ public class Operations {
 		Number n1 = v1.toNumber();
 		Number n2 = v2.toNumber();
 		Number r = null;
-		if(n1 instanceof Long && n2 instanceof Long) {
-			r = n1.longValue() / n2.longValue();
+		if(n2.doubleValue() == 0D) {
+			r = Double.POSITIVE_INFINITY;
 		} else {
-			r = n1.doubleValue() / n2.doubleValue();
+			if(n1 instanceof Long && n2 instanceof Long) {
+				r = n1.longValue() / n2.longValue();
+			} else {
+				r = n1.doubleValue() / n2.doubleValue();
+			}
 		}
 		return new SNumber(r);
 	}
@@ -63,10 +67,14 @@ public class Operations {
 		Number n1 = v1.toNumber();
 		Number n2 = v2.toNumber();
 		Number r = null;
-		if(n1 instanceof Long && n2 instanceof Long) {
-			r = n1.longValue() % n2.longValue();
+		if(n2.doubleValue() == 0D) {
+			r = Double.NaN;
 		} else {
-			r = n1.doubleValue() % n2.doubleValue();
+			if(n1 instanceof Long && n2 instanceof Long) {
+				r = n1.longValue() % n2.longValue();
+			} else {
+				r = n1.doubleValue() % n2.doubleValue();
+			}
 		}
 		return new SNumber(r);
 	}

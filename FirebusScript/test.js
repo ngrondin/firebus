@@ -1,1 +1,1 @@
-print(isNaN(null));
+print(2 / 0);
