@@ -8,21 +8,21 @@ import io.firebus.script.values.abs.SValue;
 
 public class Scope {
 	protected Scope parent;
-	protected Map<VariableId, SValue> values;
+	protected Map<String, SValue> values;
 	//protected Map<Integer, VariableId> ids;
 	
 	public Scope() {
-		values = new LinkedHashMap<VariableId, SValue>();
+		values = new LinkedHashMap<String, SValue>();
 		//ids = new LinkedHashMap<Integer, VariableId>();
 	}
 	
 	public Scope(Scope p) {
 		parent = p;
-		values = new LinkedHashMap<VariableId, SValue>();
+		values = new LinkedHashMap<String, SValue>();
 		//ids = new LinkedHashMap<Integer, VariableId>();
 	}
 	
-	public SValue getValue(VariableId id) {
+	public SValue getValue(String id) {
 		SValue ret = values.get(id);
 		if(ret != null) {
 			return ret;
@@ -40,14 +40,14 @@ public class Scope {
 		}
 	}
 	
-	public void setValue(VariableId id, SValue value) {
+	public void setValue(String id, SValue value) {
 		if(!updateValueIfExists(id, value)) {
 			values.put(id, value);
 			//ids.put(id.hash, id);
 		}
 	}
 	
-	protected boolean updateValueIfExists(VariableId id, SValue value) {
+	protected boolean updateValueIfExists(String id, SValue value) {
 		if(values.containsKey(id)) {
 			values.put(id, value);
 			return true;
@@ -62,9 +62,9 @@ public class Scope {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
 		sb.append("\r\n");
-		for(VariableId id : values.keySet()) {
+		for(String id : values.keySet()) {
 			sb.append(" ");
-			sb.append(id.name);
+			sb.append(id);
 			sb.append(":");
 			sb.append(values.get(id).toString().replaceAll("(?m)^", " "));
 			sb.append(",\r\n");

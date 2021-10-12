@@ -3,7 +3,6 @@ package io.firebus.script.values;
 import java.util.List;
 
 import io.firebus.script.Scope;
-import io.firebus.script.VariableId;
 import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.units.statements.Block;
@@ -14,7 +13,7 @@ import io.firebus.script.values.flow.SReturn;
 
 public class SInternalCallable extends SContextCallable {
 	protected String name;
-	protected VariableId[] paramIds;
+	protected String[] paramIds;
 	protected Block body;
 	protected Scope definitionScope;
 
@@ -22,9 +21,9 @@ public class SInternalCallable extends SContextCallable {
 		name = n;
 		body = b;
 		definitionScope = s;
-		paramIds = new VariableId[p.size()];
+		paramIds = new String[p.size()];
 		for(int i = 0; i < p.size(); i++)
-			paramIds[i] = new VariableId(p.get(i));
+			paramIds[i] = new String(p.get(i));
 	}
 	
 	public Scope getDefinitionScope() {
@@ -34,7 +33,7 @@ public class SInternalCallable extends SContextCallable {
 	public String[] getParameters() {
 		String[] ret = new String[paramIds.length];
 		for(int i = 0; i < ret.length; i++)
-			ret[i] = paramIds[i].name;
+			ret[i] = paramIds[i];
 		return ret;
 	}
 	
@@ -49,7 +48,7 @@ public class SInternalCallable extends SContextCallable {
 			runScope.setValue(paramIds[i], so);			
 		}
 		if(thisObject != null) {
-			runScope.setValue(new VariableId("this"), thisObject);
+			runScope.setValue("this", thisObject);
 		}
 		try {
 			SValue ret = body.eval(runScope);
@@ -66,10 +65,10 @@ public class SInternalCallable extends SContextCallable {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(");
-		for(VariableId param: paramIds) {
+		for(String param: paramIds) {
 			if(sb.length() > 1)
 				sb.append(",");
-			sb.append(param.name);
+			sb.append(param);
 		}
 		sb.append(") {");
 		sb.append(body.toString());

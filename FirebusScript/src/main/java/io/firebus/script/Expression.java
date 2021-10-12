@@ -20,7 +20,7 @@ public class Expression extends Executor {
 	public Object eval(Map<String, Object> context) throws ScriptException {
 		Scope localScope = new Scope(scope);
 		for(String key: context.keySet())
-			localScope.setValue(new VariableId(key), Converter.convertIn(context.get(key)));
+			localScope.setValue(key, Converter.convertIn(context.get(key)));
 		SValue ret = null;
 		try {
 			ret = rootExecutionUnit.eval(localScope);
