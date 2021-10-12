@@ -117,7 +117,6 @@ public class SString extends SPredefinedObject {
 			return number;
 		} catch(Exception e) {
 			return Double.NaN;
-			//throw new ScriptValueException("Cannot convert '" + str + "' to number");
 		}
 	}
 	

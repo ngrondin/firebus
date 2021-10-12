@@ -1,1 +1,1 @@
-print('allo \'mon coco\'');
+print(isNaN(null));

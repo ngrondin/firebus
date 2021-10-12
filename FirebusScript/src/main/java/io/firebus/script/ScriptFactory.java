@@ -8,6 +8,7 @@ import io.firebus.script.units.abs.ExecutionUnit;
 import io.firebus.script.units.statements.Block;
 import io.firebus.script.values.impl.ArrayStaticPackage;
 import io.firebus.script.values.impl.DateConstructor;
+import io.firebus.script.values.impl.IsNaN;
 import io.firebus.script.values.impl.JSONStaticPackage;
 import io.firebus.script.values.impl.MathStaticPackage;
 import io.firebus.script.values.impl.ObjectStaticPackage;
@@ -27,6 +28,7 @@ public class ScriptFactory {
 		rootScope.declareValue("print", new Print());
 		rootScope.declareValue("parseInt", new ParseInt());
 		rootScope.declareValue("parseFloat", new ParseFloat());
+		rootScope.declareValue("isNaN", new IsNaN());
 		rootScope.declareValue("Date", new DateConstructor());
 		rootScope.declareValue("Time", new TimeConstructor());
 		rootScope.declareValue("Math", new MathStaticPackage());
