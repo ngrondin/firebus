@@ -26,7 +26,7 @@ public class Try extends Statement {
 		} catch(Exception e) {
 			if(catchProd != null) {
 				Scope local = new Scope(scope);
-				local.setValue(catchProd.getKey(), new SException(e));
+				local.declareValue(catchProd.getKey(), new SException(e));
 				return catchProd.eval(local);
 			} else {
 				return SNull.get();

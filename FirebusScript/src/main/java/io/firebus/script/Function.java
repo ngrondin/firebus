@@ -31,7 +31,7 @@ public class Function extends Executor {
 		Scope localScope = new Scope(scope);
 		for(int i = 0; i < arguments.length; i++) {
 			if(i < parameters.length) {
-				localScope.setValue(parameters[i], Converter.convertIn(arguments[i]));
+				localScope.declareValue(parameters[i], Converter.convertIn(arguments[i]));
 			}
 		}
 		SValue ret = null;

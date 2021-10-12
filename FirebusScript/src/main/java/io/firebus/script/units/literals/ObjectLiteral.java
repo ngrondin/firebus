@@ -35,7 +35,7 @@ public class ObjectLiteral extends Literal {
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SInternalObject obj = new SInternalObject();
 		Scope local = new Scope(scope);
-		local.setValue("this", obj);
+		local.declareValue("this", obj);
 		try {
 			for(Setter setter: setters) {
 				SValue val = setter.expr.eval(local);

@@ -33,7 +33,7 @@ public class Declare extends Statement {
 
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue val = expression != null ? expression.eval(scope) : SNull.get();
-		scope.setValue(key, val);
+		scope.declareValue(key, val);
 		return val;
 	}
 }

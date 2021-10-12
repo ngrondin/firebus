@@ -36,7 +36,7 @@ public class KeyLoop extends Statement {
 			int index = 0;
 			while(index < keys.length) {
 				for(Declare declare: declares.getDeclares())
-					localScope.setValue(declare.getKey(), new SString(keys[index]));
+					localScope.declareValue(declare.getKey(), new SString(keys[index]));
 				SValue ret = unit.eval(localScope);
 				if(ret instanceof SReturn) {
 					return ret;

@@ -1,4 +1,6 @@
-var a = ["a", "b"];
-a.forEach((item) => {
-	item
-});
+var a = "allo";
+if(true) {
+	 a = "toi";
+	print(a);
+}
+print(a);

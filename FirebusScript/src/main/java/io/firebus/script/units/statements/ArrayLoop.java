@@ -34,7 +34,7 @@ public class ArrayLoop extends Statement {
 			int index = 0;
 			while(index < array.getSize()) {
 				for(Declare declare: declares.getDeclares())
-					localScope.setValue(declare.getKey(), array.get(index));
+					localScope.declareValue(declare.getKey(), array.get(index));
 				SValue ret = unit.eval(localScope);
 				if(ret instanceof SReturn) {
 					return ret;

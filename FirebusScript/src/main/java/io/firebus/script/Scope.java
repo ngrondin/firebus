@@ -37,6 +37,10 @@ public class Scope {
 		}
 	}
 	
+	public synchronized void declareValue(String id, SValue value) {
+		values.put(id, value);
+	}
+	
 	public synchronized void setValue(String id, SValue value) {
 		if(!updateValueIfExists(id, value)) {
 			values.put(id, value);
@@ -67,9 +71,10 @@ public class Scope {
 		}
 		sb.append("}");
 		if(parent != null) {
-			sb.append(parent.toString());
 			sb.append("\r\n");
+			sb.append(parent.toString());
 		}		
+		sb.append("\r\n");
 		return sb.toString();
 	}
 }

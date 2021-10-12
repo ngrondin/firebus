@@ -45,10 +45,10 @@ public class SInternalCallable extends SContextCallable {
 		Scope runScope = new Scope(definitionScope);
 		for(int i = 0; i < paramIds.length; i++) {
 			SValue so = arguments != null && arguments.length > i ? arguments[i] : null;
-			runScope.setValue(paramIds[i], so);			
+			runScope.declareValue(paramIds[i], so);			
 		}
 		if(thisObject != null) {
-			runScope.setValue("this", thisObject);
+			runScope.declareValue("this", thisObject);
 		}
 		try {
 			SValue ret = body.eval(runScope);

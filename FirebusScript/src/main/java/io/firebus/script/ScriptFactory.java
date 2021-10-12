@@ -24,26 +24,26 @@ public class ScriptFactory {
 	public ScriptFactory() {
 		compiler = new Compiler();
 		rootScope = new Scope();
-		rootScope.setValue("print", new Print());
-		rootScope.setValue("parseInt", new ParseInt());
-		rootScope.setValue("parseFloat", new ParseFloat());
-		rootScope.setValue("Date", new DateConstructor());
-		rootScope.setValue("Time", new TimeConstructor());
-		rootScope.setValue("Math", new MathStaticPackage());
-		rootScope.setValue("Object", new ObjectStaticPackage());
-		rootScope.setValue("Array", new ArrayStaticPackage());
-		rootScope.setValue("String", new StringStaticPackage());
-		rootScope.setValue("JSON", new JSONStaticPackage());
+		rootScope.declareValue("print", new Print());
+		rootScope.declareValue("parseInt", new ParseInt());
+		rootScope.declareValue("parseFloat", new ParseFloat());
+		rootScope.declareValue("Date", new DateConstructor());
+		rootScope.declareValue("Time", new TimeConstructor());
+		rootScope.declareValue("Math", new MathStaticPackage());
+		rootScope.declareValue("Object", new ObjectStaticPackage());
+		rootScope.declareValue("Array", new ArrayStaticPackage());
+		rootScope.declareValue("String", new StringStaticPackage());
+		rootScope.declareValue("JSON", new JSONStaticPackage());
 	}
 	
 	public void setGlobals(Map<String, Object> globals) throws ScriptException {
 		for(String key: globals.keySet()) {
-			rootScope.setValue(key, Converter.convertIn(globals.get(key)));
+			rootScope.declareValue(key, Converter.convertIn(globals.get(key)));
 		}
 	}
 	
 	public void setInRootScope(String name, Object val) throws ScriptException {
-		rootScope.setValue(name, Converter.convertIn(val));
+		rootScope.declareValue(name, Converter.convertIn(val));
 	}
 	
 	public void executeInRootScope(String name, String source) throws ScriptException {
