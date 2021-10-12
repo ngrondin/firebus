@@ -1,6 +1,1 @@
-var a = "allo";
-if(true) {
-	 a = "toi";
-	print(a);
-}
-print(a);
+print('allo \'mon coco\'');

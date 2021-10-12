@@ -40,13 +40,17 @@ public class LiteralBuilder extends Builder {
 			if(tn.getSymbol().getType() == JavaScriptParser.StringLiteral) {
 				String str = tn.getText();
 				if((str.startsWith("\"") && str.endsWith("\"")) || (str.startsWith("'") && str.endsWith("'"))) {
+					boolean singleQuote = str.startsWith("'") ? true : false;
 					str = str.substring(1, str.length() - 1);
 					str = str
 						.replace("\\r", "\r")
 						.replace("\\n", "\n")
 						.replace("\\t", "\t")
-						.replace("\\\"", "\"")
 						.replace("\\/", "/");
+					if(singleQuote) 
+						str = str.replace("\\'", "'");
+					else 
+						str = str.replace("\\\"", "\"");
 				}	
 				ret = new StringLiteral(str, uc);
 			} else if(tn.getSymbol().getType() == JavaScriptParser.NullLiteral) {
