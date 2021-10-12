@@ -9,17 +9,14 @@ import io.firebus.script.values.abs.SValue;
 public class Scope {
 	protected Scope parent;
 	protected Map<String, SValue> values;
-	//protected Map<Integer, VariableId> ids;
 	
 	public Scope() {
 		values = new LinkedHashMap<String, SValue>();
-		//ids = new LinkedHashMap<Integer, VariableId>();
 	}
 	
 	public Scope(Scope p) {
 		parent = p;
 		values = new LinkedHashMap<String, SValue>();
-		//ids = new LinkedHashMap<Integer, VariableId>();
 	}
 	
 	public SValue getValue(String id) {
@@ -40,14 +37,13 @@ public class Scope {
 		}
 	}
 	
-	public void setValue(String id, SValue value) {
+	public synchronized void setValue(String id, SValue value) {
 		if(!updateValueIfExists(id, value)) {
 			values.put(id, value);
-			//ids.put(id.hash, id);
 		}
 	}
 	
-	protected boolean updateValueIfExists(String id, SValue value) {
+	protected synchronized boolean updateValueIfExists(String id, SValue value) {
 		if(values.containsKey(id)) {
 			values.put(id, value);
 			return true;
