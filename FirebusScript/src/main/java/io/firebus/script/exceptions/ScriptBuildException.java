@@ -10,14 +10,21 @@ public class ScriptBuildException extends ScriptException {
     }
 
     public ScriptBuildException(String m, SourceInfo c) {
-		super(m, c);
+		super(enhanceMessage(m, c), c);
 	}
 	
 	public ScriptBuildException(String m, Throwable t, SourceInfo c) {
-		super(m, t, c);
+		super(enhanceMessage(m, c), t, c);
 	}
 	
 	public ScriptBuildException(String m, Throwable t) {
 		super(m, t);
+	}
+	
+	private static String enhanceMessage(String m, SourceInfo c) {
+		if(c != null) 
+			return m + " \"" + c.getText() + "\" at " + c.getLineCol();
+		else
+			return m;
 	}
 }

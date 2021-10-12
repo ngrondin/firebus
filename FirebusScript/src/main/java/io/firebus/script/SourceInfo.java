@@ -17,6 +17,10 @@ public class SourceInfo {
 		return sourceName;
 	}
 	
+	public String getText() {
+		return text;
+	}
+	
 	public int getLine() {
 		return line;
 	}

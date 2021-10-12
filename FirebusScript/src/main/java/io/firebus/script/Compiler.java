@@ -26,7 +26,7 @@ public class Compiler {
 				ExecutionUnit root = MasterBuilder.buildProgram(tree);
 				return root;
 			} catch(ScriptBuildException e) {
-				throw new ScriptBuildException(e.getMessageText(), e.getSourceInfo());
+				throw e;
 			} catch(Exception e) {
 				throw new ScriptBuildException("Error building execution units", e);
 			}
