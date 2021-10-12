@@ -1,2 +1,4 @@
-var a = {key:"allo"};
-print("key" in a);
+var a = ["a", "b"];
+a.forEach((item) => {
+	item
+});

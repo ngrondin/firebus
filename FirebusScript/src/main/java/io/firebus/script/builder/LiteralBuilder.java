@@ -14,6 +14,8 @@ import io.firebus.script.parser.JavaScriptParser.LiteralContext;
 import io.firebus.script.parser.JavaScriptParser.NumericLiteralContext;
 import io.firebus.script.parser.JavaScriptParser.ObjectLiteralContext;
 import io.firebus.script.parser.JavaScriptParser.PropertyAssignmentContext;
+import io.firebus.script.parser.JavaScriptParser.PropertyExpressionAssignmentContext;
+import io.firebus.script.parser.JavaScriptParser.PropertyShorthandContext;
 import io.firebus.script.parser.JavaScriptParser.SingleExpressionContext;
 import io.firebus.script.units.abs.Expression;
 import io.firebus.script.units.abs.Literal;
@@ -24,6 +26,7 @@ import io.firebus.script.units.literals.NumericLiteral;
 import io.firebus.script.units.literals.ObjectLiteral;
 import io.firebus.script.units.literals.StringLiteral;
 import io.firebus.script.units.operators.Spread;
+import io.firebus.script.units.references.VariableReference;
 
 public class LiteralBuilder extends Builder {
     
@@ -82,12 +85,15 @@ public class LiteralBuilder extends Builder {
     public static ObjectLiteral buildObjectLiteral(ObjectLiteralContext ctx) throws ScriptBuildException {
     	ObjectLiteral ol = new ObjectLiteral(sourceInfo(ctx));
     	for(ParseTree sub: ctx.children) {
-    		if(sub instanceof PropertyAssignmentContext) {
+    		if(sub instanceof PropertyExpressionAssignmentContext) {
     			String key = sub.getChild(0).getText();
     			if((key.startsWith("'") && key.endsWith("'")) || (key.startsWith("\"") && key.endsWith("\""))) 
     				key = key.substring(1, key.length() - 1);
     			Expression val = ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub.getChild(2));
     			ol.addSetter(key, val);
+    		} else if(sub instanceof PropertyShorthandContext) {
+    			VariableReference reference = (VariableReference)ExpressionBuilder.buildSingleExpression((SingleExpressionContext)sub.getChild(0));
+    			ol.addSetter(reference.getName(), reference);
     		}
     	}
     	return ol;
