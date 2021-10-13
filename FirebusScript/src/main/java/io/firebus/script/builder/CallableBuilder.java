@@ -100,7 +100,7 @@ public class CallableBuilder extends Builder {
 			}			
 		} else {
 			List<Parameter> list = new ArrayList<Parameter>();
-			list.add(buildFormalParameter((FormalParameterArgContext)ctx.getChild(0)));
+			list.add(new Parameter(ctx.getChild(0).getText(), null));
 			return list;
 		}
 
