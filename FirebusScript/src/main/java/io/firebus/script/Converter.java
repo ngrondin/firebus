@@ -126,7 +126,7 @@ public class Converter {
 			return map;
 		} else if(v instanceof SInternalCallable) {
 			SInternalCallable callable = (SInternalCallable)v;
-			Function func = new Function(callable.getDefinitionScope(), callable.getParameters(), callable.getBody());
+			Function func = new Function(callable.getDefinitionScope(), callable.getParameterNames(), callable.getBody());
 			return func;
 		} else {
 			throw new ScriptValueException("Cannot convert '" + v.toString() + "' to java space");

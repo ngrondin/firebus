@@ -16,6 +16,7 @@ import io.firebus.script.parser.JavaScriptParser.ArgumentsExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.ArrowFunctionBodyContext;
 import io.firebus.script.parser.JavaScriptParser.ArrowFunctionContext;
 import io.firebus.script.parser.JavaScriptParser.ArrowFunctionParametersContext;
+import io.firebus.script.parser.JavaScriptParser.AssignableContext;
 import io.firebus.script.parser.JavaScriptParser.FormalParameterArgContext;
 import io.firebus.script.parser.JavaScriptParser.FormalParameterListContext;
 import io.firebus.script.parser.JavaScriptParser.FunctionBodyContext;
@@ -24,7 +25,9 @@ import io.firebus.script.parser.JavaScriptParser.IdentifierContext;
 import io.firebus.script.parser.JavaScriptParser.NewExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.SingleExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.SourceElementsContext;
+import io.firebus.script.tools.Parameter;
 import io.firebus.script.units.abs.Expression;
+import io.firebus.script.units.abs.Literal;
 import io.firebus.script.units.abs.Statement;
 import io.firebus.script.units.expressions.Call;
 import io.firebus.script.units.operators.New;
@@ -66,15 +69,15 @@ public class CallableBuilder extends Builder {
 	public static CallableDefinition buildFunctionExpression(FunctionExpressionContext ctx) throws ScriptBuildException {
 		ParseTree sub = ctx.getChild(0);
 		if(sub instanceof ArrowFunctionContext) {
-			List<String> params = buildArrowFunctionParameters((ArrowFunctionParametersContext)sub.getChild(0));
+			List<Parameter> params = buildArrowFunctionParameters((ArrowFunctionParametersContext)sub.getChild(0));
 			Block body = buildArrowFunctionBody((ArrowFunctionBodyContext)sub.getChild(2));
 			CallableDefinition callDef = new CallableDefinition(null, params, body, sourceInfo(ctx));
 			return callDef;
 		} else if(sub instanceof AnonymousFunctionContext) {
-			List<String> params = null;
+			List<Parameter> params = null;
 			Block body = null;
 			if(sub.getChildCount() ==  4) {
-				params = new ArrayList<String>();
+				params = new ArrayList<Parameter>();
 				body = buildFunctionBody((FunctionBodyContext)sub.getChild(3));
 			} else if(sub.getChildCount() == 5) {
 				params = buildFormalParameterList((FormalParameterListContext)sub.getChild(2));
@@ -86,18 +89,18 @@ public class CallableBuilder extends Builder {
 		throw new ScriptBuildException("Unknown source element", sourceInfo(ctx));
 	}
 	
-	public static List<String> buildArrowFunctionParameters(ArrowFunctionParametersContext ctx) throws ScriptBuildException {
+	public static List<Parameter> buildArrowFunctionParameters(ArrowFunctionParametersContext ctx) throws ScriptBuildException {
 		if(ctx.getChild(0) instanceof TerminalNodeImpl) {
 			if(ctx.getChildCount() == 3) {
 				return buildFormalParameterList((FormalParameterListContext)ctx.getChild(1));
 			} else if(ctx.getChildCount() == 2) {
-				return new ArrayList<String>();
+				return new ArrayList<Parameter>();
 			} else {
 				throw new ScriptBuildException("Error building arrow function parameters", sourceInfo(ctx));
 			}			
 		} else {
-			List<String> list = new ArrayList<String>();
-			list.add(ctx.getChild(0).getText());
+			List<Parameter> list = new ArrayList<Parameter>();
+			list.add(buildFormalParameter((FormalParameterArgContext)ctx.getChild(0)));
 			return list;
 		}
 
@@ -128,14 +131,22 @@ public class CallableBuilder extends Builder {
 		return new Block(list, sourceInfo(ctx));
 	}
 	
-	public static List<String> buildFormalParameterList(FormalParameterListContext ctx) throws ScriptBuildException {
-		List<String> list = new ArrayList<String>();
+	public static List<Parameter> buildFormalParameterList(FormalParameterListContext ctx) throws ScriptBuildException {
+		List<Parameter> list = new ArrayList<Parameter>();
 		for(ParseTree sub: ctx.children) {
 			if(sub instanceof FormalParameterArgContext) {
-				list.add(sub.getText());				
+				list.add(buildFormalParameter((FormalParameterArgContext)sub));				
 			}
 		}
 		return list;
+	}
+	
+	public static Parameter buildFormalParameter(FormalParameterArgContext ctx) throws ScriptBuildException {
+		String name = ((AssignableContext)ctx.getChild(0)).getText();
+		Literal defaultLiteral = null;
+		if(ctx.getChildCount() == 3)
+			defaultLiteral = (Literal)ExpressionBuilder.buildSingleExpression((SingleExpressionContext)ctx.getChild(2));
+		return new Parameter(name, defaultLiteral);				
 	}
 	
 	public static New buildNewOperator(NewExpressionContext ctx) throws ScriptBuildException {

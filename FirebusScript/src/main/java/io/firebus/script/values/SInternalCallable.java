@@ -5,6 +5,7 @@ import java.util.List;
 import io.firebus.script.Scope;
 import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.exceptions.ScriptExecutionException;
+import io.firebus.script.tools.Parameter;
 import io.firebus.script.units.statements.Block;
 import io.firebus.script.values.abs.SContextCallable;
 import io.firebus.script.values.abs.SObject;
@@ -13,27 +14,31 @@ import io.firebus.script.values.flow.SReturn;
 
 public class SInternalCallable extends SContextCallable {
 	protected String name;
-	protected String[] paramIds;
+	protected Parameter[] params;
 	protected Block body;
 	protected Scope definitionScope;
 
-	public SInternalCallable(String n, List<String> p, Block b, Scope s) {
+	public SInternalCallable(String n, List<Parameter> p, Block b, Scope s) {
 		name = n;
 		body = b;
 		definitionScope = s;
-		paramIds = new String[p.size()];
+		params = new Parameter[p.size()];
 		for(int i = 0; i < p.size(); i++)
-			paramIds[i] = new String(p.get(i));
+			params[i] = p.get(i);
 	}
 	
 	public Scope getDefinitionScope() {
 		return definitionScope;
 	}
 
-	public String[] getParameters() {
-		String[] ret = new String[paramIds.length];
-		for(int i = 0; i < ret.length; i++)
-			ret[i] = paramIds[i];
+	public Parameter[] getParameters() {
+		return params;
+	}
+	
+	public String[] getParameterNames() {
+		String[] ret = new String[params.length];
+		for(int i = 0; i < params.length; i++) 
+			ret[i] = params[i].name;
 		return ret;
 	}
 	
@@ -43,14 +48,16 @@ public class SInternalCallable extends SContextCallable {
 	
 	public SValue call(SObject thisObject, SValue... arguments) throws ScriptCallException {
 		Scope runScope = new Scope(definitionScope);
-		for(int i = 0; i < paramIds.length; i++) {
-			SValue so = arguments != null && arguments.length > i ? arguments[i] : null;
-			runScope.declareValue(paramIds[i], so);			
-		}
-		if(thisObject != null) {
-			runScope.declareValue("this", thisObject);
-		}
 		try {
+			for(int i = 0; i < params.length; i++) {
+				SValue so = arguments != null && arguments.length > i ? arguments[i] : SNull.get();
+				if(so instanceof SNull && params[i].defaultLiteral != null)
+					so = params[i].defaultLiteral.eval(definitionScope);
+				runScope.declareValue(params[i].name, so);			
+			}
+			if(thisObject != null) {
+				runScope.declareValue("this", thisObject);
+			}
 			SValue ret = body.eval(runScope);
 			if(ret instanceof SReturn) {
 				return ((SReturn)ret).getReturnedValue();
@@ -65,7 +72,7 @@ public class SInternalCallable extends SContextCallable {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(");
-		for(String param: paramIds) {
+		for(Parameter param: params) {
 			if(sb.length() > 1)
 				sb.append(",");
 			sb.append(param);

@@ -13,6 +13,7 @@ import io.firebus.script.parser.JavaScriptParser.SingleExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.VarModifierContext;
 import io.firebus.script.parser.JavaScriptParser.VariableDeclarationContext;
 import io.firebus.script.parser.JavaScriptParser.VariableDeclarationListContext;
+import io.firebus.script.tools.Parameter;
 import io.firebus.script.units.abs.Expression;
 import io.firebus.script.units.setters.CallableDefinition;
 import io.firebus.script.units.setters.Declare;
@@ -46,11 +47,11 @@ public class DeclarationBuilder extends Builder {
 	
 	public static Declare buildFunctionDeclaration(FunctionDeclarationContext ctx) throws ScriptBuildException {
 		String key = ctx.getChild(1).getText();
-		List<String> params = null;
+		List<Parameter> params = null;
 		if(ctx.getChildCount() > 5) {
 			params = CallableBuilder.buildFormalParameterList((FormalParameterListContext)ctx.getChild(3));
 		} else {
-			params = new ArrayList<String>();
+			params = new ArrayList<Parameter>();
 		}
 		Block body = CallableBuilder.buildFunctionBody((FunctionBodyContext)ctx.getChild(ctx.getChildCount() - 1));
 		CallableDefinition callDef = new CallableDefinition(key, params, body, sourceInfo(ctx));
