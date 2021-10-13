@@ -54,7 +54,7 @@ public class SString extends SPredefinedObject {
 	}
 
 	public boolean identical(SValue other) {
-		return this == other;
+		return other instanceof SString && str.equals(((SString)other).getString());
 	}
 	
 	public boolean hasMember(String key) {

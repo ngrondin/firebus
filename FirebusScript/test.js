@@ -1,1 +1,2 @@
-print(2 / 0);
+var a = {k:"value"};
+print(typeof a.k !== 'undefined');
