@@ -39,7 +39,7 @@ public class SDate extends SPredefinedObject {
 	}
 	
 	public SDate(ZonedDateTime d) {
-		date = d;
+		date = d.withZoneSameInstant(ZoneId.systemDefault());
 	}
 
 	public SDate(SValue ...arguments) throws ScriptCallException {
