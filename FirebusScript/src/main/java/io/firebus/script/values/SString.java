@@ -12,6 +12,7 @@ import io.firebus.script.values.callables.impl.string.Concat;
 import io.firebus.script.values.callables.impl.string.EndsWith;
 import io.firebus.script.values.callables.impl.string.Includes;
 import io.firebus.script.values.callables.impl.string.IndexOf;
+import io.firebus.script.values.callables.impl.string.LocaleCompare;
 import io.firebus.script.values.callables.impl.string.PadStart;
 import io.firebus.script.values.callables.impl.string.Slice;
 import io.firebus.script.values.callables.impl.string.StartsWith;
@@ -86,6 +87,8 @@ public class SString extends SPredefinedObject {
 			return new Substr(this);
 		} else if(name.equals("padStart")) {
 			return new PadStart(this);
+		} else if(name.equals("localeCompare")) {
+			return new LocaleCompare(this);
 		} else if(name.equals("toString")) {
 			return new ToString(this);
 		} else if(name.equals("length")) {
