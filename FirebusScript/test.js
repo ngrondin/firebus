@@ -1,1 +1,1 @@
-print("allo".localeCompare("toi"));
+print("allo,toi".split(","));
