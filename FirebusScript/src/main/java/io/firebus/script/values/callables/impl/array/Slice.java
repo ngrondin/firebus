@@ -20,7 +20,7 @@ public class Slice extends ArrayFunction {
 			int s = ((SNumber)start).getNumber().intValue();
 			int e = s + ((SNumber)len).getNumber().intValue();
 			int index = 0;
-			for(int i = s; i < e; i++) {
+			for(int i = s; i < e && i < array.getSize(); i++) {
 				ret.set(index++, array.get(i));
 			}
 			return ret;

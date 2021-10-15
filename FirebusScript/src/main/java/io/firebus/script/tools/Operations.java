@@ -54,11 +54,9 @@ public class Operations {
 		if(n2.doubleValue() == 0D) {
 			r = Double.POSITIVE_INFINITY;
 		} else {
-			if(n1 instanceof Long && n2 instanceof Long) {
-				r = n1.longValue() / n2.longValue();
-			} else {
-				r = n1.doubleValue() / n2.doubleValue();
-			}
+			r = n1.doubleValue() / n2.doubleValue();
+			if(n1 instanceof Long && n2 instanceof Long && r.doubleValue() == r.intValue())
+				r = r.intValue();
 		}
 		return new SNumber(r);
 	}
