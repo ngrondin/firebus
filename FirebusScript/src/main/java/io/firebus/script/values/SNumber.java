@@ -31,13 +31,12 @@ public class SNumber extends SPredefinedObject {
     }
 
 	public boolean equals(SValue other)  {
-
 		try {
 			if(other instanceof SNull) {
 				return false;
 			} else {
 				Number on = other.toNumber();
-				if(on == number) 
+				if(on.equals(number)) 
 					return true;
 				else
 					return false;
