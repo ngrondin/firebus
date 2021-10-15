@@ -8,6 +8,7 @@ import io.firebus.script.values.callables.impl.math.Ceil;
 import io.firebus.script.values.callables.impl.math.Floor;
 import io.firebus.script.values.callables.impl.math.Max;
 import io.firebus.script.values.callables.impl.math.Min;
+import io.firebus.script.values.callables.impl.math.Random;
 import io.firebus.script.values.callables.impl.math.Round;
 
 public class MathStaticPackage extends SPredefinedObject {
@@ -33,6 +34,8 @@ public class MathStaticPackage extends SPredefinedObject {
 			return new Round();
 		} else if(name.equals("abs")) {
 			return new Abs();
+		} else if(name.equals("random")) {
+			return new Random();
 		}
 		return SUndefined.get();
 	}

@@ -1,1 +1,1 @@
-print("allo,toi".split(","));
+print(Math.random());
