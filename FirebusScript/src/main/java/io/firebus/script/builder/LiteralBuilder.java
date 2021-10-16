@@ -1,6 +1,9 @@
 package io.firebus.script.builder;
 
 
+import java.text.NumberFormat;
+import java.text.ParseException;
+
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -67,11 +70,10 @@ public class LiteralBuilder extends Builder {
 		TerminalNode tn = (TerminalNode)ctx.getChild(0);
 		Number number = null;
 		if(tn.getSymbol().getType() == JavaScriptParser.DecimalLiteral) {
-			String txt = tn.getText();
-			if(txt.contains(".")) {
-				number = Double.parseDouble(txt);
-			} else {
-				number = Long.parseLong(txt);
+			try {
+				number = NumberFormat.getInstance().parse(tn.getText());
+			} catch(ParseException e) {
+				throw new ScriptBuildException("Error parsing number format", e);
 			}
 		} else if(tn.getSymbol().getType() == JavaScriptParser.HexIntegerLiteral) {
 			number = Long.decode(tn.getText());

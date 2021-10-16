@@ -1,15 +1,20 @@
 package io.firebus.script.values.impl;
 
+import io.firebus.script.values.SNumber;
 import io.firebus.script.values.SUndefined;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.callables.impl.math.Abs;
+import io.firebus.script.values.callables.impl.math.Atan2;
 import io.firebus.script.values.callables.impl.math.Ceil;
+import io.firebus.script.values.callables.impl.math.Cos;
 import io.firebus.script.values.callables.impl.math.Floor;
 import io.firebus.script.values.callables.impl.math.Max;
 import io.firebus.script.values.callables.impl.math.Min;
 import io.firebus.script.values.callables.impl.math.Random;
 import io.firebus.script.values.callables.impl.math.Round;
+import io.firebus.script.values.callables.impl.math.Sin;
+import io.firebus.script.values.callables.impl.math.Sqrt;
 
 public class MathStaticPackage extends SPredefinedObject {
 
@@ -36,6 +41,16 @@ public class MathStaticPackage extends SPredefinedObject {
 			return new Abs();
 		} else if(name.equals("random")) {
 			return new Random();
+		} else if(name.equals("sin")) {
+			return new Sin();
+		} else if(name.equals("cos")) {
+			return new Cos();
+		} else if(name.equals("atan2")) {
+			return new Atan2();
+		} else if(name.equals("sqrt")) {
+			return new Sqrt();
+		} else if(name.equals("PI")) {
+			return new SNumber(Math.PI);
 		}
 		return SUndefined.get();
 	}
