@@ -9,7 +9,7 @@ import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SReturn;
 
 public class Function extends Executor {
-	protected Scope scope;
+	protected Scope defaultScope;
 	protected String[] parameters;
 	protected ExecutionUnit rootExecutionUnit;
 	protected boolean fullExceptions = false;
@@ -17,26 +17,46 @@ public class Function extends Executor {
 	protected Function(Scope s, String[] p, ExecutionUnit eu) {
 		rootExecutionUnit = eu;
 		parameters = p;
-		scope = s;
+		defaultScope = s;
 	}
 	
 	public Object call(Map<String, Object> map) throws ScriptException {
-		Object[] args = new Object[parameters.length];
-		for(int i = 0; i < args.length; i++) 
-			args[i] = map.get(parameters[i]);
-		return call(args);
+		return execute(createExecutionScope(defaultScope, createArguments(map)));
 	}
 	
  	public Object call(Object ...arguments) throws ScriptException {
-		Scope localScope = new Scope(scope);
+		return execute(createExecutionScope(defaultScope, arguments));
+	}
+
+	public Object call(ScriptContext context, Map<String, Object> map) throws ScriptException {
+		return execute(createExecutionScope(context.getScope(), createArguments(map)));
+	}
+	
+ 	public Object call(ScriptContext context, Object ...arguments) throws ScriptException {
+		return execute(createExecutionScope(context.getScope(), arguments));
+	}
+
+ 	protected Object[] createArguments(Map<String, Object> map) {
+ 		Object[] arguments = new Object[parameters.length];
+		for(int i = 0; i < arguments.length; i++) 
+			arguments[i] = map.get(parameters[i]);
+		return arguments;
+ 	}
+	
+ 	protected Scope createExecutionScope(Scope parentScope, Object ...arguments) throws ScriptException {
+		Scope executionScope = new Scope(parentScope);
 		for(int i = 0; i < arguments.length; i++) {
 			if(i < parameters.length) {
-				localScope.declareValue(parameters[i], Converter.convertIn(arguments[i]));
+				executionScope.declareValue(parameters[i], Converter.convertIn(arguments[i]));
 			}
 		}
+		return executionScope;
+	}
+ 	
+ 	protected Object execute(Scope executionScope) throws ScriptException {
 		SValue ret = null;
 		try {
-			ret = rootExecutionUnit.eval(localScope);
+			ret = rootExecutionUnit.eval(executionScope);
 		} catch(ScriptExecutionException e) {
  			if(fullExceptions) {
  				throw e;

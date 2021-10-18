@@ -116,4 +116,8 @@ public class ScriptFactory {
 		}
 
 	}
+	
+	public ScriptContext createScriptContext() {
+		return new ScriptContext(rootScope);
+	}
 }
