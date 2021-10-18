@@ -1,2 +1,2 @@
-var str = "allo";
-print(str.substr(42, 4));
+var dt = new Date();
+print(dt.toDateString());

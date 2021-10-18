@@ -28,7 +28,9 @@ import io.firebus.script.values.callables.impl.date.SetMinutes;
 import io.firebus.script.values.callables.impl.date.SetMonth;
 import io.firebus.script.values.callables.impl.date.SetSeconds;
 import io.firebus.script.values.callables.impl.date.SetYear;
+import io.firebus.script.values.callables.impl.date.ToDateString;
 import io.firebus.script.values.callables.impl.date.ToISOString;
+import io.firebus.script.values.callables.impl.date.ToLocaleDateString;
 import io.firebus.script.values.callables.impl.date.ToString;
 
 public class SDate extends SPredefinedObject {
@@ -83,6 +85,10 @@ public class SDate extends SPredefinedObject {
 			return new ToString(this);
 		} else if(name.equals("toISOString")) {
 			return new ToISOString(this);
+		} else if(name.equals("toDateString")) {
+			return new ToDateString(this);
+		} else if(name.equals("toLocaleDateString")) {
+			return new ToLocaleDateString(this);
 		} else if(name.equals("getTimezoneOffset")) {
 			return new GetTimezoneOffset(this);
 		} else if(name.equals("getTime")) {
