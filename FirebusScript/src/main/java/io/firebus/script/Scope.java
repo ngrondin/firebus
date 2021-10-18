@@ -58,6 +58,10 @@ public class Scope {
 		}
 	}	
 	
+	public void removeValue(String name) {
+		values.remove(name);
+	}
+	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");

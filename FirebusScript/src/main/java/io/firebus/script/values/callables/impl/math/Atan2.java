@@ -13,7 +13,7 @@ public class Atan2 extends SCallable {
 			try {
 				return new SNumber(Math.atan2(arguments[0].toNumber().doubleValue(), arguments[1].toNumber().doubleValue()));
 			} catch(ScriptValueException e) {
-				throw new ScriptCallException("Error in round", e);
+				throw new ScriptCallException("Error in atan2", e);
 			}
 		} else {
 			throw new ScriptCallException("atan2 requires 2 arguments");

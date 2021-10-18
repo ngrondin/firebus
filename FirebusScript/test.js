@@ -1,2 +1,2 @@
-var dt = new Date();
-print(dt.toDateString());
+var v = "2.8";
+print(Math.floor(v));

@@ -34,7 +34,7 @@ public class Converter {
 		}
 	}
 
-	public static SValue convertIn(Object o) throws ScriptException {
+	public static SValue convertIn(Object o) throws ScriptValueException {
 		if(o == null) {
 			return SNull.get();
 		} else if(o instanceof SValue) {

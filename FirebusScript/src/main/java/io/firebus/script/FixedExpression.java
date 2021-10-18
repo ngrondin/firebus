@@ -16,6 +16,10 @@ public class FixedExpression extends Expression {
 		return fixedValue;
 	}	
 	
+	public Object eval(ScriptContext context) throws ScriptException {
+		return fixedValue;
+	}
+	
 	public String toString() {
 		return fixedValue.toString();
 	}

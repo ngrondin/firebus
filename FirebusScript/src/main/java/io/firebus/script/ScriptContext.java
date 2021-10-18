@@ -1,6 +1,6 @@
 package io.firebus.script;
 
-import io.firebus.script.exceptions.ScriptException;
+import io.firebus.script.exceptions.ScriptValueException;
 
 public class ScriptContext {
 	protected Scope scope;
@@ -9,8 +9,16 @@ public class ScriptContext {
 		scope = new Scope(parent);		
 	}
 	
-	public void put(String name, Object obj) throws ScriptException {
+	public ScriptContext createChild() {
+		return new ScriptContext(scope);
+	}
+	
+	public void put(String name, Object obj) throws ScriptValueException {
 		scope.setValue(name, Converter.convertIn(obj));
+	}
+	
+	public void remove(String name) {
+		scope.removeValue(name);
 	}
 	
 	public Scope getScope() {
