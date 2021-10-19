@@ -77,15 +77,17 @@ public class Payload
 			System.arraycopy(encodedMessage, bb.position(), data, 0, bb.remaining());
 			
 			HashMap<String, String> metadata = new HashMap<String, String>();
-			try
-			{
-				Properties props = new Properties();
-				props.load(new StringReader(metadataStr.substring(1, metadataStr.length() - 1).replace(", ", "\n")));       
-				for (Map.Entry<Object, Object> e : props.entrySet()) 
-				    metadata.put((String)e.getKey(), (String)e.getValue());
+			if(metadataStr.length() > 0) {
+				try
+				{
+					Properties props = new Properties();
+					props.load(new StringReader(metadataStr.substring(1, metadataStr.length() - 1).replace(", ", "\n")));       
+					for (Map.Entry<Object, Object> e : props.entrySet()) 
+					    metadata.put((String)e.getKey(), (String)e.getValue());
+				}
+				catch(Exception e)
+				{}
 			}
-			catch(Exception e)
-			{}
 			
 			return new Payload(metadata, data);
 		}
