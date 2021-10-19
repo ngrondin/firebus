@@ -50,7 +50,7 @@ public class S3Adapter extends Adapter implements ServiceProvider, Consumer {
 			if(fileName != null) {
 				File file = new File(fileName);
 				FileOutputStream fos = new FileOutputStream(file);
-				fos.write(payload.data);
+				fos.write(payload.getBytes());
 				fos.close();
 				
 				String filePath = (folder != null ? folder + "/" : "") + fileName;
@@ -71,7 +71,7 @@ public class S3Adapter extends Adapter implements ServiceProvider, Consumer {
 	}
 
 	public Payload service(Payload payload) throws FunctionErrorException {
-		String fileName = new String(payload.data);
+		String fileName = payload.getString();
 		try
 		{
 			String filePath = (folder != null ? folder + "/" : "") + fileName;

@@ -6,27 +6,37 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import io.firebus.data.DataException;
+import io.firebus.data.DataMap;
+
 public class Payload
 {
-	public byte[] data;
+	protected byte[] dataBytes;
+	protected DataMap dataMap;
+	
 	public HashMap<String, String> metadata;
 
 	public Payload()
 	{
 		metadata = new HashMap<String, String>();
-		data = new byte[0];
 	}
 
 	public Payload(byte[] d)
 	{
 		metadata = new HashMap<String, String>();
-		data = d;
+		dataBytes = d;
 	}
 	
 	public Payload(String s)
 	{
 		metadata = new HashMap<String, String>();
-		data = s.getBytes();
+		dataBytes = s.getBytes();
+	}
+	
+	public Payload(DataMap m)
+	{
+		metadata = new HashMap<String, String>();
+		dataMap = m;
 	}
 	
 	public Payload(HashMap<String, String> md, byte[] d)
@@ -35,32 +45,19 @@ public class Payload
 			metadata = md;
 		else
 			metadata = new HashMap<String, String>();
-		data = d;
+		dataBytes = d;
 	}
 	
 	public byte[] serialise()
 	{
-		int len = 4;
-		if(!metadata.isEmpty())
-			len += metadata.toString().length();
-		if(data != null)
-			len += data.length;
-		ByteBuffer bb = ByteBuffer.allocate(len);
-		if(!metadata.isEmpty())
-		{
-			String metadataStr = metadata.toString();
-			bb.putInt(metadataStr.length());
-			bb.put(metadataStr.getBytes(), 0, metadataStr.length());
-		}
-		else
-		{
-			bb.putInt(0);
-		}
-
-		if(data != null)
-		{
-			bb.put(data);	
-		}
+		String metaStr = metadata.toString();
+		byte[] bytes = dataBytes != null ? dataBytes : dataMap != null ? dataMap.toString().getBytes() : new byte[0];
+		int type = dataBytes != null ? 1 : dataMap != null ? 2 : 0;
+		ByteBuffer bb = ByteBuffer.allocate(4 + metaStr.length() + 4 +  bytes.length);
+		bb.putInt(metaStr.length());
+		bb.put(metaStr.getBytes(), 0, metaStr.length());
+		bb.putInt(type);
+		bb.put(bytes);
 		return  bb.array();
 	}
 	
@@ -72,12 +69,12 @@ public class Payload
 			int metadataLen = bb.getInt();
 			String metadataStr = new String(encodedMessage, bb.position(), metadataLen);
 			bb.position(bb.position() + metadataLen);
-			
-			byte[] data = new byte[bb.remaining()];
-			System.arraycopy(encodedMessage, bb.position(), data, 0, bb.remaining());
+			int type = bb.getInt();
+			byte[] bytes = new byte[bb.remaining()];
+			System.arraycopy(encodedMessage, bb.position(), bytes, 0, bb.remaining());
 			
 			HashMap<String, String> metadata = new HashMap<String, String>();
-			if(metadataStr.length() > 0) {
+			if(metadataLen > 0) {
 				try
 				{
 					Properties props = new Properties();
@@ -88,8 +85,22 @@ public class Payload
 				catch(Exception e)
 				{}
 			}
-			
-			return new Payload(metadata, data);
+			Payload payload = new Payload();
+			payload.metadata = metadata;
+			if(type == 1)
+			{
+				payload.setData(bytes);
+			}
+			else if(type == 2)
+			{
+				try {
+					DataMap map = new DataMap(new String(bytes));
+					payload.setData(map);
+				} catch(DataException e) {
+					payload.setData(bytes);
+				}
+			}
+			return payload;
 		}
 		else
 		{
@@ -99,30 +110,51 @@ public class Payload
 	
 	public byte[] getBytes()
 	{
-		return data;
+		if(dataBytes != null)
+			return dataBytes;
+		else if(dataMap != null)
+			return dataMap.toString().getBytes();
+		else 
+			return null;
 	}
 	
 	public String getString()
 	{
-		return new String(data);
+		if(dataBytes != null)
+			return new String(dataBytes);
+		else if(dataMap != null)
+			return dataMap.toString();
+		else 
+			return null;
+	}
+	
+	public DataMap getDataMap() throws DataException
+	{
+		if(dataMap != null) 
+			return dataMap;
+		else if(dataBytes != null)
+			return new DataMap(new String(dataBytes));
+		else
+			return null;
 	}
 	
 	public void setData(byte[] bytes)
 	{
-		data = bytes;
+		dataBytes = bytes;
 	}
 	
 	public void setData(String s)
 	{
-		data = s.getBytes();
+		dataBytes = s.getBytes();
+	}
+	
+	public void setData(DataMap dm) 
+	{
+		dataMap = dm;
 	}
 	
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
-		sb.append(metadata.toString());
-		if(data != null)
-			sb.append(new String(data));
-		return sb.toString();
+		return getString();
 	}
 }

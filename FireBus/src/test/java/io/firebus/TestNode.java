@@ -7,10 +7,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import io.firebus.Firebus;
-import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
-import io.firebus.information.FunctionInformation;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
@@ -60,7 +57,7 @@ public class TestNode
 									String line = in.substring(parts[0].length() + 1);
 									n.requestService(functionName, new Payload(null, line.getBytes()), new ServiceRequestor() {
 										public void response(Payload payload) {
-											System.out.println(new String(payload.data));
+											System.out.println(payload.getString());
 										}
 										public void timeout() {
 											System.out.println("Timed out");
@@ -74,7 +71,7 @@ public class TestNode
 									String line = in.substring(parts[0].length() + 1);
 									try
 									{
-										String resp = new String(n.requestService(functionName, new Payload(null, line.getBytes()), 2000).data);
+										String resp = n.requestService(functionName, new Payload(line.getBytes()), 2000).getString();
 										System.out.println(resp);
 									}
 									catch (Exception e)
@@ -103,11 +100,11 @@ public class TestNode
 							{
 								System.out.println("Providing Service");
 								//try{ Thread.sleep(3000); } catch(Exception e) {}
-								String val = new String(payload.data);
+								String val = payload.getString();
 								if(val.equals("throw"))
 									throw new FunctionErrorException("this is my error");
 								else
-									return new Payload(null,  (prefix + " " + new String(payload.data)).getBytes());
+									return new Payload(prefix + " " + payload.getString());
 							}
 
 							public ServiceInformation getServiceInformation()
@@ -127,7 +124,7 @@ public class TestNode
 						n.registerConsumer(args[1], new Consumer(){
 							public void consume(Payload payload)
 							{
-								System.out.println(new String(payload.data));
+								System.out.println(payload.getString());
 							}
 						}, 10);
 						System.out.println("Consumer Registered");

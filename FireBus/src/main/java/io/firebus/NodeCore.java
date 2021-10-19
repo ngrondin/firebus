@@ -215,7 +215,7 @@ public class NodeCore
 						processNodeInformationRequest(msg);
 						break;
 					case Message.MSGTYPE_NODEINFORMATION:
-						directory.processNodeInformation(new String(msg.getPayload().data));
+						directory.processNodeInformation(msg.getPayload().getString());
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_GETFUNCTIONINFORMATION:
@@ -228,7 +228,7 @@ public class NodeCore
 							consumerManager.processServiceInformationRequest(msg);
 						break;
 					case Message.MSGTYPE_FUNCTIONINFORMATION:
-						directory.processFunctionInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload().data);
+						directory.processFunctionInformation(msg.getOriginatorId(), msg.getSubject(), msg.getPayload().getBytes());
 						correlationManager.receiveResponse(msg);
 						break;
 					case Message.MSGTYPE_REQUESTSERVICE:

@@ -44,10 +44,10 @@ public abstract class DataEntity
 	
 	protected String indentString(int indent)
 	{
-		String ret = "";
+		StringBuilder sb = new StringBuilder();
 		for(int i = 0; i < indent; i++)
-			ret = ret + "\t";
-		return ret;
+			sb.append("\t");
+		return sb.toString();
 	}
 
 	public abstract DataEntity getCopy();

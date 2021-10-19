@@ -453,15 +453,18 @@ public class DataMap extends DataEntity implements Map<String, Object>
 	public String toString(int indent, boolean flat)
 	{
 		StringBuilder sb = new StringBuilder();
+		String indentStr = "";
 		sb.append('{');
-		if(!flat)
+		if(!flat) {
 			sb.append("\r\n");
+			indentStr = indentString(indent + 1);
+		}
 		Iterator<Entry<String, DataEntity>> it = attributes.entrySet().iterator();
 		while(it.hasNext())
 		{
 			Entry<String, DataEntity> entry = it.next();
 			if(!flat)
-				sb.append(indentString(indent + 1));
+				sb.append(indentStr);
 			sb.append('"');
 			sb.append(entry.getKey());
 			sb.append('"');

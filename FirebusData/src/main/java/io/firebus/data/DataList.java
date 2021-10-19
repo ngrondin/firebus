@@ -250,13 +250,16 @@ public class DataList extends DataEntity
 	public String toString(int indent, boolean flat)
 	{
 		StringBuilder sb = new StringBuilder();
+		String indentStr = "";
 		sb.append('[');
-		if(!flat)
+		if(!flat) {
 			sb.append("\r\n");
+			indentStr = indentString(indent + 1);
+		}
 		for(int i = 0; i < list.size(); i++)
 		{
 			if(!flat)
-				sb.append(indentString(indent + 1));
+				sb.append(indentStr);
 			sb.append(list.get(i).toString(indent + 1, flat));
 			if(i < list.size() - 1)
 				sb.append(',');

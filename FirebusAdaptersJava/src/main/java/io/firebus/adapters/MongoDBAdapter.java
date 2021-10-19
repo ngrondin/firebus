@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -27,8 +28,10 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 import io.firebus.Payload;
+import io.firebus.data.DataEntity;
 import io.firebus.data.DataException;
 import io.firebus.data.DataList;
+import io.firebus.data.DataLiteral;
 import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
@@ -149,7 +152,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					}
 				}
 			}
-			response = new Payload(null, responseJSON.toString().getBytes());
+			response = new Payload(responseJSON.toString());
 			long duration = System.currentTimeMillis() - start;
 			if(duration > 2000) 
 				logger.warning("Long running mongo request (" + duration + "ms): " + request.toString(0, true));
@@ -305,14 +308,25 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		{
 			responseList = new DataList();
 			while(it.hasNext() && responseList.size() < count)
-			{
-				Document doc = it.next();
-				String str = doc.toJson(jsonWritterSettings);
-				DataMap obj = new DataMap(str);
-				responseList.add(obj);
-			}
+				responseList.add(convertValue(it.next()));
 		}
 		return responseList;
+	}
+	
+	private DataEntity convertValue(Object value) {
+		if(value instanceof List) {
+			DataList list = new DataList();
+			for(Object o: (List<?>)value) 
+				list.add(convertValue(o));
+			return list;
+		} else if(value instanceof Document) {
+			DataMap map = new DataMap();
+			for(String key: ((Document)value).keySet())
+				map.put(key, convertValue(((Document)value).get(key)));
+			return map;			
+		} else {
+			return new DataLiteral(value);
+		}
 	}
 	
 	private void upsert(DataMap packet)

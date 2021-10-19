@@ -1,3 +1,3 @@
-var a = {k:1};
-var b = {};
-print(a.k < b.k);
+var available = true;
+var lasttrack = 0;
+print(lasttrack != null && ((new Date()).getTime() - lasttrack.getTime()) < 900000 ? 'good' : 'nocontact');

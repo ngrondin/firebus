@@ -37,7 +37,7 @@ public class PostHandler extends OutboundHandler
 			path = path + "/" + relativePath;
 		}
 		HttpPost httppost = new HttpPost(path);
-		httppost.setEntity(new ByteArrayEntity(payload.data));
+		httppost.setEntity(new ByteArrayEntity(payload.getBytes()));
 		return httppost;
 	}
 

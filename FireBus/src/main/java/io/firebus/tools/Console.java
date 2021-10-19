@@ -69,7 +69,7 @@ public class Console implements ServiceRequestor
 	
 	public void response(Payload payload)
 	{
-		System.out.println(new String(payload.data));
+		System.out.println(payload.getString());
 		
 	}
 

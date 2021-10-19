@@ -11,7 +11,6 @@ import io.firebus.FirebusAdmin;
 import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
-import io.firebus.information.FunctionInformation;
 import io.firebus.information.NodeInformation;
 
 public class Executor {
@@ -111,7 +110,7 @@ public class Executor {
 					{
 						String fileName = response.metadata.get("filename");
 						FileOutputStream fos = new FileOutputStream(fileName);
-						fos.write(response.data);
+						fos.write(response.getBytes());
 						fos.close();
 						ret = "Received file " + fileName;
 					}

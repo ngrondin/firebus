@@ -44,7 +44,7 @@ public class AzureBlobAdapter extends Adapter implements ServiceProvider, Consum
 				BlobClient blobClient = blobContainerClient.getBlobClient(fileName);
 				File file = new File(fileName);
 				FileOutputStream fos = new FileOutputStream(file);
-				fos.write(payload.data);
+				fos.write(payload.getBytes());
 				fos.close();
 				blobClient.uploadFromFile(fileName);
 				file.delete();
@@ -58,7 +58,7 @@ public class AzureBlobAdapter extends Adapter implements ServiceProvider, Consum
 
 	public Payload service(Payload payload) throws FunctionErrorException
 	{
-		String fileName = new String(payload.data);
+		String fileName = payload.getString();
 		try
 		{
 			HashMap<String, String> metadata = new HashMap<String, String>();

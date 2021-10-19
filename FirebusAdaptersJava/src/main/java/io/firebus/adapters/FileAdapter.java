@@ -33,7 +33,7 @@ public class FileAdapter extends Adapter implements ServiceProvider, Consumer
 				fileName = "firebusfile.txt";
 			File file = new File(path + File.separator + fileName);
 			FileOutputStream fos = new FileOutputStream(file);
-			fos.write(payload.data);
+			fos.write(payload.getBytes());
 			fos.close();
 		}
 		catch(Exception e)
@@ -44,7 +44,7 @@ public class FileAdapter extends Adapter implements ServiceProvider, Consumer
 
 	public Payload service(Payload payload) throws FunctionErrorException
 	{
-		String fileName = new String(payload.data);
+		String fileName = payload.getString();
 		try
 		{
 			HashMap<String, String> metadata = new HashMap<String, String>();
