@@ -75,12 +75,6 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			client.close();
 			client = null;
 		}
-		/*MongoClientOptions mongoClientOptions = MongoClientOptions.builder()
-                .connectTimeout(2000)
-                .maxWaitTime(waitTimeout)
-                .serverSelectionTimeout(waitTimeout)
-                .build();*/
-		//client =  new MongoClient(connectionString, mongoClientOptions);
 		MongoClientSettings settings = MongoClientSettings.builder()
 				.applyConnectionString(new ConnectionString(connectionString))
 				.applyToClusterSettings(builder -> builder.serverSelectionTimeout(waitTimeout, TimeUnit.MILLISECONDS))
