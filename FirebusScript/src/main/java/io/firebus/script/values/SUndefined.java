@@ -30,10 +30,10 @@ public class SUndefined extends SValue {
     }
 
 	public Number toNumber() throws ScriptValueException {
-		throw new ScriptValueException("Undefined cannot be converted to number");
+		return Double.NaN;
 	}
 
 	public Boolean toBoolean() throws ScriptValueException {
-		throw new ScriptValueException("Undefined cannot be converted to boolean");
+		return false;
 	}
 }

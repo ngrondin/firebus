@@ -1,2 +1,3 @@
-var v = "2.8";
-print(Math.floor(v));
+var a = {k:1};
+var b = {};
+print(a.k < b.k);
