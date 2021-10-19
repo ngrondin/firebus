@@ -204,9 +204,9 @@ public class DataLiteral extends DataEntity
 		if(valueType == TYPE_STRING)
 			return stringValue;
 		else if(valueType == TYPE_NUMBER)
-			return "" + numberValue;
+			return numberValue.toString();
 		else if(valueType == TYPE_BOOLEAN)
-			return "" + boolValue;
+			return boolValue == true ? "true" : "false";
 		else if(valueType == TYPE_DATE)
 			return dateValue.toInstant().toString();
 		else if(valueType == TYPE_TIME)
