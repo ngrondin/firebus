@@ -18,6 +18,8 @@ import io.firebus.script.values.callables.impl.string.Slice;
 import io.firebus.script.values.callables.impl.string.Split;
 import io.firebus.script.values.callables.impl.string.StartsWith;
 import io.firebus.script.values.callables.impl.string.Substr;
+import io.firebus.script.values.callables.impl.string.ToLowerCase;
+import io.firebus.script.values.callables.impl.string.ToUpperCase;
 
 public class SString extends SPredefinedObject {
 	protected String str;
@@ -92,6 +94,10 @@ public class SString extends SPredefinedObject {
 			return new LocaleCompare(this);
 		} else if(name.equals("split")) {
 			return new Split(this);			
+		} else if(name.equals("toLowerCase")) {
+			return new ToLowerCase(this);
+		} else if(name.equals("toUpperCase")) {
+			return new ToUpperCase(this);
 		} else if(name.equals("toString")) {
 			return new ToString(this);
 		} else if(name.equals("length")) {
