@@ -33,6 +33,7 @@ import io.firebus.data.DataException;
 import io.firebus.data.DataList;
 import io.firebus.data.DataLiteral;
 import io.firebus.data.DataMap;
+import io.firebus.data.parse.StringDecoder;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
@@ -152,7 +153,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					}
 				}
 			}
-			response = new Payload(responseJSON.toString());
+			response = new Payload(responseJSON);
 			long duration = System.currentTimeMillis() - start;
 			if(duration > 2000) 
 				logger.warning("Long running mongo request (" + duration + "ms): " + request.toString(0, true));
@@ -324,6 +325,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			for(String key: ((Document)value).keySet())
 				map.put(key, convertValue(((Document)value).get(key)));
 			return map;			
+		} else if(value instanceof String){
+			return new DataLiteral(StringDecoder.decodeQuotedString((String)value));
 		} else {
 			return new DataLiteral(value);
 		}

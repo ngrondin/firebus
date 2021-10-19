@@ -7,8 +7,10 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import io.firebus.data.parse.DateParser;
+import io.firebus.data.parse.NumberParser;
+import io.firebus.data.parse.TimeParser;
 
 public class DataLiteral extends DataEntity
 {
@@ -19,11 +21,7 @@ public class DataLiteral extends DataEntity
 	protected ZonedTime timeValue;
 	protected int valueType;
 
-	static protected Pattern datePattern = Pattern.compile("^(?:[1-9]\\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d{1,9})?(?:Z|[+-][01]\\d:[0-5]\\d)$");
-	static protected Pattern timePattern = Pattern.compile("^T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d{1,9})?(?:Z|[+-][01]\\d:[0-5]\\d|\\[[a-zA-Z]+\\/[a-zA-Z]+\\])$");
-	static protected Pattern doublePattern = Pattern.compile("[-+]?\\d*\\.\\d+");
-	static protected Pattern longPattern = Pattern.compile("[-+]?\\d+");
-	
+
 	static public int TYPE_NULL = 0;
 	static public int TYPE_STRING = 1;
 	static public int TYPE_NUMBER = 2;
@@ -71,13 +69,11 @@ public class DataLiteral extends DataEntity
 	
 	public DataLiteral(InputStream is) throws DataException, IOException
 	{
-		//StringBuilder sb = null;
-		ByteArrayOutputStream accumulator = new ByteArrayOutputStream();
+		ByteArrayOutputStream accumulator = null;//new ByteArrayOutputStream();
 		boolean inQuotes = false;
 		boolean escaping = false;
 		int cInt = -1;
 		char c = ' ';
-		//char previousC = ' ';
 		int readState = 0; 
 		boolean hadQuotes = false;
 
@@ -90,14 +86,12 @@ public class DataLiteral extends DataEntity
 		bis.mark(1);
 		while((cInt = bis.read()) != -1)
 		{
-			//previousC = c;
 			c = (char)cInt;
 			if(readState == 0) // Before value
 			{
 				if(c != ' '  &&  c != '\r' && c != '\n' && c != '\t')
 				{
 					bis.reset();
-					//sb = new StringBuilder();
 					accumulator = new ByteArrayOutputStream();
 					readState = 1;
 				}					
@@ -110,36 +104,18 @@ public class DataLiteral extends DataEntity
 					{
 						inQuotes = false;
 						hadQuotes = true;
-						//String tempString = sb.toString();
 						String tempString = new String(accumulator.toByteArray());
-						if(datePattern.matcher(tempString).matches())		
-						{
-							try
-							{
-								valueType = TYPE_DATE;
-								dateValue = ZonedDateTime.parse(tempString);
-							} 
-							catch (Exception e)
-							{
-								throw new DataException("Error processing date value");
-							}
-						}
-						else if(timePattern.matcher(tempString).matches()) 
-						{
-							try
-							{
+						dateValue = DateParser.parse(tempString);
+						if(dateValue != null) {
+							valueType = TYPE_DATE;
+						} else {
+							timeValue = TimeParser.parse(tempString);
+							if(timeValue != null) {
 								valueType = TYPE_TIME;
-								timeValue = ZonedTime.parse(tempString);
-							} 
-							catch (Exception e)
-							{
-								throw new DataException("Error processing time value");
+							} else {
+								stringValue = tempString;
+								valueType = TYPE_STRING;
 							}
-						}
-						else
-						{
-							valueType = TYPE_STRING;
-							stringValue = tempString;
 						}
 						break;
 					}
@@ -179,13 +155,10 @@ public class DataLiteral extends DataEntity
 					}
 					else if(c == ' ' || c == '\r' || c == '\n' || c == '\t' || c == ',' || c == '}' || c == ']')
 					{
-						//String tempString = sb.toString();
 						String tempString = new String(accumulator.toByteArray());
 						bis.reset();
 						if(!hadQuotes)
 						{
-							Matcher doubleMatcher = doublePattern.matcher(tempString);
-							Matcher longMatcher = longPattern.matcher(tempString);
 							if(tempString.equalsIgnoreCase("true")  ||  tempString.equalsIgnoreCase("false"))
 							{
 								valueType = TYPE_BOOLEAN;
@@ -195,20 +168,16 @@ public class DataLiteral extends DataEntity
 							{
 								valueType = TYPE_NULL;
 							}
-							else if(doubleMatcher.matches())
-							{
-								valueType = TYPE_NUMBER;
-								numberValue = Double.parseDouble(tempString);
-							}
-							else if(longMatcher.matches())
-							{
-								valueType = TYPE_NUMBER;
-								numberValue = Long.parseLong(tempString);
-							}
 							else
 							{
-								valueType = TYPE_STRING;
-								stringValue = tempString;
+								numberValue = NumberParser.parse(tempString);
+								if(numberValue != null) {
+									valueType = TYPE_NUMBER;
+								} else {
+									stringValue = tempString;
+									valueType = TYPE_STRING;
+									
+								}
 							}
 						}
 						else
@@ -221,7 +190,6 @@ public class DataLiteral extends DataEntity
 					else
 					{
 						accumulator.write(c);
-						//sb.append(c);
 					}
 				}
 			}
