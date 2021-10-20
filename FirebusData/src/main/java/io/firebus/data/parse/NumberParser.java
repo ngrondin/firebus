@@ -3,6 +3,7 @@ package io.firebus.data.parse;
 public class NumberParser extends Parser {
 
 	public static Number parse(String str) {
+		boolean negative = false;
 		long integer = 0;
 		double decimal = 0;
 		
@@ -10,13 +11,17 @@ public class NumberParser extends Parser {
 		if(l == 0) return null;
 		
 		int i = 0;
-		char c = 0;
+		char c = str.charAt(i);
+		if(c == '-') {
+			negative = true;
+			i++;
+		}
 		while(i < l && (c = str.charAt(i++)) != '.') {
 			if(!isDigit(c)) return null;
 			integer = (10 * integer) + toInt(c);
 		}
 		if(i == l) {
-			if(c != '.') return integer;
+			if(c != '.') return (negative ? -1L : 1L) * integer;
 			else return null;
 		} else {
 			double div = 10;
@@ -26,7 +31,7 @@ public class NumberParser extends Parser {
 				decimal = decimal + (toInt(c) / div);
 				div *= 10D;
 			}
-			return ((double)integer + decimal);
+			return (negative ? -1D : 1D) * ((double)integer + decimal);
 		}
 	}
 }

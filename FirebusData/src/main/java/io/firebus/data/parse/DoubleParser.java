@@ -3,12 +3,17 @@ package io.firebus.data.parse;
 public class DoubleParser extends Parser {
 
 	public static Double parse(String str) {
+		boolean negative = false;
 		double d = 0;
 		
 		int l = str.length();
 		if(l < 3) return null;
 		int i = 0;
-		char c = 0;
+		char c = str.charAt(i);
+		if(c == '-') {
+			negative = true;
+			i++;
+		}
 		while(i < l && (c = str.charAt(i++)) != '.') {
 			if(!isDigit(c)) return null;
 			d = (10D * d) + toInt(c);
@@ -22,6 +27,6 @@ public class DoubleParser extends Parser {
 			div *= 10D;
 		}
 		
-		return d;
+		return (negative ? -1D : 1D) * d;
 	}
 }

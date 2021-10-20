@@ -3,18 +3,23 @@ package io.firebus.data.parse;
 public class LongParser extends Parser {
 
 	public static Long parse(String str) {
-		long n = 0;
+		boolean negative = false;
+		long integer = 0;
 		
 		int l = str.length();
 		if(l == 0) return null;
 		
 		int i = 0;
-		char c = 0;
+		char c = str.charAt(i);
+		if(c == '-') {
+			negative = true;
+			i++;
+		}	
 		while(i < l) {
 			c = str.charAt(i++);
 			if(!isDigit(c)) return null;
-			n = (10L * n) + toInt(c);
+			integer = (10L * integer) + toInt(c);
 		}
-		return n;
+		return (negative ? -1L : 1L) * integer;
 	}
 }
