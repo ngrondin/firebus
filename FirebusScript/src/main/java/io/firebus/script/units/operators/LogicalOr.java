@@ -7,6 +7,7 @@ import io.firebus.script.units.abs.Expression;
 import io.firebus.script.units.operators.abs.Operator;
 import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.SNull;
+import io.firebus.script.values.SUndefined;
 import io.firebus.script.values.abs.SValue;
 
 public class LogicalOr extends Operator {
@@ -22,6 +23,8 @@ public class LogicalOr extends Operator {
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue v1 = expr1.eval(scope);
 		if(v1 instanceof SNull) {
+			return expr2.eval(scope);
+		} else if(v1 instanceof SUndefined) {
 			return expr2.eval(scope);
 		} else if(v1 instanceof SBoolean && ((SBoolean)v1).getBoolean() == false) {
 			return expr2.eval(scope);

@@ -1,3 +1,2 @@
-var available = true;
-var lasttrack = 0;
-print(lasttrack != null && ((new Date()).getTime() - lasttrack.getTime()) < 900000 ? 'good' : 'nocontact');
+var a = 2
+print(a || 'Allo');
