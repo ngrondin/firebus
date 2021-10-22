@@ -1,2 +1,1 @@
-var a = 2
-print(a || 'Allo');
+print(Math.pow(-7, 0.5));

@@ -11,6 +11,7 @@ import io.firebus.script.values.callables.impl.math.Cos;
 import io.firebus.script.values.callables.impl.math.Floor;
 import io.firebus.script.values.callables.impl.math.Max;
 import io.firebus.script.values.callables.impl.math.Min;
+import io.firebus.script.values.callables.impl.math.Pow;
 import io.firebus.script.values.callables.impl.math.Random;
 import io.firebus.script.values.callables.impl.math.Round;
 import io.firebus.script.values.callables.impl.math.Sin;
@@ -49,6 +50,8 @@ public class MathStaticPackage extends SPredefinedObject {
 			return new Atan2();
 		} else if(name.equals("sqrt")) {
 			return new Sqrt();
+		} else if(name.equals("pow")) {
+			return new Pow();
 		} else if(name.equals("PI")) {
 			return new SNumber(Math.PI);
 		}
