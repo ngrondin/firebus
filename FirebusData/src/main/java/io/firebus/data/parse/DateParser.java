@@ -119,6 +119,19 @@ public class DateParser extends Parser {
 				else nano += (1000 * toInt(c));
 				
 				c = str.charAt(i++);
+				if(isDigit(c)) {
+					nano += (100 * toInt(c));
+
+					c = str.charAt(i++);
+					if(!isDigit(c)) return null;
+					else nano += (10 * toInt(c));
+
+					c = str.charAt(i++);
+					if(!isDigit(c)) return null;
+					else nano += toInt(c);
+					
+					c = str.charAt(i++);
+				}
 			}
 		}
 		if(c != '+' && c != '-' && c != 'Z') return null;
