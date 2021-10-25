@@ -13,7 +13,7 @@ public class GetDay extends DateFunction {
 	}
 
 	public SValue call(SValue... arguments) throws ScriptCallException {
-		return new SNumber(date.getZonedDateTime().getDayOfWeek().getValue());
+		return new SNumber(date.getZonedDateTime().getDayOfWeek().getValue() % 7);
 	}
 
 }
