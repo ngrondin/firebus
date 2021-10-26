@@ -19,6 +19,7 @@ import io.firebus.script.values.callables.impl.string.Slice;
 import io.firebus.script.values.callables.impl.string.Split;
 import io.firebus.script.values.callables.impl.string.StartsWith;
 import io.firebus.script.values.callables.impl.string.Substr;
+import io.firebus.script.values.callables.impl.string.Substring;
 import io.firebus.script.values.callables.impl.string.ToLowerCase;
 import io.firebus.script.values.callables.impl.string.ToUpperCase;
 
@@ -89,6 +90,8 @@ public class SString extends SPredefinedObject {
 			return new IndexOf(this);
 		} else if(name.equals("substr")) {
 			return new Substr(this);
+		} else if(name.equals("substring")) {
+			return new Substring(this);
 		} else if(name.equals("padStart")) {
 			return new PadStart(this);
 		} else if(name.equals("localeCompare")) {
