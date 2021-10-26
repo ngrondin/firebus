@@ -1,2 +1,2 @@
 var s = "Visit me";
-print(s.replace("Visit", "I am"));
+print(s.substring(-6, 4));

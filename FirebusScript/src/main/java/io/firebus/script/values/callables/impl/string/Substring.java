@@ -28,6 +28,7 @@ public class Substring extends StringFunction {
 						if(ev instanceof SNumber) {
 							int e = ((SNumber)ev).getNumber().intValue();
 							if(e > len) e = len;
+							if(e <= b) e = b + 1;
 							return new SString(str.substring(b, e));
 						} else {
 							throw new ScriptCallException("substring requires number arguments");
