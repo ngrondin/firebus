@@ -14,6 +14,7 @@ import io.firebus.script.values.callables.impl.string.Includes;
 import io.firebus.script.values.callables.impl.string.IndexOf;
 import io.firebus.script.values.callables.impl.string.LocaleCompare;
 import io.firebus.script.values.callables.impl.string.PadStart;
+import io.firebus.script.values.callables.impl.string.Replace;
 import io.firebus.script.values.callables.impl.string.Slice;
 import io.firebus.script.values.callables.impl.string.Split;
 import io.firebus.script.values.callables.impl.string.StartsWith;
@@ -98,6 +99,8 @@ public class SString extends SPredefinedObject {
 			return new ToLowerCase(this);
 		} else if(name.equals("toUpperCase")) {
 			return new ToUpperCase(this);
+		} else if(name.equals("replace")) {
+			return new Replace(this);
 		} else if(name.equals("toString")) {
 			return new ToString(this);
 		} else if(name.equals("length")) {

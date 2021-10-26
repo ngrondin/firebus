@@ -1,2 +1,2 @@
-var filter = {a:"allo", b:"toi", c: 9.2};
-print(Object.entries(filter));
+var s = "Visit me";
+print(s.replace("Visit", "I am"));
