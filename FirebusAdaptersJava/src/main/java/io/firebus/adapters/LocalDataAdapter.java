@@ -145,22 +145,35 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 	
 	private void upsert(DataMap packet) {
 		String collection = packet.getString("object");
-		//String operation = packet.getString("operation");
+		String operation = packet.getString("operation");
 		DataMap data = packet.getObject("data");
 		DataMap key = packet.getObject("key");		
 		if(!collections.containsKey(collection))
 			collections.put(collection, new DataList());
-		DataList existingList = find(collection, key);
-		if(existingList.size() > 0) {
-			for(int i = 0; i < existingList.size(); i++) {
-				DataMap item = existingList.getObject(i);
-				item.merge(data);
+		if(operation != null && operation.equals("delete")) {
+			DataList list = collections.get(collection);
+			DataFilter filter = new DataFilter(key);
+			if(list != null) {
+				for(int i = list.size() - 1; i >= 0; i--) {
+					DataMap listItem = list.getObject(i);
+					if(filter.apply(listItem)) {
+						list.remove(i);
+					}
+				}
 			}
 		} else {
-			DataMap item = new DataMap();
-			item.merge(data);
-			item.merge(key);
-			collections.get(collection).add(item);
+			DataList existingList = find(collection, key);
+			if(existingList.size() > 0) {
+				for(int i = 0; i < existingList.size(); i++) {
+					DataMap item = existingList.getObject(i);
+					item.merge(data);
+				}
+			} else {
+				DataMap item = new DataMap();
+				item.merge(data);
+				item.merge(key);
+				collections.get(collection).add(item);
+			}			
 		}
 		saveData(collection);
 	}
