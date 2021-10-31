@@ -28,6 +28,8 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 		super(c);
 		if(config.containsKey("path")) {
 			path = config.getString("path");
+			if(path.startsWith("./"))
+				path = System.getProperty("user.home") + path.substring(1);
 		} else {
 			path = System.getProperty("user.home") + File.separator + "firebusdata";
 		}
@@ -128,13 +130,25 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 		DataList responseList = null;
 		String collection = request.getString("object");
 		DataMap filter = request.getObject("filter");
+		DataMap sort = request.getObject("sort");
 		int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
 		int pageSize = request.containsKey("pagesize") ? request.getNumber("pagesize").intValue() : 50;
-		responseList = find(collection, filter);
-		for(int i = 0; i < (page * pageSize); i++)
-			responseList.remove(0);
-		while(responseList.size() > pageSize) {
-			responseList.remove(pageSize);
+		DataList unsortedList = find(collection, filter);
+		for(int i = 0; i < (page * pageSize) && unsortedList.size() > 0; i++)
+			unsortedList.remove(0);
+		while(unsortedList.size() > pageSize && unsortedList.size() > pageSize) {
+			unsortedList.remove(pageSize);
+		}
+		if(sort != null) {
+			responseList = new DataList();
+			for(int i = 0; i < unsortedList.size(); i++) {
+				DataMap o = unsortedList.getObject(i);
+				int j = 0;
+				for(; j < responseList.size() && !isBefore(o, responseList.getObject(j), sort); j++);
+				responseList.add(j, o);
+			}
+		} else {
+			responseList = unsortedList;
 		}
 		return responseList;
 	}
@@ -190,5 +204,31 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 			}
 		}
 		return ret;
+	}
+	
+	private boolean isBefore(DataMap a, DataMap b, DataMap sort) {
+		int k = 0;
+		while(sort.containsKey(String.valueOf(k))) {
+			DataMap p = sort.getObject(String.valueOf(k));
+			String attr = p.getString("attribute");
+			int dir = p.containsKey("dir") ? p.getNumber("dir").intValue() : 1;
+			String as = a.getString(attr);
+			if(as != null) {
+				String bs = b.getString(attr);
+				if(bs != null) {
+					int i = dir * as.compareTo(bs);
+					if(i > 0) {
+						return false;
+					} else if(i < 0) {
+						return true;
+					}
+				} else {
+					return true;
+				}
+			} else {
+				return false;
+			}
+		}
+		return true;
 	}
 }
