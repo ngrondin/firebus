@@ -131,6 +131,7 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 		String collection = request.getString("object");
 		DataMap filter = request.getObject("filter");
 		DataMap sort = request.getObject("sort");
+		DataList tuple = request.getList("tuple");
 		int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
 		int pageSize = request.containsKey("pagesize") ? request.getNumber("pagesize").intValue() : 50;
 		DataList unsortedList = find(collection, filter);
@@ -154,7 +155,7 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 	}
 	
 	private DataList aggregate(DataMap request) throws DataException {
-		return null;
+		return new DataList();
 	}
 	
 	private void upsert(DataMap packet) {
