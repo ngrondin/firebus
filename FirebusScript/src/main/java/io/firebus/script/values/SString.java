@@ -22,6 +22,7 @@ import io.firebus.script.values.callables.impl.string.Substr;
 import io.firebus.script.values.callables.impl.string.Substring;
 import io.firebus.script.values.callables.impl.string.ToLowerCase;
 import io.firebus.script.values.callables.impl.string.ToUpperCase;
+import io.firebus.script.values.callables.impl.string.Trim;
 
 public class SString extends SPredefinedObject {
 	protected String str;
@@ -108,6 +109,8 @@ public class SString extends SPredefinedObject {
 			return new ToString(this);
 		} else if(name.equals("length")) {
 			return new SNumber(str.length());
+		} else if(name.equals("trim")) {
+			return new Trim(this);
 		}
 		return SUndefined.get();
 	}
