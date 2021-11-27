@@ -2,6 +2,9 @@ package io.firebus.script.test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
@@ -13,8 +16,10 @@ public class ScriptTester {
 	
 	public static void main(String[] args) {
 		try {
-		    Path fileName = Path.of("test.js");
-			String script = Files.readString(fileName);
+		    Path path = Paths.get("test.js");
+		    Stream<String> lines = Files.lines(path);
+		    String script = lines.collect(Collectors.joining("\n"));
+		    lines.close();
 			Source source = new Source("test", script);
 			ScriptFactory factory = new ScriptFactory();
 			Function function = factory.createFunction(new String[] {"obj", "arr"}, source);

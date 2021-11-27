@@ -14,7 +14,7 @@ public class FromCharCode extends SCallable {
 			for(int i = 0; i < arguments.length; i++) {
 				SValue v = arguments[i];
 				int c = v.toNumber().intValue();
-				sb.append(Character.toString(c));
+				sb.append((char)c);
 			}
 			return new SString(sb.toString());
 		} catch(ScriptValueException e) {
