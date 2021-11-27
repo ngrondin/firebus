@@ -133,7 +133,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 							upsert(session, request);
 						} else if(request.containsKey("multi")) {
 							DataList multi = request.getList("multi");
-							session.startTransaction(TransactionOptions.builder().writeConcern(WriteConcern.MAJORITY).build());
+							session.startTransaction(TransactionOptions.builder().writeConcern(WriteConcern.W1).build());
 							for(int i = 0; i < multi.size(); i++) 
 								upsert(session, multi.getObject(i));
 							session.commitTransaction();						
