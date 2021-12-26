@@ -1,5 +1,6 @@
 package io.firebus.script.values.callables.impl.json;
 
+import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
 import io.firebus.script.Converter;
 import io.firebus.script.exceptions.ScriptCallException;
@@ -23,8 +24,15 @@ public class Parse extends SCallable {
 			} else  if(v instanceof SString) {
 				try {
 					String str = v.toString();
-					DataMap map = new DataMap(str);
-					return Converter.convertIn(map);
+					if(str.trim().charAt(0) == '{') {
+						DataMap map = new DataMap(str);
+						return Converter.convertIn(map);						 
+					} else if(str.trim().charAt(0) == '[') {
+						DataList list = new DataList(str);
+						return Converter.convertIn(list);
+					} else {
+						throw new ScriptCallException("String is neither an object or an array");
+					}
 				} catch(Exception e) {
 					throw new ScriptCallException("Error converting object to string: " +  e.getMessage());
 				}
