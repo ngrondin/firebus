@@ -64,14 +64,15 @@ public class SDate extends SPredefinedObject {
 			int month = ((SNumber)arguments[1]).getNumber().intValue();
 			int dayOfMonth = ((SNumber)arguments[2]).getNumber().intValue();
 			date = ZonedDateTime.of(year, month, dayOfMonth, 0, 0, 0, 0, ZoneId.systemDefault());
-		} else if(arguments.length == 6) {
+		} else if(arguments.length == 6 || arguments.length == 7) {
 			int year = ((SNumber)arguments[0]).getNumber().intValue();
 			int month = ((SNumber)arguments[1]).getNumber().intValue();
 			int dayOfMonth = ((SNumber)arguments[2]).getNumber().intValue();
 			int hours = ((SNumber)arguments[3]).getNumber().intValue();
 			int minutes = ((SNumber)arguments[4]).getNumber().intValue();
 			int seconds = ((SNumber)arguments[5]).getNumber().intValue();
-			date = ZonedDateTime.of(year, month, dayOfMonth, hours, minutes, seconds, 0, ZoneId.systemDefault());			
+			ZoneId zoneId = arguments.length == 7 ? ZoneId.of(arguments[6].toString()) : ZoneId.systemDefault();
+			date = ZonedDateTime.of(year, month, dayOfMonth, hours, minutes, seconds, 0, zoneId);			
 		} else {
 			throw new ScriptCallException("Unknow Date constructor");
 		}
