@@ -15,12 +15,12 @@ public class StartsWith extends StringFunction {
 	public SValue call(SValue... arguments) throws ScriptCallException {
 		if(arguments.length > 0) {
 			SValue ss = arguments[0];
-			if(string.getString().indexOf(ss.toString()) > -1)
+			if(string.getString().startsWith(ss.toString()))
 				return SBoolean.get(true);
 			else 
 				return SBoolean.get(false);
 		} else {
-			throw new ScriptCallException("includes requires at least 1 argument");
+			throw new ScriptCallException("startswith requires at least 1 argument");
 		}
 	}
 
