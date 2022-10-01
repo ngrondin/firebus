@@ -7,12 +7,21 @@ import java.util.Map;
 import java.util.Properties;
 
 import io.firebus.data.DataException;
+import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
 
 public class Payload
 {
 	protected byte[] dataBytes;
+	protected String dataString;
 	protected DataMap dataMap;
+	protected DataList dataList;
+	
+	public final static int TYPE_NULL = 0;
+	public final static int TYPE_BYTES = 1;
+	public final static int TYPE_STRING = 2;
+	public final static int TYPE_DATAMAP = 3;
+	public final static int TYPE_DATALIST = 4;
 	
 	public HashMap<String, String> metadata;
 
@@ -30,13 +39,19 @@ public class Payload
 	public Payload(String s)
 	{
 		metadata = new HashMap<String, String>();
-		dataBytes = s.getBytes();
+		dataString = s;
 	}
 	
 	public Payload(DataMap m)
 	{
 		metadata = new HashMap<String, String>();
 		dataMap = m;
+	}
+	
+	public Payload(DataList l)
+	{
+		metadata = new HashMap<String, String>();
+		dataList = l;
 	}
 	
 	public Payload(HashMap<String, String> md, byte[] d)
@@ -51,8 +66,8 @@ public class Payload
 	public byte[] serialise()
 	{
 		String metaStr = metadata.toString();
-		byte[] bytes = dataBytes != null ? dataBytes : dataMap != null ? dataMap.toString().getBytes() : new byte[0];
-		int type = dataBytes != null ? 1 : dataMap != null ? 2 : 0;
+		byte[] bytes = dataBytes != null ? dataBytes : dataMap != null ? dataMap.toString().getBytes() : dataList != null ? dataList.toString().getBytes() : new byte[0];
+		int type = getDataType();
 		ByteBuffer bb = ByteBuffer.allocate(4 + metaStr.length() + 4 +  bytes.length);
 		bb.putInt(metaStr.length());
 		bb.put(metaStr.getBytes(), 0, metaStr.length());
@@ -87,11 +102,15 @@ public class Payload
 			}
 			Payload payload = new Payload();
 			payload.metadata = metadata;
-			if(type == 1)
+			if(type == TYPE_BYTES)
 			{
 				payload.setData(bytes);
 			}
-			else if(type == 2)
+			else if(type == TYPE_STRING) 
+			{
+				payload.setData(new String(bytes));
+			}
+			else if(type == TYPE_DATAMAP)
 			{
 				try {
 					DataMap map = new DataMap(new String(bytes));
@@ -99,6 +118,13 @@ public class Payload
 				} catch(DataException e) {
 					payload.setData(bytes);
 				}
+			} else if(type == TYPE_DATALIST) {
+				try {
+					DataList list = new DataList(new String(bytes));
+					payload.setData(list);
+				} catch(DataException e) {
+					payload.setData(bytes);
+				}				
 			}
 			return payload;
 		}
@@ -108,12 +134,44 @@ public class Payload
 		}
 	}
 	
+	public int getDataType()
+	{
+		if(dataBytes != null)
+			return TYPE_BYTES;
+		else if(dataString != null) 
+			return TYPE_STRING;
+		else if(dataMap != null)
+			return TYPE_DATAMAP;
+		else if(dataList != null)
+			return TYPE_DATALIST;
+		else 
+			return 0;
+	}
+	
+	public Object getDataObject()
+	{
+		if(dataBytes != null)
+			return dataBytes;
+		else if(dataString != null) 
+			return dataString;
+		else if(dataMap != null)
+			return dataMap;
+		else if(dataList != null)
+			return dataList;
+		else 
+			return null;
+	}
+	
 	public byte[] getBytes()
 	{
 		if(dataBytes != null)
 			return dataBytes;
+		else if(dataString != null)
+			return dataString.getBytes();
 		else if(dataMap != null)
 			return dataMap.toString().getBytes();
+		else if(dataList != null)
+			return dataList.toString().getBytes();
 		else 
 			return null;
 	}
@@ -122,8 +180,12 @@ public class Payload
 	{
 		if(dataBytes != null)
 			return new String(dataBytes);
+		else if(dataString != null)
+			return dataString;
 		else if(dataMap != null)
 			return dataMap.toString();
+		else if(dataList != null)
+			return dataList.toString();
 		else 
 			return null;
 	}
@@ -134,8 +196,22 @@ public class Payload
 			return dataMap;
 		else if(dataBytes != null)
 			return new DataMap(new String(dataBytes));
+		else if(dataString != null)
+			return new DataMap(dataString);
 		else
-			return null;
+			throw new DataException("Not a DataMap type");
+	}
+	
+	public DataList getDataList() throws DataException
+	{
+		if(dataList != null) 
+			return dataList;
+		else if(dataBytes != null)
+			return new DataList(new String(dataBytes));
+		else if(dataString != null)
+			return new DataList(dataString);
+		else
+			throw new DataException("Not a DataList type");
 	}
 	
 	public void setData(byte[] bytes)
@@ -145,12 +221,17 @@ public class Payload
 	
 	public void setData(String s)
 	{
-		dataBytes = s.getBytes();
+		dataString = s;
 	}
 	
 	public void setData(DataMap dm) 
 	{
 		dataMap = dm;
+	}
+	
+	public void setData(DataList dl) 
+	{
+		dataList = dl;
 	}
 	
 	public String toString()

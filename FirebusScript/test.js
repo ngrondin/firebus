@@ -1,2 +1,3 @@
-var dt = new Date(2022, 1, 31, 18, 30, 0, "UTC");
-print(dt);
+var n = 0.3345223;
+var f = n.toFixed(2);
+print(f);
