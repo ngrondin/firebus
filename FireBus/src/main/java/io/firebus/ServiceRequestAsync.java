@@ -32,16 +32,16 @@ public class ServiceRequestAsync implements CorrelationListener {
 		requestTimeout = t;
 		subTimeout = 500;
 		errorMessage = null;
-		expiry = System.currentTimeMillis() + (requestTimeout > -1 ? requestTimeout : subTimeout);
 	}
 	
 	public void execute()  throws FunctionErrorException, FunctionTimeoutException {
 		logger.fine("Requesting Service " + serviceName);
 		boolean requestInProgress = false;
-		long subExpiry = System.currentTimeMillis() + subTimeout;
+		long now = System.currentTimeMillis();
+		expiry = now + (requestTimeout > -1 ? requestTimeout : subTimeout);
 		FunctionInformation lastRequestedFunction = null;
 		FunctionFinder functionFinder = new FunctionFinder(nodeCore, serviceName);
-		while(requestInProgress == false  &&  System.currentTimeMillis() < subExpiry)
+		while(requestInProgress == false  &&  System.currentTimeMillis() < expiry)
 		{
 			functionInformation = functionFinder.findNext(); 
 			if(functionInformation != null)

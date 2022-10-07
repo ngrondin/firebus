@@ -28,7 +28,6 @@ public class ServiceRequest
 		requestTimeout = t;
 		subTimeout = 500;
 		errorMessage = null;
-		expiry = System.currentTimeMillis() + (requestTimeout > -1 ? requestTimeout : subTimeout);
 	}
 	
 	public Payload execute() throws FunctionErrorException, FunctionTimeoutException
@@ -38,6 +37,7 @@ public class ServiceRequest
 		Payload responsePayload = null;
 		FunctionInformation lastRequestedFunction = null;
 		FunctionFinder functionFinder = new FunctionFinder(nodeCore, serviceName);
+		expiry = System.currentTimeMillis() + (requestTimeout > -1 ? requestTimeout : subTimeout);
 		while(responseReceived == false  &&  System.currentTimeMillis() < expiry)
 		{
 			functionInformation = functionFinder.findNext(); 

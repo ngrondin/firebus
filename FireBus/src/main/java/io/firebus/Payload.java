@@ -23,34 +23,29 @@ public class Payload
 	public final static int TYPE_DATAMAP = 3;
 	public final static int TYPE_DATALIST = 4;
 	
-	public HashMap<String, String> metadata;
+	public HashMap<String, String> metadata  = new HashMap<String, String>();
 
 	public Payload()
 	{
-		metadata = new HashMap<String, String>();
 	}
 
 	public Payload(byte[] d)
 	{
-		metadata = new HashMap<String, String>();
 		dataBytes = d;
 	}
 	
 	public Payload(String s)
 	{
-		metadata = new HashMap<String, String>();
 		dataString = s;
 	}
 	
 	public Payload(DataMap m)
 	{
-		metadata = new HashMap<String, String>();
 		dataMap = m;
 	}
 	
 	public Payload(DataList l)
 	{
-		metadata = new HashMap<String, String>();
 		dataList = l;
 	}
 	
@@ -58,21 +53,20 @@ public class Payload
 	{
 		if(md != null)
 			metadata = md;
-		else
-			metadata = new HashMap<String, String>();
 		dataBytes = d;
 	}
 	
 	public byte[] serialise()
 	{
-		String metaStr = metadata.toString();
-		byte[] bytes = dataBytes != null ? dataBytes : dataMap != null ? dataMap.toString().getBytes() : dataList != null ? dataList.toString().getBytes() : new byte[0];
+		byte[] metaBytes = metadata.toString().getBytes();
+		byte[] bytes = getBytes();
 		int type = getDataType();
-		ByteBuffer bb = ByteBuffer.allocate(4 + metaStr.length() + 4 +  bytes.length);
-		bb.putInt(metaStr.length());
-		bb.put(metaStr.getBytes(), 0, metaStr.length());
+		ByteBuffer bb = ByteBuffer.allocate(4 + metaBytes.length + 4 +  (bytes != null ? bytes.length : 0));
+		bb.putInt(metaBytes.length);
+		bb.put(metaBytes, 0, metaBytes.length);
 		bb.putInt(type);
-		bb.put(bytes);
+		if(bytes != null)
+			bb.put(bytes);
 		return  bb.array();
 	}
 	
