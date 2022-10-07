@@ -58,16 +58,22 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 				final InputStream is = s3Object.getObjectContent();
 				new StreamSender(is, streamEndpoint, new StreamSender.CompletionListener() {
 					public void completed() {
-						try {
-							streamEndpoint.close();
-							is.close();
-						} catch(Exception e) {
-							logger.severe("Error closing stream after file get : " + e.getMessage());
-						}
+						cleanup();
 					}
 
 					public void error(String message) {
 						logger.severe("Error sending file '" + fileName + "': " + message);
+						cleanup();
+					}
+					
+					public void cleanup() {
+						try {
+							streamEndpoint.close();
+							is.close();
+							s3Object.close();
+						} catch(Exception e) {
+							logger.severe("Error closing stream after file get : " + e.getMessage());
+						}
 					}
 				});
 				return null;
@@ -77,23 +83,28 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 				final FileOutputStream fos = new FileOutputStream(file);
 				new StreamReceiver(fos, streamEndpoint, new StreamReceiver.CompletionListener() {
 					public void completed() {
-						try {
-							streamEndpoint.close();
-							fos.close();
-							PutObjectRequest s3req = new PutObjectRequest(bucketName, filePath, new File(fileName));
-					        ObjectMetadata metadata = new ObjectMetadata();
-					        if(mime != null) 
-						        metadata.setContentType(mime);
-					        s3req.setMetadata(metadata);
-					        s3Client.putObject(s3req);	
-					        file.delete();
-						} catch(Exception e) {
-							logger.severe("Error closing stream after file put : " + e.getMessage());
-						}						
+						PutObjectRequest s3req = new PutObjectRequest(bucketName, filePath, new File(fileName));
+				        ObjectMetadata metadata = new ObjectMetadata();
+				        if(mime != null) 
+					        metadata.setContentType(mime);
+				        s3req.setMetadata(metadata);
+				        s3Client.putObject(s3req);
+				        cleanup();
 					}
 
 					public void error(String message) {
 						logger.severe("Error putting file '" + fileName + "': " + message);
+						cleanup();
+					}
+					
+					public void cleanup() {
+						try {
+							streamEndpoint.close();
+							fos.close();
+					        file.delete();
+						} catch(Exception e) {
+							logger.severe("Error closing stream after file put : " + e.getMessage());
+						}	
 					}
 				});
 				
