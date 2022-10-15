@@ -1,48 +1,49 @@
-package io.firebus.adapters;
+package io.firebus.aws;
 
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
+import io.firebus.adapters.Adapter;
+import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.StreamInformation;
 import io.firebus.interfaces.StreamProvider;
-import io.firebus.data.DataMap;
 import io.firebus.utils.StreamReceiver;
 import io.firebus.utils.StreamSender;
-
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 public class S3StreamAdapter extends Adapter implements StreamProvider {
 	private Logger logger = Logger.getLogger("io.firebus.adapters");
-	protected Regions region;
+	protected Region region;
 	protected String bucketName;
 	protected String folder;
-	protected AmazonS3 s3Client;
+	protected S3Client s3Client;
 
 	public S3StreamAdapter(DataMap c) {
 		super(c);
 		bucketName = config.getString("bucket");
 		folder = config.getString("folder");
 		String regionName = config.getString("region");
-		region = Regions.fromName(regionName);
+		region = Region.of(regionName);
 		String accessKey = config.getString("accesskey");
 		String secretKey = config.getString("secretkey");
-		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-		s3Client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials)).withRegion(region).build();
+		s3Client = S3Client.builder()
+	            .region(region)
+	            .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
+	            .build();
 	}
 
 
@@ -54,8 +55,8 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 			final String filePath = (folder != null ? folder + "/" : "") + fileName;
 			
 			if(action.equals("get")) {
-				S3Object s3Object = s3Client.getObject(bucketName, filePath);
-				final InputStream is = s3Object.getObjectContent();
+				GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(filePath).build();
+				InputStream is = s3Client.getObject(getObjectRequest);
 				new StreamSender(is, streamEndpoint, new StreamSender.CompletionListener() {
 					public void completed() {
 						cleanup();
@@ -70,7 +71,6 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 						try {
 							streamEndpoint.close();
 							is.close();
-							s3Object.close();
 						} catch(Exception e) {
 							logger.severe("Error closing stream after file get : " + e.getMessage());
 						}
@@ -83,12 +83,11 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 				final FileOutputStream fos = new FileOutputStream(file);
 				new StreamReceiver(fos, streamEndpoint, new StreamReceiver.CompletionListener() {
 					public void completed() {
-						PutObjectRequest s3req = new PutObjectRequest(bucketName, filePath, new File(fileName));
-				        ObjectMetadata metadata = new ObjectMetadata();
-				        if(mime != null) 
-					        metadata.setContentType(mime);
-				        s3req.setMetadata(metadata);
-				        s3Client.putObject(s3req);
+						Map<String, String> metadata = new HashMap<String, String>();
+						if(mime != null) 
+					        metadata.put("content-type", mime);
+						PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucketName).key(filePath).metadata(metadata).build();
+				        s3Client.putObject(objectRequest, RequestBody.fromFile(file));
 				        cleanup();
 					}
 
