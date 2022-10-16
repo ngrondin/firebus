@@ -17,6 +17,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
+import software.amazon.awssdk.services.sns.model.PublishResponse;
 
 
 public class SMSAdapter extends Adapter implements ServiceProvider {
@@ -33,6 +34,7 @@ public class SMSAdapter extends Adapter implements ServiceProvider {
 	            .region(region)
 	            .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
 	            .build();
+		
 	}
 
 	public Payload service(Payload payload) throws FunctionErrorException {
@@ -40,17 +42,18 @@ public class SMSAdapter extends Adapter implements ServiceProvider {
 			DataMap request = payload.getDataMap();
 			String message = request.getString("message");
 			String phoneNumber = request.getString("phonenumber");
-			String sender = request.getString("senderid");
+			String senderId = request.getString("senderid");
 			Map<String, MessageAttributeValue> attributes = new HashMap<String, MessageAttributeValue>();
-			if(sender != null) 
-				attributes.put("SenderID", MessageAttributeValue.builder().stringValue(sender).dataType("String").build());
+			attributes.put("AWS.SNS.SMS.SMSType", MessageAttributeValue.builder().stringValue("Transactional").dataType("String").build()); 
+			if(senderId != null) 
+				attributes.put("AWS.SNS.SMS.SenderID", MessageAttributeValue.builder().stringValue(senderId).dataType("String").build());
             PublishRequest pubReq = PublishRequest.builder()
                     .message(message)
                     .phoneNumber(phoneNumber)
                     .messageAttributes(attributes)
                     .build();
             client.publish(pubReq);
-			return new Payload(new DataMap("Result", "Ok"));			
+            return new Payload(new DataMap("Result", "Ok"));			
 		} catch(Exception e) {
 			throw new FunctionErrorException(e.getMessage());
 		}
