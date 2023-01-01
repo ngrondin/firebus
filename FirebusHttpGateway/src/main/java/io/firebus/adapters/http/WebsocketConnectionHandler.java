@@ -199,7 +199,6 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 		if(active && os != null) {
 			long len = msg != null ? msg.length : 0;
 			int lenSize = (len <= 125 ? 0 : (len <= 65535 ? 2 : 8));
-			int i = 0;
 			try {
 				os.write(0x80 | (op & 0x0f));
 				if(lenSize == 0) {
@@ -214,11 +213,10 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 						os.write((int)((len >> s) & 0xff));
 					}
 				}
-				for(i = 0; i < len; i++)
-					os.write(msg[i]);
+				os.write(msg, 0, (int)len);
 				os.flush();
 			} catch(Exception e) {
-				logger.warning("Websocket exception when sending (at byte " + i + "): " + e.getMessage());
+				logger.warning("Websocket exception when sending: " + e.getMessage());
 				active = false;
 			}			
 		} 
