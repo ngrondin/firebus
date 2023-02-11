@@ -1,17 +1,14 @@
-package io.firebus.adapters.http.security;
+package io.firebus.adapters.http.handlers.security;
 
-import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
@@ -19,8 +16,9 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 import io.firebus.Payload;
-import io.firebus.adapters.http.HttpGateway;
-import io.firebus.adapters.http.SecurityHandler;
+import io.firebus.adapters.http.HttpRequest;
+import io.firebus.adapters.http.HttpResponse;
+import io.firebus.adapters.http.handlers.SecurityHandler;
 import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
 
@@ -34,9 +32,10 @@ public class JWTCookie extends SecurityHandler {
 	protected String idmClientId;
 	protected String idmClientSecret;	
 	protected long timeout;
+	protected SimpleDateFormat sdf;
 
-	public JWTCookie(HttpGateway gw, DataMap c) {
-		super(gw, c);
+	public JWTCookie(DataMap c, CloseableHttpClient hc) {
+		super(c, hc);
 		cookieName = config.getString("cookie");
 		cookieDomain = config.getString("cookiedomain");
 		fbMetadataName = config.getString("fbmetaname");
@@ -52,44 +51,56 @@ public class JWTCookie extends SecurityHandler {
 		}
 		if(cookieDomain != null && cookieDomain.equals(""))
 			cookieDomain = null;
+		sdf = new SimpleDateFormat("EEE, DD-MMM-YYYY HH:MM:SS Z");
 	}
 
-	public boolean checkHttpRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	public boolean checkAndEnrichHttpRequest(HttpRequest req) {
 		String token = getTokenFromRequest(req);
 		if(token != null) {
 			DecodedJWT jwt = JWT.decode(token);
 			String issuer = jwt.getIssuer();
+			String email = jwt.getClaim("email").asString();
 			long expiresAt = jwt.getExpiresAt().getTime();
 			long now = System.currentTimeMillis();
 			if(expiresAt > now && issuer.equals(jwtIssuer)) {
-				if(expiresAt < (now + (timeout / 2)))
-					setTokenOnResponse(jwt.getClaim("email").asString(), resp);
+				req.setSecurityData("token", token);
+				req.setSecurityData("email", email);
+				req.setSecurityData("expiry", expiresAt);
+				//if(expiresAt < (now + (timeout / 2)))
+				//	setTokenOnResponse(jwt.getClaim("email").asString(), resp);
 				return true;
 			}
 		}
-		unauthenticated(req, resp);
+		//unauthenticated(req, resp);
 		return false;
 	}
 
-	public void enrichFirebusRequest(HttpServletRequest req, Payload payload) {
+	public void enrichFirebusRequest(HttpRequest req, Payload payload) {
 		String token = getTokenFromRequest(req);
 		payload.metadata.put(fbMetadataName, token);
 	}
 
-	public void enrichAuthResponse(String username, HttpServletResponse resp) {
+	public void enrichAuthenticatedHttpResponse(String username, HttpResponse resp) {
 		setTokenOnResponse(username, resp);
 	}
 
-	protected String getTokenFromRequest(HttpServletRequest req)
+	protected String getTokenFromRequest(HttpRequest req)
 	{
 		String token = null;
 		if(cookieName != null)
 		{
-			Cookie[] cookies = req.getCookies();
-			if(cookies != null)
-				for (int i = 0; i < cookies.length; i++) 
-					if(cookies[i].getName().equals(cookieName))
-						token = cookies[i].getValue();
+			List<String> cookies = req.getHeader("Cookie");
+			if(cookies != null) {
+				for(String cookieStr : cookies) {
+					String[] parts = cookieStr.split(";");
+					for(String part : parts) {
+						String[] subparts = part.split("=");
+						if(subparts[0].equals(cookieName)) {
+							token = subparts[1];
+						}
+					}				
+				}
+			}
 		}
 		return token;
 	}
@@ -111,7 +122,7 @@ public class JWTCookie extends SecurityHandler {
 	    		req.put("client_secret", idmClientSecret);
 	    		req.put("user", username);
 	    		httppost.setEntity(new StringEntity(req.toString(), "UTF-8"));
-	    		CloseableHttpResponse response = httpGateway.getHttpClient().execute(httppost);
+	    		CloseableHttpResponse response = httpClient.execute(httppost);
 	    		try {
 		    		int respStatus = response.getStatusLine().getStatusCode(); 
 		    		DataMap respMap = null;
@@ -147,26 +158,29 @@ public class JWTCookie extends SecurityHandler {
 	    return token;
 	}
 	
-	protected void setTokenOnResponse(String username, HttpServletResponse resp)
+	protected void setTokenOnResponse(String username, HttpResponse resp)
 	{
 		if(cookieName != null)
 		{
-			Cookie cookie = new Cookie(cookieName, generateToken(username));
-			cookie.setPath("/");
-			cookie.setMaxAge((int)(timeout / 1000));
-			if(cookieDomain != null) 
-				cookie.setDomain(cookieDomain);
-			resp.addCookie(cookie);
+			String token = generateToken(username);
+			Date expiry = new Date((new Date()).getTime() + timeout);
+			setCookieOnResponse(resp, cookieName, token, expiry, cookieDomain, "/");
 		}		
 	}
 
-	public void enrichLogoutResponse(HttpServletResponse resp) {
-		Cookie cookie = new Cookie(cookieName, "");
-		cookie.setPath("/");
-		cookie.setMaxAge(0);
-		if(cookieDomain != null) 
-			cookie.setDomain(cookieDomain);
-		resp.addCookie(cookie);
-		
+	public void enrichLogoutResponse(HttpResponse resp) {
+		setCookieOnResponse(resp, cookieName, "", new Date(), cookieDomain, "/");
 	}
+	
+	public void setCookieOnResponse(HttpResponse resp, String name, String value, Date expiry, String domain, String path ) {
+		String cookieStr = name + "=" + value;
+		cookieStr += "; expires=" + sdf.format(expiry);
+		if(cookieDomain != null) {
+			cookieStr += "; domain=" + domain;
+		}
+		cookieStr += "; path=/";
+		resp.setHeader("Set-Cookie", cookieStr);
+	}
+
+
 }

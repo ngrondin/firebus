@@ -1,4 +1,4 @@
-package io.firebus.adapters.http;
+package io.firebus.adapters.http.handlers;
 
 
 import io.firebus.Firebus;
@@ -6,13 +6,11 @@ import io.firebus.data.DataMap;
 
 public abstract class Handler
 {
-	protected HttpGateway httpGateway;
 	protected DataMap handlerConfig;
 	protected Firebus firebus;
 	
-	public Handler(HttpGateway gw, Firebus f, DataMap c)
+	public Handler(Firebus f, DataMap c)
 	{
-		httpGateway = gw;
 		handlerConfig = c;
 		firebus = f;
 	}

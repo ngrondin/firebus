@@ -1,21 +1,18 @@
 package io.firebus.adapters.http.auth;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.apache.http.impl.client.CloseableHttpClient;
 
 import io.firebus.Firebus;
-import io.firebus.adapters.http.AuthValidationHandler;
-import io.firebus.adapters.http.HttpGateway;
+import io.firebus.adapters.http.HttpRequest;
+import io.firebus.adapters.http.HttpResponse;
+import io.firebus.adapters.http.handlers.AuthValidationHandler;
 import io.firebus.data.DataMap;
 
 public class NoValidator extends AuthValidationHandler {
 	protected String loginUrl;
 	
-	public NoValidator(HttpGateway gw, Firebus f, DataMap c) {
-		super(gw, f, c);
+	public NoValidator(Firebus f, DataMap c, CloseableHttpClient hc) {
+		super(f, c, hc);
 		loginUrl = handlerConfig.getString("loginurl");
 	}
 	
@@ -25,8 +22,8 @@ public class NoValidator extends AuthValidationHandler {
 		return url;
 	}
 
-	protected void httpService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		
+	protected HttpResponse httpService(HttpRequest req) {
+		return new HttpResponse();
 	}
 
 }

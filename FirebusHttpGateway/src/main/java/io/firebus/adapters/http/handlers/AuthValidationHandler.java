@@ -1,17 +1,21 @@
-package io.firebus.adapters.http;
+package io.firebus.adapters.http.handlers;
 
+
+import org.apache.http.impl.client.CloseableHttpClient;
 
 import io.firebus.Firebus;
 import io.firebus.data.DataMap;
 
-public abstract class AuthValidationHandler extends HttpHandler
+public abstract class AuthValidationHandler extends InboundHandler
 {
 	protected String publicHost;
 	protected SecurityHandler _securityHandler;
+	protected CloseableHttpClient httpClient;
 	
-	public AuthValidationHandler(HttpGateway gw, Firebus f, DataMap c) 
+	public AuthValidationHandler(Firebus f, DataMap c, CloseableHttpClient hc) 
 	{
-		super(gw, f, c);
+		super(f, c);
+		httpClient = hc;
 	}
 	
 	public String getLabel()

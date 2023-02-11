@@ -1,8 +1,6 @@
 package io.firebus.adapters.http.auth;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.interfaces.ECPrivateKey;
@@ -14,16 +12,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
 import com.auth0.jwt.JWT;
@@ -33,8 +29,9 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.ECDSAKeyProvider;
 
 import io.firebus.Firebus;
-import io.firebus.adapters.http.AuthValidationHandler;
-import io.firebus.adapters.http.HttpGateway;
+import io.firebus.adapters.http.HttpRequest;
+import io.firebus.adapters.http.HttpResponse;
+import io.firebus.adapters.http.handlers.AuthValidationHandler;
 import io.firebus.data.DataException;
 import io.firebus.data.DataMap;
 
@@ -48,9 +45,9 @@ public class AppleValidator extends AuthValidationHandler {
 	protected String keyId;
 	protected String privateKey;
 	protected String redirectUrl;
-
-	public AppleValidator(HttpGateway gw, Firebus f, DataMap c) {
-		super(gw, f, c);
+	
+	public AppleValidator(Firebus f, DataMap c, CloseableHttpClient hc) {
+		super(f, c, hc);
 		loginUrl = handlerConfig.getString("loginurl");
 		tokenUrl = handlerConfig.getString("tokenurl");
 		clientId = handlerConfig.getString("clientid");
@@ -88,19 +85,13 @@ public class AppleValidator extends AuthValidationHandler {
 	}
 	
 	
-    protected void httpService(HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
+    protected HttpResponse httpService(HttpRequest req)  
     {
+    	HttpResponse resp = null;
     	if(tokenUrl != null && clientId != null)
     	{
     		try {
-	    		InputStream is = req.getInputStream();
-	    		StringBuilder sb = new StringBuilder();
-	    		byte[] bytes = new byte[1024];
-	    		int len = 0;
-	    		while((len = is.read(bytes)) > -1) {
-	    			sb.append(new String(bytes, 0, len));
-	    		}
-	    		String result = java.net.URLDecoder.decode(sb.toString(), StandardCharsets.UTF_8.name());
+	    		String result = java.net.URLDecoder.decode(new String(req.readEntireBody()), StandardCharsets.UTF_8.name());
 	    		String[] parts = result.split("&");
 	    		String state = null;
 	    		String code = null;
@@ -116,7 +107,6 @@ public class AppleValidator extends AuthValidationHandler {
 	           		redirectUrlResolved = redirectUrlResolved.replace("${state}", state != null ? state : "");
 
 	        		DataMap respMap = null;
-	        		HttpClient httpclient = httpGateway.getHttpClient();
 	        		HttpPost httppost = new HttpPost(tokenUrl);
 	        		List<NameValuePair> params = new ArrayList<NameValuePair>(2);
 	        		params.add(new BasicNameValuePair("code", code));
@@ -126,12 +116,12 @@ public class AppleValidator extends AuthValidationHandler {
 	        		params.add(new BasicNameValuePair("grant_type", "authorization_code"));
 	        		httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 	        		httppost.setHeader("content-type", "application/x-www-form-urlencoded");
-	        		HttpResponse response = httpclient.execute(httppost);
+	        		CloseableHttpResponse response = httpClient.execute(httppost);
 	        		int respStatus = response.getStatusLine().getStatusCode(); 
 	        		HttpEntity entity = response.getEntity();
 	        		if (entity != null) 
 	        		{
-	        			is = entity.getContent();
+	        			InputStream is = entity.getContent();
 	        			try { respMap = new DataMap(is); }
 	        			catch(DataException e) {}
 	        		}
@@ -142,54 +132,46 @@ public class AppleValidator extends AuthValidationHandler {
 	            			DecodedJWT jwt = JWT.decode(respMap.getString("id_token"));
 	            			Claim usernameClaim = jwt.getClaim("email");
 	            			String username = usernameClaim.asString();
-	            			_securityHandler.enrichAuthResponse(username, resp);
-	            			resp.setStatus(HttpServletResponse.SC_SEE_OTHER);
-	            			resp.setHeader("location", redirectUrlResolved);		
-	            	        PrintWriter writer = resp.getWriter();
-	            	        writer.println("<html><title>Redirect</title><body>Loging in</body></html>");
+	            			resp = new HttpResponse(HttpServletResponse.SC_SEE_OTHER);
+	            			_securityHandler.enrichAuthenticatedHttpResponse(username, resp);
+	            			resp.setHeader("location", redirectUrlResolved);
+	            			resp.setBody("<html><title>Redirect</title><body>Loging in</body></html>");
 	            		}
 	            		else
 	            		{
-	            			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-	            	        PrintWriter writer = resp.getWriter();
-	            	        writer.println("<html><title>Error</title><body>Token is empty</body></html>");
+	            			resp = new HttpResponse(500, "<html><title>Error</title><body>Token is empty</body></html>");
 	            		}
 	        		}
 	        		else
 	        		{
 	            		if (respMap != null) 
 	            		{
-	            			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-	            	        PrintWriter writer = resp.getWriter();
-	            	        writer.println("<html><title>Error</title><body>Return code : " + respStatus + "<br>" + respMap.toString() + "</body></html>");
+	            			resp = new HttpResponse(500, "<html><title>Error</title><body>Return code : " + respStatus + "<br>" + respMap.toString() + "</body></html>");
 	            		}
 	            		else
 	            		{
-	            			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-	            	        PrintWriter writer = resp.getWriter();
-	            	        writer.println("<html><title>Error</title><body>Return code : " + respStatus + "</body></html>");
+	            			resp = new HttpResponse(500, "<html><title>Error</title><body>Return code : " + respStatus + "</body></html>");
 	            		}
-	        		}	    		} else {
+	        		}	    	
+	        	} else {
 	    			
 	    		}
     		} catch(Exception e) {
-    			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    	        PrintWriter writer = resp.getWriter();
-    	        writer.println("<html><title>Error</title><body>Problem authenticating</body></html>");
-    			
+    			resp = new HttpResponse(500, "<html><title>Error</title><body>Problem authenticating</body></html>");    			
     		}
     	}
     	else
     	{
-			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-	        PrintWriter writer = resp.getWriter();
-	        writer.println("<html><title>Error</title><body>Authentication configuration missing</body></html>");
+    		resp = new HttpResponse(500, "<html><title>Error</title><body>Authentication configuration missing</body></html>");    		
     	}
+    	return resp;
     }
 
 	public String getLoginURL(String originalPath) {
 		String url = loginUrl + "?client_id=" + clientId + "&response_type=code&response_mode=form_post&scope=name%20email&redirect_uri=" + publicHost + path + "&state=" + publicHost + originalPath + "&nonce=123";
 		return url;
-	}	
+	}
+
+
 
 }

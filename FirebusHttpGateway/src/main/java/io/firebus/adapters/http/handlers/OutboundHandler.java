@@ -1,4 +1,4 @@
-package io.firebus.adapters.http;
+package io.firebus.adapters.http.handlers;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -8,15 +8,16 @@ import javax.servlet.ServletException;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.data.DataException;
+import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.ServiceProvider;
-import io.firebus.data.DataException;
-import io.firebus.data.DataMap;
 
 public abstract class OutboundHandler extends Handler implements ServiceProvider {
 	
@@ -25,11 +26,13 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
 	
 	protected String service;
 	protected String baseUrl;
+	protected CloseableHttpClient httpClient;
 	protected int timeout;
 	
-	public OutboundHandler(HttpGateway gw, Firebus f, DataMap c) 
+	public OutboundHandler(Firebus f, DataMap c, CloseableHttpClient hc) 
 	{
-		super(gw, f, c);
+		super(f, c);
+		httpClient = hc;
 		service = handlerConfig.getString("service");
 		baseUrl = handlerConfig.getString("baseurl");
 		timeout = handlerConfig.containsKey("timeout") ? handlerConfig.getNumber("timeout").intValue() : 10000;
@@ -43,7 +46,7 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
 			HttpUriRequest httpRequest = processRequest(payload);
 			if(httpRequest != null)
 			{
-				CloseableHttpResponse response = httpGateway.getHttpClient().execute(httpRequest);
+				CloseableHttpResponse response = httpClient.execute(httpRequest);
 				try {
 	        		int respStatus = response.getStatusLine().getStatusCode(); 
 	        		HttpEntity entity = response.getEntity();

@@ -1,27 +1,27 @@
-package io.firebus.adapters.http.outbound;
+package io.firebus.adapters.http.handlers.outbound;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import javax.servlet.ServletException;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
-import io.firebus.adapters.http.HttpGateway;
-import io.firebus.adapters.http.OutboundHandler;
+import io.firebus.adapters.http.handlers.OutboundHandler;
 import io.firebus.data.DataException;
 import io.firebus.data.DataMap;
 
-public class OutboundGetHandler extends OutboundHandler 
+public class PostHandler extends OutboundHandler 
 {
-	public OutboundGetHandler(HttpGateway gw, Firebus f, DataMap c) 
+	public PostHandler(Firebus f, DataMap c, CloseableHttpClient hc) 
 	{
-		super(gw, f, c);
+		super(f, c, hc);
 	}
 
 	protected HttpUriRequest processRequest(Payload payload) throws ServletException, IOException, DataException 
@@ -36,30 +36,9 @@ public class OutboundGetHandler extends OutboundHandler
 				relativePath = relativePath.substring(1);
 			path = path + "/" + relativePath;
 		}
-		if(payload.getString().length() > 0) 
-		{
-			DataMap queryMap = new DataMap(payload.getString());
-			String queryStr = "";
-			Iterator<String> it = queryMap.keySet().iterator();
-			while(it.hasNext()) 
-			{
-				String key = it.next();
-				if(queryStr.length() > 0)
-					queryStr = queryStr + "&";
-				queryStr = queryStr + key + "=" + queryMap.getString(key);
-			}
-			
-			if(queryStr.length() > 0)
-			{
-				if(path.contains("?"))
-					path = path + "&" + queryStr;
-				else
-					path = path + "?" + queryStr;
-			}
-		}
-			
-		HttpGet httpget = new HttpGet(path);
-		return httpget;
+		HttpPost httppost = new HttpPost(path);
+		httppost.setEntity(new ByteArrayEntity(payload.getBytes()));
+		return httppost;
 	}
 
 

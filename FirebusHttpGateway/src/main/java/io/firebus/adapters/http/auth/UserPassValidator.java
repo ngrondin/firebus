@@ -1,18 +1,15 @@
 package io.firebus.adapters.http.auth;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.util.Base64;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.apache.http.impl.client.CloseableHttpClient;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
-import io.firebus.adapters.http.AuthValidationHandler;
-import io.firebus.adapters.http.HttpGateway;
+import io.firebus.adapters.http.HttpRequest;
+import io.firebus.adapters.http.HttpResponse;
+import io.firebus.adapters.http.handlers.AuthValidationHandler;
 import io.firebus.data.DataMap;
 
 public class UserPassValidator extends AuthValidationHandler
@@ -26,9 +23,9 @@ public class UserPassValidator extends AuthValidationHandler
 	protected String redirectUrl;
 	protected String cookieName;
 
-	public UserPassValidator(HttpGateway gw, Firebus f, DataMap c) 
+	public UserPassValidator(Firebus f, DataMap c, CloseableHttpClient hc) 
 	{
-		super(gw, f, c);
+		super(f, c, hc);
 		loginUrl = handlerConfig.getString("loginurl");
 		dataService = handlerConfig.getString("dataservice");
 		collection = handlerConfig.containsKey("collection") ? handlerConfig.getString("collection") : "user";
@@ -38,12 +35,17 @@ public class UserPassValidator extends AuthValidationHandler
 		redirectUrl = handlerConfig.getString("redirecturl");
 		cookieName = handlerConfig.containsKey("cookie") ? handlerConfig.getString("cookie") : "token";
 	}
+    
+	public String getLoginURL(String originalPath) {
+		String url = loginUrl + "?redirect=" + publicHost + path + "&state=" + publicHost + originalPath;
+		return url;
+	}
 
-    protected void httpService(HttpServletRequest req, HttpServletResponse resp)  throws ServletException, IOException 
-    {
-    	String contextPath = req.getContextPath();
-    	if(contextPath.equals(""))
-    		contextPath = "/";
+	protected HttpResponse httpService(HttpRequest req) {
+		HttpResponse resp = null;
+    	//String contextPath = req.getPath();
+    	//if(contextPath.equals(""))
+    	//	contextPath = "/";
 
     	String username = req.getParameter("username");
     	String password = req.getParameter("password");
@@ -72,58 +74,39 @@ public class UserPassValidator extends AuthValidationHandler
 		    				String receivedPassHash = Base64.getEncoder().encodeToString(encodedhash);
 		    				if(receivedPassHash.equals(savedPassHash)) 
 		    				{
-		    					_securityHandler.enrichAuthResponse(username, resp);
-		            			resp.setStatus(HttpServletResponse.SC_OK);
-		            	        PrintWriter writer = resp.getWriter();
-		            	        writer.println("<html><head><title>Redirect</title></head><meta http-equiv=\"refresh\" content=\"0; url = '" + redirectUrlResolved + "'\"><body>Loging in</body></html>");
-	
+		    					resp = new HttpResponse(200, "<html><head><title>Redirect</title></head><meta http-equiv=\"refresh\" content=\"0; url = '" + redirectUrlResolved + "'\"><body>Loging in</body></html>");
+		    					_securityHandler.enrichAuthenticatedHttpResponse(username, resp);
 		    				}
 		    				else
 		    				{
-			    				resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			    		        PrintWriter writer = resp.getWriter();
-			    		        writer.println("<html><title>Error</title><body>Unauthorized</body></html>");
+		    					resp = new HttpResponse(401, "<html><title>Error</title><body>Unauthorized</body></html>");
 		    				}
 	    				}
 	    				else
 	    				{
-		    				resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		    		        PrintWriter writer = resp.getWriter();
-		    		        writer.println("<html><title>Error</title><body>Unauthorized</body></html>");
+	    					resp = new HttpResponse(401, "<html><title>Error</title><body>Unauthorized</body></html>");
 	    				}
 	    			}
 	    			else
 	    			{
-	    				resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-	    		        PrintWriter writer = resp.getWriter();
-	    		        writer.println("<html><title>Error</title><body>Data service not found</body></html>");
+	    				resp = new HttpResponse(500, "<html><title>Error</title><body>Data service not found</body></html>");
 	    			}
 	    		}
     			catch (Exception e) 
     			{
-    				resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    		        PrintWriter writer = resp.getWriter();
-    		        writer.println("<html><title>Error</title><body>" + e.getMessage() + "</body></html>");
+    				resp = new HttpResponse(500, "<html><title>Error</title><body>" + e.getMessage() + "</body></html>");
 				}
     		}
     		else
     		{
-    			resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-    	        PrintWriter writer = resp.getWriter();
-    	        writer.println("<html><title>Error</title><body>Missing username of password</body></html>");
+    			resp = new HttpResponse(400, "<html><title>Error</title><body>Missing username of password</body></html>");
     		}
     	}
     	else
     	{
-			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-	        PrintWriter writer = resp.getWriter();
-	        writer.println("<html><title>Error</title><body>Firebus not configured on the handler</body></html>");
+    		resp = new HttpResponse(500, "<html><title>Error</title><body>Firebus not configured on the handler</body></html>");
     	}
-    }	
-    
-	public String getLoginURL(String originalPath) {
-		String url = loginUrl + "?redirect=" + publicHost + path + "&state=" + publicHost + originalPath;
-		return url;
+    	return resp;
 	}	
 
 }

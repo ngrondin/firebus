@@ -12,7 +12,7 @@ public abstract class Decoder {
 				case "application/x-www-form-urlencoded":
 					return URLEncodedFormDecoder.decode(is);
 				case "multipart/form-data":
-					return MultipartDecoder.decode(is, "");					
+					return MultipartFormDecoder.decode(is, "");					
 				default:
 					return BytesDecoder.decode(is);
 			}

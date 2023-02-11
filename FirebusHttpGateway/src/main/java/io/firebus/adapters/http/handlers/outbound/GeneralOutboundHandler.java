@@ -1,4 +1,4 @@
-package io.firebus.adapters.http.outbound;
+package io.firebus.adapters.http.handlers.outbound;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,22 +18,22 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
-import io.firebus.adapters.http.HttpGateway;
-import io.firebus.adapters.http.OutboundHandler;
+import io.firebus.adapters.http.handlers.OutboundHandler;
 import io.firebus.data.DataException;
 import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
 
 public class GeneralOutboundHandler extends OutboundHandler {
 
-	public GeneralOutboundHandler(HttpGateway gw, Firebus f, DataMap c) 
+	public GeneralOutboundHandler(Firebus f, DataMap c, CloseableHttpClient hc) 
 	{
-		super(gw, f, c);
+		super(f, c, hc);
 	}
 
 	@Override

@@ -20,7 +20,8 @@ import io.firebus.data.DataMap;
 public abstract class WebsocketConnectionHandler extends Thread implements HttpUpgradeHandler {
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	protected String id;
-	protected WebsocketHandler handler;
+	protected Firebus firebus;
+	protected DataMap config;
 	protected Payload requestPayload;
 	protected WebConnection connection;
 	protected InputStream is;
@@ -34,21 +35,10 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 		destroyed = false;
 	}
 	
-	public void configure(WebsocketHandler wsh, Payload p) {
-		handler = wsh;
+	public void configure(Firebus f, DataMap c, Payload p) {
+		firebus = f;
+		config = c;
 		requestPayload = p;
-	}
-
-	public Payload getRequestPayload() {
-		return requestPayload;
-	}
-	
-	public Firebus getFirebus() {
-		return handler.firebus;
-	}
-	
-	public DataMap getConfig() {
-		return handler.handlerConfig;
 	}
 
 	public void init(WebConnection c) {

@@ -1,34 +1,33 @@
-package io.firebus.adapters.http.websocket;
+package io.firebus.adapters.http.handlers.websocket;
 
 import java.util.logging.Logger;
 
+import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
 import io.firebus.adapters.http.WebsocketConnectionHandler;
-import io.firebus.adapters.http.WebsocketHandler;
+import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.interfaces.StreamHandler;
 
 public class StreamGatewayWSHandler extends WebsocketConnectionHandler implements StreamHandler {
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
-	protected String streamName;
 	protected StreamEndpoint streamEndpoint;
 	protected long start = -1;
 	protected long lastIn = -1;
 	protected long lastOut = -1;
 	
-	public void configure(WebsocketHandler wsh, Payload p) {
-		super.configure(wsh, p);
-		streamName = getConfig().getString("service");
+	public void configure(Firebus f, DataMap c, Payload p) {
+		super.configure(f, c, p);
 		start = System.currentTimeMillis();
 	}
 
 	protected void onOpen() throws FunctionErrorException, FunctionTimeoutException {
-		requestPayload.metadata.put("streamgwnode", String.valueOf(getFirebus().getNodeId()));
+		requestPayload.metadata.put("streamgwnode", String.valueOf(firebus.getNodeId()));
 		requestPayload.metadata.put("streamgwid", id);
-		String serviceName = handler.getGateway().getServiceName();
-		streamEndpoint = getFirebus().requestStream(streamName, requestPayload, serviceName, 10000);
+		String requestorServiceName = "ws_" + config.getString("service");
+		streamEndpoint = firebus.requestStream(config.getString("service"), requestPayload, requestorServiceName, 10000);
 		streamEndpoint.setHandler(this);
 		logger.info("Stream gateway connection " + id + " opened");
 	}

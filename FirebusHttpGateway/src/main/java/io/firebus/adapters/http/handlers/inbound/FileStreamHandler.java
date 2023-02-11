@@ -1,19 +1,18 @@
-package io.firebus.adapters.http.inbound;
+package io.firebus.adapters.http.handlers.inbound;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Iterator;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
-import io.firebus.adapters.http.HttpGateway;
-import io.firebus.adapters.http.InboundHandler;
+import io.firebus.adapters.http.HttpRequest;
+import io.firebus.adapters.http.HttpResponse;
+import io.firebus.adapters.http.handlers.InboundHandler;
 import io.firebus.data.DataMap;
 import io.firebus.utils.StreamReceiver;
 import io.firebus.utils.StreamSender;
@@ -22,13 +21,13 @@ public class FileStreamHandler extends InboundHandler  {
 
 	protected String streamName;
 	
-	public FileStreamHandler(HttpGateway gw, Firebus f, DataMap c) {
-		super(gw, f, c);
+	public FileStreamHandler(Firebus f, DataMap c) {
+		super(f, c);
 		streamName = handlerConfig.getString("stream");	
 	}
 
 	@Override
-	public void inboundService(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+	public HttpResponse httpService(HttpRequest req) throws Exception {
 		String action = req.getMethod().equals("GET") ? "get" : "put";
 		DataMap request = new DataMap();
 		request.put("action", action);

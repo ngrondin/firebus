@@ -1,4 +1,4 @@
-package io.firebus.adapters.http.inbound;
+package io.firebus.adapters.http.handlers.inbound;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,22 +12,22 @@ import javax.servlet.http.Part;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
-import io.firebus.adapters.http.HttpGateway;
-import io.firebus.adapters.http.InboundReqRespHandler;
+import io.firebus.adapters.http.HttpRequest;
+import io.firebus.adapters.http.HttpResponse;
+import io.firebus.adapters.http.handlers.ReqRespHandler;
 import io.firebus.data.DataException;
 import io.firebus.data.DataMap;
 
-public class PostMultiPartHandler extends InboundReqRespHandler 
+public class PostMultiPartHandler extends ReqRespHandler 
 {
-	public PostMultiPartHandler(HttpGateway gw, Firebus f, DataMap c) 
+	public PostMultiPartHandler(Firebus f, DataMap c) 
 	{
-		super(gw, f, c);
+		super(f, c);
 	}
 
-	protected Payload processRequest(HttpServletRequest req) throws ServletException, IOException, DataException
+	protected Payload produceFirebusRequest(HttpRequest req) throws Exception
 	{
-		String path = req.getRequestURI();
-		String shortPath = path.substring(req.getContextPath().length() + getHttpHandlerPath().length());
+		String shortPath = req.getShortPath();
 		Payload payload = new Payload();
 		payload.metadata.put("post", shortPath);
 		Iterator<Part> it = req.getParts().iterator();
@@ -79,10 +79,9 @@ public class PostMultiPartHandler extends InboundReqRespHandler
 		return payload;
 	}
 
-	protected void processResponse(HttpServletResponse resp, Payload payload) throws ServletException, IOException, DataException
+	protected HttpResponse produceHttpResponse(Payload payload) throws Exception
 	{
-        PrintWriter writer = resp.getWriter();
-        writer.print(payload.getString());
+		return new HttpResponse(200, payload.getBytes());
 	}	
 
 }

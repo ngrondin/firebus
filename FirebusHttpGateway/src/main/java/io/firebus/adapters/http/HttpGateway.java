@@ -1,128 +1,139 @@
 package io.firebus.adapters.http;
 
-import java.io.File;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-import javax.servlet.MultipartConfigElement;
-
-import org.apache.catalina.Context;
-import org.apache.catalina.Wrapper;
-import org.apache.catalina.startup.Tomcat;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
+import com.sun.net.httpserver.HttpServer;
+
 import io.firebus.Firebus;
-import io.firebus.Payload;
 import io.firebus.adapters.http.auth.AppleValidator;
 import io.firebus.adapters.http.auth.NoValidator;
 import io.firebus.adapters.http.auth.OAuth2CodeValidator;
 import io.firebus.adapters.http.auth.UserPassValidator;
-import io.firebus.adapters.http.inbound.FileStreamHandler;
-import io.firebus.adapters.http.inbound.GetHandler;
-import io.firebus.adapters.http.inbound.PostFormHandler;
-import io.firebus.adapters.http.inbound.PostJsonHandler;
-import io.firebus.adapters.http.inbound.PostMultiPartHandler;
-import io.firebus.adapters.http.outbound.GeneralOutboundHandler;
-import io.firebus.adapters.http.outbound.OutboundGetHandler;
-import io.firebus.adapters.http.outbound.PostHandler;
-import io.firebus.adapters.http.security.JWTCookie;
-import io.firebus.adapters.http.websocket.StreamGatewayWSHandler;
-import io.firebus.exceptions.FunctionErrorException;
-import io.firebus.information.ServiceInformation;
-import io.firebus.interfaces.Consumer;
-import io.firebus.interfaces.ServiceProvider;
+import io.firebus.adapters.http.handlers.AuthValidationHandler;
+import io.firebus.adapters.http.handlers.InboundHandler;
+import io.firebus.adapters.http.handlers.LogoutHandler;
+import io.firebus.adapters.http.handlers.MasterHandler;
+import io.firebus.adapters.http.handlers.OutboundHandler;
+import io.firebus.adapters.http.handlers.SecurityHandler;
+import io.firebus.adapters.http.handlers.inbound.FileStreamHandler;
+import io.firebus.adapters.http.handlers.inbound.GetHandler;
+import io.firebus.adapters.http.handlers.inbound.PostFormHandler;
+import io.firebus.adapters.http.handlers.inbound.PostJsonHandler;
+import io.firebus.adapters.http.handlers.inbound.PostMultiPartHandler;
+import io.firebus.adapters.http.handlers.outbound.GeneralOutboundHandler;
+import io.firebus.adapters.http.handlers.outbound.OutboundGetHandler;
+import io.firebus.adapters.http.handlers.outbound.PostHandler;
+import io.firebus.adapters.http.handlers.security.JWTCookie;
+import io.firebus.adapters.http.handlers.websocket.StreamGatewayWSHandler;
 import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
 
-public class HttpGateway implements ServiceProvider 
+@SuppressWarnings("restriction")
+public class HttpGateway
 {
 	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
-	protected String name;
+	protected int port;
+	protected String contextPath;
 	protected Firebus firebus;
-	protected DataMap config;
-	protected Tomcat tomcat;
+	protected MasterHandler masterHandler = new MasterHandler();
+    protected List<SecurityHandler> securityHandlerList = new ArrayList<SecurityHandler>(); 
 	protected CloseableHttpClient httpclient;
 	
 	public HttpGateway(DataMap c, Firebus f) {
-		config = c;
 		firebus = f;
-		init();
+		processConfig(c);
+		createHttpClient();
+		createLogoutHandler();
+		startHttpServer();
 	}
 	
-	public HttpGateway(String n, DataMap c, Firebus f) {
-		name = n;
-		config = c;
+	public HttpGateway(int p, String cp, Firebus f) {
+		port = p;
+		contextPath = cp;
 		firebus = f;
-		init();
+		createHttpClient();
+		createLogoutHandler();
+		startHttpServer();
 	}
 	
-	protected void init() {
+	protected void createHttpClient() {
+		 RequestConfig requestConfig = RequestConfig.custom()
+			.setConnectionRequestTimeout(1000)
+			.setConnectTimeout(5000)
+			.setSocketTimeout(60000)
+			.build();
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+	    connectionManager.setMaxTotal(100);
+	    connectionManager.setDefaultMaxPerRoute(50);
+	    httpclient = HttpClients.custom()
+    		.setConnectionManager(connectionManager)
+    		.setDefaultRequestConfig(requestConfig)
+    		.build();
+	}
+	
+	protected void createLogoutHandler() {
+        LogoutHandler logoutHandler = new LogoutHandler(firebus, new DataMap());
+        logoutHandler.setSecuritytHandlers(securityHandlerList);
+        masterHandler.addHttpHandler("/logout", null, null, logoutHandler);
+	}
+	
+	public void addSecurityHandler(SecurityHandler handler) {
+    	securityHandlerList.add(handler);
+	}
+	
+	public void addHttpHandler(String urlPattern, String method, String contentType, InboundHandler handler) {
+		masterHandler.addHttpHandler(urlPattern, method, contentType, handler);
+	}
+	
+	public void addOutboundHandler(String name, OutboundHandler handler) {
+		firebus.registerServiceProvider(name, handler, 10);
+	}
+	
+	protected void processConfig(DataMap config) {
         try 
         {
         	String portStr = config.getString("port");
-	        int port = portStr != null && !portStr.equals("") ? Integer.parseInt(portStr) : 80; 
-	        tomcat = new Tomcat();
-	        tomcat.setBaseDir("temp");
-	        tomcat.getConnector().setPort(port);
-	        tomcat.getConnector().setAttribute("compression", "on");
-	        tomcat.getConnector().setAttribute("compressableMimeType", "text/html,text/xml,text/plain,application/json,application/javascript");
-	        
-	        String contextPath = config.containsKey("path") ? config.getString("path") : "/";
-	        String docBase = new File(".").getAbsolutePath();
-	        Context context = tomcat.addContext(contextPath, docBase);
-	        
-	        MasterHandler masterHandler = new MasterHandler();
-	        Wrapper wrapper = tomcat.addServlet("/", "master", masterHandler);
-	        MultipartConfigElement mpc = new MultipartConfigElement(docBase, 5000000, 5000000, 0);
-	        wrapper.setMultipartConfigElement(mpc);
-	        context.addServletMapping("/", "master");
-	        context.setAllowCasualMultipartParsing(true);
+	        port = portStr != null && !portStr.equals("") ? Integer.parseInt(portStr) : 80; 
+	        contextPath = config.containsKey("path") ? config.getString("path") : "/";
+	        if(contextPath.endsWith("/") && contextPath.length() > 1) contextPath = contextPath.substring(0, contextPath.length() - 1);
+	        if(!contextPath.startsWith("/")) contextPath = "/" + contextPath;
 	        if(config.containsKey("rootforward"))
 	        	masterHandler.setRootForward(config.getString("rootforward"));
-	        String publicHost = config.getString("publichost");
 	        
-	        RequestConfig requestConfig = RequestConfig.custom()
-					.setConnectionRequestTimeout(1000)
-					.setConnectTimeout(5000)
-					.setSocketTimeout(60000)
-					.build();
-	        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-		    connectionManager.setMaxTotal(100);
-		    connectionManager.setDefaultMaxPerRoute(50);
-		    httpclient = HttpClients.custom()
-		    		.setConnectionManager(connectionManager)
-		    		.setDefaultRequestConfig(requestConfig)
-		    		.build();
-
+        	Map<String, SecurityHandler> securityHandlerMap = new HashMap<String, SecurityHandler>();
 		    DataList list = config.getList("security");
-	        Map<String, SecurityHandler> securityHandlerMap = new HashMap<String, SecurityHandler>();
-	        List<SecurityHandler> securityHandlerList = new ArrayList<SecurityHandler>();
-	        if(list != null)
+		    if(list != null)
 	        {
 		        for(int i = 0; i < list.size(); i++)
 		        {
 		        	DataMap securityConfig = list.getObject(i);
 		        	String name = securityConfig.getString("name");
-		            SecurityHandler handler = getSecurityHandler(securityConfig);
+		    		String type = securityConfig.containsKey("type") ? securityConfig.getString("type").toLowerCase() : "jwtcookie";
+		    		SecurityHandler handler = null;
+		    		if(type.equals("jwtcookie")) {
+		    			handler = new JWTCookie(securityConfig, getHttpClient());
+		    		} 
 		            if(handler != null) {
+		            	addSecurityHandler(handler);
 		            	securityHandlerMap.put(name, handler);
-		            	securityHandlerList.add(handler);
 		            }
 		        }
 	        }
 	        
-	        LogoutHandler logoutHandler = new LogoutHandler(this, firebus, new DataMap());
-	        logoutHandler.setSecuritytHandlers(securityHandlerList);
-	        masterHandler.setLogouHander(logoutHandler);
 
 	        list = config.getList("authvalidation");
-	        List<AuthValidationHandler> authValidationHanders = new ArrayList<AuthValidationHandler>();
+	        String publicHost = config.getString("publichost");
 	        if(list != null)
 	        {
 		        for(int i = 0; i < list.size(); i++)
@@ -132,7 +143,17 @@ public class HttpGateway implements ServiceProvider
 		            String contentType = authConfig.getString("contenttype");
 		            String urlPattern = authConfig.getString("path");
 		            String security = authConfig.getString("security");
-		            AuthValidationHandler handler = getAuthValidationHandler(authConfig);
+		    		String type = authConfig.getString("type").toLowerCase();
+		    		AuthValidationHandler handler = null;
+		    		if(type != null && type.equals("oauth2code")) {
+		    			handler =  new OAuth2CodeValidator(firebus, authConfig, getHttpClient());
+		    		} else if(type != null && type.equals("apple")) {
+		    			handler =  new AppleValidator(firebus, authConfig, getHttpClient());
+		    		} else if(type != null && type.equals("userpassform")) {
+		    			handler =  new UserPassValidator(firebus, authConfig, getHttpClient());
+		    		} else if(type != null && type.equals("novalidation")) {
+		    			handler =  new NoValidator(firebus, authConfig, getHttpClient());
+		    		}
 		            if(handler != null) {
 		            	if(security != null) {
 		            		SecurityHandler securityHandler = securityHandlerMap.get(security); 
@@ -141,8 +162,7 @@ public class HttpGateway implements ServiceProvider
 		            	}
 		            	if(publicHost != null)
 		            		handler.setPublicHost(publicHost);
-		            	masterHandler.addHttpHandler(urlPattern, method, contentType, handler);
-		            	authValidationHanders.add(handler);
+		            	addHttpHandler(urlPattern, method, contentType, handler);
 		            }
 		        }
 	        }
@@ -158,11 +178,29 @@ public class HttpGateway implements ServiceProvider
 		            String contentType = inboundConfig.getString("contenttype");
 		            String urlPattern = inboundConfig.getString("path");
 		            String security = inboundConfig.getString("security");
-		            InboundHandler handler = getInboundHandler(inboundConfig);
+		    		String type = inboundConfig.getString("type");
+		    		InboundHandler handler = null;
+		    		if(type != null && type.equals("filestream")) {
+		    			handler =  new FileStreamHandler(firebus, inboundConfig);
+		    		} else if(method == null || method.equals("get")) {
+		    			handler =  new GetHandler(firebus, inboundConfig);
+		    		} else if(method != null && method.equals("post")) {
+		    			if(contentType == null || contentType.equals("application/json")) {
+		    				handler =  new PostJsonHandler(firebus, inboundConfig);
+		    			} else if(contentType.equals("application/x-www-form-urlencoded")) {
+		    				handler =  new PostFormHandler(firebus, inboundConfig);
+		    			} else if(contentType.equals("multipart/form-data")) {
+		    				handler =  new PostMultiPartHandler(firebus, inboundConfig);
+		    			} else {
+		    				handler =  new PostJsonHandler(firebus, inboundConfig);
+		    			}
+		    		} else {
+		    			handler = new GetHandler(firebus, inboundConfig);
+		    		}
 		            if(handler != null) {
 		            	if(security != null)
 		            		handler.setSecurityHandler(securityHandlerMap.get(security));
-		            	masterHandler.addHttpHandler(urlPattern, method, contentType, handler);
+		            	addHttpHandler(urlPattern, method, contentType, handler);
 		            }
 		        }
 	        }
@@ -176,16 +214,16 @@ public class HttpGateway implements ServiceProvider
 		        	String name = wsConfig.getString("name");
 		            String urlPattern = wsConfig.getString("path");
 		            String security = wsConfig.getString("security");
-		            WebsocketHandler handler = getWebsocketHandler(wsConfig);
-		            if(handler != null)
-		            {
+		    		String type = wsConfig.getString("type").toLowerCase();
+		    		WebsocketHandler handler = null;
+		    		if(type.equals("stream")) {
+		    			Class<?> clz = StreamGatewayWSHandler.class;
+		    			handler =  new WebsocketHandler(firebus, wsConfig, clz);
+		    		}
+		            if(handler != null) {
 		            	if(security != null)
 		            		handler.setSecurityHandler(securityHandlerMap.get(security));
-		            	masterHandler.addHttpHandler(urlPattern, "get", null, handler);
-		            	if(handler instanceof ServiceProvider)
-		            		firebus.registerServiceProvider(name, (ServiceProvider)handler, 10);
-		            	else if(handler instanceof Consumer)
-		            		firebus.registerConsumer(name, (Consumer)handler, 10);
+		            	addHttpHandler(urlPattern, "get", null, handler);
 		            }
 		        }
 	        }
@@ -197,17 +235,38 @@ public class HttpGateway implements ServiceProvider
 		        {
 		        	DataMap outboundConfig = list.getObject(i);
 		        	String name = outboundConfig.getString("service");
-		            OutboundHandler handler = getOutboundHandler(outboundConfig);
+		    		String method = outboundConfig.getString("method");
+		    		OutboundHandler handler = null;
+		    		if(method != null && method.toLowerCase().equals("get")) {
+		    			handler =  new OutboundGetHandler(firebus, outboundConfig, getHttpClient());
+		    		} else if(method != null && method.toLowerCase().equals("post")) {
+		    			handler =  new PostHandler(firebus, outboundConfig, getHttpClient());
+		    		} else {
+		    			handler =  new GeneralOutboundHandler(firebus, outboundConfig, getHttpClient());
+		    		}
 		            if(handler != null)
-		        		firebus.registerServiceProvider(name, handler, 10);
+		        		addOutboundHandler(name, handler);
 		        }
 	        }
-
-			tomcat.start();
 		} 
         catch (Exception e) 
         {
-        	logger.severe("Error initiating the Http Gateway : " + e.getMessage());
+        	logger.severe("Error configuring the Http Gateway : " + e.getMessage());
+        	e.printStackTrace();
+		}
+	}
+	
+	public void startHttpServer() {
+		try
+		{
+	        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+	        server.createContext(contextPath, masterHandler);
+	        server.setExecutor(Executors.newCachedThreadPool()); 
+	        server.start();
+		}
+        catch (Exception e) 
+        {
+        	logger.severe("Error starting the Http Gateway : " + e.getMessage());
         	e.printStackTrace();
 		}
 	}
@@ -216,126 +275,7 @@ public class HttpGateway implements ServiceProvider
 		return httpclient;
 	}
 
-	private SecurityHandler getSecurityHandler(DataMap securityConfig)
-	{
-		String type = securityConfig.containsKey("type") ? securityConfig.getString("type").toLowerCase() : "jwtcookie";
-		if(type.equals("jwtcookie"))
-		{
-			return new JWTCookie(this, securityConfig);
-		}
-		else
-		{
-			return null;
-		}
-	}
-	
-	private InboundHandler getInboundHandler(DataMap inboundConfig)
-	{
-		String method = inboundConfig.containsKey("method") ? inboundConfig.getString("method").toLowerCase() : "get";
-		String contentType = inboundConfig.containsKey("contenttype") ? inboundConfig.getString("contenttype").toLowerCase() : "application/json";
-		String type = inboundConfig.getString("type");
-		if(type != null && type.equals("filestream")) {
-			return new FileStreamHandler(this, firebus, inboundConfig);
-		}
-		else if(method.equals("get"))
-		{
-			return new GetHandler(this, firebus, inboundConfig);
-		}
-		else if(method.equals("post"))
-		{
-			if(contentType.equals("application/json"))
-			{
-				return new PostJsonHandler(this, firebus, inboundConfig);
-			}
-			else if(contentType.equals("application/x-www-form-urlencoded"))
-			{
-				return new PostFormHandler(this, firebus, inboundConfig);
-			}
-			else if(contentType.equals("multipart/form-data"))
-			{
-				return new PostMultiPartHandler(this, firebus, inboundConfig);
-			}
-			else
-			{
-				return new PostJsonHandler(this, firebus, inboundConfig);
-			}
-		}
-		else
-		{
-			return new GetHandler(this, firebus, inboundConfig);
-		}
-	}
-	
-	
-	private OutboundHandler getOutboundHandler(DataMap outboundConfig)
-	{
-		String method = outboundConfig.getString("method");
-		if(method != null && method.toLowerCase().equals("get"))
-		{
-			return new OutboundGetHandler(this, firebus, outboundConfig);
-		}
-		else if(method != null && method.toLowerCase().equals("post"))
-		{
-			return new PostHandler(this, firebus, outboundConfig);
-		}
-		else
-		{
-			return new GeneralOutboundHandler(this, firebus, outboundConfig);
-		}
-	}
-	
-	private WebsocketHandler getWebsocketHandler(DataMap wsConfig)
-	{
-		String type = wsConfig.containsKey("type") ? wsConfig.getString("type").toLowerCase() : "echo";
-		if(type.equals("stream"))
-		{
-			Class<?> clz = StreamGatewayWSHandler.class;
-			return new WebsocketHandler(this, firebus, wsConfig, clz);
-		}
-		else 
-		{
-			return null;
-		}
-		
-	}
-	
-	private AuthValidationHandler getAuthValidationHandler(DataMap authConfig)
-	{
-		String type = authConfig.getString("type").toLowerCase();
-		if(type != null && type.equals("oauth2code"))
-		{
-			return new OAuth2CodeValidator(this, firebus, authConfig);
-		}
-		else if(type != null && type.equals("apple"))
-		{
-			return new AppleValidator(this, firebus, authConfig);
-		}
-		else if(type != null && type.equals("userpassform"))
-		{
-			return new UserPassValidator(this, firebus, authConfig);
-		}
-		else if(type != null && type.equals("novalidation"))
-		{
-			return new NoValidator(this, firebus, authConfig);
-		}
-		else
-		{
-			return null;
-		}
-	}
-		
-	public Payload service(Payload payload) throws FunctionErrorException {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	public ServiceInformation getServiceInformation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	public String getServiceName() {
-		return name;
-	}
+
 
 }

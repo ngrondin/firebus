@@ -12,22 +12,23 @@ import org.apache.tomcat.util.security.ConcurrentMessageDigest;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.adapters.http.handlers.InboundHandler;
 import io.firebus.data.DataMap;
 
-public class WebsocketHandler extends HttpHandler {
+public class WebsocketHandler extends InboundHandler {
 	
 	private static final byte[] WS_ACCEPT = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11".getBytes(StandardCharsets.ISO_8859_1);
 	
 	protected Class<WebsocketConnectionHandler> connHandlerClass;
 	
 	@SuppressWarnings("unchecked")
-	public WebsocketHandler(HttpGateway gw, Firebus f, DataMap c, Class<?> clz) 
+	public WebsocketHandler(Firebus f, DataMap c, Class<?> clz) 
 	{
-		super(gw, f, c);
+		super(f, c);
 		connHandlerClass = (Class<WebsocketConnectionHandler>) clz;
 	}
 
-	protected void httpService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected HttpResponse httpService(HttpRequest req) {
 		String upgradeHeader = req.getHeader("Upgrade");
 		if(upgradeHeader != null && upgradeHeader.equalsIgnoreCase("websocket") && req.getMethod().equals("GET")) {
 			String key;
@@ -48,13 +49,8 @@ public class WebsocketHandler extends HttpHandler {
         	if(securityHandler != null)
         		securityHandler.enrichFirebusRequest(req, payload);
         	enrichFirebusRequestDefault(req, payload);
-        	wsConnHandler.configure(this, payload);
+        	wsConnHandler.configure(firebus, handlerConfig, payload);
 		}
-	}
-	
-	public HttpGateway getGateway() 
-	{
-		return httpGateway;
 	}
 	
 }
