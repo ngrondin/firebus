@@ -27,10 +27,7 @@ import io.firebus.adapters.http.handlers.MasterHandler;
 import io.firebus.adapters.http.handlers.OutboundHandler;
 import io.firebus.adapters.http.handlers.SecurityHandler;
 import io.firebus.adapters.http.handlers.inbound.FileStreamHandler;
-import io.firebus.adapters.http.handlers.inbound.GetHandler;
-import io.firebus.adapters.http.handlers.inbound.PostFormHandler;
-import io.firebus.adapters.http.handlers.inbound.PostJsonHandler;
-import io.firebus.adapters.http.handlers.inbound.PostMultiPartHandler;
+import io.firebus.adapters.http.handlers.inbound.GeneralReqRespHandler;
 import io.firebus.adapters.http.handlers.outbound.GeneralOutboundHandler;
 import io.firebus.adapters.http.handlers.outbound.OutboundGetHandler;
 import io.firebus.adapters.http.handlers.outbound.PostHandler;
@@ -182,20 +179,8 @@ public class HttpGateway
 		    		InboundHandler handler = null;
 		    		if(type != null && type.equals("filestream")) {
 		    			handler =  new FileStreamHandler(firebus, inboundConfig);
-		    		} else if(method == null || method.equals("get")) {
-		    			handler =  new GetHandler(firebus, inboundConfig);
-		    		} else if(method != null && method.equals("post")) {
-		    			if(contentType == null || contentType.equals("application/json")) {
-		    				handler =  new PostJsonHandler(firebus, inboundConfig);
-		    			} else if(contentType.equals("application/x-www-form-urlencoded")) {
-		    				handler =  new PostFormHandler(firebus, inboundConfig);
-		    			} else if(contentType.equals("multipart/form-data")) {
-		    				handler =  new PostMultiPartHandler(firebus, inboundConfig);
-		    			} else {
-		    				handler =  new PostJsonHandler(firebus, inboundConfig);
-		    			}
 		    		} else {
-		    			handler = new GetHandler(firebus, inboundConfig);
+		    			handler = new GeneralReqRespHandler(firebus, inboundConfig);
 		    		}
 		            if(handler != null) {
 		            	if(security != null)

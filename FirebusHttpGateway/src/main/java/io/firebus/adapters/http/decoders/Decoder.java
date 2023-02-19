@@ -4,18 +4,19 @@ import java.io.InputStream;
 
 public abstract class Decoder {
 
-	public static Object decode(String mime, InputStream is) throws DecoderException {
+	public static Object decode(InputStream is, String contentType) throws DecoderException {
 		try {
-			switch(mime) {
-				case "application/json":
-					return JsonDecoder.decode(is);
-				case "application/x-www-form-urlencoded":
-					return URLEncodedFormDecoder.decode(is);
-				case "multipart/form-data":
-					return MultipartFormDecoder.decode(is, "");					
-				default:
-					return BytesDecoder.decode(is);
-			}
+			ContentType ct = new ContentType(contentType);
+			if(ct.value.equals("application/json")) {
+				return JsonDecoder.decode(is);
+			} else if(ct.value.equals("application/x-www-form-urlencoded")) {
+				return URLEncodedFormDecoder.decode(is);
+			} else if(ct.value.equals("multipart/form-data")) {
+				return MultipartFormDecoder.decode(is, ct.boundary);	
+			} else  {
+				return BytesDecoder.decode(is);
+			} 
+
 		} catch(Exception e) {
 			throw new DecoderException("Error decoding http body", e);
 		}

@@ -9,7 +9,7 @@ import io.firebus.adapters.http.Tools;
 import io.firebus.data.DataException;
 import io.firebus.data.DataMap;
 
-public class URLEncodedFormDecoder extends Decoder {
+public class URLEncodedFormDecoder {
 
 	public static DataMap decode(InputStream is) throws IOException, DataException {
 		DataMap map = new DataMap();

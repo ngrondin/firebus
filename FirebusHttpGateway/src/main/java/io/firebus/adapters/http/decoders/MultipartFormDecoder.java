@@ -8,9 +8,9 @@ import io.firebus.adapters.http.Tools;
 import io.firebus.data.DataException;
 import io.firebus.data.DataMap;
 
-public class MultipartFormDecoder extends Decoder {
+public class MultipartFormDecoder {
 
-	public static DataMap decode(InputStream is, String boundary) throws IOException, DataException {
+	public static Object decode(InputStream is, String boundary) throws IOException, DataException {
 		DataMap map = new DataMap();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		Tools.pipeStreams(is, baos);
