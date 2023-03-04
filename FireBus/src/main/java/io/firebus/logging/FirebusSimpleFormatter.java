@@ -14,8 +14,6 @@ public class FirebusSimpleFormatter extends Formatter
 		buf.append(rec.getMillis());
 		buf.append(" ");
 		buf.append(pad(rec.getLevel().toString(), 10));
-		//buf.append("\t");
-		//buf.append("\t");
 		if(Thread.currentThread() instanceof FirebusThread) {
 			FirebusThread fbt = (FirebusThread)Thread.currentThread();
 			buf.append(pad(fbt.getName(), 19));			

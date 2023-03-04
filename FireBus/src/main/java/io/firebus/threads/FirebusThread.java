@@ -20,6 +20,7 @@ public class FirebusThread extends Thread
 	protected String functionName;
 	protected long functionExecutionId = -1;
 	protected String trackingId;
+	protected String user;
 	protected long lastStart;
 	protected long lastCompletion;
 	protected int totalExecutionCount;
@@ -85,6 +86,7 @@ public class FirebusThread extends Thread
 				functionName = null;
 				functionExecutionId = -1;
 				trackingId = null;
+				user = null;
 			}
 		}
 	}
@@ -114,6 +116,16 @@ public class FirebusThread extends Thread
 	public String getTrackingId()
 	{
 		return trackingId;
+	}
+	
+	public void setUser(String u) 
+	{
+		user = u;
+	}
+	
+	public String getUser()
+	{
+		return user;
 	}
 		
 	public void close()
