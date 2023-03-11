@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 import io.firebus.NodeCore;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataMap;
 
 public abstract class DistributableService implements ServiceProvider
@@ -39,7 +39,6 @@ public abstract class DistributableService implements ServiceProvider
 
 	public static DistributableService instantiate(NodeCore nodeCore, String type, DataMap config)
 	{
-		Logger logger = Logger.getLogger("io.firebus");
 		DistributableService service = null;
 		
 		if(serviceClasses == null)
@@ -52,7 +51,7 @@ public abstract class DistributableService implements ServiceProvider
 			}
 			catch(IOException e)
 			{
-				logger.severe(e.getMessage());
+				Logger.severe("fb.distserv.init", e);
 			}
 
 		}
@@ -70,17 +69,17 @@ public abstract class DistributableService implements ServiceProvider
 				}
 				else
 				{
-					logger.severe("No configuration has been defined for service " + type);
+					Logger.severe("fb.distserv.noconfig", new DataMap("type", type));
 				}
 			}
 			catch(Exception e)
 			{
-				logger.severe("Class " + className + " cannot be found in the classpath");
+				Logger.severe("fb.distserv.init", new DataMap("class", className), e);
 			}
 		}
 		else
 		{
-			logger.severe("Service of type " + type + " does not have a defined class");
+			Logger.severe("fb.distserv.noclass", new DataMap("type", type));
 		}
 
 		return service;

@@ -1,15 +1,14 @@
 package io.firebus;
 
-import java.util.logging.Logger;
-
+import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.information.FunctionInformation;
 import io.firebus.interfaces.CorrelationListener;
 import io.firebus.interfaces.ServiceRequestor;
+import io.firebus.logging.Logger;
 
 public class ServiceRequestAsync implements CorrelationListener {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected NodeCore nodeCore;
 	protected String serviceName;
 	protected Payload requestPayload;
@@ -35,7 +34,7 @@ public class ServiceRequestAsync implements CorrelationListener {
 	}
 	
 	public void execute()  throws FunctionErrorException, FunctionTimeoutException {
-		logger.fine("Requesting Service " + serviceName);
+		Logger.fine("fb.service.requestasync.start", new DataMap("name", serviceName));
 		boolean requestInProgress = false;
 		long now = System.currentTimeMillis();
 		expiry = now + (requestTimeout > -1 ? requestTimeout : subTimeout);
@@ -50,7 +49,7 @@ public class ServiceRequestAsync implements CorrelationListener {
 					try{ Thread.sleep(1000);} catch(Exception e) {}
 				
 				lastRequestedFunction = functionInformation;
-				logger.fine("Sending service request message to " + functionInformation.getNodeId());
+				Logger.finer("fb.service.requestasync.send", new DataMap("node", functionInformation.getNodeId()));
 				int msgType = requestTimeout >= 0 ? Message.MSGTYPE_REQUESTSERVICE : Message.MSGTYPE_REQUESTSERVICEANDFORGET;
 				Message reqMsg = new Message(functionInformation.getNodeId(), nodeCore.getNodeId(), msgType, serviceName, requestPayload);
 				int correlation = nodeCore.getCorrelationManager().send(reqMsg, subTimeout);
@@ -65,14 +64,14 @@ public class ServiceRequestAsync implements CorrelationListener {
 					}
 					else //Will always only be Function Unavailable 
 					{
-						logger.fine("Service " + serviceName + " on node " + functionInformation.getNodeId() + " has responded as unavailable");
+						Logger.finer("fb.service.requestasync.unavailable", new DataMap("service", serviceName, "node", functionInformation.getNodeId()));
 						functionInformation.wasUnavailable();
 						nodeCore.getCorrelationManager().removeEntry(correlation);
 					}
 				}
 				else
 				{
-					logger.fine("Service " + serviceName + " on node " + functionInformation.getNodeId() + " has not responded to a service request (corr: " + reqMsg.getCorrelation() + ")");
+					Logger.finer("fb.service.requestasync.noresp", new DataMap("service", serviceName, "node", functionInformation.getNodeId(), "corr", reqMsg.getCorrelation()));
 					functionInformation.didNotRespond();
 					nodeCore.getCorrelationManager().removeEntry(correlation);
 				}

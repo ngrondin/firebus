@@ -1,14 +1,11 @@
 package io.firebus.adapters;
 
 import java.io.FileOutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import org.bson.Document;
 import org.bson.json.Converter;
@@ -38,10 +35,10 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Logger;
 
 public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consumer
 {
-	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected MongoClient client;
 	protected MongoDatabase database;
 	protected DataMap queryColumns;	
@@ -98,7 +95,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		}
 		catch(DataException e)
 		{
-			logger.severe("Error consuming data : " + e.getMessage());
+			Logger.severe("fb.adapter.mongo.consume", "Error consuming data", e);
 		}
 	}
 
@@ -110,7 +107,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		try
 		{
 			DataMap request = new DataMap(payload.getString());
-			logger.finer("Starting mongo request : " + request.toString(0, true));
+			Logger.finer("fb.adapter.monfo.request", request);
 			if(request.containsKey("tuple")) 
 			{
 				DataList list = aggregate(request);
@@ -143,7 +140,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					} catch(Exception e) {
 						if(session != null) session.abortTransaction();
 						if(e instanceof MongoCommandException && ((MongoCommandException) e).getCode() == 112 && tries < 3) {
-							logger.warning("Error in db multi transaction: " + e.getMessage());
+							Logger.warning("fb.adapter.mongo.multitx", e);
 							tries++;
 						} else {
 							throw new FunctionErrorException("Error in db multi transaction", e);
@@ -156,14 +153,12 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			response = new Payload(responseJSON);
 			long duration = System.currentTimeMillis() - start;
 			if(duration > 2000) 
-				logger.warning("Long running mongo request (" + duration + "ms): " + request.toString(0, true));
-			logger.finer("Returning mongo response in " + duration + "ms");
+				Logger.warning("fb.adapter.mongo.longtx", new DataMap("ms", duration, "req", request));
+			Logger.finer("fb.adapter.mongo.resp", new DataMap("ms", duration));
 		}
 		catch(Exception e)
 		{
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			logger.severe("Error processing data request\r\n" + sw.toString());
+			Logger.severe("fb.adapter.mongo.request", "Error processing data", e);
 			throw new FunctionErrorException("Error in db service", e);
 		}		
 		return response;
@@ -388,12 +383,12 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			}
 			else
 			{
-				logger.severe("No collection exists by this namel");
+				Logger.severe("fb.adapter.mongo.nocollection", new DataMap("collection", objectName));
 			}
 		}
 		else
 		{
-			logger.severe("Database as not been specificied in the configuration");
+			Logger.severe("fb.adapter.mongo.nodb", "Database as not been specificied in the configuration");
 		}
 	}
 
@@ -428,7 +423,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 					fos.write(queryColumns.toString().getBytes());
 					fos.close();
 				} catch(Exception e) {
-					logger.severe(e.getMessage());
+					Logger.severe("fb.adapter.mongo.recordquery", e);
 				}
 				lastWriteOfQueryColumns = now;
 			}

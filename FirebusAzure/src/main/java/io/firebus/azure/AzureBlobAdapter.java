@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.HashMap;
-import java.util.logging.Logger;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
@@ -17,11 +16,11 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataMap;
 
 public class AzureBlobAdapter extends Adapter implements ServiceProvider, Consumer
 {
-	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected String connectionString;
 	protected String containerName;
 	protected BlobServiceClient blobServiceClient;
@@ -53,7 +52,7 @@ public class AzureBlobAdapter extends Adapter implements ServiceProvider, Consum
 		}
 		catch(Exception e)
 		{
-			logger.severe(e.getMessage());
+			Logger.severe("fb.adapter.azure.blob.consume", e);
 		}
 	}
 

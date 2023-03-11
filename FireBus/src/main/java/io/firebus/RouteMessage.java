@@ -1,5 +1,7 @@
 package io.firebus;
 
+import io.firebus.data.DataMap;
+import io.firebus.logging.Logger;
 import io.firebus.threads.FirebusThread;
 
 public class RouteMessage implements Runnable {
@@ -23,7 +25,7 @@ public class RouteMessage implements Runnable {
 		long dur = end - start;
 		long totalDur = end - created;
 		if(dur > 3 || totalDur > 10) {
-			System.err.println("Message routing (" + trackingId + ") took a long time: " + totalDur + "ms (" + dur + "ms)");
+			Logger.warning("fb.thread.route.long", new DataMap("routing", totalDur, "total", totalDur));
 		}
 	}
 

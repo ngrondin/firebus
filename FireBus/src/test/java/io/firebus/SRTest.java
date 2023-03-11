@@ -1,33 +1,15 @@
 package io.firebus;
 
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.ServiceProvider;
-import io.firebus.logging.FirebusSimpleFormatter;
 
 public class SRTest {
 	
 	public static void main(String[] args) 
 	{
-		Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
-		try
-		{
-			FileHandler fh = new FileHandler("ServiceTest.log");
-			fh.setFormatter(new FirebusSimpleFormatter());
-			fh.setLevel(Level.FINEST);
-			Logger logger = Logger.getLogger("io.firebus");
-			logger.addHandler(fh);
-			logger.setLevel(Level.FINEST);
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		
 		Firebus firebus = new Firebus();
 		firebus.registerServiceProvider("thirdservice", new ServiceProvider() {
 			public Payload service(Payload payload) throws FunctionErrorException {

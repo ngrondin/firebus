@@ -3,11 +3,8 @@ package io.firebus.adapters;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import io.firebus.Payload;
 import io.firebus.data.DataException;
@@ -18,9 +15,9 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Logger;
 
 public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Consumer {
-	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	private String path;
 	private Map<String, DataList> collections;
 	
@@ -45,7 +42,7 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 				collections.put(name, collection);
 			}
 		} catch(Exception e) {
-			logger.severe(e.getMessage());
+			Logger.severe("rb.adapter.localdata.init", e);
 		}
 	}
 	
@@ -56,7 +53,7 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 			list.write(fos);
 			fos.close();
 		} catch(Exception e) {
-			logger.severe(e.getMessage());
+			Logger.severe("rb.adapter.localdata.save", e);
 		}
 	}
 
@@ -68,7 +65,7 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 		}
 		catch(DataException e)
 		{
-			logger.severe("Error consuming data : " + e.getMessage());
+			Logger.severe("rb.adapter.localdata.consume", e);
 		}
 	}
 
@@ -79,7 +76,7 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 		try
 		{
 			DataMap request = new DataMap(payload.getString());
-			logger.finer("Starting mongo request : " + request.toString(0, true));
+			Logger.finer("fb.adapter.localdata.request", request);
 			if(request.containsKey("tuple")) 
 			{
 				DataList list = aggregate(request);
@@ -108,14 +105,12 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 			response = new Payload(null, responseJSON.toString().getBytes());
 			long duration = System.currentTimeMillis() - start;
 			if(duration > 2000) 
-				logger.warning("Long running mongo request (" + duration + "ms): " + request.toString(0, true));
-			logger.finer("Returning mongo response in " + duration + "ms");
+				Logger.warning("rb.adapter.localdata.longtx", new DataMap("ms", duration, "req", request));
+			Logger.finer("fb.adapter.localdata.resp", new DataMap("ms", duration));
 		}
 		catch(Exception e)
 		{
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			logger.severe("Error processing data request\r\n" + sw.toString());
+			Logger.severe("rb.adapter.localdata.request", e);
 			throw new FunctionErrorException("Error in db service", e);
 		}		
 		return response;
@@ -131,7 +126,7 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 		String collection = request.getString("object");
 		DataMap filter = request.getObject("filter");
 		DataMap sort = request.getObject("sort");
-		DataList tuple = request.getList("tuple");
+		//DataList tuple = request.getList("tuple");
 		int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
 		int pageSize = request.containsKey("pagesize") ? request.getNumber("pagesize").intValue() : 50;
 		DataList unsortedList = find(collection, filter);

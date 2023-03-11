@@ -4,15 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.logging.Logger;
 
 import io.firebus.Address;
 import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
+import io.firebus.logging.Logger;
 
 public class NodeInformation 
 {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected int nodeId;
 	protected ArrayList<Address> addresses;
 	protected ArrayList<Integer> repeaters;
@@ -76,7 +75,7 @@ public class NodeInformation
 
 	public void removeFunctionInformation(String fn)
 	{
-		logger.info("Removing function information " + fn);
+		Logger.info("fb.nodeinfo.removing", new DataMap("function", fn));
 		if(functions.containsKey(fn))
 			functions.remove(fn);
 	}

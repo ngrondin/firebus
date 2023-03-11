@@ -8,15 +8,15 @@ import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
-import java.util.logging.Logger;
 
 import io.firebus.Address;
 import io.firebus.DiscoveryAgent;
 import io.firebus.NodeCore;
+import io.firebus.data.DataMap;
+import io.firebus.logging.Logger;
 
 public class DefaultDiscoveryAgent extends DiscoveryAgent
 {
-	private Logger logger;
 	protected boolean quit;
 	protected int nodeId;
 	protected String networkName;
@@ -33,7 +33,6 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 	
 	public void init()
 	{
-		logger = Logger.getLogger("io.firebus");
 		nodeId = nodeCore.getNodeId();
 		networkName = nodeCore.getNetworkName();
 		connectionsPort = nodeCore.getConnectionManager().getPort();
@@ -53,11 +52,11 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 	            	try
 	            	{
 	            		socket.joinGroup(new InetSocketAddress(discoveryAddress, discoveryPort), xface);
-	            		logger.fine(xface.getName() + " joined the discovery address group");
+	            		Logger.fine("fb.discovery.default.interface", new DataMap("interface", xface.getName()));
 	            	}
 	            	catch(Exception e)
 	            	{
-	            		logger.severe(xface.getName() + " could not join discovery address group");
+	            		Logger.severe("fb.discovery.default.cannotjoin", new DataMap("interface", xface.getName()), e);
 	            	}
                 }
 	        }	
@@ -79,7 +78,7 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 		}
 		catch(Exception e)
 		{
-			logger.severe(e.getMessage());
+			Logger.severe("fb.discovery.default.close", e);
 		}
 	}
 	
@@ -102,7 +101,7 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 			    	String net = parts[5];
 			    	if(id != nodeId  &&  net.equals(networkName))
 			    	{
-				    	logger.fine("Received a discovery request from " + id + " on network \"" + net + "\"");
+						Logger.fine("fb.discovery.default.request", new DataMap("id", id, "network", net));
 			    		sendAdvertisement(packet.getAddress());
 			    	}
 			    }
@@ -116,7 +115,7 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 			    	Address address = new Address(ad, port);
 			    	if(id != nodeId  &&  net.equals(networkName))
 			    	{
-				    	logger.fine("Received an anouncement from " + id + " on network \"" + net + "\" with address " + address);
+						Logger.fine("fb.discovery.default.announcement", new DataMap("id", id, "network", net, "address", address));
 						nodeCore.getDirectory().processDiscoveredNode(id,  address);
 			    	}
 			    }
@@ -124,7 +123,7 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 			catch (IOException e) 
 			{
 				if(!quit)
-					logger.severe(e.getMessage());
+					Logger.severe("fb.discovery.default.run", e);
 			}
 		}
 		socket.close();
@@ -145,7 +144,7 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 		            if(!xface.isLoopback()  &&  xface.isUp())
 		            {
 						multicastSend(message, xface);
-				    	logger.fine("Sent a discovery request on " + xface.getName());
+						Logger.fine("fb.discovery.default.sent", new DataMap("interface", xface.getName()));
 		            }
 		        }
 	        }
@@ -172,7 +171,7 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 			String message = "Firebus anouncement from " + nodeId + " " + networkName + " " + localAddress.getHostAddress()+ " " + connectionsPort;
 			multicastSend(message, iface);
 
-	    	logger.fine("Sent a discovery anouncement for node " + nodeId + " on network \"" + networkName + "\" at address " + localAddress.getHostAddress() + " " + connectionsPort + " via NIC " + iface.getName());
+			Logger.fine("fb.discovery.default.sent", new DataMap("node", nodeId, "network", networkName, "address", localAddress.getHostAddress(), "port", connectionsPort, "interface",  iface.getName()));
 		}
         catch (IOException e) 
 		{

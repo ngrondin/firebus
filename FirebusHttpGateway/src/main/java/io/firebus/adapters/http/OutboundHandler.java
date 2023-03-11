@@ -1,7 +1,6 @@
 package io.firebus.adapters.http;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
@@ -15,13 +14,11 @@ import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataException;
 import io.firebus.data.DataMap;
 
 public abstract class OutboundHandler extends Handler implements ServiceProvider {
-	
-	//private static final long serialVersionUID = 1L;
-	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	
 	protected String service;
 	protected String baseUrl;
@@ -39,7 +36,7 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
 		Payload fbResponse = null;
 		try 
 		{
-			logger.finest("Processing outbound request " + payload.toString());
+			Logger.finest("fb.http.outbound.req", payload.getDataObject());
 			HttpUriRequest httpRequest = processRequest(payload);
 			if(httpRequest != null)
 			{
@@ -50,14 +47,13 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
 	        		if(respStatus >= 200 && respStatus < 400)
 	        		{
 	        			fbResponse = processResponse(entity);
-						logger.finest(fbResponse.toString());
+	        			Logger.finest("fb.http.outbound", fbResponse);
 	        		}
 	        		else
 	        		{
 	        			String responseStr = EntityUtils.toString(entity).replaceAll("\r", "").replaceAll("\n", "").replaceAll("\t", "");
 	        			String errorMsg = "Http error " + respStatus + " on request " + httpRequest.toString() + " with response " + responseStr + " ";
-	        			logger.severe(errorMsg);
-	        			logger.severe("Input was " + payload.toString());
+	        			Logger.severe("fb.http.outbound.error", new DataMap("code", respStatus, "req", httpRequest.toString(), "resp", responseStr, "payload", payload.getDataObject()));
 	        			throw new FunctionErrorException(errorMsg);
 	        		}
 				} finally {

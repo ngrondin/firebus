@@ -32,7 +32,7 @@ public class GetHandler extends InboundReqRespHandler
 			String paramName = en.nextElement();
 			fbReq.put(paramName, req.getParameter(paramName));
 		}
-		Payload payload = new Payload(fbReq.toString().getBytes());
+		Payload payload = new Payload(fbReq);
 		payload.metadata.put("mime", "application/json");
 		return payload;
 	}

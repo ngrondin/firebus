@@ -4,18 +4,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.HashMap;
-import java.util.logging.Logger;
 
 import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataMap;
 
 public class FileAdapter extends Adapter implements ServiceProvider, Consumer
 {
-	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected String path;
 	
 	public FileAdapter(DataMap c)
@@ -38,7 +37,7 @@ public class FileAdapter extends Adapter implements ServiceProvider, Consumer
 		}
 		catch(Exception e)
 		{
-			logger.severe(e.getMessage());
+			Logger.severe("fb.adapter.file.consume", e);
 		}
 	}
 

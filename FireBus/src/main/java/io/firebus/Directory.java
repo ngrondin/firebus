@@ -4,18 +4,17 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 import io.firebus.information.ConsumerInformation;
 import io.firebus.information.FunctionInformation;
 import io.firebus.information.NodeInformation;
 import io.firebus.information.ServiceInformation;
 import io.firebus.information.StreamInformation;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataMap;
 
 public class Directory 
 {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected ArrayList<NodeInformation> nodes;
 
 	public Directory()
@@ -52,7 +51,7 @@ public class Directory
 
 	public synchronized void deleteNode(NodeInformation n)
 	{
-		logger.info("Deleting Node " + n.getNodeId() + " from Directory");
+		Logger.info("fb.directory.delete", new DataMap("node", n.getNodeId()));
 		nodes.remove(n);
 	}
 	
@@ -72,7 +71,7 @@ public class Directory
 		NodeInformation ni = getNodeById(nodeId);
 		if(ni == null)
 		{
-			logger.fine("Node discovered : " + nodeId + " at address " + address);
+			Logger.info("fb.directory.nodediscovered", new DataMap("node",nodeId, "address", address));
 			NodeInformation nodeByAddress = getNodeByAddress(address);
 			if(nodeByAddress != null)
 				deleteNode(nodeByAddress);
@@ -82,7 +81,7 @@ public class Directory
 		}
 		else if(!ni.containsAddress(address))
 		{
-			logger.fine("New address discovered for node : " + nodeId + " at address " + address);
+			Logger.info("fb.directory.addressdiscovered", new DataMap("node",nodeId, "address", address));
 			ni.addAddress(address);
 		}		
 	}

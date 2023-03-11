@@ -9,20 +9,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.logging.Logger;
 
 import javax.crypto.SecretKey;
 
 import io.firebus.information.KnownAddressInformation;
 import io.firebus.information.NodeInformation;
 import io.firebus.interfaces.ConnectionListener;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
 
 
 public class ConnectionManager extends Thread implements ConnectionListener
 {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected int nodeId;
 	protected String networkName;
 	protected SecretKey secretKey;
@@ -117,8 +116,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		{
 			try 
 			{
-				logger.finest("Maintaining connection counts");
-				
+				Logger.finest("fb.connections.manager.maintaining");		
 				for(int i = 0; i < knownAddresses.size(); i++)
 				{
 					KnownAddressInformation kai = knownAddresses.get(i);
@@ -131,7 +129,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 					{
 						if(!hasConnectionForAddress(kai.getAddress()) && kai.isDueToTry())
 						{
-							logger.info("Creating new connection from known address (try " + kai.tries() + ")");
+							Logger.finest("fb.connections.manager.creating.knownaddress", new DataMap("try", kai.tries()));		
 							createConnection(kai.getAddress());
 						}						
 					}
@@ -143,7 +141,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 					NodeInformation ni = nodeCore.getDirectory().getNode(i);
 					if(ni.getNodeId() != nodeId  &&  ni.getAddressCount() > 0 && !hasConnectionForNode(ni.getNodeId()))
 					{
-						logger.info("Creating new connection to maintain minimum node connectivity");
+						Logger.finest("fb.connections.manager.creating.minimum");		
 						createConnection(ni.getAddress(0));
 						connectedNodeCount++;
 					}
@@ -153,7 +151,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 			} 
 			catch (Exception e) 
 			{
-				logger.severe(e.getMessage());
+				Logger.severe("fb.connections.manager.maintaining", e);
 			}
 		}
 	}
@@ -169,7 +167,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		}
 		catch(Exception e)
 		{
-			logger.severe(e.getMessage());
+			Logger.severe("fb.connections.manager.received", e);
 		}
 	}
 
@@ -188,10 +186,10 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		Address a = c.getRemoteAddress();
 		if(a != null)
 		{
-			logger.fine("Connection " + c.getId() + " failed.");
+			Logger.fine("fb.connections.manager.connfailed", new DataMap("conn", c.getId()));
 			NodeInformation ni = nodeCore.getDirectory().getNodeByAddress(a); 
 			if(ni != null) {
-				logger.finer("Removing address " + a + " from node");
+				Logger.finer("fb.connections.manager.removingaddr", new DataMap("address", a));
 				ni.removeAddress(a); 
 			}
 			for(KnownAddressInformation kai: knownAddresses) {
@@ -219,13 +217,13 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		}
 		else
 		{
-			logger.finest("Blocked message from self");
+			Logger.fine("fb.connections.manager.blockedself");
 		}
 	}
 
 	public synchronized void connectionClosed(Connection c)
 	{
-		logger.fine("Connection " + c.getId() + " Closed");
+		Logger.fine("fb.connections.manager.closed", new DataMap("conn", c.getId()));
 		connections.remove(c);
 		int nodeId = c.getRemoteNodeId();
 		List<Connection> list = connectionsForNodeId.get(nodeId);
@@ -274,7 +272,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 				NodeInformation ni = nodeCore.getDirectory().getNodeById(nodeId);
 				if(ni != null) {
 					for(int i = 0; i < ni.getAddressCount() && connection == null; i++) {
-						logger.info("Creating a new connection for a direct message");
+						Logger.info("fb.connections.manager.creating.directmessage");
 						connection = createConnection(ni.getAddress(i));
 					}
 					
@@ -288,7 +286,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 							for(int i = 0; i < ni.getRepeaterCount() && connection == null; i++) {
 								NodeInformation repeater = nodeCore.getDirectory().getNodeById(ni.getRepeater(i));
 								for(int j = 0; j < repeater.getAddressCount() && connection == null; j++) {
-									logger.info("Creating a new connection for a repeater message");
+									Logger.fine("fb.connections.manager.creating.repeatermessage");
 									connection = createConnection(repeater.getAddress(j));
 								}								
 							}	
@@ -331,7 +329,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 	
 	protected void broadcastToAllConnections(Message msg)
 	{
-		logger.finer("Broadcasting message to all connections");
+		Logger.finer("fb.connections.manager.broadcasting");
 		List<Integer> sentToNodeIds = new ArrayList<Integer>();
 		for(int i = 0; i < connections.size(); i++)
 		{
@@ -355,7 +353,7 @@ public class ConnectionManager extends Thread implements ConnectionListener
 		}
 		catch(Exception e)
 		{
-			logger.severe(e.getMessage());
+			Logger.severe("fb.connections.manager.closeing", e);
 		}
 	}
 	

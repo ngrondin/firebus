@@ -1,14 +1,9 @@
 package io.firebus;
 
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.ServiceProvider;
-import io.firebus.logging.FirebusSimpleFormatter;
 
 public class LoadTest {
 	
@@ -40,7 +35,6 @@ public class LoadTest {
 	public LoadTest() {
 		try {
 			Firebus firebus = new Firebus();
-			firebus.setThreadCount(30);
 			Thread.sleep(1000);
 			firebus.registerServiceProvider("service", new ServiceProvider() {
 
@@ -81,22 +75,6 @@ public class LoadTest {
 	
 	
 	public static void main(String[] args) {
-		Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
-		try
-		{
-			Level lvl = Level.INFO;
-			//FileHandler fh = new FileHandler("LoadTest.log");
-			//fh.setFormatter(new FirebusSimpleFormatter());
-			//fh.setLevel(lvl);
-			Logger logger = Logger.getLogger("io.firebus");
-			logger.addHandler(new ConsoleHandler());
-			logger.setLevel(lvl);
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		
 		new LoadTest();		
 	}
 }

@@ -3,32 +3,20 @@ package io.firebus;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.ServiceRequestor;
-import io.firebus.logging.FirebusSimpleFormatter;
 
 
 public class TestNode
 {
 	public static void main(String[] args)
 	{
-		Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
 		try
 		{
-			FileHandler fh = new FileHandler("TestNode.log");
-			fh.setFormatter(new FirebusSimpleFormatter());
-			fh.setLevel(Level.FINEST);
-			Logger logger = Logger.getLogger("io.firebus");
-			logger.addHandler(fh);
-			logger.setLevel(Level.FINEST);
-
 			Firebus n = new Firebus();
 			
 			if(args.length > 0)

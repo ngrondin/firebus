@@ -1,12 +1,12 @@
 package io.firebus;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
+import io.firebus.data.DataMap;
 import io.firebus.interfaces.Consumer;
+import io.firebus.logging.Logger;
 
 public class ConsumerManager extends ExecutionManager {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected List<FunctionEntry> consumers;
 	
 	public ConsumerManager(NodeCore nc)
@@ -17,13 +17,13 @@ public class ConsumerManager extends ExecutionManager {
 	
 	public void addConsumer(String name, Consumer s, int mc)
 	{
-		logger.fine("Adding consumer to node : " + name);
+		Logger.fine("fb.consumer.manager.add", new DataMap("consumer", name));
 		consumers.add(new FunctionEntry(name, s, mc));
 	}
 	
 	public void removeConsumer(String name)
 	{
-		logger.fine("Removing stream from node : " + name);
+		Logger.fine("fb.consumer.manager.remove", new DataMap("consumer", name));
 		for(int i = consumers.size(); i >= 0; i--)
 			if(consumers.get(i).getName().equals(name))
 				consumers.remove(i);
@@ -51,14 +51,14 @@ public class ConsumerManager extends ExecutionManager {
 
 	public void consume(Message msg)
 	{
-		String name = msg.getSubject();
-		Payload inPayload = msg.getPayload();
+		final String name = msg.getSubject();
+		final Payload inPayload = msg.getPayload();
 		for(FunctionEntry fe: consumers)
 		{
 			if(fe.getName().equals(name)) {
 				nodeCore.getStreamExecutionThreads().enqueue(new Runnable() {
 					public void run() {
-						logger.finer("Executing Consumer"); //This is not checking the function's capacity... it probably should
+						Logger.finer("fb.consumer.executing", new DataMap("consumer", name));
 						((Consumer)fe.function).consume(inPayload);
 					}
 				}, fe.getName(), -1);

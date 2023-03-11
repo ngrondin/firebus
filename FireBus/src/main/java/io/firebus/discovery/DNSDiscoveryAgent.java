@@ -1,7 +1,6 @@
 package io.firebus.discovery;
 
 import java.util.Hashtable;
-import java.util.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.directory.Attribute;
@@ -9,15 +8,15 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
 
 import io.firebus.DiscoveryAgent;
+import io.firebus.data.DataMap;
+import io.firebus.logging.Logger;
 
 public class DNSDiscoveryAgent extends DiscoveryAgent  {
-	private Logger logger;
 	private String srvName;
 	private int portOverride;
 	private boolean active;
 	
 	public void init() {
-		logger = Logger.getLogger("io.firebus");
         setName("fbDNSDiscoveryAgent");	
         srvName = config.getString("name");
         if(srvName != null && srvName.equals(""))
@@ -45,19 +44,19 @@ public class DNSDiscoveryAgent extends DiscoveryAgent  {
 				    	String address = parts[3];
 				    	if(address.endsWith("."))
 				    		address = address.substring(0, address.length() - 1);
-				    	System.out.println(address + ":" + port);
+				    	Logger.info("fb.discovery.dns.discover.knownaddress", new DataMap("address", address, "port", port));
 				    	nodeCore.addKnownNodeAddress(address, port);
 				    }
 			    }
 			} catch(Exception e) {
-				logger.severe("Error trying to discover DNS services: " + e.getMessage());
+				Logger.severe("fb.discovery.dns.discover", e);
 			}
 			try {
 				synchronized(this) {
 					this.wait(300000);
 				}
 			} catch(Exception e) {
-				logger.severe("Error on DNS discovery while sleeping: " + e.getMessage());
+				Logger.severe("fb.discovery.dns.sleeping", e);
 			}
 		}
 		
@@ -68,7 +67,7 @@ public class DNSDiscoveryAgent extends DiscoveryAgent  {
 		try {
 			this.notify();
 		} catch(Exception e) {
-			logger.severe("Error closing DNS discovery: " + e.getMessage());
+			Logger.severe("fb.discovery.dns.closing", e);
 		}
 	}
 

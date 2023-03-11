@@ -34,7 +34,7 @@ public class PostFormHandler extends InboundReqRespHandler
 			String val = req.getParameter(key);
 			body.put(key, val);
 		}
-		Payload payload = new Payload(body.toString());
+		Payload payload = new Payload(body);
 		payload.metadata.put("post", shortPath);
 		payload.metadata.put("mime", "application/json");
 		return payload;

@@ -4,7 +4,6 @@ import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
@@ -13,13 +12,13 @@ import javax.crypto.spec.PBEKeySpec;
 
 import io.firebus.discovery.DefaultDiscoveryAgent;
 import io.firebus.information.Statistics;
+import io.firebus.logging.Logger;
 import io.firebus.threads.ThreadManager;
 import io.firebus.data.DataMap;
 
 
 public class NodeCore
 {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected int nodeId;
 	protected boolean quit;
 	protected String networkName;
@@ -85,7 +84,7 @@ public class NodeCore
 			historyQueue = new HistoryQueue(256);
 			discoveryAgents = new ArrayList<DiscoveryAgent>();
 			discoveryAgents.add(new DefaultDiscoveryAgent(this));
-			logger.info("Initialised firebus node " + nodeId + " on " + networkName);
+			Logger.info("fb.node.init", new DataMap("nodeid", nodeId, "network", networkName));
 		}
 		catch(Exception e)
 		{
@@ -275,7 +274,7 @@ public class NodeCore
 	
 	protected void processNodeInformationRequest(Message reqMsg)
 	{
-		logger.finer("Responding to a node information request");
+		Logger.finer("fb.node.inforeq.resp", null);
 		StringBuilder sb = new StringBuilder();
 		sb.append(connectionManager.getAddressStateString(nodeId));
 		sb.append(serviceManager.getFunctionStateString(nodeId));

@@ -1,6 +1,5 @@
 package io.firebus.distributables;
 
-import java.util.logging.Logger;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -14,11 +13,11 @@ import io.firebus.Payload;
 import io.firebus.ServiceRequest;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataMap;
 
 public class ScriptedService extends DistributableService
 {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected String script;
 	protected ScriptEngine js;
 	protected Bindings bindings;
@@ -41,11 +40,11 @@ public class ScriptedService extends DistributableService
 					if(response != null)
 						script = response.getString();
 					else
-						logger.severe("No source file found for distributable scripted service in location " + sourceLocation);
+						Logger.severe("fb.distserv.script.nosource", new DataMap("location", sourceLocation));
 				}
 				catch(Exception e)
 				{
-					logger.severe("General error when retrieving the scripted service source file : " + e.getMessage());
+					Logger.severe("fb.distserv.script.init", e);
 				}
 			}
 		}
@@ -66,7 +65,7 @@ public class ScriptedService extends DistributableService
 		} 
 		catch (ScriptException e)
 		{
-			logger.severe(e.getMessage());
+			Logger.severe("fb.distserv.script.request", e);
 			throw new FunctionErrorException(e.getMessage());
 		}
 		return response;

@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import io.firebus.Payload;
 import io.firebus.adapters.Adapter;
@@ -13,6 +12,7 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Logger;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -22,7 +22,6 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 public class S3Adapter extends Adapter implements ServiceProvider, Consumer {
-	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected Region region;
 	protected String bucketName;
 	protected String folder;
@@ -63,7 +62,7 @@ public class S3Adapter extends Adapter implements ServiceProvider, Consumer {
 		}
 		catch(Exception e)
 		{
-			logger.severe(e.getMessage());
+			Logger.severe("fb.adapter.aws.s3.consume", e);
 		}		
 	}
 

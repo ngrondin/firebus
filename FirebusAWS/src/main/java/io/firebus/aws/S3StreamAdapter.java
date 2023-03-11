@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
@@ -15,6 +14,7 @@ import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.StreamInformation;
 import io.firebus.interfaces.StreamProvider;
+import io.firebus.logging.Logger;
 import io.firebus.utils.StreamReceiver;
 import io.firebus.utils.StreamSender;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -26,7 +26,6 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 public class S3StreamAdapter extends Adapter implements StreamProvider {
-	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected Region region;
 	protected String bucketName;
 	protected String folder;
@@ -63,7 +62,7 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 					}
 
 					public void error(String message) {
-						logger.severe("Error sending file '" + fileName + "': " + message);
+						Logger.severe("fb.adapter.aws.s3.errorsending", new DataMap("file", fileName, "msg", message));
 						cleanup();
 					}
 					
@@ -72,7 +71,7 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 							streamEndpoint.close();
 							is.close();
 						} catch(Exception e) {
-							logger.severe("Error closing stream after file get : " + e.getMessage());
+							Logger.severe("fb.adapter.aws.s3.cleanup", new DataMap("file", fileName), e);
 						}
 					}
 				});
@@ -92,7 +91,7 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 					}
 
 					public void error(String message) {
-						logger.severe("Error putting file '" + fileName + "': " + message);
+						Logger.severe("fb.adapter.aws.s3.errorputting", new DataMap("file", fileName, "msg", message));
 						cleanup();
 					}
 					
@@ -102,7 +101,7 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 							fos.close();
 					        file.delete();
 						} catch(Exception e) {
-							logger.severe("Error closing stream after file put : " + e.getMessage());
+							Logger.severe("fb.adapter.aws.s3.cleanup", new DataMap("file", fileName), e);
 						}	
 					}
 				});
@@ -112,7 +111,7 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 				throw new FunctionErrorException("No action provided");
 			}
 		} catch(Exception e) {
-			logger.severe("Error accepting stream connection : " + e.getMessage());
+			Logger.severe("fb.adapter.aws.s3.acceptstream", e);
 			throw new FunctionErrorException("Error accepting stream connection", e);
 		}
 	}

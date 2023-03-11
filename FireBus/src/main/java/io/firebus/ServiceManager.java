@@ -3,12 +3,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 
+import io.firebus.data.DataMap;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Logger;
 
 public class ServiceManager extends ExecutionManager {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected HashMap<String, FunctionEntry> services;
 	
 	
@@ -20,7 +20,7 @@ public class ServiceManager extends ExecutionManager {
 	
 	public void addService(String name, ServiceProvider s, int mc)
 	{
-		logger.fine("Adding service to node : " + name);
+		Logger.fine("fb.service.manager.add", new DataMap("service", name));
 		FunctionEntry e = services.get(name);
 		if(e == null)
 		{
@@ -31,7 +31,7 @@ public class ServiceManager extends ExecutionManager {
 	
 	public void removeService(String name)
 	{
-		logger.fine("Adding service to node : " + name);
+		Logger.fine("fb.service.manager.remove", new DataMap("service", name));
 		if(services.containsKey(name))
 			services.remove(name);
 	}
@@ -68,11 +68,11 @@ public class ServiceManager extends ExecutionManager {
 				sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_PROGRESS, msg.getSubject(), new Payload());
 				nodeCore.getServiceExecutionThreads().enqueue(new Runnable() {
 					public void run() {
-						logger.fine("Executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
+						Logger.fine("fb.service.manager.executing", new DataMap("service", name, "corr", msg.getCorrelation()));
 						try
 						{
 							Payload returnPayload = ((ServiceProvider)fe.function).service(inPayload);
-							logger.fine("Finished executing Service Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
+							Logger.fine("fb.service.manager.executed", new DataMap("service", name, "corr", msg.getCorrelation()));
 							if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
 								sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
 						}
@@ -85,13 +85,13 @@ public class ServiceManager extends ExecutionManager {
 					}
 				}, fe.getName(), executionId);
 			} else {
-				logger.info("Cannot execute function " + name + " as maximum number of executions reached for this function (" + fe.getExecutionCount() + ")");
+				Logger.info("fb.service.manager.maxreached", new DataMap("service", name, "corr", msg.getCorrelation(), "count", fe.getExecutionCount()));
 				sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "Maximum concurrent functions running");
 			}
 		}	
 		else
 		{
-			logger.severe("Function " + name + " does not exist");
+			Logger.severe("fb.service.manager.nofunction", new DataMap("service", name), null);
 			sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "No such function registered in this node");
 		}
 	}

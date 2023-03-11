@@ -26,7 +26,7 @@ public class PostJsonHandler extends InboundReqRespHandler
 		String path = req.getRequestURI();
 		String shortPath = path.substring(req.getContextPath().length() + getHttpHandlerPath().length());
 		DataMap body = new DataMap(req.getInputStream());
-		Payload payload = new Payload(body.toString());
+		Payload payload = new Payload(body);
 		payload.metadata.put("post", shortPath);
 		payload.metadata.put("mime", "application/json");
 		return payload;

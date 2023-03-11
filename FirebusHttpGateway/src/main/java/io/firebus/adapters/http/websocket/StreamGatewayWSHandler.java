@@ -1,17 +1,16 @@
 package io.firebus.adapters.http.websocket;
 
-import java.util.logging.Logger;
-
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
 import io.firebus.adapters.http.WebsocketConnectionHandler;
 import io.firebus.adapters.http.WebsocketHandler;
+import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.interfaces.StreamHandler;
+import io.firebus.logging.Logger;
 
 public class StreamGatewayWSHandler extends WebsocketConnectionHandler implements StreamHandler {
-	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	protected String streamName;
 	protected StreamEndpoint streamEndpoint;
 	protected long start = -1;
@@ -30,7 +29,7 @@ public class StreamGatewayWSHandler extends WebsocketConnectionHandler implement
 		String serviceName = handler.getGateway().getServiceName();
 		streamEndpoint = getFirebus().requestStream(streamName, requestPayload, serviceName, 10000);
 		streamEndpoint.setHandler(this);
-		logger.info("Stream gateway connection " + id + " opened");
+		Logger.info("fb.http.ws.streamgw.connected", new DataMap("id", id));
 	}
 
 	protected void onStringMessage(String msg) {
@@ -39,7 +38,7 @@ public class StreamGatewayWSHandler extends WebsocketConnectionHandler implement
 			streamEndpoint.send(payload);
 			lastIn = System.currentTimeMillis();
 		} else {
-			logger.warning("Stream Gateway received string message but stream endpoint was closed");
+			Logger.warning("fb.http.ws.streamgw.receivedbutclosed", new DataMap("id", id));
 		}
 	}
 
@@ -49,7 +48,7 @@ public class StreamGatewayWSHandler extends WebsocketConnectionHandler implement
 			streamEndpoint.send(payload);
 			lastIn = System.currentTimeMillis();
 		} else {
-			logger.warning("Stream Gateway received binary message but stream endpoint was closed");
+			Logger.warning("fb.http.ws.streamgw.receivedbutclosed", new DataMap("id", id));
 		}
 	}
 
@@ -58,7 +57,7 @@ public class StreamGatewayWSHandler extends WebsocketConnectionHandler implement
 			streamEndpoint.close();
 		}
 		long now = System.currentTimeMillis();
-		logger.info("Stream gateway connection " + id + " closed (life: " + (now - start) + "ms  last_in: " + (lastIn > -1 ? (now - lastIn) + "ms" : "-") + "  last_out: " + (lastOut > -1 ? (now - lastOut) + "ms" : "-") + ")");
+		Logger.warning("fb.http.ws.streamgw.closed", new DataMap("id", id, "life", (now - start), "lastin", lastIn > -1 ? (now - lastIn) : -1, "lastout", lastOut > -1 ? (now - lastOut) : -1));
 	}
 
 	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {

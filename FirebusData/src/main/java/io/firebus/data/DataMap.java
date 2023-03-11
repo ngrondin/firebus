@@ -13,17 +13,26 @@ import java.util.Set;
 
 public class DataMap extends DataEntity implements Map<String, Object>
 {
-	protected HashMap<String, DataEntity> attributes;
+	protected HashMap<String, DataEntity> attributes = new HashMap<String, DataEntity>();
 	
 	public DataMap()
 	{
-		attributes = new HashMap<String, DataEntity>();
 	}
 
 	public DataMap(String key, Object value)
 	{
-		attributes = new HashMap<String, DataEntity>();
 		put(key, value);
+	}
+	
+	public DataMap(Object... o)
+	{
+		for(int i = 0; i < o.length; i+=2) {
+			if(o[i] instanceof String) {
+				String key = (String)o[i];
+				Object value = o.length > i + 1 ? o[i+1] : null;
+				put(key, value);				
+			}
+		}
 	}
 	
 	public DataMap(String s) throws DataException
@@ -45,7 +54,6 @@ public class DataMap extends DataEntity implements Map<String, Object>
 	
 	protected void initialise(InputStream is) throws IOException, DataException
 	{
-		attributes = new HashMap<String, DataEntity>();
 		boolean inString = false;
 		boolean correctlyClosed = false;
 		String key = "";

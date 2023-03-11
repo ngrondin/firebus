@@ -4,18 +4,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.Logger;
 
 import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataException;
 import io.firebus.data.DataMap;
 
 public class DistributableServiceStorageAdapter extends Adapter implements ServiceProvider
 {
-	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected HashMap<String, DataMap> serviceConfigs;
 	protected String path;
 
@@ -88,7 +87,7 @@ public class DistributableServiceStorageAdapter extends Adapter implements Servi
 						}
 						catch(DataException e)
 						{
-							logger.info("Error reading config file : " + file.getName() + " (" + e.getMessage() + ")");
+							Logger.severe("fb.adapter.distservstore.refresh", new DataMap("file", file.getName()), e);
 						}
 					}							
 				}
@@ -96,7 +95,7 @@ public class DistributableServiceStorageAdapter extends Adapter implements Servi
 		}
 		catch(Exception e)
 		{
-			logger.severe(e.getMessage());
+			Logger.severe("fb.adapter.distservstore.refresh", e);
 		}
 	}
 	

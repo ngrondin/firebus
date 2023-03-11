@@ -3,12 +3,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 
+import io.firebus.data.DataMap;
 import io.firebus.interfaces.StreamProvider;
+import io.firebus.logging.Logger;
 
 public class StreamManager extends ExecutionManager {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected HashMap<String, FunctionEntry> streams;
 	
 	
@@ -20,7 +20,7 @@ public class StreamManager extends ExecutionManager {
 	
 	public void addStream(String name, StreamProvider s, int mc)
 	{
-		logger.fine("Adding stream to node : " + name);
+		Logger.fine("fb.stream.manager.add", new DataMap("stream", name));
 		FunctionEntry e = streams.get(name);
 		if(e == null)
 		{
@@ -31,7 +31,7 @@ public class StreamManager extends ExecutionManager {
 	
 	public void removeStream(String name)
 	{
-		logger.fine("Removing stream from node : " + name);
+		Logger.fine("fb.stream.manager.remove", new DataMap("stream", name));
 		if(streams.containsKey(name))
 			streams.remove(name);
 	}
@@ -66,7 +66,7 @@ public class StreamManager extends ExecutionManager {
 			{
 				nodeCore.getServiceExecutionThreads().enqueue(new Runnable() {
 					public void run() {
-						logger.fine("Executing Stream Provider " + name + " (correlation: " + msg.getCorrelation() + ")");
+						Logger.fine("fb.stream.manager.requesting", new DataMap("stream", name, "corr", msg.getCorrelation()));
 						StreamProvider streamProvider = (StreamProvider)fe.function;
 						long idleTimeout = streamProvider.getStreamIdleTimeout();
 						CorrelationEntry corrEntry = nodeCore.getCorrelationManager().createEntry(idleTimeout);
@@ -77,7 +77,7 @@ public class StreamManager extends ExecutionManager {
 						{
 							Payload acceptPayload = streamProvider.acceptStream(inPayload, streamEndpoint);
 							streamEndpoint.setAcceptPayload(acceptPayload);
-							logger.fine("Accepted stream " + name + " (correlation: " + msg.getCorrelation() + ")");
+							Logger.fine("fb.stream.manager.accepted", new DataMap("stream", name, "corr", msg.getCorrelation()));
 							if(acceptPayload == null)
 								acceptPayload = new Payload();
 							acceptPayload.metadata.put("correlationid", String.valueOf(localCorrelationId));
@@ -94,13 +94,13 @@ public class StreamManager extends ExecutionManager {
 					}
 				}, fe.getName(), executionId);
 			} else {
-				logger.info("Cannot execute function " + name + " as maximum number of executions reached for this function (" + fe.getExecutionCount() + ")");
+				Logger.info("fb.stream.manager.maxreached", new DataMap("stream", name, "corr", msg.getCorrelation(), "count", fe.getExecutionCount()));
 				sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "Maximum concurrent functions running");
 			}
 		}	
 		else
 		{
-			logger.severe("Function " + name + " does not exist");
+			Logger.severe("fb.stream.manager.nofunction", new DataMap("stream", name), null);
 			sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "No such function registered in this node");
 		}
 	}

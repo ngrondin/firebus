@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -37,10 +36,10 @@ import io.firebus.adapters.http.AuthValidationHandler;
 import io.firebus.adapters.http.HttpGateway;
 import io.firebus.data.DataException;
 import io.firebus.data.DataMap;
+import io.firebus.logging.Logger;
 
 //TODO: Can all be generalised into the oAuth2CodeValidator
 public class AppleValidator extends AuthValidationHandler {
-	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	protected String loginUrl;
 	protected String tokenUrl;
 	protected String clientId;
@@ -81,9 +80,8 @@ public class AppleValidator extends AuthValidationHandler {
 		    		.withExpiresAt(new Date((new Date()).getTime() + expiry))
 		    		.sign(algorithm);
 		} catch(Exception e) {
-			logger.severe("Error generating the Apple client secret: " + e.getMessage());
+			Logger.severe("fb.auth.applevalidator.gensecret", e);
 		}	
-		logger.info("Apple client secret is : " + clientSecret);
 		return clientSecret;
 	}
 	

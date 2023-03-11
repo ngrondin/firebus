@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.WebConnection;
@@ -15,10 +14,10 @@ import io.firebus.Firebus;
 import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataMap;
 
 public abstract class WebsocketConnectionHandler extends Thread implements HttpUpgradeHandler {
-	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	protected String id;
 	protected WebsocketHandler handler;
 	protected Payload requestPayload;
@@ -60,9 +59,9 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 			os.flush();
 			onOpen();
 			start();
-			logger.fine("Websocket connection created");
+			Logger.fine("fb.http.ws.connhandler.created", new DataMap("id", id));
 		} catch(Exception e) {
-			logger.severe("Error initating websocket connection " + id + ": " + e.getMessage());
+			Logger.severe("fb.http.ws.connhandler.creating", new DataMap("id", id), e);
 			active = false;
 			destroy();
 		} 
@@ -77,9 +76,9 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 				is.close();
 				os.close();
 				connection.close();
-				logger.fine("Websocket connection destroyed");
+				Logger.fine("fb.http.ws.connhandler.destroyed", new DataMap("id", id));
 			} catch(Exception e) {
-				logger.fine("Error destroying websocket connection " + id + ": " + e.getMessage());
+				Logger.severe("fb.http.ws.connhandler.destroying", new DataMap("id", id), e);
 			}
 		}
 	}
@@ -142,7 +141,6 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 					
 					if(fp < (14 + len)) {
 						if(fp == 9) {
-							//System.out.println("WS op = " + op + "  fin = " + fin + "  len = " + len);
 							frame = ByteBuffer.allocate(len);
 							runningLen += len;
 						}
@@ -188,7 +186,7 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 		} catch(Exception e) {
 			if(active) {
 				active = false;
-				logger.warning("Websocket connection " + id + " closed due to exception: " + e.getMessage());
+				Logger.warning("fb.http.ws.run", new DataMap("id", id), e);
 			}
 		} finally {
 			destroy();
@@ -216,7 +214,7 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 				os.write(msg, 0, (int)len);
 				os.flush();
 			} catch(Exception e) {
-				logger.warning("Websocket exception when sending: " + e.getMessage());
+				Logger.warning("fb.http.ws.send", new DataMap("id", id), e);
 				active = false;
 			}			
 		} 

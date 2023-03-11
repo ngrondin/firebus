@@ -1,13 +1,11 @@
 package io.firebus.utils;
 
-import java.util.logging.Logger;
-
 import io.firebus.data.DataMap;
+import io.firebus.logging.Logger;
 
 
 public class Queue<T>
 {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected Object[] items;
 	protected int increment;
 	protected boolean canGrow;
@@ -62,7 +60,7 @@ public class Queue<T>
 				if(tail >= items.length)
 					tail = 0;
 				depth--;
-				logger.severe("Dropped message from queue");
+				Logger.severe("fb.queue.dropped");
 			}
 		}
 		notify();

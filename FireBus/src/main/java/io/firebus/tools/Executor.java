@@ -5,16 +5,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 import io.firebus.FirebusAdmin;
 import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.information.NodeInformation;
+import io.firebus.logging.Logger;
 
 public class Executor {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected FirebusAdmin firebus;
 
 	public Executor(String[] args) {
@@ -83,7 +82,7 @@ public class Executor {
 						}
 						catch(IOException e)
 						{
-							logger.severe(e.getMessage());
+							Logger.severe("fb.executor.execute", e);
 						}
 					}
 				}

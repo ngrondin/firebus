@@ -68,7 +68,6 @@ public class StreamSender implements StreamHandler {
 			Payload chunk = new Payload(new byte[0]);
 			chunk.metadata.put("ctl", "complete");
 			streamEndpoint.send(chunk);
-			//System.out.println("Sender sent complete");
 		}
 	}
 	
@@ -77,13 +76,11 @@ public class StreamSender implements StreamHandler {
 		chunk.metadata.put("ctl", "chunk");
 		chunk.metadata.put("seq", "" + chunkSequence);
 		streamEndpoint.send(chunk);
-		//System.out.println("Sender sent " + chunkLength + " bytes " + chunkSequence);
 	}
 	
 	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
 		try {
 			String ctl = payload.metadata.get("ctl");
-			//System.out.println("Sender received ctl=" + ctl);
 			if(ctl.equals("next")) {
 				bytesSent += chunkLength;
 				sendNextChunk();

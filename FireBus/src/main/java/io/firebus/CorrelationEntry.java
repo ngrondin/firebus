@@ -2,14 +2,13 @@ package io.firebus;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import io.firebus.interfaces.CorrelationListener;
+import io.firebus.logging.Logger;
 import io.firebus.threads.ThreadManager;
 import io.firebus.data.DataMap;
 
 public class CorrelationEntry {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected int id;
 	protected int sequence;
 	protected Message outboundMessage;
@@ -69,7 +68,7 @@ public class CorrelationEntry {
 			}
 			catch(InterruptedException e)
 			{
-				logger.warning("Correlation " + id + " wait was interrupted");
+				Logger.warning("fb.correntry.interrupted", new DataMap("id", id));
 			}
 		}
 		return message;
@@ -77,7 +76,7 @@ public class CorrelationEntry {
 
 	public synchronized void push(Message msg) {
 		int seq = msg.getCorrelationSequence();
-		logger.finer("Received Correlated message " + id + " sequence " + seq);		
+		Logger.finer("fb.correntry.received", new DataMap("id", id, "seq", seq));
 		inboundMessages.put(seq, msg);
 		expiry = System.currentTimeMillis() + timeout;
 		drainInboundQueue();
@@ -105,7 +104,13 @@ public class CorrelationEntry {
 		long now = System.currentTimeMillis();
 		if(expired == false && now > expiry) 
 		{
-			logger.warning("Correlation " + id + " has expired after " + (now - start) + "ms (" + (outboundMessage != null ? outboundMessage.getTypeString() + ":" + outboundMessage.subject + ":" + outboundMessage.getOriginatorId() + "->" + outboundMessage.getDestinationId() : "") + (listenerFunctionName != null ? " for " + listenerFunctionName : "") + ") exp:" + expiry + " start:" + start + " timeout:" + timeout);
+			DataMap logMap = new DataMap("id", id, "dur", (now - start), "exp", expiry, "start", start, "timeout", timeout, "listnerfunc", listenerFunctionName);
+			if(outboundMessage != null) {
+				logMap.put("outmsgtype", outboundMessage.getTypeString());
+				logMap.put("outsubject", outboundMessage.subject);
+				logMap.put("outdest", outboundMessage.getDestinationId());
+			}
+			Logger.warning("fb.correntry.expired", logMap);
 			expired = true;
 			if(correlationListener != null) {
 				threadManager.enqueue(new Runnable() {

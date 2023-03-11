@@ -1,35 +1,14 @@
 package io.firebus;
 
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.StreamInformation;
 import io.firebus.interfaces.StreamHandler;
 import io.firebus.interfaces.StreamProvider;
-import io.firebus.logging.FirebusSimpleFormatter;
 
 public class StreamTest {
 	
 	public static void main(String[] args) 
 	{
-		Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
-		try
-		{
-			FileHandler fh = new FileHandler("StreamTest.log");
-			fh.setFormatter(new FirebusSimpleFormatter());
-			fh.setLevel(Level.FINEST);
-			Logger logger = Logger.getLogger("io.firebus");
-			logger.addHandler(fh);
-			logger.setLevel(Level.FINEST);
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		
-		
 		Firebus firebus = new Firebus();
 		firebus.registerStreamProvider("teststream", new StreamProvider() {
 			public Payload acceptStream(Payload payload, StreamEndpoint streamEndpoint) throws FunctionErrorException {

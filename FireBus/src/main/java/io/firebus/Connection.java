@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -15,10 +14,10 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
-import io.firebus.interfaces.ConnectionListener;
 import io.firebus.data.DataMap;
+import io.firebus.interfaces.ConnectionListener;
+import io.firebus.logging.Logger;
 import io.firebus.utils.Queue;
-import io.firebus.utils.StackUtils;
 
 public class Connection extends Thread 
 {
@@ -30,7 +29,6 @@ public class Connection extends Thread
 	public static int STATE_CLOSING = 5;
 	public static int STATE_DEAD = 6;
 	
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected int state;
 	protected Socket socket;
 	protected String networkName;
@@ -57,7 +55,7 @@ public class Connection extends Thread
 	
 	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
-		logger.fine("Initialising received connection from " + s.getRemoteSocketAddress());
+		Logger.fine("fb.connection.init.from", new DataMap("remote", s.getRemoteSocketAddress()));
 		constructorSetup();
 		socket = s;
 		listener = cl;
@@ -70,7 +68,7 @@ public class Connection extends Thread
 	
 	public Connection(Address a, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
-		logger.fine("Initialising connection to " + a);
+		Logger.fine("fb.connection.init.to", new DataMap("to", a));
 		constructorSetup();
 		remoteAddress = a;
 		listener = cl;
@@ -210,31 +208,31 @@ public class Connection extends Thread
 							}
 						}
 						if(remoteNodeId != localNodeId) {
-							logger.info("Established connection " + getId() + " with node " + remoteNodeId + " at address " + remoteAddress);
+							Logger.info("fb.connection.established", new DataMap("id", getId(), "node", remoteNodeId, "address", remoteAddress));
 							state = STATE_INITIALIZED;						
 						} else {
-							logger.info("Tried to establish connection " + getId() + " with self at address " + remoteAddress);
+							Logger.info("fb.connection.withself", new DataMap("id", getId(), "address", remoteAddress));
 							state = STATE_FAILED;
 						}						
 					} else {
-						logger.warning("Tried to establish connection " + getId() + ", but received a bad cipher");
+						Logger.warning("fb.connection.badcipher", new DataMap("id", getId()));
 						state = STATE_FAILED;
 					}
 				}
 				else
 				{
-					logger.fine("Firebus network mismatch");
+					Logger.info("fb.connection.badnetwork", new DataMap("id", getId()));
 					close();
 				}
 			}
 			else
 			{
-				logger.fine("Socket not connected for connection " + getId());
+				Logger.warning("fb.connection.socketnotconnected", new DataMap("id", getId()));
 			}
 		}
 		catch(Exception e)
 		{
-			logger.warning("Error trying to establish connection with " + remoteAddress + " : " + e.getMessage());
+			Logger.warning("fb.connection.errorconnecting", new DataMap("id", getId(), "remote", remoteAddress), e);
 			close();
 		}		
 	}
@@ -295,7 +293,7 @@ public class Connection extends Thread
 							}
 							else
 							{
-								logger.severe("Received corrupted message from connection " + getId() + " from node id " + remoteNodeId);
+								Logger.severe("fb.connection.corrupted", new DataMap("id", getId(), "node", remoteNodeId));
 								close();
 							}
 							msgState = 0;
@@ -309,7 +307,7 @@ public class Connection extends Thread
 			{
 				if(state == STATE_ACTIVE) 
 				{
-					logger.severe("Exception on connection : " + e.getMessage());
+					Logger.severe("fb.connection.exception", new DataMap("id", getId()), e);
 					close();
 				}
 			}
@@ -348,7 +346,7 @@ public class Connection extends Thread
 						sentBytes += bytes.length;
 						lastActivity = System.currentTimeMillis();
 					} catch(Exception e1) {
-						logger.severe("Exception on connection while sending message : " + e1.getMessage());
+						Logger.severe("fb.connection.sending", new DataMap("id", getId()), e1);
 						close();
 					}
 				} else {
@@ -359,7 +357,7 @@ public class Connection extends Thread
 					} catch(InterruptedException e2) {}
 				}
 			} catch(Exception e) {
-				logger.severe("Exception in connection sender thread: " + StackUtils.toString(e.getStackTrace()));
+				Logger.severe("fb.connection.sending", new DataMap("id", getId()), e);
 			}
 		}		
 	}
@@ -386,7 +384,7 @@ public class Connection extends Thread
 		} 
 		catch (IOException e) 
 		{
-			logger.severe(e.getMessage());
+			Logger.severe("fb.connection.closing", new DataMap("id", getId()), e);
 		}
 	}
 	

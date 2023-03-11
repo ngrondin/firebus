@@ -1,7 +1,6 @@
 package io.firebus.adapters.http;
 
 import java.io.PrintWriter;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,7 +10,6 @@ import io.firebus.Payload;
 import io.firebus.data.DataMap;
 
 public abstract class InboundReqRespHandler  extends InboundHandler {
-	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 
 	protected String service;
 	private int timeout;
@@ -29,9 +27,7 @@ public abstract class InboundReqRespHandler  extends InboundHandler {
 			if(securityHandler != null)
 				securityHandler.enrichFirebusRequest(req, fbReq);
 			enrichFirebusRequestDefault(req, fbReq);
-			logger.finest(fbReq.toString());
 			Payload fbResp = firebus.requestService(service, fbReq, timeout);
-			logger.finest(fbResp.toString());
 			if(fbResp.metadata.containsKey("mime"))
 				resp.setHeader("content-type", fbResp.metadata.get("mime"));
 			if(fbResp.metadata.containsKey("filename"))

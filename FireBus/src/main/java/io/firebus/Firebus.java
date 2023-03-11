@@ -1,7 +1,6 @@
 package io.firebus;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
@@ -11,11 +10,11 @@ import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.ServiceRequestor;
 import io.firebus.interfaces.StreamProvider;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataMap;
 
 public class Firebus
 {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected NodeCore nodeCore;
 	protected int defaultTimeout = 10000;
 	
@@ -122,7 +121,7 @@ public class Firebus
 	
 	public NodeInformation getNodeInformation(int nodeId)
 	{
-		logger.fine("Sending Node Information Request Message");
+		Logger.fine("fb.node.sendininforeq", null);
 		Message queryMsg = new Message(nodeId, nodeCore.getNodeId(), Message.MSGTYPE_QUERYNODE, null, null);
 		Message respMsg = nodeCore.getCorrelationManager().sendAndWait(queryMsg, 2000);
 		if(respMsg != null)
@@ -183,7 +182,7 @@ public class Firebus
 	
 	public void publish(String dataname, Payload payload)
 	{
-		logger.finer("Publishing");
+		Logger.finer("fb.node.publishing");
 		nodeCore.enqueue(new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_PUBLISH, dataname, payload));
 	}
 	

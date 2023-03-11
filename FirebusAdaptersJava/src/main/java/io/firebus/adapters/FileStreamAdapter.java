@@ -3,19 +3,18 @@ package io.firebus.adapters;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.util.logging.Logger;
 
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.StreamInformation;
 import io.firebus.interfaces.StreamProvider;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataMap;
 import io.firebus.utils.StreamReceiver;
 import io.firebus.utils.StreamSender;
 
 public class FileStreamAdapter extends Adapter implements StreamProvider {
-	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected String path;
 	
 	public FileStreamAdapter(DataMap c) {
@@ -36,12 +35,12 @@ public class FileStreamAdapter extends Adapter implements StreamProvider {
 							streamEndpoint.close();
 							fis.close();
 						} catch(Exception e) {
-							logger.severe("Error closing stream after file get : " + e.getMessage());
+							Logger.severe("fb.adapter.filestream.closeerror", "Error closing stream after file get", e);
 						}
 					}
 
 					public void error(String message) {
-						logger.severe("Error sending file '" + fileName + "': " + message);
+						Logger.severe("fb.adapter.filestream.senderror", new DataMap("file", fileName, "msg", message));
 					}
 				});
 				return null;
@@ -53,12 +52,12 @@ public class FileStreamAdapter extends Adapter implements StreamProvider {
 							streamEndpoint.close();
 							fos.close();
 						} catch(Exception e) {
-							logger.severe("Error closing stream after file put : " + e.getMessage());
+							Logger.severe("fb.adapter.filestream.closeerror", e);
 						}						
 					}
 
 					public void error(String message) {
-						logger.severe("Error putting file '" + fileName + "': " + message);
+						Logger.severe("fb.adapter.filestream.puterror", new DataMap("file", fileName, "msg", message));
 					}
 				});
 				return null;

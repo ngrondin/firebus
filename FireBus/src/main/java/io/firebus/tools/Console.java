@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
@@ -16,7 +15,6 @@ import io.firebus.logging.FirebusSimpleFormatter;
 
 public class Console implements ServiceRequestor
 {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected Executor executor;
 	protected String command;
 	protected boolean quit;
@@ -86,23 +84,7 @@ public class Console implements ServiceRequestor
 
 	public static void main(String[] args)
 	{
-		try
-		{
-			Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
-			Logger logger = Logger.getLogger("io.firebus");
-			FileHandler fh = new FileHandler("Console.log");
-			fh.setFormatter(new FirebusSimpleFormatter());
-			fh.setLevel(Level.FINER);
-			logger.addHandler(fh);
-			logger.setLevel(Level.FINER);
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		
 		Console c = new Console(args);
-		//try { Thread.sleep(5000); } catch(Exception e) {}
 		c.run();
 	}
 

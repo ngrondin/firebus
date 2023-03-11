@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.servlet.MultipartConfigElement;
 
@@ -37,12 +36,12 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
 
 public class HttpGateway implements ServiceProvider 
 {
-	private Logger logger = Logger.getLogger("io.firebus.adapters.http");
 	protected String name;
 	protected Firebus firebus;
 	protected DataMap config;
@@ -207,7 +206,7 @@ public class HttpGateway implements ServiceProvider
 		} 
         catch (Exception e) 
         {
-        	logger.severe("Error initiating the Http Gateway : " + e.getMessage());
+        	Logger.severe("fb.http.init", e);
         	e.printStackTrace();
 		}
 	}

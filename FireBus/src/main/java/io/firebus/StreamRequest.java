@@ -1,15 +1,14 @@
 package io.firebus;
 
-import java.util.logging.Logger;
-
+import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.information.FunctionInformation;
 import io.firebus.interfaces.StreamRequestor;
+import io.firebus.logging.Logger;
 
 public class StreamRequest 
 {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected NodeCore nodeCore;
 	protected String streamName;
 	protected Payload requestPayload;
@@ -33,7 +32,7 @@ public class StreamRequest
 	
 	public StreamEndpoint initiate() throws FunctionErrorException, FunctionTimeoutException
 	{
-		logger.finer("Requesting Stream");
+		Logger.fine("fb.stream.request.start", new DataMap("name", streamName));
 		StreamEndpoint streamEndpoint = null;
 		FunctionInformation lastRequestedFunction = null;
 		FunctionFinder functionFinder = new FunctionFinder(nodeCore, streamName);
@@ -46,7 +45,7 @@ public class StreamRequest
 					try{ Thread.sleep(1000);} catch(Exception e) {}
 
 				lastRequestedFunction = functionInformation;
-				logger.finer("Sending stream request message to " + functionInformation.getNodeId());
+				Logger.finer("fb.stream.request.send", new DataMap("node", functionInformation.getNodeId()));
 				Message reqMsg = new Message(functionInformation.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSTREAM, streamName, requestPayload);
 				int correlation = nodeCore.getCorrelationManager().send(reqMsg, subTimeout);
 				Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
@@ -64,7 +63,7 @@ public class StreamRequest
 						}
 						else if(respMsg.getType() == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
 						{
-							logger.fine("Stream " + streamName + " on node " + functionInformation.getNodeId() + " has responded as unavailable");
+							Logger.finer("fb.stream.request.unavailable", new DataMap("stream", streamName, "node", functionInformation.getNodeId()));
 							functionInformation.wasUnavailable();
 							break;
 						} 
@@ -83,16 +82,15 @@ public class StreamRequest
 						
 						if(System.currentTimeMillis() > expiry)
 						{
-							String str = "Stream request " + streamName + " has timed out while executing (corr: " + reqMsg.getCorrelation() + ")"; 
-							logger.fine(str);
+							Logger.finer("fb.stream.request.timeout", new DataMap("stream", streamName, "node", functionInformation.getNodeId(), "corr", reqMsg.getCorrelation()));
 							functionInformation.timedOutWhileExecuting();
-							throw new FunctionTimeoutException(str);
+							throw new FunctionTimeoutException("Stream request " + streamName + " has timed out while executing (corr: " + reqMsg.getCorrelation() + ")");
 						}
 					}
 				}
 				else
 				{
-					logger.fine("Stream " + streamName + " on node " + functionInformation.getNodeId() + " has not responded to a stream request (corr: " + reqMsg.getCorrelation() + ")");
+					Logger.finer("fb.stream.request.noresp", new DataMap("stream", streamName, "node", functionInformation.getNodeId(), "corr", reqMsg.getCorrelation()));
 					functionInformation.didNotRespond();
 				}
 			}			

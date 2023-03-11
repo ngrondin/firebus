@@ -2,13 +2,13 @@ package io.firebus;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
+import io.firebus.data.DataMap;
 import io.firebus.information.FunctionInformation;
 import io.firebus.information.NodeInformation;
+import io.firebus.logging.Logger;
 
 public class FunctionFinder {
-	private static Logger logger = Logger.getLogger("io.firebus");
 	protected static int subTimeout = 500;
 	protected NodeCore nodeCore;
 	protected String functionName;
@@ -47,7 +47,7 @@ public class FunctionFinder {
 	
 	protected void findMore()
 	{
-		logger.fine("Broadcasting Service Information Request Message");
+		Logger.fine("fb.funcfinder.broadcasting", null);
 		Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, functionName, null);
 		nodeCore.getCorrelationManager().sendAndWait(findMsg, subTimeout);
 		refreshList();
@@ -64,7 +64,7 @@ public class FunctionFinder {
 			fi = list.get(tryPointer);
 			tryPointer++;
 		} else {
-			logger.warning("Function finder cannot find the function '" + functionName + "' (list: " + list.size() + " pointer: " + tryPointer + ")");
+			Logger.warning("fb.funcfinder.notfound", new DataMap("function", functionName, "listlen", list.size(), "pointer", tryPointer));
 		}
 		return fi;
 	}

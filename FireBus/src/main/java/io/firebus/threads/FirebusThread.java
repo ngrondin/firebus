@@ -1,15 +1,11 @@
 package io.firebus.threads;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.logging.Logger;
-
 import io.firebus.NodeCore;
 import io.firebus.data.DataMap;
+import io.firebus.logging.Logger;
 
 public class FirebusThread extends Thread
 {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected NodeCore nodeCore;
 	protected ThreadManager threadManager;
 	protected int id;
@@ -67,10 +63,7 @@ public class FirebusThread extends Thread
 			} 
 			catch (Exception e)
 			{
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				e.printStackTrace(pw);
-				logger.severe(sw.toString());
+				Logger.severe("fb.thread.run", e);
 			}
 			finally 
 			{

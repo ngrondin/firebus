@@ -3,11 +3,12 @@ package io.firebus;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.logging.Logger;
+
+import io.firebus.data.DataMap;
+import io.firebus.logging.Logger;
 
 public class ConnectionServer extends Thread
 {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected ConnectionManager connectionManager;
 	protected boolean quit;
 	protected ServerSocket server;
@@ -26,13 +27,13 @@ public class ConnectionServer extends Thread
 			{
 				try
 				{
-					logger.fine("Starting connection server on " + port);
+					Logger.fine("fb.connections.starting", new DataMap("port", port));
 					server = new ServerSocket(port);
 					successfulBind = true;
 				}
 				catch(Exception e)	
 				{	
-					logger.fine("Port " + port + " was already used");
+					Logger.fine("fb.connections.alreadyused", new DataMap("port", port));
 					port++;
 				}			
 			}
@@ -40,7 +41,7 @@ public class ConnectionServer extends Thread
 		else
 		{
 			port = p;
-			logger.fine("Starting connection server on " + port);
+			Logger.fine("fb.connections.starting", new DataMap("port", port));
 			server = new ServerSocket(port);
 		}		
 		setName("fbConnServer");
@@ -62,7 +63,8 @@ public class ConnectionServer extends Thread
 			catch (Exception e) 
 			{
 				if(!quit)
-					logger.severe(e.getMessage());
+					Logger.severe("fb.connections.receiving", e);
+				
 			}
 		}		
 	}
@@ -81,7 +83,7 @@ public class ConnectionServer extends Thread
 		}
 		catch(Exception e)
 		{
-			logger.severe(e.getMessage());
+			Logger.severe("fb.connections.closing", e);
 		}
 	}
 }

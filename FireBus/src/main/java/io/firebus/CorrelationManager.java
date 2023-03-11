@@ -3,16 +3,14 @@ package io.firebus;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
 
-import io.firebus.interfaces.CorrelationListener;
-import io.firebus.threads.ThreadManager;
 import io.firebus.data.DataMap;
-import io.firebus.utils.StackUtils;
+import io.firebus.interfaces.CorrelationListener;
+import io.firebus.logging.Logger;
+import io.firebus.threads.ThreadManager;
 
 public class CorrelationManager extends Thread
 {
-	private Logger logger = Logger.getLogger("io.firebus");
 	protected HashMap<Integer, CorrelationEntry> entries;
 	protected NodeCore nodeCore;
 	protected boolean quit;
@@ -63,7 +61,7 @@ public class CorrelationManager extends Thread
 		if(entry != null)
 			entry.setListener(cl, fn, tm, timeout);
 		else
-			logger.severe("Correlation " + correlationId + " not found to set listener on");
+			Logger.severe("fb.correlation.notfoundtowaitfor", new DataMap("corr", correlationId));
 	}
 
 
@@ -74,7 +72,7 @@ public class CorrelationManager extends Thread
 		if(entry != null)
 			message = entry.waitForNext(timeout);
 		else
-			logger.severe("Correlation " + correlationId + " not found to wait for\r\n" + StackUtils.getStackString());
+			Logger.severe("fb.correlation.notfoundtowaitfor", new DataMap("corr", correlationId));
 		return message;
 	}
 	
@@ -119,7 +117,7 @@ public class CorrelationManager extends Thread
 			else
 			{
 				if(inMsg.getType() != Message.MSGTYPE_FUNCTIONINFORMATION) 
-					logger.warning("No correlation entry found for '" + inMsg.getTypeString() + "' response from service " + inMsg.getSubject() + " (corr: " + correlationId + " " + inMsg.getOriginatorId() + "->" + inMsg.getDestinationId() + ")");
+					Logger.warning("fb.correlation.notfound", new DataMap("corr", correlationId, "service", inMsg.getSubject(), "msgtype", inMsg.getTypeString(), "originator", inMsg.getOriginatorId(), "destination", inMsg.getDestinationId()));
 			}
 		}
 	}
@@ -145,7 +143,7 @@ public class CorrelationManager extends Thread
 			}
 			catch(Exception e)
 			{
-				logger.severe(StackUtils.toString(e.getStackTrace()));
+				Logger.severe("fb.correlation.clean", "Error while cleaning correlations", e);
 			}
 		}
 	}

@@ -66,7 +66,6 @@ public class StreamReceiver implements StreamHandler {
 		try {
 			byte[] bytes = payload.getBytes();
 			String ctl = payload.metadata.get("ctl");
-			//System.out.println("Receiver received " + ctl);
 			if(ctl.equals("chunk")) {
 				if(payload.metadata.containsKey("seq")) {
 					int seq = Integer.parseInt(payload.metadata.get("seq"));
@@ -82,7 +81,6 @@ public class StreamReceiver implements StreamHandler {
 						Payload resp = new Payload();
 						resp.metadata.put("ctl", "next");
 						streamEndpoint.send(resp);
-						//System.out.println("Reveiver sent ctl=next");
 						long now = System.currentTimeMillis();
 						if(lastLoggedProgress < now - 10000) {
 							lastLoggedProgress = now;

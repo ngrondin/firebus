@@ -7,8 +7,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
@@ -18,6 +16,7 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Logger;
 import io.firebus.data.DataException;
 import io.firebus.data.DataList;
 import io.firebus.data.DataLiteral;
@@ -25,7 +24,6 @@ import io.firebus.data.DataMap;
 
 public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 {
-	private Logger logger = Logger.getLogger("io.firebus.adapters");
 	protected String connStr;
 	protected BasicDataSource dataSource;
 	protected SimpleDateFormat sdf;
@@ -219,12 +217,11 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 	        	list.add(map);
 	        }
 	        qt = System.currentTimeMillis() - start;
-	        if(logger.getLevel() == Level.FINER)
-	        	logger.finer("[" + qt + "ms, " + list.size() + " rows] " + select.getNonParameterizedStatement());
+	        Logger.finer("fb.adapter.jdbc.resp", new DataMap("ms", qt, "stmt" ,select.getNonParameterizedStatement(), "rows", list.size()));
 		}
 		catch(Exception e)
 		{
-			logger.severe("Error querying the database : " + e.getMessage() + " (" + select.getNonParameterizedStatement() + ")");
+			Logger.severe("fb.adapter.jdbc.request", new DataMap( "stmt" ,select.getNonParameterizedStatement()), e);
 			throw new FunctionErrorException("Error querying the database", e);
 		}
 		finally
@@ -267,8 +264,7 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		        rs1.next();
 		        int count = rs1.getInt(1);
 		        qt = System.currentTimeMillis() - start;
-		        if(logger.getLevel() == Level.FINER)
-		        	logger.finer("[" + qt + "ms, 1 row] " + select.getNonParameterizedStatement());
+		        Logger.finer("fb.adapter.jdbc.upsert", new DataMap("ms", qt, "stmt", select.getNonParameterizedStatement()));
 		        if(count > 0)
 		        {
 		        	StatementBuilder update = new StatementBuilder();
@@ -320,12 +316,11 @@ public class JDBCAdapter extends Adapter  implements ServiceProvider, Consumer
 		        start = System.currentTimeMillis();
 		        ps2.execute();
 		        et = System.currentTimeMillis() - start;
-		        if(logger.getLevel() == Level.FINER)
-		        	logger.finer("[" + et + "ms, 1 row] " + sql.getNonParameterizedStatement());
+		        Logger.finer("fb.adapter.jdbc.resp", new DataMap("ms", et, "stmt", sql.getNonParameterizedStatement()));
 			}
 			catch(Exception e)
 			{
-				logger.severe("Error updating the database : " + e.getMessage() + " (" + sql.getNonParameterizedStatement() + ")");
+				Logger.severe("fb.adapter.jdbc.upsert", new DataMap("stmt", sql.getNonParameterizedStatement()), e);
 				e.printStackTrace();
 			}
 			finally
