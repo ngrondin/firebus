@@ -1,60 +1,31 @@
 package io.firebus.logging;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import io.firebus.data.DataMap;
-import io.firebus.threads.FirebusThread;
-
 public class Logger {
-	public static int level = 0;
+	protected static int level = 0;
+	
+	protected static Formatter formatter = new JSONFormatter();
 	
 	public static void setLevel(int l) {
 		level = l;
 	}
 	
+	public static void setFormatter(String type) {
+		if(type.toLowerCase().equals("json"))
+			formatter = new JSONFormatter();
+		else if(type.equalsIgnoreCase("text")) 
+			formatter = new TextFormatter();
+	}
+	
 	public static void log(int lvl, String event, Object data, Throwable t) {
 		if(lvl <= level) {
-			DataMap entry = new DataMap();
-			entry.put("ts", System.currentTimeMillis());
-			entry.put("level", getLevelString(lvl));
-			if(event != null) {				
-				entry.put("event", event);
-			}
-			DataMap ctx = new DataMap();
-			if(Thread.currentThread() instanceof FirebusThread) {
-				FirebusThread fbt = (FirebusThread)Thread.currentThread();
-				ctx.put("thread", fbt.getName());
-				ctx.put("function", fbt.getFunctionName());
-				if(fbt.getFunctionExecutionId() > -1)
-					ctx.put("execid", fbt.getFunctionExecutionId());
-				String track = fbt.getTrackingId();
-				if(track != null) ctx.put("track", track);
-				String user = fbt.getUser();
-				if(user != null) ctx.put("user", user);
-				
-			} 
-			entry.put("ctx", ctx);
-			if(t != null) {
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				t.printStackTrace(pw);
-				entry.put("stack", sw.toString());
-			}
-			if(data != null) {
-				if(data instanceof String) {
-					entry.put("msg", data);
-				} else if(data instanceof DataMap) {
-					entry.put("data", data);				
-				}				
-			}
+			String line = formatter.format(lvl, event, data, t);
+
 			if(lvl <= 1) {
-				System.err.println(entry.toString(0, true));
+				System.err.println(line);
 			} else {
-				System.out.println(entry.toString(0, true));
+				System.out.println(line);
 			}
 		}
-		
 	}
 	
 	public static void severe(String event, Object data, Throwable t) {
