@@ -192,8 +192,10 @@ public class Payload
 			return new DataMap(new String(dataBytes));
 		else if(dataString != null)
 			return new DataMap(dataString);
-		else
+		else if(dataList != null)
 			throw new DataException("Not a DataMap type");
+		else
+			return null;
 	}
 	
 	public DataList getDataList() throws DataException
@@ -204,8 +206,10 @@ public class Payload
 			return new DataList(new String(dataBytes));
 		else if(dataString != null)
 			return new DataList(dataString);
-		else
+		else if(dataMap != null)
 			throw new DataException("Not a DataList type");
+		else
+			return null;
 	}
 	
 	public void setData(byte[] bytes)
