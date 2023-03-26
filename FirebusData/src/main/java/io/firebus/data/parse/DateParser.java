@@ -17,7 +17,7 @@ public class DateParser extends Parser {
 		ZoneId zone = null;
 		
 		int l = str.length();
-		if(l < 20) return null;
+		if(l < 19) return null;
 		
 		int i = 0;
 		char c = str.charAt(i++);
@@ -91,78 +91,93 @@ public class DateParser extends Parser {
 		if(!isDigit(c)) return null;
 		else second += toInt(c);
 
-		c = str.charAt(i++);
-		if(c == '.') {
-			
+		if(l == i) {
+			zone = ZoneId.of("Z");
+		} else {
 			c = str.charAt(i++);
-			if(!isDigit(c)) return null;
-			else nano += (100000000 * toInt(c));
-
-			c = str.charAt(i++);
-			if(!isDigit(c)) return null;
-			else nano += (10000000 * toInt(c));
-
-			c = str.charAt(i++);
-			if(!isDigit(c)) return null;
-			else nano += (1000000 * toInt(c));
-
-			c = str.charAt(i++);
-			if(isDigit(c)) {
-				nano += (100000 * toInt(c));
+			if(c == '.') {
+				c = str.charAt(i++);
+				if(!isDigit(c)) return null;
+				else nano += (100000000 * toInt(c));
 
 				c = str.charAt(i++);
 				if(!isDigit(c)) return null;
-				else nano += (10000 * toInt(c));
+				else nano += (10000000 * toInt(c));
 
 				c = str.charAt(i++);
 				if(!isDigit(c)) return null;
-				else nano += (1000 * toInt(c));
-				
-				c = str.charAt(i++);
-				if(isDigit(c)) {
-					nano += (100 * toInt(c));
+				else nano += (1000000 * toInt(c));
 
+				if(l == i) {
+					zone = ZoneId.of("Z");
+				} else {
 					c = str.charAt(i++);
-					if(!isDigit(c)) return null;
-					else nano += (10 * toInt(c));
+					if(isDigit(c)) {
+						nano += (100000 * toInt(c));
 
-					c = str.charAt(i++);
-					if(!isDigit(c)) return null;
-					else nano += toInt(c);
+						c = str.charAt(i++);
+						if(!isDigit(c)) return null;
+						else nano += (10000 * toInt(c));
+
+						c = str.charAt(i++);
+						if(!isDigit(c)) return null;
+						else nano += (1000 * toInt(c));
+						
+						c = str.charAt(i++);
+						if(isDigit(c)) {
+							nano += (100 * toInt(c));
+
+							c = str.charAt(i++);
+							if(!isDigit(c)) return null;
+							else nano += (10 * toInt(c));
+
+							c = str.charAt(i++);
+							if(!isDigit(c)) return null;
+							else nano += toInt(c);
+							
+							if(l == i) {
+								zone = ZoneId.of("Z");
+							} else {
+								c = str.charAt(i++);
+							}
+							
+						}
+					}
+				}
+			} 
+			if(zone == null) {
+				if(c == 'Z') {
+					zone = ZoneId.of("Z");
+				} else if(c == '+' || c == '-') {
+					int offsetHour = 0;
+					int offsetMinute = 0;
 					
 					c = str.charAt(i++);
+					if(!isDigit(c)) return null;
+					else offsetHour += (10 * toInt(c));
+					
+					c = str.charAt(i++);
+					if(!isDigit(c)) return null;
+					else offsetHour += toInt(c);
+					
+					c = str.charAt(i++);
+					if(c != ':') return null;
+
+					c = str.charAt(i++);
+					if(!isDigit(c)) return null;
+					else offsetMinute += (10 * toInt(c));
+					
+					c = str.charAt(i++);
+					if(!isDigit(c)) return null;
+					else offsetMinute += toInt(c);
+					
+					zone = ZoneOffset.ofHoursMinutes(offsetHour, offsetMinute);
+				} else {
+					return null;
 				}
 			}
 		}
-		if(c != '+' && c != '-' && c != 'Z') return null;
-		if(c == 'Z') {
-			zone = ZoneId.of("Z");
-		} else if(c == '+' || c == '-') {
-			int offsetHour = 0;
-			int offsetMinute = 0;
-			
-			c = str.charAt(i++);
-			if(!isDigit(c)) return null;
-			else offsetHour += (10 * toInt(c));
-			
-			c = str.charAt(i++);
-			if(!isDigit(c)) return null;
-			else offsetHour += toInt(c);
-			
-			c = str.charAt(i++);
-			if(c != ':') return null;
 
-			c = str.charAt(i++);
-			if(!isDigit(c)) return null;
-			else offsetMinute += (10 * toInt(c));
-			
-			c = str.charAt(i++);
-			if(!isDigit(c)) return null;
-			else offsetMinute += toInt(c);
-			
-			zone = ZoneOffset.ofHoursMinutes(offsetHour, offsetMinute);
-		}
-		
 		if(i < l) return null;
 		
 		return ZonedDateTime.of(year, month, day, hour, minute, second, nano, zone);
