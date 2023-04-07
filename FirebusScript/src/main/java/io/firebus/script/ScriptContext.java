@@ -17,6 +17,10 @@ public class ScriptContext {
 		scope.setValue(name, Converter.convertIn(obj));
 	}
 	
+	public void declare(String name, Object obj) throws ScriptValueException {
+		scope.declareValue(name, Converter.convertIn(obj));
+	}
+	
 	public void remove(String name) {
 		scope.removeValue(name);
 	}
