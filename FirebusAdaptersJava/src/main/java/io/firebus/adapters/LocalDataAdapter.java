@@ -224,6 +224,7 @@ public class LocalDataAdapter  extends Adapter  implements ServiceProvider, Cons
 			} else {
 				return false;
 			}
+			k++;
 		}
 		return true;
 	}
