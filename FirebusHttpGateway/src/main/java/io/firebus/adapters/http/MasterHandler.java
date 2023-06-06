@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import io.firebus.data.DataMap;
+import io.firebus.logging.Logger;
+
 
 public class MasterHandler extends HttpServlet 
 {
@@ -54,76 +57,81 @@ public class MasterHandler extends HttpServlet
 		String method = req.getMethod();
 		String contentType = req.getContentType();
 		
-		if(path.equals("/") && rootForward != null)
-			path = rootForward;
-
-		HttpHandler best = null;
-		int bestPoints = 0;
-
-		if(path.equals("/logout")) 
-		{
-			best = logoutHandler;
-		}
-		else 
-		{
-			for(int i = 0; i < handlerMap.size() && best == null; i++) 
+		try {
+			if(path.equals("/") && rootForward != null)
+				path = rootForward;
+	
+			HttpHandler best = null;
+			int bestPoints = 0;
+	
+			if(path.equals("/logout")) 
 			{
-				HttpHandlerEntry entry = handlerMap.get(i);
-				int matchPoints = 0;
-				boolean disqualified = false;
-				if(entry.path != null) {
-					if(entry.path.endsWith("/*")) 
-					{
-						String shortEntryPath = entry.path.substring(0, entry.path.length() - 2);
-						if(path.startsWith(shortEntryPath + "/") || path.equals(shortEntryPath))
+				best = logoutHandler;
+			}
+			else 
+			{
+				for(int i = 0; i < handlerMap.size() && best == null; i++) 
+				{
+					HttpHandlerEntry entry = handlerMap.get(i);
+					int matchPoints = 0;
+					boolean disqualified = false;
+					if(entry.path != null) {
+						if(entry.path.endsWith("/*")) 
+						{
+							String shortEntryPath = entry.path.substring(0, entry.path.length() - 2);
+							if(path.startsWith(shortEntryPath + "/") || path.equals(shortEntryPath))
+								matchPoints++;
+							else
+								disqualified = true;
+						}
+						else
+						{
+							if(entry.path.equals(path))
+								matchPoints++;
+							else
+								disqualified = true;
+						}					
+					} 
+					
+					if(entry.method != null) {
+						if(entry.method.equalsIgnoreCase(method))
 							matchPoints++;
 						else
 							disqualified = true;
+					} 
+					
+					if(entry.contentType != null) {
+						if(contentType != null && (contentType.equalsIgnoreCase(entry.contentType) || contentType.startsWith(entry.contentType + ";")))
+							matchPoints++;
+						else
+							disqualified = true;
+					} 
+					
+					if(!disqualified && matchPoints > bestPoints) {
+						bestPoints = matchPoints;
+						best = entry.handler;
 					}
-					else
-					{
-						if(entry.path.equals(path))
-							matchPoints++;
-						else
-							disqualified = true;
-					}					
-				} 
-				
-				if(entry.method != null) {
-					if(entry.method.equalsIgnoreCase(method))
-						matchPoints++;
-					else
-						disqualified = true;
-				} 
-				
-				if(entry.contentType != null) {
-					if(contentType != null && (contentType.equalsIgnoreCase(entry.contentType) || contentType.startsWith(entry.contentType + ";")))
-						matchPoints++;
-					else
-						disqualified = true;
-				} 
-				
-				if(!disqualified && matchPoints > bestPoints) {
-					bestPoints = matchPoints;
-					best = entry.handler;
-				}
-				
-			}			
+					
+				}			
+			}
+	
+			if(best != null)
+			{
+				best.service(req, resp);
+			}
+			else if(defaultHandler != null)
+			{
+				defaultHandler.service(req, resp);
+			}
+			else
+			{
+				resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+		        PrintWriter writer = resp.getWriter();
+				writer.println("No mapping.");
+			}
+		} catch(Exception e) {
+			Logger.severe("fb.http.master", new DataMap("method", method, "path", path, "contenttype", contentType), e);
+			throw e;
 		}
-
-		if(best != null)
-		{
-			best.service(req, resp);
-		}
-		else if(defaultHandler != null)
-		{
-			defaultHandler.service(req, resp);
-		}
-		else
-		{
-			resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-	        PrintWriter writer = resp.getWriter();
-			writer.println("No mapping.");
-		}			
 	}	
 }
