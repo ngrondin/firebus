@@ -33,15 +33,17 @@ public abstract class InboundHandler extends HttpHandler
 		{
 			if(!(e instanceof FunctionErrorException || e instanceof FunctionTimeoutException || e instanceof FunctionUnavailableException))
 				Logger.severe("fb.http.inbound", e);
-			int errorCode = (e instanceof FunctionErrorException ? ((FunctionErrorException)e).getErrorCode() : 0);
-			resp.reset();
-			resp.setStatus(errorCode > 0 ? errorCode : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-	        PrintWriter writer = resp.getWriter();
-			String accept = req.getHeader("accept");
-			if(accept != null && accept.contains("application/json"))
-				writer.println("{\r\n\t\"error\" : \"" + e.getMessage().replaceAll("\"", "'").replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n") + "\"\r\n}");
-			else
-				writer.println("<div>" + e.getMessage() + "</div>");
+			if(!resp.isCommitted()) {
+				int errorCode = (e instanceof FunctionErrorException ? ((FunctionErrorException)e).getErrorCode() : 0);
+				resp.reset();
+				resp.setStatus(errorCode > 0 ? errorCode : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		        PrintWriter writer = resp.getWriter();
+				String accept = req.getHeader("accept");
+				if(accept != null && accept.contains("application/json"))
+					writer.println("{\r\n\t\"error\" : \"" + e.getMessage().replaceAll("\"", "'").replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n") + "\"\r\n}");
+				else
+					writer.println("<div>" + e.getMessage() + "</div>");				
+			}
 		}
 	}	
 	

@@ -32,7 +32,7 @@ public abstract class SecurityHandler {
 	protected void unauthenticated(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String accept = req.getHeader("accept");
 		String path = req.getRequestURI();
-		if(accept.contains("text/html") || accept.contains("*/*")) {
+		if(accept != null && (accept.contains("text/html") || accept.contains("*/*"))) {
 			if(authValidationHandlers.size() > 1) {
 		        PrintWriter writer = resp.getWriter();
 		        writer.println("<html><head><title>Login</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><style>");
