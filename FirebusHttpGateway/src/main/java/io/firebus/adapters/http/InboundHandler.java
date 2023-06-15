@@ -2,6 +2,7 @@ package io.firebus.adapters.http;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.SocketException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +30,10 @@ public abstract class InboundHandler extends HttpHandler
 		{
 			inboundService(req, resp);
 		} 
+		catch (SocketException e) 
+		{
+			// Do nothing, just accept the connection was broken. Adding this here as the below doesn't seem to catch this exception.
+		}
 		catch (Exception e)
 		{
 			if(!(e instanceof FunctionErrorException || e instanceof FunctionTimeoutException || e instanceof FunctionUnavailableException))
