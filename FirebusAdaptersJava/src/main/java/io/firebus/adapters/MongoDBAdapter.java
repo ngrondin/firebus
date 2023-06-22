@@ -154,7 +154,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 			long duration = System.currentTimeMillis() - start;
 			if(duration > 2000) 
 				Logger.warning("fb.adapter.mongo.longtx", new DataMap("ms", duration, "req", request));
-			Logger.finer("fb.adapter.mongo.resp", new DataMap("ms", duration));
+			Logger.fine("fb.adapter.mongo.resp", new DataMap("ms", duration));
 		}
 		catch(Exception e)
 		{
