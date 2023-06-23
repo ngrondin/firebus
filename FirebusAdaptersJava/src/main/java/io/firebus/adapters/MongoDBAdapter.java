@@ -18,6 +18,7 @@ import com.mongodb.MongoCommandException;
 import com.mongodb.TransactionOptions;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.ClientSession;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -25,6 +26,7 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 import io.firebus.Payload;
+import io.firebus.StreamEndpoint;
 import io.firebus.data.DataEntity;
 import io.firebus.data.DataException;
 import io.firebus.data.DataList;
@@ -33,11 +35,14 @@ import io.firebus.data.DataMap;
 import io.firebus.data.parse.StringDecoder;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
+import io.firebus.information.StreamInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.interfaces.StreamHandler;
+import io.firebus.interfaces.StreamProvider;
 import io.firebus.logging.Logger;
 
-public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consumer
+public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamProvider, Consumer
 {
 	protected MongoClient client;
 	protected MongoDatabase database;
@@ -164,18 +169,68 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		return response;
 	}
 	
+	public Payload acceptStream(Payload payload, StreamEndpoint streamEndpoint) throws FunctionErrorException {
+		try {
+			DataMap request = new DataMap(payload.getString());
+			Logger.finer("fb.adapter.monfo.request", request);
+			if(request.containsKey("filter")) 
+			{
+				long start = System.currentTimeMillis();
+				final MongoCursor<Document> it = getFindIterable(request).iterator();
+				streamEndpoint.setHandler(new StreamHandler() {
+					public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
+						if(payload.getString().equals("next")) {
+							if(it.hasNext()) {
+								streamEndpoint.send(new Payload((DataMap)convertValue(it.next())));
+							} else {
+								streamEndpoint.close();
+							}
+						} else { 
+							streamEndpoint.close();
+							Logger.warning("fb.adapter.mongo.stream.close", "Bad flow control");
+						}
+					}
+	
+					public void streamClosed(StreamEndpoint streamEndpoint) {
+						it.close();
+						long duration = System.currentTimeMillis() - start;
+						Logger.fine("fb.adapter.mongo.stream.close", new DataMap("ms", duration));
+					}
+				});
+				if(it.hasNext())
+					streamEndpoint.send(new Payload((DataMap)convertValue(it.next())));
+				else
+					streamEndpoint.close();
+				return null;
+			} else {
+				throw new FunctionErrorException("Invalid request");
+			}
+		} catch(Exception e) {
+			Logger.severe("fb.adapter.mongo.stream", "Error accepting stream", e);
+			throw new FunctionErrorException("Error in db stream", e);	
+		}
+	}
+
+	
 	private DataList get(DataMap request) throws FunctionErrorException, DataException
 	{
 		DataList responseList = null;
-		String objectName = request.getString("object");
 		int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
 		int pageSize = request.containsKey("pagesize") ? request.getNumber("pagesize").intValue() : 50;
+		MongoCursor<Document> it = getFindIterable(request).skip(page * pageSize).iterator();
+		responseList = retieveDocuments(it, pageSize);
+		it.close();
+		return responseList;
+	}
+	
+	private FindIterable<Document> getFindIterable(DataMap request) throws FunctionErrorException, DataException
+	{
+		String objectName = request.getString("object");
 		if(database != null)
 		{
 			MongoCollection<Document> collection = database.getCollection(objectName);
 			if(collection != null)
 			{
-				MongoCursor<Document> it = null;
 				Document filterDoc = null;
 				if(request.containsKey("filter")) {
 					DataMap filter = request.getObject("filter");
@@ -192,9 +247,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 						sortDoc.append(sortItem.getString("attribute"), sortItem.getNumber("dir").intValue());
 					}
 				} 
-				it = collection.find(filterDoc).maxAwaitTime(waitTimeout, TimeUnit.MILLISECONDS).sort(sortDoc).skip(page * pageSize).iterator();		
-				responseList = retieveDocuments(it, pageSize);
-				it.close();
+				FindIterable<Document> it = collection.find(filterDoc).maxAwaitTime(waitTimeout, TimeUnit.MILLISECONDS).sort(sortDoc);	
+				return it;
 			}
 			else
 			{
@@ -205,7 +259,6 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 		{
 			throw new FunctionErrorException("Database as not been specificied in the configuration");
 		}	
-		return responseList;
 	}
 	
 	private DataList aggregate(DataMap request) throws FunctionErrorException, DataException
@@ -432,6 +485,14 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, Consume
 
 	public ServiceInformation getServiceInformation()
 	{
+		return null;
+	}
+
+	public int getStreamIdleTimeout() {
+		return 10000;
+	}
+
+	public StreamInformation getStreamInformation() {
 		return null;
 	}
 	
