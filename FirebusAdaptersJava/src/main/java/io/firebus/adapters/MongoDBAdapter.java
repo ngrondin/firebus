@@ -180,11 +180,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 				streamEndpoint.setHandler(new StreamHandler() {
 					public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
 						if(payload.getString().equals("next")) {
-							if(it.hasNext()) {
-								streamEndpoint.send(new Payload((DataMap)convertValue(it.next())));
-							} else {
-								streamEndpoint.close();
-							}
+							sendToStream(streamEndpoint, it);
 						} else { 
 							streamEndpoint.close();
 							Logger.warning("fb.adapter.mongo.stream.close", "Bad flow control");
@@ -197,10 +193,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 						Logger.fine("fb.adapter.mongo.stream.close", new DataMap("ms", duration));
 					}
 				});
-				if(it.hasNext())
-					streamEndpoint.send(new Payload((DataMap)convertValue(it.next())));
-				else
-					streamEndpoint.close();
+				sendToStream(streamEndpoint, it);
 				return null;
 			} else {
 				throw new FunctionErrorException("Invalid request");
@@ -209,6 +202,16 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 			Logger.severe("fb.adapter.mongo.stream", "Error accepting stream", e);
 			throw new FunctionErrorException("Error in db stream", e);	
 		}
+	}
+	
+	private void sendToStream(StreamEndpoint streamEndpoint, MongoCursor<Document> it) 
+	{
+		DataList list = new DataList();
+		for(int i = 0; i < 20 && it.hasNext(); i++)
+			list.add((DataMap)convertValue(it.next()));
+		streamEndpoint.send(new Payload(new DataMap("result", list)));
+		if(!it.hasNext()) 
+			streamEndpoint.close();
 	}
 
 	
