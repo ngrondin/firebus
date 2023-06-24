@@ -180,7 +180,10 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 				streamEndpoint.setHandler(new StreamHandler() {
 					public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
 						if(payload.getString().equals("next")) {
-							sendToStream(streamEndpoint, it);
+							if(it.hasNext())
+								sendToStream(streamEndpoint, it);
+							else
+								streamEndpoint.close();
 						} else { 
 							streamEndpoint.close();
 							Logger.warning("fb.adapter.mongo.stream.close", "Bad flow control");
@@ -210,8 +213,6 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		for(int i = 0; i < 20 && it.hasNext(); i++)
 			list.add((DataMap)convertValue(it.next()));
 		streamEndpoint.send(new Payload(new DataMap("result", list)));
-		if(!it.hasNext()) 
-			streamEndpoint.close();
 	}
 
 	
