@@ -173,6 +173,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		try {
 			DataMap request = new DataMap(payload.getString());
 			Logger.finer("fb.adapter.monfo.request", request);
+			int chunkSize = request.containsKey("chunksize") ? request.getNumber("chunksize").intValue() : 20;
+			int advance = request.containsKey("advance") ? request.getNumber("advance").intValue() : 0;
 			if(request.containsKey("filter")) 
 			{
 				long start = System.currentTimeMillis();
@@ -181,8 +183,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 					public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
 						if(payload.getString().equals("next")) {
 							if(it.hasNext())
-								sendToStream(streamEndpoint, it);
-							else
+								sendToStream(streamEndpoint, it, chunkSize);
+							else if(streamEndpoint.isActive())
 								streamEndpoint.close();
 						} else { 
 							streamEndpoint.close();
@@ -196,7 +198,9 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 						Logger.fine("fb.adapter.mongo.stream.close", new DataMap("ms", duration));
 					}
 				});
-				sendToStream(streamEndpoint, it);
+				sendToStream(streamEndpoint, it, chunkSize);
+				for(int i = 0; i < advance; i++)
+					sendToStream(streamEndpoint, it, chunkSize);
 				return null;
 			} else {
 				throw new FunctionErrorException("Invalid request");
@@ -207,10 +211,10 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		}
 	}
 	
-	private void sendToStream(StreamEndpoint streamEndpoint, MongoCursor<Document> it) 
+	private void sendToStream(StreamEndpoint streamEndpoint, MongoCursor<Document> it, int chunkSize) 
 	{
 		DataList list = new DataList();
-		for(int i = 0; i < 20 && it.hasNext(); i++)
+		for(int i = 0; i < chunkSize && it.hasNext(); i++)
 			list.add((DataMap)convertValue(it.next()));
 		streamEndpoint.send(new Payload(new DataMap("result", list)));
 	}
