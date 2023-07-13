@@ -17,6 +17,7 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCommandException;
 import com.mongodb.TransactionOptions;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
@@ -52,6 +53,11 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 	protected int waitTimeout = 9000; 
 	protected String databaseName;
 	protected String connectionString;
+	
+	public interface DataProcessor {
+		public void run(DataMap item);
+	}
+
 	
 	public MongoDBAdapter(DataMap c)
 	{
@@ -89,8 +95,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		client = MongoClients.create(settings);
 		database = client.getDatabase(databaseName);
 	}
-	
-
+	 
 	public void consume(Payload payload)
 	{
 		try
@@ -175,58 +180,79 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 			Logger.finer("fb.adapter.monfo.request", request);
 			int chunkSize = request.containsKey("chunksize") ? request.getNumber("chunksize").intValue() : 20;
 			int advance = request.containsKey("advance") ? request.getNumber("advance").intValue() : 0;
-			if(request.containsKey("filter")) 
-			{
-				long start = System.currentTimeMillis();
-				final MongoCursor<Document> it = getFindIterable(request).iterator();
-				streamEndpoint.setHandler(new StreamHandler() {
-					public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
-						if(payload.getString().equals("next")) {
-							if(it.hasNext())
-								sendToStream(streamEndpoint, it, chunkSize);
-							else if(streamEndpoint.isActive())
-								streamEndpoint.close();
-						} else { 
-							streamEndpoint.close();
-							Logger.warning("fb.adapter.mongo.stream.close", "Bad flow control");
-						}
-					}
-	
-					public void streamClosed(StreamEndpoint streamEndpoint) {
-						it.close();
-						long duration = System.currentTimeMillis() - start;
-						Logger.fine("fb.adapter.mongo.stream.close", new DataMap("ms", duration));
-					}
-				});
-				sendToStream(streamEndpoint, it, chunkSize);
-				for(int i = 0; i < advance; i++)
-					sendToStream(streamEndpoint, it, chunkSize);
-				return null;
+			if(chunkSize <= 0) throw new FunctionErrorException("Stream chunk size cannot be 0");
+			long start = System.currentTimeMillis();
+			MongoCursor<Document> iterator = null;
+			DataProcessor postProcessor = null;
+			if(request.containsKey("filter")) {
+				iterator = getFindIterable(request).iterator();
+			} else if(request.containsKey("tuple")) {
+				iterator = getAggregateIterable(request).iterator();
+				postProcessor = new AggregatePostProcessor(request.getList("tuple"));
 			} else {
 				throw new FunctionErrorException("Invalid request");
 			}
+			final MongoCursor<Document> it = iterator;
+			final DataProcessor pp = postProcessor;
+			streamEndpoint.setHandler(new StreamHandler() {
+				public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
+					if(payload.getString().equals("next")) {
+						try {
+							if(it.hasNext())
+								sendToStream(streamEndpoint, it, chunkSize, pp);
+							else if(streamEndpoint.isActive())
+								streamEndpoint.close();
+							
+						} catch(Exception e) {
+							streamEndpoint.close();
+						}
+					} else { 
+						streamEndpoint.close();
+						Logger.warning("fb.adapter.mongo.stream.close", "Bad flow control");
+					}
+				}
+
+				public void streamClosed(StreamEndpoint streamEndpoint) {
+					it.close();
+					long duration = System.currentTimeMillis() - start;
+					Logger.fine("fb.adapter.mongo.stream.close", new DataMap("ms", duration));
+				}
+			});
+			sendToStream(streamEndpoint, it, chunkSize, pp);
+			if(it.hasNext())
+				for(int i = 0; i < advance; i++)
+					sendToStream(streamEndpoint, it, chunkSize, pp);
+			return null;			
 		} catch(Exception e) {
 			Logger.severe("fb.adapter.mongo.stream", "Error accepting stream", e);
 			throw new FunctionErrorException("Error in db stream", e);	
 		}
 	}
 	
-	private void sendToStream(StreamEndpoint streamEndpoint, MongoCursor<Document> it, int chunkSize) 
+	private void sendToStream(StreamEndpoint streamEndpoint, MongoCursor<Document> it, int chunkSize, DataProcessor postProcessor) 
 	{
-		DataList list = new DataList();
-		for(int i = 0; i < chunkSize && it.hasNext(); i++)
-			list.add((DataMap)convertValue(it.next()));
+		DataList list = retieveDocuments(it, chunkSize, postProcessor);
 		streamEndpoint.send(new Payload(new DataMap("result", list)));
 	}
 
-	
 	private DataList get(DataMap request) throws FunctionErrorException, DataException
 	{
 		DataList responseList = null;
 		int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
 		int pageSize = request.containsKey("pagesize") ? request.getNumber("pagesize").intValue() : 50;
 		MongoCursor<Document> it = getFindIterable(request).skip(page * pageSize).iterator();
-		responseList = retieveDocuments(it, pageSize);
+		responseList = retieveDocuments(it, pageSize, null);
+		it.close();
+		return responseList;
+	}
+
+	private DataList aggregate(DataMap request) throws FunctionErrorException, DataException
+	{
+		int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
+		int pageSize = request.containsKey("pagesize") ? request.getNumber("pagesize").intValue() : 50;
+		MongoCursor<Document> it = getAggregateIterable(request).iterator();
+		for(int i = 0; i < (page * pageSize) && it.hasNext(); i++) it.next();
+		DataList responseList = retieveDocuments(it, pageSize, new AggregatePostProcessor(request.getList("tuple")));
 		it.close();
 		return responseList;
 	}
@@ -269,12 +295,9 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		}	
 	}
 	
-	private DataList aggregate(DataMap request) throws FunctionErrorException, DataException
+	private AggregateIterable<Document> getAggregateIterable(DataMap request) throws FunctionErrorException, DataException
 	{
-		DataList responseList = null;
 		String objectName = request.getString("object");
-		int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
-		int pageSize = request.containsKey("pagesize") ? request.getNumber("pagesize").intValue() : 50;
 		if(database != null)
 		{
 			MongoCollection<Document> collection = database.getCollection(objectName);
@@ -325,26 +348,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 				DataMap sortContainer = new DataMap("$sort", new DataMap("_id", 1));
 				pipeline.add(Document.parse(sortContainer.toString()));
 				
-				MongoCursor<Document> it = collection.aggregate(pipeline).maxTime(waitTimeout, TimeUnit.MILLISECONDS).iterator();
-				for(int i = 0; i < (page * pageSize) && it.hasNext(); i++)
-					it.next();
-				responseList = retieveDocuments(it, pageSize);
-				it.close();
-				for(int i = 0; i < responseList.size(); i++)
-				{
-					DataMap item = responseList.getObject(i);
-					for(int j = 0; j < tuple.size(); j++)
-					{
-						String key = null;
-						if(tuple.get(j) instanceof DataMap) {
-							key = tuple.getObject(j).getString("attribute");
-						} else {
-							key = tuple.getString(j);
-						}
-						item.put(key, item.get("_id." + key));
-					}
-					item.remove("_id");
-				}
+				AggregateIterable<Document> it = collection.aggregate(pipeline).maxTime(waitTimeout, TimeUnit.MILLISECONDS);
+				return it;
 			}
 			else
 			{
@@ -355,17 +360,18 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		{
 			throw new FunctionErrorException("Database as not been specificied in the configuration");
 		}	
-		return responseList;
 	}
 	
-	private DataList retieveDocuments(Iterator<Document> it, int count) throws DataException
+	private DataList retieveDocuments(Iterator<Document> it, int count, DataProcessor postProcessor) 
 	{
-		DataList responseList = null;
-		if(it != null)
-		{
-			responseList = new DataList();
-			while(it.hasNext() && responseList.size() < count)
-				responseList.add(convertValue(it.next()));
+		DataList responseList = new DataList();
+		if(it != null) {
+			while(it.hasNext() && responseList.size() < count) {
+				DataMap item = (DataMap)convertValue(it.next());
+				if(postProcessor != null)
+					postProcessor.run(item);
+				responseList.add(item);
+			}
 		}
 		return responseList;
 	}
@@ -387,6 +393,31 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 			return new DataLiteral(value);
 		}
 	}
+	
+	
+	
+	public class AggregatePostProcessor implements DataProcessor {
+		public DataList tuple;
+		
+		public AggregatePostProcessor(DataList t) {
+			tuple = t;
+		}
+		
+		public void run(DataMap item) {
+			for(int j = 0; j < tuple.size(); j++)
+			{
+				String key = null;
+				if(tuple.get(j) instanceof DataMap) {
+					key = tuple.getObject(j).getString("attribute");
+				} else {
+					key = tuple.getString(j);
+				}
+				item.put(key, item.get("_id." + key));
+			}
+			item.remove("_id");
+		}
+	}
+	
 	
 	private void upsert(DataMap packet)
 	{
@@ -453,7 +484,6 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		}
 	}
 
-	
 	protected void recordQuery(String object, DataMap filter) {
 		if(queryColumns != null) {
 			DataMap cols = queryColumns.getObject(object);

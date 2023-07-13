@@ -3,6 +3,7 @@ package io.firebus.adapters.http;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -77,6 +78,8 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 				os.close();
 				connection.close();
 				Logger.fine("fb.http.ws.connhandler.destroyed", new DataMap("id", id));
+			} catch(ClosedChannelException e) {
+				
 			} catch(Exception e) {
 				Logger.severe("fb.http.ws.connhandler.destroying", new DataMap("id", id), e);
 			}
