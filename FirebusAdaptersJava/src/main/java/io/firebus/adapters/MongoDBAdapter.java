@@ -178,7 +178,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		try {
 			DataMap request = new DataMap(payload.getString());
 			Logger.finer("fb.adapter.monfo.request", request);
-			int chunkSize = request.containsKey("chunksize") ? request.getNumber("chunksize").intValue() : 20;
+			int chunkSize = request.containsKey("chunksize") ? request.getNumber("chunksize").intValue() : 50;
 			int advance = request.containsKey("advance") ? request.getNumber("advance").intValue() : 0;
 			if(chunkSize <= 0) throw new FunctionErrorException("Stream chunk size cannot be 0");
 			long start = System.currentTimeMillis();
@@ -198,11 +198,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 				public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
 					if(payload.getString().equals("next")) {
 						try {
-							if(it.hasNext())
-								sendToStream(streamEndpoint, it, chunkSize, pp);
-							else if(streamEndpoint.isActive())
-								streamEndpoint.close();
-							
+							sendToStream(streamEndpoint, it, chunkSize, pp);
 						} catch(Exception e) {
 							streamEndpoint.close();
 						}
@@ -231,8 +227,13 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 	
 	private void sendToStream(StreamEndpoint streamEndpoint, MongoCursor<Document> it, int chunkSize, DataProcessor postProcessor) 
 	{
-		DataList list = retieveDocuments(it, chunkSize, postProcessor);
-		streamEndpoint.send(new Payload(new DataMap("result", list)));
+		if(!streamEndpoint.isClosed()) {
+			DataList list = retieveDocuments(it, chunkSize, postProcessor);
+			if(list.size() > 0) 
+				streamEndpoint.send(new Payload(new DataMap("result", list)));				
+			else 
+				streamEndpoint.close();
+		}
 	}
 
 	private DataList get(DataMap request) throws FunctionErrorException, DataException

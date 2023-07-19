@@ -84,6 +84,7 @@ public class StreamManager extends ExecutionManager {
 							acceptPayload.metadata.put("timeout", String.valueOf(idleTimeout));
 							nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, fe.getName(), nodeCore.getStreamExecutionThreads(), idleTimeout);
 							sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), acceptPayload);
+							streamEndpoint.activate();
 						}
 						catch(Exception e)
 						{
