@@ -11,7 +11,6 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.apache.tomcat.util.security.ConcurrentMessageDigest;
 
 import io.firebus.Firebus;
-import io.firebus.Payload;
 import io.firebus.data.DataMap;
 
 public class WebsocketHandler extends HttpHandler {
@@ -44,11 +43,7 @@ public class WebsocketHandler extends HttpHandler {
 	        resp.setHeader("Sec-WebSocket-Accept", acceptKey);
 
 	        WebsocketConnectionHandler wsConnHandler = req.upgrade(connHandlerClass);
-        	Payload payload = new Payload();
-        	if(securityHandler != null)
-        		securityHandler.enrichFirebusRequest(req, payload);
-        	enrichFirebusRequestDefault(req, payload);
-        	wsConnHandler.configure(this, payload);
+        	wsConnHandler.configure(this, req);
 		}
 	}
 	

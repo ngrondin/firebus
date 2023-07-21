@@ -2,6 +2,8 @@ package io.firebus.adapters.http;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +37,10 @@ public abstract class HttpHandler extends Handler
 		return path;
 	}
 	
+	public SecurityHandler getSecurityHandler() {
+		return securityHandler;
+	}
+	
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
 		resp.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
@@ -57,23 +63,29 @@ public abstract class HttpHandler extends Handler
 		}		
 	}
 
-	protected void enrichFirebusRequestDefault(HttpServletRequest req, Payload payload) {
-		Enumeration<String> e1 = req.getHeaderNames();
-		while(e1.hasMoreElements()) {
-			String name = e1.nextElement();
+	public static void enrichFirebusRequestDefault(HttpServletRequest req, Payload payload) {
+		Map<String, String> params = getParams(req);
+		for(String name : params.keySet()) {
 			if(name.toLowerCase().startsWith("firebus-")) {
 				String shortName = name.toLowerCase().substring(8);
 				payload.metadata.put(shortName, req.getHeader(name));
-			}
+			}			
+		}
+	}
+	
+	public static Map<String, String> getParams(HttpServletRequest req) {
+		Map<String, String> params = new HashMap<String, String>();
+		Enumeration<String> e1 = req.getHeaderNames();
+		while(e1.hasMoreElements()) {
+			String name = e1.nextElement();
+			params.put(name, req.getHeader(name));
 		}
 		Enumeration<String> e2 = req.getParameterNames();
 		while(e2.hasMoreElements()) {
 			String name = e2.nextElement();
-			if(name.toLowerCase().startsWith("firebus-")) {
-				String shortName = name.toLowerCase().substring(8);
-				payload.metadata.put(shortName, req.getParameter(name));
-			}
+			params.put(name, req.getParameter(name));
 		}
+		return params;
 	}
 
 	

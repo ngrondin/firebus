@@ -1,26 +1,31 @@
 package io.firebus.adapters.http;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.WebConnection;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.logging.Logger;
-import io.firebus.data.DataMap;
 
 public abstract class WebsocketConnectionHandler extends Thread implements HttpUpgradeHandler {
 	protected String id;
 	protected WebsocketHandler handler;
+	protected Map<String, String> parameters;
 	protected Payload requestPayload;
 	protected WebConnection connection;
 	protected InputStream is;
@@ -34,14 +39,15 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 		destroyed = false;
 	}
 	
-	public void configure(WebsocketHandler wsh, Payload p) {
+	public void configure(WebsocketHandler wsh, HttpServletRequest req) throws ServletException, IOException {
 		handler = wsh;
-		requestPayload = p;
+		parameters = HttpHandler.getParams(req);
+		requestPayload = new Payload();
+    	if(handler.getSecurityHandler() != null)
+    		handler.getSecurityHandler().enrichFirebusRequest(req, requestPayload);
+    	HttpHandler.enrichFirebusRequestDefault(req, requestPayload);
 	}
 
-	public Payload getRequestPayload() {
-		return requestPayload;
-	}
 	
 	public Firebus getFirebus() {
 		return handler.firebus;
@@ -49,6 +55,10 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 	
 	public DataMap getConfig() {
 		return handler.handlerConfig;
+	}
+	
+	protected Payload getRequestPayload() throws ServletException, IOException {
+    	return requestPayload;
 	}
 
 	public void init(WebConnection c) {
@@ -234,7 +244,7 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 	}
 
 	
-	protected abstract void onOpen() throws FunctionErrorException, FunctionTimeoutException;
+	protected abstract void onOpen() throws FunctionErrorException, FunctionTimeoutException, ServletException, IOException;
 	protected abstract void onStringMessage(String msg) throws FunctionErrorException, FunctionTimeoutException;
 	protected abstract void onBinaryMessage(byte[] msg) throws FunctionErrorException, FunctionTimeoutException;
 	protected abstract void onClose() throws FunctionErrorException, FunctionTimeoutException;
