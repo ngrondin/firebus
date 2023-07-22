@@ -232,7 +232,7 @@ public class Connection extends Thread
 		}
 		catch(Exception e)
 		{
-			Logger.warning("fb.connection.errorconnecting", new DataMap("id", getId(), "remote", remoteAddress), e);
+			Logger.warning("fb.connection.errorconnecting", new DataMap("id", getId(), "remote", remoteAddress, "message", e.getMessage()));
 			close();
 		}		
 	}

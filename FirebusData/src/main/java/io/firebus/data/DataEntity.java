@@ -2,6 +2,7 @@ package io.firebus.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 public abstract class DataEntity
 {
@@ -36,19 +37,40 @@ public abstract class DataEntity
 		}				
 		return value;
 	}
-		
 	
-	public abstract String toString();
+	public void write(OutputStream os)
+	{
+		try
+		{
+			String str = toString();
+			os.write(str.getBytes());
+		} 
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}		
+	}
 	
-	public abstract String toString(int indent, boolean flat);
+	public String toString()
+	{
+		return toString(false);
+	}
 	
-	protected String indentString(int indent)
+	public String toString(boolean flat)
 	{
 		StringBuilder sb = new StringBuilder();
-		for(int i = 0; i < indent; i++)
-			sb.append("\t");
+		String indentStr = flat == false ? "" : null;
+		writeToStringBuilder(sb, indentStr);
 		return sb.toString();
 	}
-
+	
+	@Deprecated
+	public String toString(int indent, boolean flat)
+	{
+		return toString(flat);
+	}
+	
+	protected abstract void writeToStringBuilder(StringBuilder sb, String indentStr);
+	
 	public abstract DataEntity getCopy();
 }

@@ -303,27 +303,27 @@ public class DataLiteral extends DataEntity
 			return false;
 	}
 	
-	public String toString()
-	{
-		return toString(0, false);
-	}
-
-	public String toString(int indent, boolean flat)
-	{
-		if(valueType == TYPE_NULL)
-			return "null";
-		else if(valueType == TYPE_STRING) 
-			return "\"" + escape(getString()) + "\"";
-		else if(valueType == TYPE_DATE)
-			return "\"" + getString() + "\"";
-		else if(valueType == TYPE_TIME)
-			return "\"" + getString() + "\"";
-		else
-			return getString();
+	public void writeToStringBuilder(StringBuilder sb, String indentStr) {
+		if(valueType == TYPE_NULL) {
+			sb.append("null");
+		} else if(valueType == TYPE_STRING) { 
+			sb.append("\"");
+			escape(sb, getString());
+			sb.append("\"");			
+		} else if(valueType == TYPE_DATE) {
+			sb.append("\"");
+			sb.append(getString());
+			sb.append("\"");			
+		} else if(valueType == TYPE_TIME) {
+			sb.append("\"");
+			sb.append(getString());
+			sb.append("\"");
+		} else {
+			sb.append(getString());
+		}
 	}
 	
-	protected String escape(String s) {
-		StringBuilder sb = new StringBuilder();
+	protected void escape(StringBuilder sb, String s) {
 		for(int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			if(c == '\\') sb.append("\\\\");
@@ -334,7 +334,6 @@ public class DataLiteral extends DataEntity
 			else if(c == '/') sb.append("\\/");
 			else sb.append(c);
 		}
-		return sb.toString();
 	}
 	
 	public DataLiteral getCopy()

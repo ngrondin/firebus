@@ -116,7 +116,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		DataMap responseJSON = new DataMap();
 		try
 		{
-			DataMap request = new DataMap(payload.getString());
+			DataMap request = payload.getDataMap();
 			Logger.finer("fb.adapter.monfo.request", request);
 			if(request.containsKey("tuple")) 
 			{
@@ -176,7 +176,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 	
 	public Payload acceptStream(Payload payload, StreamEndpoint streamEndpoint) throws FunctionErrorException {
 		try {
-			DataMap request = new DataMap(payload.getString());
+			DataMap request = payload.getDataMap();
 			Logger.finer("fb.adapter.monfo.request", request);
 			int chunkSize = request.containsKey("chunksize") ? request.getNumber("chunksize").intValue() : 50;
 			int advance = request.containsKey("advance") ? request.getNumber("advance").intValue() : 0;

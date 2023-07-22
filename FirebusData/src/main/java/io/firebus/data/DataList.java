@@ -3,7 +3,6 @@ package io.firebus.data;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 
 
@@ -119,19 +118,6 @@ public class DataList extends DataEntity
 
 	}
 	
-	public void write(OutputStream os)
-	{
-		try
-		{
-			String str = toString();
-			os.write(str.getBytes());
-		} 
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}		
-	}
-	
 	public int size()
 	{
 		return list.size();
@@ -242,36 +228,7 @@ public class DataList extends DataEntity
 			return null;		
 	}
 	
-	public String toString()
-	{
-		return toString(0, false);
-	}
 
-	public String toString(int indent, boolean flat)
-	{
-		StringBuilder sb = new StringBuilder();
-		String indentStr = "";
-		sb.append('[');
-		if(!flat) {
-			sb.append("\r\n");
-			indentStr = indentString(indent + 1);
-		}
-		for(int i = 0; i < list.size(); i++)
-		{
-			if(!flat)
-				sb.append(indentStr);
-			sb.append(list.get(i).toString(indent + 1, flat));
-			if(i < list.size() - 1)
-				sb.append(',');
-			if(!flat)			
-				sb.append("\r\n");
-		}
-		if(!flat)
-			sb.append(indentString(indent));
-		sb.append(']');
-		return sb.toString();
-	}
-	
 	public DataEntity getCopy()
 	{
 		DataList ret = new DataList();
@@ -325,5 +282,28 @@ public class DataList extends DataEntity
 				return true;
 		}
 		return false;
+	}
+	
+	
+	public void writeToStringBuilder(StringBuilder sb, String indentStr) {
+		String newIndentStr = null;
+		sb.append('[');
+		if(indentStr != null) {
+			sb.append("\r\n");
+			newIndentStr = indentStr + "\t";
+		}
+		for(int i = 0; i < list.size(); i++)
+		{
+			if(indentStr != null)
+				sb.append(newIndentStr);
+			list.get(i).writeToStringBuilder(sb, newIndentStr);
+			if(i < list.size() - 1)
+				sb.append(',');
+			if(indentStr != null)			
+				sb.append("\r\n");
+		}
+		if(indentStr != null)
+			sb.append(indentStr);
+		sb.append(']');
 	}
 }

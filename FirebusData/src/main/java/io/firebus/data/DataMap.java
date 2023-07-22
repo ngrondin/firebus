@@ -3,7 +3,6 @@ package io.firebus.data;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -175,19 +174,6 @@ public class DataMap extends DataEntity implements Map<String, Object>
 		}
 		if(!correctlyClosed)
 			throw new DataException("Missing '}' as line " + bis.getLine() + " column " + bis.getColumn());
-	}
-	
-	public void write(OutputStream os)
-	{
-		try
-		{
-			String str = toString();
-			os.write(str.getBytes());
-		} 
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}		
 	}
 	
 	public Object put(String key, Object value)
@@ -452,41 +438,34 @@ public class DataMap extends DataEntity implements Map<String, Object>
 	{
 		return attributes.entrySet();
 	}
-	
-	public String toString()
-	{
-		return toString(0, false);
-	}
 
-	public String toString(int indent, boolean flat)
+	public void writeToStringBuilder(StringBuilder sb, String indentStr)
 	{
-		StringBuilder sb = new StringBuilder();
-		String indentStr = "";
+		String newIndentStr = null;
 		sb.append('{');
-		if(!flat) {
+		if(indentStr != null) {
 			sb.append("\r\n");
-			indentStr = indentString(indent + 1);
+			newIndentStr = indentStr + "\t";
 		}
 		Iterator<Entry<String, DataEntity>> it = attributes.entrySet().iterator();
 		while(it.hasNext())
 		{
 			Entry<String, DataEntity> entry = it.next();
-			if(!flat)
-				sb.append(indentStr);
+			if(indentStr != null)
+				sb.append(newIndentStr);
 			sb.append('"');
 			sb.append(entry.getKey());
 			sb.append('"');
 			sb.append(':');
-			sb.append(entry.getValue().toString(indent + 1, flat));
+			entry.getValue().writeToStringBuilder(sb, newIndentStr);
 			if(it.hasNext())
 				sb.append(',');
-			if(!flat)
+			if(indentStr != null)
 				sb.append("\r\n");
 		}
-		if(!flat)
-			sb.append(indentString(indent));
+		if(indentStr != null)
+			sb.append(indentStr);
 		sb.append('}');
-		return sb.toString();
 	}
 		
 }

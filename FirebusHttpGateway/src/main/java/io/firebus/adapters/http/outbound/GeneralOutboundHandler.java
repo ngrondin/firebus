@@ -38,7 +38,7 @@ public class GeneralOutboundHandler extends OutboundHandler {
 
 	@Override
 	protected HttpUriRequest processRequest(Payload payload) throws ServletException, IOException, DataException {
-		DataMap request = new DataMap(payload.getString());
+		DataMap request = payload.getDataMap();
 		String url = (this.baseUrl != null && request.containsKey("path") ? baseUrl + "/" + request.getString("path") : request.getString("url"));
 		String method = request.getString("method");
 		HttpUriRequest httpRequest = null;
