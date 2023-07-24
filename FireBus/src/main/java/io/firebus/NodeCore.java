@@ -31,8 +31,9 @@ public class NodeCore
 	protected List<DiscoveryAgent> discoveryAgents;
 	protected CorrelationManager correlationManager;
 	protected ThreadManager messageThreads;
-	protected ThreadManager serviceExecutionThreads;
-	protected ThreadManager streamExecutionThreads;
+	protected ThreadManager serviceThreads;
+	protected ThreadManager streamThreads;
+	protected ThreadManager adhocThreads;
 	protected Cipher cipher;
 	protected HistoryQueue historyQueue;
 	
@@ -79,8 +80,9 @@ public class NodeCore
 			consumerManager = new ConsumerManager(this);
 			correlationManager = new CorrelationManager(this);
 			messageThreads = new ThreadManager(this, 10, 10, "Mesg");
-			serviceExecutionThreads = new ThreadManager(this, 50, 5, "Service");
-			streamExecutionThreads = new ThreadManager(this, 10, 2, "Stream");
+			serviceThreads = new ThreadManager(this, 50, 5, "Service");
+			streamThreads = new ThreadManager(this, 10, 2, "Stream");
+			adhocThreads = new ThreadManager(this, 2, 1, "adhoc");
 			historyQueue = new HistoryQueue(256);
 			discoveryAgents = new ArrayList<DiscoveryAgent>();
 			discoveryAgents.add(new DefaultDiscoveryAgent(this));
@@ -97,8 +99,8 @@ public class NodeCore
 		connectionManager.close();
 		correlationManager.close();
 		messageThreads.close();
-		serviceExecutionThreads.close();
-		streamExecutionThreads.close();
+		serviceThreads.close();
+		streamThreads.close();
 		for(DiscoveryAgent agent : discoveryAgents)
 			agent.close();
 		quit = true;
@@ -148,24 +150,29 @@ public class NodeCore
 		return correlationManager;
 	}
 	
-	public ThreadManager getServiceExecutionThreads() 
+	public ThreadManager getServiceThreads() 
 	{
-		return serviceExecutionThreads;
+		return serviceThreads;
 	}
 	
-	public ThreadManager getStreamExecutionThreads() 
+	public ThreadManager getStreamThreads() 
 	{
-		return streamExecutionThreads;
+		return streamThreads;
+	}
+	
+	public ThreadManager getAdhocThreads() 
+	{
+		return adhocThreads;
 	}
 	
 	public void setServiceThreadCount(int c)
 	{
-		serviceExecutionThreads.setThreadCount(c);
+		serviceThreads.setThreadCount(c);
 	}
 	
 	public void setStreamThreadCount(int c)
 	{
-		streamExecutionThreads.setThreadCount(c);
+		streamThreads.setThreadCount(c);
 	}
 	
 	public void setMessageThreadCount(int c)
@@ -321,8 +328,8 @@ public class NodeCore
 		funcs.put("consumers", consumerManager.getStatus());
 		status.put("functions", funcs);
 		DataMap threads = new DataMap();
-		threads.put("services", serviceExecutionThreads.getStatus());
-		threads.put("streams", streamExecutionThreads.getStatus());
+		threads.put("services", serviceThreads.getStatus());
+		threads.put("streams", streamThreads.getStatus());
 		threads.put("messaging", messageThreads.getStatus());
 		status.put("threads", threads);
 		status.put("correlation", correlationManager.getStatus());

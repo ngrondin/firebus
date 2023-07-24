@@ -64,7 +64,7 @@ public class StreamManager extends ExecutionManager {
 			long executionId = fe.getExecutionId();
 			if(executionId != -1) 
 			{
-				nodeCore.getServiceExecutionThreads().enqueue(new Runnable() {
+				nodeCore.getServiceThreads().enqueue(new Runnable() {
 					public void run() {
 						Logger.fine("fb.stream.manager.requesting", new DataMap("stream", name, "corr", msg.getCorrelation()));
 						StreamProvider streamProvider = (StreamProvider)fe.function;
@@ -82,7 +82,7 @@ public class StreamManager extends ExecutionManager {
 								acceptPayload = new Payload();
 							acceptPayload.metadata.put("correlationid", String.valueOf(localCorrelationId));
 							acceptPayload.metadata.put("timeout", String.valueOf(idleTimeout));
-							nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, fe.getName(), nodeCore.getStreamExecutionThreads(), idleTimeout);
+							nodeCore.getCorrelationManager().setListenerOnEntry(localCorrelationId, streamEndpoint, fe.getName(), nodeCore.getStreamThreads(), idleTimeout);
 							sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_STREAMACCEPT, msg.getSubject(), acceptPayload);
 							streamEndpoint.activate();
 						}

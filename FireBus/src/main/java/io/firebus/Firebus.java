@@ -46,7 +46,7 @@ public class Firebus
 	@Deprecated
 	public void setThreadCount(int tc)
 	{
-		nodeCore.getServiceExecutionThreads().setThreadCount(tc);
+		nodeCore.getServiceThreads().setThreadCount(tc);
 	}
 	
 	public void setStreamThreadCount(int tc)
@@ -184,6 +184,11 @@ public class Firebus
 	{
 		Logger.finer("fb.node.publishing");
 		nodeCore.enqueue(new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_PUBLISH, dataname, payload));
+	}
+	
+	public void runAdhoc(Runnable runnable) 
+	{
+		nodeCore.getAdhocThreads().enqueue(runnable, null, defaultTimeout);
 	}
 	
 	public List<Statistics> getStatistics() 

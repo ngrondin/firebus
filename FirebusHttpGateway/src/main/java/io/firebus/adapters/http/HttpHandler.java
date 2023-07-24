@@ -68,7 +68,7 @@ public abstract class HttpHandler extends Handler
 		for(String name : params.keySet()) {
 			if(name.toLowerCase().startsWith("firebus-")) {
 				String shortName = name.toLowerCase().substring(8);
-				payload.metadata.put(shortName, req.getHeader(name));
+				payload.metadata.put(shortName, params.get(name));
 			}			
 		}
 	}

@@ -66,7 +66,7 @@ public class ServiceManager extends ExecutionManager {
 			if(executionId != -1) 
 			{
 				sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_PROGRESS, msg.getSubject(), new Payload());
-				nodeCore.getServiceExecutionThreads().enqueue(new Runnable() {
+				nodeCore.getServiceThreads().enqueue(new Runnable() {
 					public void run() {
 						Logger.fine("fb.service.manager.executing", new DataMap("service", name, "corr", msg.getCorrelation()));
 						try

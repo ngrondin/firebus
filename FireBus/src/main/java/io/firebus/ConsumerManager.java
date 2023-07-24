@@ -56,7 +56,7 @@ public class ConsumerManager extends ExecutionManager {
 		for(FunctionEntry fe: consumers)
 		{
 			if(fe.getName().equals(name)) {
-				nodeCore.getStreamExecutionThreads().enqueue(new Runnable() {
+				nodeCore.getStreamThreads().enqueue(new Runnable() {
 					public void run() {
 						Logger.finer("fb.consumer.executing", new DataMap("consumer", name));
 						((Consumer)fe.function).consume(inPayload);
