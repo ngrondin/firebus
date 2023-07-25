@@ -44,6 +44,22 @@ public class Logger {
 		log(Level.SEVERE, event, null, null);
 	}
 	
+	public static void userError(String event, Object data, Throwable t) {
+		log(Level.USERERROR, event, data, t);
+	}
+	
+	public static void userError(String event, Object data) {
+		log(Level.USERERROR, event, data, null);
+	}
+	
+	public static void userError(String event, Throwable t) {
+		log(Level.USERERROR, event, null, t);
+	}
+	
+	public static void userError(String event) {
+		log(Level.USERERROR, event, null, null);
+	}
+	
 	public static void warning(String event, Object data, Throwable t) {
 		log(Level.WARNING, event, data, t);
 	}
@@ -95,24 +111,26 @@ public class Logger {
 	
 	public static String getLevelString(int lvl) {
 		switch(lvl) {
-		case 0: return "SEVERE";
-		case 1: return "WARNING";
-		case 2: return "INFO";
-		case 3: return "FINE";
-		case 4: return "FINER";
-		case 5: return "FINEST";
+		case Level.SEVERE: return "SEVERE";
+		case Level.WARNING: return "WARNING";
+		case Level.USERERROR: return "USERERROR";
+		case Level.INFO: return "INFO";
+		case Level.FINE: return "FINE";
+		case Level.FINER: return "FINER";
+		case Level.FINEST: return "FINEST";
 		}
 		return "";
 	}
 	
 	public static int getLevelFromString(String s) {
 		switch(s) {
-		case "SEVERE": return 0;
-		case "WARNING": return 1;
-		case "INFO": return 2;
-		case "FINE": return 3;
-		case "FINER": return 4;
-		case "FINEST": return 5;
+		case "SEVERE": return Level.SEVERE;
+		case "WARNING": return Level.WARNING;
+		case "USERERROR": return Level.USERERROR;
+		case "INFO": return Level.INFO;
+		case "FINE": return Level.FINE;
+		case "FINER": return Level.FINER;
+		case "FINEST": return Level.FINEST;
 		}
 		return -1;
 	}
