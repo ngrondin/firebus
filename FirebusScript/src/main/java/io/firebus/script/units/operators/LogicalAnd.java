@@ -8,6 +8,7 @@ import io.firebus.script.units.abs.Expression;
 import io.firebus.script.units.operators.abs.Operator;
 import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.flow.SSkipExpression;
 
 public class LogicalAnd extends Operator {
 	protected Expression expr1;
@@ -22,8 +23,10 @@ public class LogicalAnd extends Operator {
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		try {
 			SValue v1 = expr1.eval(scope);
+			if(v1 instanceof SSkipExpression) return v1;
 			if(v1.toBoolean() == true) {
 				SValue v2 = expr2.eval(scope);
+				if(v1 instanceof SSkipExpression) return v2;
 				if(v2.toBoolean() == true) {
 					return SBoolean.get(true);
 				} else {

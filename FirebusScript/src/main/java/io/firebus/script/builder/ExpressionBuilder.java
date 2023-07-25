@@ -35,6 +35,7 @@ import io.firebus.script.parser.JavaScriptParser.LogicalAndExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.LogicalOrExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.MemberDotExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.MemberIndexExpressionContext;
+import io.firebus.script.parser.JavaScriptParser.MemberOptionalDotExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.MultiplicativeExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.NewExpressionContext;
 import io.firebus.script.parser.JavaScriptParser.NotExpressionContext;
@@ -95,6 +96,7 @@ import io.firebus.script.units.operators.UnaryMinus;
 import io.firebus.script.units.operators.UnaryPlus;
 import io.firebus.script.units.references.MemberDotReference;
 import io.firebus.script.units.references.MemberIndexReference;
+import io.firebus.script.units.references.MemberOptionalDotReference;
 import io.firebus.script.units.references.Reference;
 import io.firebus.script.units.references.VariableReference;
 import io.firebus.script.units.setters.Setter;
@@ -129,6 +131,8 @@ public class ExpressionBuilder extends Builder {
 			return ReferenceBuilder.buildIdentifier((IdentifierContext)ctx.getChild(0));	
 		} else if(ctx instanceof MemberDotExpressionContext) {
 			return new MemberDotReference(buildSingleExpressionFromChild(ctx, 0), ctx.getChild(2).getText(), sourceInfo(ctx));
+		} else if(ctx instanceof MemberOptionalDotExpressionContext) {
+			return new MemberOptionalDotReference(buildSingleExpressionFromChild(ctx, 0), ctx.getChild(2).getText(), sourceInfo(ctx));			
 		} else if(ctx instanceof MemberIndexExpressionContext) {
 			return new MemberIndexReference(buildSingleExpressionFromChild(ctx, 0), buildExpressionSequence((ExpressionSequenceContext)ctx.getChild(2)).get(0), sourceInfo(ctx));			
 		} else if(ctx instanceof LiteralExpressionContext) {

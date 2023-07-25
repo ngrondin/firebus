@@ -12,6 +12,7 @@ import io.firebus.script.values.abs.SCallable;
 import io.firebus.script.values.abs.SDynamicObject;
 import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.flow.SSkipExpression;
 
 public class MemberIndexReference extends Reference {
 	protected Expression baseExpr;
@@ -28,7 +29,9 @@ public class MemberIndexReference extends Reference {
 		if(base instanceof SArray) {
 			SArray a = (SArray)base;
 			SValue index = indexExpr.eval(scope);
-			if(index instanceof SNumber) {
+			if(index instanceof SSkipExpression) {
+				return index;
+			} else if(index instanceof SNumber) {
 				SValue ret = a.get(((SNumber)index).getNumber().intValue());
 				if(ret instanceof SCallable) 
 					ret = new SMemberCallable(a, (SCallable)ret);
@@ -39,10 +42,13 @@ public class MemberIndexReference extends Reference {
 		} else if(base instanceof SObject) {
 			SObject o = (SObject)base;
 			SValue key = indexExpr.eval(scope);
+			if(key instanceof SSkipExpression) return key;
 			SValue ret = o.getMember(key.toString());
 			if(ret instanceof SCallable) 
 				ret = new SMemberCallable(o, (SCallable)ret);
 			return ret;
+		} else if(base instanceof SSkipExpression) {
+			return base;
 		} else {
 			throw new ScriptExecutionException("Index reference base must be an array or an object", source);
 		}

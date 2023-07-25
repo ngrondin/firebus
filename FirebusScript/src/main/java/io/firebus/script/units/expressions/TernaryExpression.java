@@ -6,6 +6,7 @@ import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.units.abs.Expression;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.flow.SSkipExpression;
 
 public class TernaryExpression extends Expression {
 
@@ -22,6 +23,7 @@ public class TernaryExpression extends Expression {
 
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue res = condition.eval(scope);
+		if(res instanceof SSkipExpression) return res;
 		try {
 			if(res.toBoolean() == true) 
 				return thenExpr.eval(scope);

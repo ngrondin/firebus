@@ -988,6 +988,18 @@ public class JavaScriptParserBaseListener implements JavaScriptParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterMemberOptionalDotExpression(JavaScriptParser.MemberOptionalDotExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMemberOptionalDotExpression(JavaScriptParser.MemberOptionalDotExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterUnaryPlusExpression(JavaScriptParser.UnaryPlusExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}

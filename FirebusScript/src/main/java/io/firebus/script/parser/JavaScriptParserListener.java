@@ -880,6 +880,18 @@ public interface JavaScriptParserListener extends ParseTreeListener {
 	 */
 	void exitInstanceofExpression(JavaScriptParser.InstanceofExpressionContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code MemberOptionalDotExpression}
+	 * labeled alternative in {@link JavaScriptParser#singleExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterMemberOptionalDotExpression(JavaScriptParser.MemberOptionalDotExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code MemberOptionalDotExpression}
+	 * labeled alternative in {@link JavaScriptParser#singleExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitMemberOptionalDotExpression(JavaScriptParser.MemberOptionalDotExpressionContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code UnaryPlusExpression}
 	 * labeled alternative in {@link JavaScriptParser#singleExpression}.
 	 * @param ctx the parse tree

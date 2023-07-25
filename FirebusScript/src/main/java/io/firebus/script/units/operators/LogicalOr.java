@@ -9,6 +9,7 @@ import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.SNull;
 import io.firebus.script.values.SUndefined;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.flow.SSkipExpression;
 
 public class LogicalOr extends Operator {
 	protected Expression expr1;
@@ -22,7 +23,9 @@ public class LogicalOr extends Operator {
 
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue v1 = expr1.eval(scope);
-		if(v1 instanceof SNull) {
+		if(v1 instanceof SSkipExpression) {
+			return v1;
+		} else if(v1 instanceof SNull) {
 			return expr2.eval(scope);
 		} else if(v1 instanceof SUndefined) {
 			return expr2.eval(scope);

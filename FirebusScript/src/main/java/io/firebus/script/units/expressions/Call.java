@@ -11,6 +11,7 @@ import io.firebus.script.values.SNull;
 import io.firebus.script.values.SUndefined;
 import io.firebus.script.values.abs.SCallable;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.flow.SSkipExpression;
 
 public class Call extends Expression {
 	protected Expression callableExpression;
@@ -26,14 +27,19 @@ public class Call extends Expression {
 		SValue c = callableExpression.eval(scope);
 		if(c instanceof SCallable) {
 			SValue[] arguments = new SValue[paramExpressions.size()];
-			for(int i = 0; i < paramExpressions.size(); i++)
-				arguments[i] = paramExpressions.get(i).eval(scope);
+			for(int i = 0; i < paramExpressions.size(); i++) {
+				SValue argVal = paramExpressions.get(i).eval(scope);
+				if(argVal instanceof SSkipExpression) return argVal;
+				arguments[i] = argVal;
+			}
 			try {
 				SValue ret = ((SCallable)c).call(arguments);
 				return ret;
 			} catch(ScriptCallException e) {
 				throw new ScriptExecutionException("Error calling '"+ callableExpression.toString() + "'", e, source);
 			}
+		} else if(c instanceof SSkipExpression) {
+			return c;
 		} else if(c instanceof SUndefined) {
 			throw new ScriptExecutionException("'" + callableExpression.toString() + "' is undefined", source);
 		} else if(c instanceof SNull) {

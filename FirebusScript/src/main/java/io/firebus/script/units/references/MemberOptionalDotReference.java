@@ -14,11 +14,11 @@ import io.firebus.script.values.abs.SObject;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SSkipExpression;
 
-public class MemberDotReference extends Reference {
+public class MemberOptionalDotReference extends Reference {
 	protected Expression objectExpr;
 	protected String key;
 	
-	public MemberDotReference(Expression oe, String k, SourceInfo uc) {
+	public MemberOptionalDotReference(Expression oe, String k, SourceInfo uc) {
 		super(uc);
 		objectExpr = oe;
 		key = k;
@@ -34,12 +34,8 @@ public class MemberDotReference extends Reference {
 			else if(ret == null) 
 				ret = SUndefined.get();
 			return ret;
-		} else if(o instanceof SSkipExpression) {
-			return o;
-		} else if(o instanceof SUndefined) {
-			throw new ScriptExecutionException("Cannot get member '" + key + "' of undefined", source);
-		} else if(o instanceof SNull) {
-			throw new ScriptExecutionException("Cannot get member '" + key + "' of null", source);
+		} else if(o instanceof SUndefined || o instanceof SNull) {
+			return SSkipExpression.get();
 		} else {
 			throw new ScriptExecutionException("Cannot get member '" + key + "' of '" + objectExpr.toString() + "' as it is not an object", source);
 		}
@@ -54,6 +50,8 @@ public class MemberDotReference extends Reference {
 			} catch(ScriptValueException e) {
 				throw new ScriptExecutionException("Error setting property of object", e, source);
 			}
+		} else if(o instanceof SUndefined || o instanceof SNull) {
+			// All good as this is an optional reference
 		} else {
 			throw new ScriptExecutionException("Base of a dot reference must be a dynamic object", source);
 		}

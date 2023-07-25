@@ -1,3 +1,8 @@
-var n = 0.3345223;
-var f = n.toFixed(2);
-print(f);
+var obj = {
+	in: {
+		func: () => {
+			print('allo');
+		}
+	}
+};
+obj.out?.func();

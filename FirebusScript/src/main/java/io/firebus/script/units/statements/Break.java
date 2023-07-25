@@ -14,7 +14,7 @@ public class Break extends Statement {
 	}
 
 	public SValue eval(Scope scope) throws ScriptExecutionException {
-		return new SBreak();
+		return SBreak.get();
 	}
 
 }
