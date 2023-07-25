@@ -91,7 +91,7 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 			} catch(ClosedChannelException e) {
 				
 			} catch(Exception e) {
-				Logger.severe("fb.http.ws.connhandler.destroying", new DataMap("id", id), e);
+				Logger.warning("fb.http.ws.connhandler.destroying", new DataMap("id", id), e);
 			}
 		}
 	}
