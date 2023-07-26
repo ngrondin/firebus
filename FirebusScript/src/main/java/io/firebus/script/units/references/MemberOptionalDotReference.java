@@ -34,7 +34,7 @@ public class MemberOptionalDotReference extends Reference {
 			else if(ret == null) 
 				ret = SUndefined.get();
 			return ret;
-		} else if(o instanceof SUndefined || o instanceof SNull) {
+		} else if(o instanceof SUndefined || o instanceof SNull || o instanceof SSkipExpression) {
 			return SSkipExpression.get();
 		} else {
 			throw new ScriptExecutionException("Cannot get member '" + key + "' of '" + objectExpr.toString() + "' as it is not an object", source);
