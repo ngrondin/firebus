@@ -331,6 +331,7 @@ public class NodeCore
 		threads.put("services", serviceThreads.getStatus());
 		threads.put("streams", streamThreads.getStatus());
 		threads.put("messaging", messageThreads.getStatus());
+		threads.put("adhoc", adhocThreads.getStatus());
 		status.put("threads", threads);
 		status.put("correlation", correlationManager.getStatus());
 		return status;

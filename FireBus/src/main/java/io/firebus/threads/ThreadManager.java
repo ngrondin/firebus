@@ -20,7 +20,6 @@ public class ThreadManager extends Thread
 	{
 		nodeCore = c;
 		quit = false;
-		threadCount = tc;
 		priority = dp;
 		threadName = tn;
 		queue = new Queue<FirebusRunnable>(1024);
@@ -41,7 +40,7 @@ public class ThreadManager extends Thread
 	
 	public int getThreadCount()
 	{
-		return threadCount;
+		return threads.size();
 	}
 	
 	
@@ -75,9 +74,7 @@ public class ThreadManager extends Thread
 					threads.get(i).checkExpiry();
 				Thread.sleep(1000);
 			} 
-			catch(Exception e) {
-				
-			}
+			catch(Exception e) { }
 		}
 	}
 	
