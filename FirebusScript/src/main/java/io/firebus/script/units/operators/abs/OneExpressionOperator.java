@@ -6,6 +6,7 @@ import io.firebus.script.exceptions.ScriptExecutionException;
 import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.units.abs.Expression;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.flow.SSkipExpression;
 
 public abstract class OneExpressionOperator extends ValueOperator {
 	protected Expression expr;
@@ -16,7 +17,9 @@ public abstract class OneExpressionOperator extends ValueOperator {
 	}
 	
 	protected SValue valueOpEval(Scope scope) throws ScriptExecutionException, ScriptValueException {
-		return evalWithValue(expr.eval(scope));		
+		SValue val = expr.eval(scope);
+		if(val instanceof SSkipExpression) return SSkipExpression.get();
+		return evalWithValue(val);		
 	}
 	
 	protected abstract SValue evalWithValue(SValue v) throws ScriptExecutionException, ScriptValueException;

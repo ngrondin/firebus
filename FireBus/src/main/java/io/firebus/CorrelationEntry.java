@@ -104,7 +104,7 @@ public class CorrelationEntry {
 		long now = System.currentTimeMillis();
 		if(expired == false && now > expiry) 
 		{
-			DataMap logMap = new DataMap("id", id, "dur", (now - start), "exp", expiry, "start", start, "timeout", timeout, "listnerfunc", listenerFunctionName);
+			DataMap logMap = new DataMap("id", id, "nodeid", nodeCore.getNodeId(), "dur", (now - start), "exp", expiry, "start", start, "timeout", timeout, "listnerfunc", listenerFunctionName);
 			if(outboundMessage != null) {
 				logMap.put("outmsgtype", outboundMessage.getTypeString());
 				logMap.put("outsubject", outboundMessage.subject);

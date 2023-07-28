@@ -52,6 +52,7 @@ public class Connection extends Thread
 	protected int recvCount;
 	protected int recvBytes;
 	protected int load;
+	protected Thread sendThread;
 	
 	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
@@ -134,11 +135,12 @@ public class Connection extends Thread
 		{
 			state = STATE_ACTIVE;
 			listener.connectionCreated(this);
-			new Thread(new Runnable() {
+			sendThread = new Thread(new Runnable() {
 				public void run() {
 					send();
 				}
-			}).start();
+			});
+			sendThread.start();
 			listen();
 		}
 		else
@@ -278,7 +280,7 @@ public class Connection extends Thread
 							msgData[msgPos] = (byte)i;
 							msgCRC = (msgCRC ^ i) & 0x00FF;
 							msgPos++;
-							if(msgPos == msgLen)
+							if(msgPos >= msgLen)
 								msgState = 3;
 						}
 						else if(msgState == 3)
@@ -293,10 +295,13 @@ public class Connection extends Thread
 							}
 							else
 							{
-								Logger.severe("fb.connection.corrupted", new DataMap("id", getId(), "node", remoteNodeId));
+								Logger.severe("fb.connection.badcrc", new DataMap("id", getId(), "node", remoteNodeId));
 								close();
 							}
 							msgState = 0;
+						} else {
+							Logger.severe("fb.connection.badrecevingstate", new DataMap("id", getId(), "node", remoteNodeId));
+							close();
 						}
 					}
 				} else {
@@ -320,10 +325,8 @@ public class Connection extends Thread
 		while(state == STATE_ACTIVE)
 		{
 			try {
-				Message msg = queue.pop();
+				Message msg = queue.popWait();
 				if(msg != null) {
-					
-					
 					try {
 						byte[] msgData = msg.serialise();
 						int crc = 0;
@@ -331,7 +334,6 @@ public class Connection extends Thread
 							crc = (crc ^ msgData[i]) & 0x00FF;
 						int packetSize = msgData.length + 6;
 						packetSize += 16 - (packetSize % 16);
-
 						byte[] bytes = new byte[packetSize];
 						bytes[0] = 0x7E;
 						bytes[1] = (byte)(msgData.length & 0x000000FF);
@@ -349,12 +351,6 @@ public class Connection extends Thread
 						Logger.severe("fb.connection.sending", new DataMap("id", getId()), e1);
 						close();
 					}
-				} else {
-					try {
-						synchronized(queue) {
-							queue.wait();
-						}
-					} catch(InterruptedException e2) {}
 				}
 			} catch(Exception e) {
 				Logger.severe("fb.connection.sending", new DataMap("id", getId()), e);
@@ -371,6 +367,7 @@ public class Connection extends Thread
 	{
 		try 
 		{
+			Logger.info("fb.connection.closing", new DataMap("id", getId()));
 			state = STATE_CLOSING;
 			if(socket != null)
 				socket.close();
@@ -378,9 +375,11 @@ public class Connection extends Thread
 				is.close();
 			if(os != null)
 				os.close();
-			synchronized(queue) {
+			if(sendThread != null && sendThread.isAlive())
+				sendThread.interrupt();
+			/*synchronized(queue) {
 				queue.notify();
-			}
+			}*/
 		} 
 		catch (IOException e) 
 		{
