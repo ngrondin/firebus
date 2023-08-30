@@ -11,6 +11,7 @@ import io.firebus.script.values.SNull;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.flow.SBreak;
 import io.firebus.script.values.flow.SReturn;
+import io.firebus.script.values.flow.SSkipExpression;
 
 public class If extends Statement {
 	protected Expression condition;
@@ -27,7 +28,8 @@ public class If extends Statement {
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue v = condition.eval(scope);
 		try {
-			if(v.toBoolean() == true) {
+			boolean conditionResult = v instanceof SSkipExpression ? false : v.toBoolean();
+			if(conditionResult == true) {
 				Scope localScope = new Scope(scope);
 				SValue ret = unit.eval(localScope);
 				if(ret instanceof SReturn) {
@@ -45,7 +47,6 @@ public class If extends Statement {
 			return SNull.get();
 		} catch(ScriptValueException e) {
 			throw new ScriptExecutionException("Condition does not return a boolean", e, source);
-		}
+		}			
 	}
-
 }

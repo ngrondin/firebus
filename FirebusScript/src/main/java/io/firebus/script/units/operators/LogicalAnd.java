@@ -26,7 +26,7 @@ public class LogicalAnd extends Operator {
 			if(v1 instanceof SSkipExpression) return v1;
 			if(v1.toBoolean() == true) {
 				SValue v2 = expr2.eval(scope);
-				if(v1 instanceof SSkipExpression) return v2;
+				if(v2 instanceof SSkipExpression) return v2;
 				if(v2.toBoolean() == true) {
 					return SBoolean.get(true);
 				} else {
