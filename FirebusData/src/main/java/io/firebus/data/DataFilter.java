@@ -189,7 +189,8 @@ public class DataFilter {
 	
 	protected boolean literalIsInList(DataLiteral lit, DataList list) {
 		for(int i = 0; i < list.size(); i++) {
-			if(((DataLiteral)list.get(i)).equals(lit))
+			DataEntity entity = list.get(i);
+			if(entity instanceof DataLiteral && ((DataLiteral)entity).equals(lit))
 				return true;
 		}
 		return false;
