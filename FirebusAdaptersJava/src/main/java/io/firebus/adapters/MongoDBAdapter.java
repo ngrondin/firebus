@@ -2,9 +2,9 @@ package io.firebus.adapters;
 
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
@@ -25,6 +25,8 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
@@ -101,9 +103,9 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		try
 		{
 			DataMap request = new DataMap(payload.getString());
-			upsert(request);
+			write(request);
 		}
-		catch(DataException e)
+		catch(Exception e)
 		{
 			Logger.severe("fb.adapter.mongo.consume", "Error consuming data", e);
 		}
@@ -137,12 +139,12 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 					try {
 						session = client.startSession();
 						if(request.containsKey("key")) {
-							upsert(session, request);
+							write(session, request);
 						} else if(request.containsKey("multi")) {
 							DataList multi = request.getList("multi");
 							session.startTransaction(TransactionOptions.builder().writeConcern(WriteConcern.W1).build());
 							for(int i = 0; i < multi.size(); i++) 
-								upsert(session, multi.getObject(i));
+								write(session, multi.getObject(i));
 							session.commitTransaction();						
 						}
 						success = true;
@@ -270,7 +272,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 				if(request.containsKey("filter")) {
 					DataMap filter = request.getObject("filter");
 					recordQuery(objectName, filter);
-					filterDoc = Document.parse(filter.toString());					
+					filterDoc = (Document)convertToDocument(filter);					
 				} else {
 					filterDoc = new Document();
 				}
@@ -309,7 +311,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 				if(request.containsKey("filter"))
 				{
 					DataMap match = new DataMap("$match", request.getObject("filter"));
-					pipeline.add(Document.parse(match.toString()));
+					pipeline.add((Document)convertToDocument(match));
+					//pipeline.add(Document.parse(match.toString()));
 				}
 					
 				DataMap group = new DataMap();
@@ -344,10 +347,12 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 						group.put(metric.getString("name"), new DataMap("$" + function, "$" + metric.getString("attribute")));
 				}
 				DataMap groupContainer = new DataMap("$group", group);
-				pipeline.add(Document.parse(groupContainer.toString()));
+				pipeline.add((Document)convertToDocument(groupContainer));
+				//pipeline.add(Document.parse(groupContainer.toString()));
 				
 				DataMap sortContainer = new DataMap("$sort", new DataMap("_id", 1));
-				pipeline.add(Document.parse(sortContainer.toString()));
+				pipeline.add((Document)convertToDocument(sortContainer));
+				//pipeline.add(Document.parse(sortContainer.toString()));
 				
 				AggregateIterable<Document> it = collection.aggregate(pipeline).maxTime(waitTimeout, TimeUnit.MILLISECONDS);
 				return it;
@@ -368,25 +373,28 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		DataList responseList = new DataList();
 		if(it != null) {
 			while(it.hasNext() && responseList.size() < count) {
-				DataMap item = (DataMap)convertValue(it.next());
-				if(postProcessor != null)
-					postProcessor.run(item);
-				responseList.add(item);
+				DataEntity entity = convertToDataEntity(it.next());
+				if(entity instanceof DataMap) {
+					DataMap dataMap = (DataMap)entity;
+					if(postProcessor != null)
+						postProcessor.run(dataMap);
+					responseList.add(dataMap);
+				}
 			}
 		}
 		return responseList;
 	}
 	
-	private DataEntity convertValue(Object value) {
+	private DataEntity convertToDataEntity(Object value) {
 		if(value instanceof List) {
 			DataList list = new DataList();
 			for(Object o: (List<?>)value) 
-				list.add(convertValue(o));
+				list.add(convertToDataEntity(o));
 			return list;
 		} else if(value instanceof Document) {
 			DataMap map = new DataMap();
 			for(String key: ((Document)value).keySet())
-				map.put(key, convertValue(((Document)value).get(key)));
+				map.put(key, convertToDataEntity(((Document)value).get(key)));
 			return map;			
 		} else if(value instanceof String){
 			return new DataLiteral(StringDecoder.decodeQuotedString((String)value));
@@ -395,6 +403,28 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		}
 	}
 	
+	private Object convertToDocument(DataEntity entity) {
+		if(entity instanceof DataLiteral) {
+			Object o = ((DataLiteral)entity).getObject();
+			if(o instanceof Date)
+				o = ((Date)o).toInstant().toString();
+			return o;
+		} else if(entity instanceof DataList) {
+			DataList inList = (DataList)entity;
+			List<Object> outList = new ArrayList<Object>();
+			for(int i = 0; i < inList.size(); i++) 
+				outList.add(convertToDocument(inList.get(i)));
+			return outList;
+		} else if(entity instanceof DataMap) {
+			DataMap map = (DataMap)entity;
+			Document doc = new Document();
+			for(String key: map.keySet()) 
+				doc.append(key, convertToDocument(map.get(key)));
+			return doc;
+		} else {
+			return null;
+		}
+	}
 	
 	
 	public class AggregatePostProcessor implements DataProcessor {
@@ -420,71 +450,49 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 	}
 	
 	
-	private void upsert(DataMap packet)
+	private void write(DataMap packet) throws FunctionErrorException
 	{
-		upsert(null, packet);
+		write(null, packet);
 	}
-	
-	private void upsert(ClientSession session, DataMap packet)
+
+	private void write(ClientSession session, DataMap packet) throws FunctionErrorException
 	{
 		String objectName = packet.getString("object");
 		String operation = packet.getString("operation");
 		DataMap data = packet.getObject("data");
 		DataMap key = packet.getObject("key");
-		if(database != null)
-		{
+		if(operation == null) operation = "update";
+
+		if(database != null) {
 			MongoCollection<Document> collection = database.getCollection(objectName);
-			if(collection != null)
-			{
-				if(key != null)
-				{
-					Document findDoc = Document.parse(key.toString());
-					Document existingDoc = collection.find(findDoc).maxTime(waitTimeout, TimeUnit.MILLISECONDS).first();
-											
-					if(existingDoc != null)
-					{
-						if(data != null)
-						{
-							Document incomingDoc = Document.parse(data.toString());
-							if(operation == null || (operation != null && operation.equals("insert")) || (operation !=null && operation.equals("update")))
-								collection.updateOne(session, existingDoc, new Document("$set", incomingDoc));
-							else if(operation != null  && operation.equals("replace"))
-								collection.replaceOne(session, existingDoc, incomingDoc);
-							else if(operation != null  && operation.equals("delete"))
-								collection.deleteOne(session, existingDoc);
-						}
-						else
-						{
-							if(operation != null  && operation.equals("delete"))
-								collection.deleteOne(session, existingDoc);
-						}
-					}
-					else
-					{
-						if(data != null)
-							data.merge(key);
-						else
-							data = key;
-						if(!data.containsKey("_id")) {
-							data.put("_id", UUID.randomUUID().toString());
-						}
-						Document incomingDoc = Document.parse(data.toString());
-						if(operation == null || (operation !=null && operation.equals("insert")) || (operation !=null && operation.equals("update")) || (operation !=null && operation.equals("replace")))
-							collection.insertOne(session, incomingDoc);
+			if(collection != null) {
+				if(key != null) {
+					Document keyDoc = (Document)convertToDocument(key);
+					Document dataDoc = (Document)convertToDocument(data);
+					if(operation.equals("update")) {
+						UpdateResult updRes = collection.updateOne(session, keyDoc, new Document("$set", dataDoc));
+						if(updRes.getMatchedCount() == 0) 
+							collection.insertOne(session, (Document)convertToDocument(key.merge(data)));
+					} else if(operation.equals("replace")) {
+						UpdateResult repRes = collection.replaceOne(session, keyDoc, dataDoc);
+						if(repRes.getMatchedCount() == 0) 
+							collection.insertOne(session, (Document)convertToDocument(key.merge(data)));
+					} else if(operation.equals("insert")) {
+						collection.insertOne(session, (Document)convertToDocument(key.merge(data)));
+					} else if(operation.equals("delete")) {
+						DeleteResult delRes = collection.deleteOne(session, keyDoc);
+						if(delRes.getDeletedCount() == 0) 
+							throw new FunctionErrorException("No document was found to be deleted");
 					}
 				}
+			} else {
+				throw new FunctionErrorException("No collection exists by this name");
 			}
-			else
-			{
-				Logger.severe("fb.adapter.mongo.nocollection", new DataMap("collection", objectName));
-			}
-		}
-		else
-		{
-			Logger.severe("fb.adapter.mongo.nodb", "Database as not been specificied in the configuration");
+		} else {
+			throw new FunctionErrorException("Database as not been specificied in the configuration");
 		}
 	}
-
+	
 	protected void recordQuery(String object, DataMap filter) {
 		if(queryColumns != null) {
 			DataMap cols = queryColumns.getObject(object);

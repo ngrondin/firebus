@@ -213,7 +213,7 @@ public class DataMap extends DataEntity implements Map<String, Object>
 		
 	}
 
-	public void merge(DataMap other)
+	public DataMap merge(DataMap other)
 	{
 		Iterator<String> it = other.keySet().iterator();
 		while(it.hasNext())
@@ -245,6 +245,7 @@ public class DataMap extends DataEntity implements Map<String, Object>
 				put(key, other.get(key));
 			}
 		}
+		return this;
 	}
 	
 	public boolean matches(DataMap filter)
