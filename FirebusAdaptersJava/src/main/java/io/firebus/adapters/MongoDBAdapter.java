@@ -1,6 +1,5 @@
 package io.firebus.adapters;
 
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -25,8 +24,8 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.result.UpdateResult;
+import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.model.UpdateOptions;
 
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
@@ -271,7 +270,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 				Document filterDoc = null;
 				if(request.containsKey("filter")) {
 					DataMap filter = request.getObject("filter");
-					recordQuery(objectName, filter);
+					//recordQuery(objectName, filter);
 					filterDoc = (Document)convertToDocument(filter);					
 				} else {
 					filterDoc = new Document();
@@ -470,19 +469,15 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 					Document keyDoc = (Document)convertToDocument(key);
 					Document dataDoc = (Document)convertToDocument(data);
 					if(operation.equals("update")) {
-						UpdateResult updRes = collection.updateOne(session, keyDoc, new Document("$set", dataDoc));
-						if(updRes.getMatchedCount() == 0) 
-							collection.insertOne(session, (Document)convertToDocument(key.merge(data)));
+						UpdateOptions options = new UpdateOptions().upsert(true);
+						collection.updateOne(session, keyDoc, new Document("$set", dataDoc), options);
 					} else if(operation.equals("replace")) {
-						UpdateResult repRes = collection.replaceOne(session, keyDoc, dataDoc);
-						if(repRes.getMatchedCount() == 0) 
-							collection.insertOne(session, (Document)convertToDocument(key.merge(data)));
+						ReplaceOptions options = new ReplaceOptions().upsert(true);
+						collection.replaceOne(session, keyDoc, dataDoc, options);
 					} else if(operation.equals("insert")) {
 						collection.insertOne(session, (Document)convertToDocument(key.merge(data)));
 					} else if(operation.equals("delete")) {
-						DeleteResult delRes = collection.deleteOne(session, keyDoc);
-						if(delRes.getDeletedCount() == 0) 
-							throw new FunctionErrorException("No document was found to be deleted");
+						collection.deleteOne(session, keyDoc);
 					}
 				}
 			} else {
@@ -490,43 +485,6 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 			}
 		} else {
 			throw new FunctionErrorException("Database as not been specificied in the configuration");
-		}
-	}
-	
-	protected void recordQuery(String object, DataMap filter) {
-		if(queryColumns != null) {
-			DataMap cols = queryColumns.getObject(object);
-			if(cols == null) {
-				cols = new DataMap();
-				queryColumns.put(object, cols);
-			}
-			Iterator<String> ki = filter.keySet().iterator();
-			while(ki.hasNext()) {
-				String col = ki.next();
-				if(col.equals("$or")) {
-					DataList list = filter.getList("$or");
-					for(int i = 0; i < list.size(); i++) 
-						recordQuery(object, list.getObject(i));
-				} else {
-					if(!cols.containsKey(col)) {
-						cols.put(col, 1);
-					} else {
-						int cnt = cols.getNumber(col).intValue() + 1;
-						cols.put(col, cnt);
-					}
-				}
-			}	
-			long now = System.currentTimeMillis();
-			if(now > lastWriteOfQueryColumns + 60000) {
-				try {
-					FileOutputStream fos = new FileOutputStream("mongo_columns.json");
-					fos.write(queryColumns.toString().getBytes());
-					fos.close();
-				} catch(Exception e) {
-					Logger.severe("fb.adapter.mongo.recordquery", e);
-				}
-				lastWriteOfQueryColumns = now;
-			}
 		}
 	}
 
