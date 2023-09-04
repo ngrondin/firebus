@@ -34,6 +34,7 @@ import io.firebus.data.DataException;
 import io.firebus.data.DataList;
 import io.firebus.data.DataLiteral;
 import io.firebus.data.DataMap;
+import io.firebus.data.ZonedTime;
 import io.firebus.data.parse.StringDecoder;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
@@ -407,6 +408,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 			Object o = ((DataLiteral)entity).getObject();
 			if(o instanceof Date)
 				o = ((Date)o).toInstant().toString();
+			else if(o instanceof ZonedTime)
+				o = ((ZonedTime)o).toString();
 			return o;
 		} else if(entity instanceof DataList) {
 			DataList inList = (DataList)entity;
