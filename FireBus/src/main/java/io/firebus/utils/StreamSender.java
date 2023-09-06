@@ -144,4 +144,8 @@ public class StreamSender implements StreamHandler {
 		if(error != null)
 			throw new FunctionErrorException(error);
 	}
+	
+	public long getBytesSent() {
+		return bytesSent;
+	}
 }

@@ -15,6 +15,7 @@ import io.firebus.StreamEndpoint;
 import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.InboundHandler;
 import io.firebus.data.DataMap;
+import io.firebus.logging.Logger;
 import io.firebus.utils.StreamReceiver;
 import io.firebus.utils.StreamSender;
 
@@ -50,9 +51,11 @@ public class FileStreamHandler extends InboundHandler  {
 			StreamEndpoint sep = firebus.requestStream(streamName, payload, 10000);
 			resp.setStatus(200);
 			OutputStream os = resp.getOutputStream();
-			new StreamReceiver(os, sep).sync();
+			StreamReceiver receiver = new StreamReceiver(os, sep);
+			receiver.sync();
 			os.flush();
 			os.close();
+			Logger.info("fb.http.filestream.get", new DataMap("req", request, "bytes", receiver.getBytesReceived()));
 			//sep.close(); // The sender will close the stream
 		} else if(action.equals("put")) {
 			InputStream is = null;
@@ -103,7 +106,8 @@ public class FileStreamHandler extends InboundHandler  {
 				payload.setData(request);
 				payload.metadata.put("mime", "application/json");
 				StreamEndpoint sep = firebus.requestStream(streamName, payload, 10000);
-				new StreamSender(is, sep).sync();
+				StreamSender sender = new StreamSender(is, sep);
+				sender.sync();
 				resp.setStatus(200);
 				is.close();
 				
@@ -112,6 +116,7 @@ public class FileStreamHandler extends InboundHandler  {
 				os.flush();
 				os.close();
 				sep.close();
+				Logger.info("fb.http.filestream.put", new DataMap("req", request, "bytes", sender.getBytesSent()));
 			}
 		} else {
 			resp.setStatus(400);

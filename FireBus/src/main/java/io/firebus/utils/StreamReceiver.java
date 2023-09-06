@@ -153,4 +153,8 @@ public class StreamReceiver implements StreamHandler {
 		if(error != null)
 			throw new FunctionErrorException(error);
 	}
+	
+	public long getBytesReceived() {
+		return bytesReceived;
+	}
 }
