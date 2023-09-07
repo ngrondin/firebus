@@ -1,8 +1,8 @@
-var obj = {
-	in: {
-		func: () => {
-			print('allo');
-		}
-	}
+var o1 = {
+	a:"allo"
 };
-obj.out?.func();
+var o2 = {
+	b: o1?.a
+};
+a3 = o3?.a;
+print(a3);

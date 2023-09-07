@@ -7,6 +7,7 @@ import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.units.abs.Expression;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.SMemberCallable;
+import io.firebus.script.values.SNull;
 import io.firebus.script.values.SNumber;
 import io.firebus.script.values.abs.SCallable;
 import io.firebus.script.values.abs.SDynamicObject;
@@ -55,13 +56,15 @@ public class MemberIndexReference extends Reference {
 	}
 
 	public void setValue(Scope scope, SValue val) throws ScriptExecutionException {
+		SValue value = val;
+		if(value instanceof SSkipExpression) value = SNull.get();
 		SValue base = baseExpr.eval(scope);
 		if(base instanceof SArray) {
 			SArray a = (SArray)base;
 			SValue index = indexExpr.eval(scope);
 			if(index instanceof SNumber) {
 				int i = ((SNumber)index).getNumber().intValue();
-				a.set(i, val);
+				a.set(i, value);
 			} else {
 				throw new ScriptExecutionException("Index needs to be an integer on an array", source);
 			}
@@ -69,7 +72,7 @@ public class MemberIndexReference extends Reference {
 			SDynamicObject o = (SDynamicObject)base;
 			SValue key = indexExpr.eval(scope);
 			try {
-				o.putMember(key.toString(), val);
+				o.putMember(key.toString(), value);
 			} catch(ScriptValueException e) {
 				throw new ScriptExecutionException("Error setting property of object", e, source);
 			}

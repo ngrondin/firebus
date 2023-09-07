@@ -10,7 +10,9 @@ import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.units.abs.Expression;
 import io.firebus.script.units.abs.Literal;
 import io.firebus.script.values.SInternalObject;
+import io.firebus.script.values.SNull;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.flow.SSkipExpression;
 
 public class ObjectLiteral extends Literal {
 	class Setter {
@@ -39,6 +41,7 @@ public class ObjectLiteral extends Literal {
 		try {
 			for(Setter setter: setters) {
 				SValue val = setter.expr.eval(local);
+				if(val instanceof SSkipExpression) val = SNull.get();
 				obj.putMember(setter.key, val);
 			}
 			return obj;

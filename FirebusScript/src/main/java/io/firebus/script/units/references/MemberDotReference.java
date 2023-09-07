@@ -46,11 +46,13 @@ public class MemberDotReference extends Reference {
 	}
 
 	public void setValue(Scope scope, SValue val) throws ScriptExecutionException {
+		SValue value = val;
+		if(value instanceof SSkipExpression) value = SNull.get();
 		SValue o = objectExpr.eval(scope);
 		if(o instanceof SDynamicObject) {
 			SDynamicObject obj = (SDynamicObject)o;
 			try {
-				obj.putMember(key, val);
+				obj.putMember(key, value);
 			} catch(ScriptValueException e) {
 				throw new ScriptExecutionException("Error setting property of object", e, source);
 			}

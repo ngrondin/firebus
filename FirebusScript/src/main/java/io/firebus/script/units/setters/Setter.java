@@ -21,7 +21,7 @@ public class Setter extends Expression {
 
 	public SValue eval(Scope scope) throws ScriptExecutionException {
 		SValue val = expression.eval(scope);
-		if(val instanceof SSkipExpression) return SNull.get();
+		if(val instanceof SSkipExpression) val = SNull.get();
 		ref.setValue(scope, val);
 		return val;
 	}
