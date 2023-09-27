@@ -56,7 +56,7 @@ public class ThreadManager extends Thread
 	
 	public void enqueue(Runnable runnable, String serviceName, long serviceExecutionId, long timeout)
 	{
-		queue.push(new FirebusRunnable(runnable, serviceName, serviceExecutionId, System.currentTimeMillis() + timeout));
+		queue.push(new FirebusRunnable(runnable, serviceName, serviceExecutionId, timeout));
 	}
 	
 	public FirebusRunnable getNext()

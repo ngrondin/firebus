@@ -53,11 +53,15 @@ public class FirebusThread extends Thread
 				FirebusRunnable fbRunnable = threadManager.getNext();
 				if(fbRunnable != null)
 				{
+					long now = System.currentTimeMillis();
 					functionName = fbRunnable.functionName;
 					functionExecutionId = fbRunnable.functionExecutionId;
-					lastStart = System.currentTimeMillis();
+					lastStart = now;
 					lastCompletion = -1;
 					expiry = fbRunnable.expiry;
+					long waitDur = now - fbRunnable.created;
+					if(waitDur > 100)
+						Logger.warning("fb.thread.run.longwait", new DataMap("ms", waitDur));
 					fbRunnable.runnable.run();
 				}
 			} 
