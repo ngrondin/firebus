@@ -9,6 +9,7 @@ import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
+import io.firebus.script.values.callables.impl.date.ConvertToTimezone;
 import io.firebus.script.values.callables.impl.date.GetDate;
 import io.firebus.script.values.callables.impl.date.GetDay;
 import io.firebus.script.values.callables.impl.date.GetFullYear;
@@ -58,6 +59,13 @@ public class SDate extends SPredefinedObject {
 				date = ZonedDateTime.parse(arg.toString());
 			} else {
 				throw new ScriptCallException("Invalid Date constructor parameter '" + arg + "'");
+			}
+		} else if(arguments.length == 2) {
+			SValue firstArg = arguments[0];
+			if(firstArg instanceof SNumber) {
+				date = Instant.ofEpochMilli(((SNumber)firstArg).getNumber().longValue()).atZone(ZoneId.of(arguments[1].toString()));
+			} else if(firstArg instanceof SDate) {
+				date = ((SDate)firstArg).getZonedDateTime().toInstant().atZone(ZoneId.of(arguments[1].toString()));
 			}
 		} else if(arguments.length == 3) {
 			int year = ((SNumber)arguments[0]).getNumber().intValue();
@@ -131,6 +139,8 @@ public class SDate extends SPredefinedObject {
 			return new SetSeconds(this);
 		} else if(name.equals("setYear")) {
 			return new SetYear(this);
+		} else if(name.equals("convertToTimezone")) {
+			return new ConvertToTimezone(this);
 		} 
 		return SUndefined.get();
 	}
