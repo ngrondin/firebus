@@ -12,8 +12,10 @@ public class Queue<T>
 	protected int head;
 	protected int tail;
 	protected int depth;
-	protected int max;
 	protected int count;
+	protected int consumers;
+	protected int maxDepth;
+	protected int minConsumers;
 	
 	public Queue(int size)
 	{
@@ -34,8 +36,10 @@ public class Queue<T>
 		head = 0;
 		tail = 0;	
 		depth = 0;
-		max = 0;
 		count = 0;
+		consumers = 0;
+		maxDepth = 0;
+		minConsumers = 0;
 	}
 	
 	public synchronized int push(T m)
@@ -44,8 +48,8 @@ public class Queue<T>
 		head++;
 		depth++;
 		count++;
-		if(depth > max)
-			max = depth;
+		if(depth > maxDepth)
+			maxDepth = depth;
 		if(head >= items.length)
 			head = 0;
 		if(head == tail) 
@@ -104,22 +108,38 @@ public class Queue<T>
 	public synchronized T popWait()
 	{
 		T item = null;
+		consumers++;
 		try {
 			while((item = pop()) == null) {
 				wait();
 			}
-		} catch(InterruptedException e) { }
+		} catch(InterruptedException e) {
+			
+		} finally {
+			consumers--;
+			if(consumers < minConsumers)
+				minConsumers = consumers;
+		}
 		return item;
 	}
 	
 	public DataMap getStatus()
 	{
 		DataMap status = new DataMap();
-		status.put("depth", getDepth());
 		status.put("size", items.length);
-		status.put("max", max);
+		status.put("depth", getDepth());
 		status.put("count", count);
+		status.put("consumers", consumers);
+		status.put("maxdepth", maxDepth);
+		status.put("minconsumers", minConsumers);
 		return status;
+	}
+	
+	public void resetStatus() 
+	{
+		count = 0;
+		maxDepth = getDepth();
+		minConsumers = consumers;
 	}
 	
 }

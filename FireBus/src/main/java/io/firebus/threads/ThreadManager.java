@@ -66,13 +66,18 @@ public class ThreadManager extends Thread
 	
 	public void run() 
 	{
+		boolean first = true;
 		while(!quit) 
 		{
 			try 
 			{
+				Thread.sleep(1000);
+				if(first) {
+					queue.resetStatus(); //This is to reset the minConsumer stat once all threads have connected
+					first = false;
+				}
 				for(int i = 0; i < threads.size(); i++) 
 					threads.get(i).checkExpiry();
-				Thread.sleep(1000);
 			} 
 			catch(Exception e) { }
 		}
