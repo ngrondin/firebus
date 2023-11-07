@@ -5,13 +5,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
 
 import io.firebus.Payload;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.interfaces.ServiceRequestor;
-import io.firebus.logging.FirebusSimpleFormatter;
 
 public class Console implements ServiceRequestor
 {

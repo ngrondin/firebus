@@ -43,25 +43,25 @@ public class Firebus
 		nodeCore = nc;
 	}
 	
-	@Deprecated
+	/*@Deprecated
 	public void setThreadCount(int tc)
 	{
 		nodeCore.getServiceThreads().setThreadCount(tc);
+	}*/
+	
+	public void setStreamThreadCount(int min, int max)
+	{
+		nodeCore.setStreamThreadCount(min, max);
 	}
 	
-	public void setStreamThreadCount(int tc)
+	public void setServiceThreadCount(int min, int max)
 	{
-		nodeCore.setStreamThreadCount(tc);
+		nodeCore.setServiceThreadCount(min, max);
 	}
 	
-	public void setServiceThreadCount(int tc)
+	public void setMessagingThreadCount(int min, int max)
 	{
-		nodeCore.setServiceThreadCount(tc);
-	}
-	
-	public void setMessagingThreadCount(int tc)
-	{
-		nodeCore.setMessageThreadCount(tc);
+		nodeCore.setMessageThreadCount(min, max);
 	}
 
 	public void setDefaultTimeout(int l)

@@ -48,7 +48,7 @@ public class FirebusJsonFormatter extends Formatter
 		}
 		String msg = rec.getMessage() != null ? rec.getMessage() : "";
 		map.put("msg", msg.replaceAll("\r", "").replaceAll("\n", "\u2028"));
-		return map.toString(0, true) + "\r\n";
+		return map.toString(true) + "\r\n";
 	}
 
 }

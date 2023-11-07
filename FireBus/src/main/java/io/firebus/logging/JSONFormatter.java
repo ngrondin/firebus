@@ -42,7 +42,7 @@ public class JSONFormatter implements Formatter {
 				entry.put("data", data);				
 			}				
 		}		
-		return entry.toString(0, true);
+		return entry.toString(true);
 	}
 
 }

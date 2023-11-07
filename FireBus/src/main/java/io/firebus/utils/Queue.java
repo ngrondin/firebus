@@ -76,6 +76,11 @@ public class Queue<T>
 		return depth;
 	}
 	
+	public int getConsumers() 
+	{
+		return consumers;
+	}
+	
 	protected void grow() 
 	{
 		if(canGrow) 

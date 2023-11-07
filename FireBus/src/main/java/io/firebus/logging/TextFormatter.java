@@ -31,7 +31,7 @@ public class TextFormatter implements Formatter {
 			if(data instanceof String) {
 				sb.append((String)data);
 			} else if(data instanceof DataMap) {
-				sb.append(((DataMap)data).toString(0, true));				
+				sb.append(((DataMap)data).toString(true));				
 			}				
 		}	
 		if(t != null) {

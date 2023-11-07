@@ -79,10 +79,10 @@ public class NodeCore
 			streamManager = new StreamManager(this);
 			consumerManager = new ConsumerManager(this);
 			correlationManager = new CorrelationManager(this);
-			messageThreads = new ThreadManager(this, 10, 10, "Mesg");
-			serviceThreads = new ThreadManager(this, 50, 5, "Service");
-			streamThreads = new ThreadManager(this, 10, 2, "Stream");
-			adhocThreads = new ThreadManager(this, 2, 1, "adhoc");
+			messageThreads = new ThreadManager(this, 10, 20, 10, "Mesg");
+			serviceThreads = new ThreadManager(this, 10, 20, 5, "Service");
+			streamThreads = new ThreadManager(this, 10, 20, 2, "Stream");
+			adhocThreads = new ThreadManager(this, 2, 2, 1, "adhoc");
 			historyQueue = new HistoryQueue(256);
 			discoveryAgents = new ArrayList<DiscoveryAgent>();
 			discoveryAgents.add(new DefaultDiscoveryAgent(this));
@@ -165,19 +165,19 @@ public class NodeCore
 		return adhocThreads;
 	}
 	
-	public void setServiceThreadCount(int c)
+	public void setServiceThreadCount(int min, int max)
 	{
-		serviceThreads.setThreadCount(c);
+		serviceThreads.setThreadCount(min, max);
 	}
 	
-	public void setStreamThreadCount(int c)
+	public void setStreamThreadCount(int min, int max)
 	{
-		streamThreads.setThreadCount(c);
+		streamThreads.setThreadCount(min, max);
 	}
 	
-	public void setMessageThreadCount(int c)
+	public void setMessageThreadCount(int min, int max)
 	{
-		messageThreads.setThreadCount(c);
+		messageThreads.setThreadCount(min, max);
 	}
 	
 	public void addKnownNodeAddress(String a, int p)

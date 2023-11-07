@@ -12,11 +12,12 @@ public class ThreadManager extends Thread
 	protected Queue<FirebusRunnable> queue;
 	protected boolean quit;
 	protected ArrayList<FirebusThread> threads;
-	protected int threadCount;
+	protected int maxThreadCount;
+	protected int minThreadCount;
 	protected int priority;
 	protected String threadName;
 	
-	public ThreadManager(NodeCore c, int tc, int dp, String tn)
+	public ThreadManager(NodeCore c, int mintc, int maxtc, int dp, String tn)
 	{
 		nodeCore = c;
 		quit = false;
@@ -24,17 +25,18 @@ public class ThreadManager extends Thread
 		threadName = tn;
 		queue = new Queue<FirebusRunnable>(1024);
 		threads = new ArrayList<FirebusThread>();
-		setThreadCount(tc);
+		setThreadCount(mintc, maxtc);
 		setName("fb" + threadName + "ThreadMgr");
 		start();
 	}
 	
-	public void setThreadCount(int tc)
+	public void setThreadCount(int mintc, int maxtc)
 	{
-		threadCount = tc;	
-		while(threads.size() < threadCount) 
+		minThreadCount = mintc;
+		maxThreadCount = maxtc;
+		while(threads.size() < minThreadCount) 
 			createThread();
-		while(threads.size() > threadCount)
+		while(threads.size() > maxThreadCount)
 			removeThread();
 	}
 	
@@ -66,18 +68,18 @@ public class ThreadManager extends Thread
 	
 	public void run() 
 	{
-		boolean first = true;
+		while(queue.getConsumers() < threads.size()) 
+			try	{Thread.sleep(100); } catch(Exception e) {} // For all threads to be connected before managing
+		
 		while(!quit) 
 		{
 			try 
 			{
 				Thread.sleep(1000);
-				if(first) {
-					queue.resetStatus(); //This is to reset the minConsumer stat once all threads have connected
-					first = false;
-				}
 				for(int i = 0; i < threads.size(); i++) 
 					threads.get(i).checkExpiry();
+				if(queue.getConsumers() == 0 && threads.size() < maxThreadCount) 
+					createThread();
 			} 
 			catch(Exception e) { }
 		}
@@ -103,7 +105,7 @@ public class ThreadManager extends Thread
 	public void close()
 	{
 		quit = true;
-		setThreadCount(0);
+		setThreadCount(0, 0);
 	}
 	
 	public DataMap getStatus()
