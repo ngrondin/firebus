@@ -101,6 +101,7 @@ public class NodeCore
 		messageThreads.close();
 		serviceThreads.close();
 		streamThreads.close();
+		adhocThreads.close();
 		for(DiscoveryAgent agent : discoveryAgents)
 			agent.close();
 		quit = true;
