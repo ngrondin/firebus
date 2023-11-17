@@ -14,6 +14,7 @@ public class FunctionFinder {
 	protected String functionName;
 	protected List<FunctionInformation> list;
 	protected int tryPointer;
+	protected int waitBeforeBroadcast = 0;
 	
 	public FunctionFinder(NodeCore nc, String n) 
 	{
@@ -42,14 +43,16 @@ public class FunctionFinder {
 				if(!inserted)
 					list.add(fi);
 			}
-		}		
+		}
 	}
 	
 	protected void findMore()
 	{
 		Logger.fine("fb.funcfinder.broadcasting", null);
+		try{ Thread.sleep(waitBeforeBroadcast);} catch(Exception e) {}
 		Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, functionName, null);
 		nodeCore.getCorrelationManager().sendAndWait(findMsg, subTimeout);
+		waitBeforeBroadcast += 1000;
 		refreshList();
 	}
 	

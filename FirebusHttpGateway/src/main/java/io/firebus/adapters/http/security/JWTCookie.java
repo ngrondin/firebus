@@ -134,8 +134,11 @@ public class JWTCookie extends SecurityHandler {
 		        					domainArray[i] = domains.getString(i);
 		    					tokenBuilder.withArrayClaim("domains", domainArray);
 		        			}
+		        			if(respMap.containsKey("attributes")) {
+		        				String attrVal = respMap.getObject("attributes").toString(true);
+		        				tokenBuilder.withClaim("attrs", attrVal);
+		        			}
 		        		}
-		    			
 		    		}
 	    		} finally {
 	    			response.close();

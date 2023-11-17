@@ -34,7 +34,6 @@ public class ServiceRequest
 		Logger.fine("fb.service.request.start", new DataMap("name", serviceName));
 		boolean responseReceived = false;
 		Payload responsePayload = null;
-		FunctionInformation lastRequestedFunction = null;
 		FunctionFinder functionFinder = new FunctionFinder(nodeCore, serviceName);
 		expiry = System.currentTimeMillis() + (requestTimeout > -1 ? requestTimeout : subTimeout);
 		while(responseReceived == false  &&  System.currentTimeMillis() < expiry)
@@ -42,10 +41,6 @@ public class ServiceRequest
 			functionInformation = functionFinder.findNext(); 
 			if(functionInformation != null)
 			{
-				if(functionInformation == lastRequestedFunction) 
-					try{ Thread.sleep(1000);} catch(Exception e) {}
-
-				lastRequestedFunction = functionInformation;
 				Logger.finer("fb.service.request.send", new DataMap("node", functionInformation.getNodeId()));
 				int msgType = requestTimeout >= 0 ? Message.MSGTYPE_REQUESTSERVICE : Message.MSGTYPE_REQUESTSERVICEANDFORGET;
 				Message reqMsg = new Message(functionInformation.getNodeId(), nodeCore.getNodeId(), msgType, serviceName, requestPayload);

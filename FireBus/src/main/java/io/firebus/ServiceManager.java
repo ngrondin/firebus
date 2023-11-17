@@ -85,7 +85,7 @@ public class ServiceManager extends ExecutionManager {
 					}
 				}, fe.getName(), executionId);
 			} else {
-				Logger.info("fb.service.manager.maxreached", new DataMap("service", name, "corr", msg.getCorrelation(), "count", fe.getExecutionCount()));
+				Logger.warning("fb.service.manager.maxreached", new DataMap("service", name, "corr", msg.getCorrelation(), "count", fe.getExecutionCount()));
 				sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_FUNCTIONUNAVAILABLE, msg.getSubject(), "Maximum concurrent functions running");
 			}
 		}	
