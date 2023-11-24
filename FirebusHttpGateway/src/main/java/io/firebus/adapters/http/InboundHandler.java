@@ -44,10 +44,12 @@ public abstract class InboundHandler extends HttpHandler
 				resp.setStatus(errorCode > 0 ? errorCode : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		        PrintWriter writer = resp.getWriter();
 				String accept = req.getHeader("accept");
-				if(accept != null && accept.contains("application/json"))
+				if(accept != null && accept.contains("application/json")) {
 					writer.println("{\r\n\t\"error\" : \"" + e.getMessage().replaceAll("\"", "'").replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n") + "\"\r\n}");
-				else
-					writer.println("<div>" + e.getMessage() + "</div>");				
+				} else {
+					String[] parts = e.getMessage().split(":");	
+					writer.println("<body style=\"display:flex;height:90%;justify-content:center;align-items:center;font-family:Helvetica;\"><div style=\"display:flex;flex-direction:column;max-width:600px;border:1px solid #888;\"><div style=\"background:#aaa;color:white;padding:5px;display:flex;justify-content:center;\">Error</div><div style=\"padding:10px;color:#444\">" +  parts[parts.length - 1] + "</div></div></body>");
+				}
 			}
 		}
 	}	
