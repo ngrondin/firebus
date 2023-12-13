@@ -463,7 +463,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		String operation = packet.getString("operation");
 		DataMap data = packet.getObject("data");
 		DataMap key = packet.getObject("key");
-		if(operation == null) operation = "update";
+		if(operation == null) operation = "upsert";
 
 		if(database != null) {
 			MongoCollection<Document> collection = database.getCollection(objectName);
@@ -471,8 +471,11 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 				if(key != null) {
 					Document keyDoc = (Document)convertToDocument(key);
 					Document dataDoc = (Document)convertToDocument(data);
-					if(operation.equals("update")) {
+					if(operation.equals("upsert")) {
 						UpdateOptions options = new UpdateOptions().upsert(true);
+						collection.updateOne(session, keyDoc, new Document("$set", dataDoc), options);
+					} else if(operation.equals("update")) {
+						UpdateOptions options = new UpdateOptions().upsert(false);
 						collection.updateOne(session, keyDoc, new Document("$set", dataDoc), options);
 					} else if(operation.equals("replace")) {
 						ReplaceOptions options = new ReplaceOptions().upsert(true);
