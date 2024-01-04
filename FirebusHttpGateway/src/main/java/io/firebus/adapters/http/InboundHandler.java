@@ -8,6 +8,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.catalina.connector.ClientAbortException;
+
 import io.firebus.Firebus;
 import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
@@ -33,6 +35,9 @@ public abstract class InboundHandler extends HttpHandler
 		catch (SocketException e) 
 		{
 			// Do nothing, just accept the connection was broken. Adding this here as the below doesn't seem to catch this exception.
+		}
+		catch(ClientAbortException e) {
+			// Do nothing
 		}
 		catch (Exception e)
 		{
