@@ -32,13 +32,13 @@ import io.firebus.adapters.http.outbound.OutboundGetHandler;
 import io.firebus.adapters.http.outbound.PostHandler;
 import io.firebus.adapters.http.security.JWTCookie;
 import io.firebus.adapters.http.websocket.StreamGatewayWSHandler;
+import io.firebus.data.DataList;
+import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.ServiceInformation;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.logging.Logger;
-import io.firebus.data.DataList;
-import io.firebus.data.DataMap;
 
 public class HttpGateway implements ServiceProvider 
 {
@@ -119,6 +119,10 @@ public class HttpGateway implements ServiceProvider
 	        LogoutHandler logoutHandler = new LogoutHandler(this, firebus, new DataMap());
 	        logoutHandler.setSecuritytHandlers(securityHandlerList);
 	        masterHandler.setLogouHander(logoutHandler);
+	        
+	        CommandHandler commandHandler = new CommandHandler(this, firebus, new DataMap());
+	        commandHandler.setSecuritytHandlers(securityHandlerList);
+	        firebus.registerConsumer(name, commandHandler, 10);
 
 	        list = config.getList("authvalidation");
 	        List<AuthValidationHandler> authValidationHanders = new ArrayList<AuthValidationHandler>();
@@ -336,5 +340,7 @@ public class HttpGateway implements ServiceProvider
 	public String getServiceName() {
 		return name;
 	}
+
+
 
 }

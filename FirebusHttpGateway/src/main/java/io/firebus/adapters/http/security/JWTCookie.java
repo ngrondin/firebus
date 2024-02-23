@@ -34,6 +34,7 @@ public class JWTCookie extends SecurityHandler {
 	protected String idmClientId;
 	protected String idmClientSecret;	
 	protected long timeout;
+	protected long refreshAfter;
 
 	public JWTCookie(HttpGateway gw, DataMap c) {
 		super(gw, c);
@@ -48,7 +49,12 @@ public class JWTCookie extends SecurityHandler {
 		if(config.containsKey("timeout")) {
 			timeout = config.getNumber("timeout").longValue();
 		} else {
-			timeout = 3600000;
+			timeout = 43200000;
+		}
+		if(config.containsKey("refreshafter")) {
+			refreshAfter = config.getNumber("refreshafter").longValue();
+		} else {
+			refreshAfter = 21600000;
 		}
 		if(cookieDomain != null && cookieDomain.equals(""))
 			cookieDomain = null;
@@ -59,12 +65,18 @@ public class JWTCookie extends SecurityHandler {
 		if(token != null) {
 			DecodedJWT jwt = JWT.decode(token);
 			String issuer = jwt.getIssuer();
+			String username = jwt.getClaim("email").asString();
 			long expiresAt = jwt.getExpiresAt().getTime();
 			long now = System.currentTimeMillis();
 			if(expiresAt > now && issuer.equals(jwtIssuer)) {
-				if(expiresAt < (now + (timeout / 2)))
-					setTokenOnResponse(jwt.getClaim("email").asString(), resp);
-				return true;
+				if(!usersToLogout.contains(username)) {
+					if(expiresAt - timeout + refreshAfter > now)
+						setTokenOnResponse(username, resp);
+					return true;					
+				} else {
+					enrichLogoutResponse(resp);
+					usersToLogout.remove(username);
+				}
 			}
 		}
 		unauthenticated(req, resp);

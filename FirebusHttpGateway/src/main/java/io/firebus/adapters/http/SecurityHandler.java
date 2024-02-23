@@ -16,12 +16,14 @@ public abstract class SecurityHandler {
 	protected HttpGateway httpGateway;
 	protected DataMap config;
 	protected List<AuthValidationHandler> authValidationHandlers;
+	protected List<String> usersToLogout;
 	
 	public SecurityHandler(HttpGateway gw, DataMap c) 
 	{
 		httpGateway = gw;
 		config = c;
 		authValidationHandlers = new ArrayList<AuthValidationHandler>();
+		usersToLogout = new ArrayList<String>();
 	}
 	
 	public void addAuthValidationHandler(AuthValidationHandler avh)
@@ -59,6 +61,10 @@ public abstract class SecurityHandler {
 			resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		}
 
+	}
+	
+	public void logoutUser(String username) {
+		usersToLogout.add(username);
 	}
 	
 	public abstract boolean checkHttpRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException;
