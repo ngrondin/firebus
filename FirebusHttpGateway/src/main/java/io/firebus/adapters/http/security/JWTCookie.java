@@ -23,6 +23,7 @@ import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.SecurityHandler;
 import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
+import io.firebus.logging.Logger;
 
 public class JWTCookie extends SecurityHandler {
 	protected String cookieName;
@@ -70,7 +71,8 @@ public class JWTCookie extends SecurityHandler {
 			long now = System.currentTimeMillis();
 			if(expiresAt > now && issuer.equals(jwtIssuer)) {
 				if(!usersToLogout.contains(username)) {
-					if(expiresAt - timeout + refreshAfter > now)
+					if(expiresAt - timeout + refreshAfter < now)
+						Logger.info("fb.http.sec.jwtcooke.refresh", new DataMap("username", username, "expiredAt", expiresAt));
 						setTokenOnResponse(username, resp);
 					return true;					
 				} else {
@@ -89,6 +91,7 @@ public class JWTCookie extends SecurityHandler {
 	}
 
 	public void enrichAuthResponse(String username, HttpServletResponse resp) {
+		Logger.info("fb.http.sec.jwtcooke.login", new DataMap("username", username));
 		setTokenOnResponse(username, resp);
 	}
 
