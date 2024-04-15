@@ -39,8 +39,10 @@ public class ScriptFactory {
 	}
 	
 	public void setGlobals(Map<String, Object> globals) throws ScriptException {
-		for(String key: globals.keySet()) {
-			rootScope.declareValue(key, Converter.convertIn(globals.get(key)));
+		if(globals != null) {
+			for(String key: globals.keySet()) {
+				rootScope.declareValue(key, Converter.convertIn(globals.get(key)));
+			}
 		}
 	}
 	
