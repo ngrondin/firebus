@@ -69,7 +69,7 @@ public class JWTCookie extends SecurityHandler {
 			String username = jwt.getClaim("email").asString();
 			long expiresAt = jwt.getExpiresAt().getTime();
 			long now = System.currentTimeMillis();
-			if(expiresAt > now && issuer.equals(jwtIssuer)) {
+			if(expiresAt > now/* && issuer.equals(jwtIssuer)*/) {
 				if(!usersToLogout.contains(username)) {
 					if(expiresAt - timeout + refreshAfter < now)
 						Logger.info("fb.http.sec.jwtcooke.refresh", new DataMap("username", username, "expiredAt", expiresAt));
