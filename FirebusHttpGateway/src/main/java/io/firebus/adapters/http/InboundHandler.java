@@ -44,21 +44,30 @@ public abstract class InboundHandler extends HttpHandler
 			if(!(e instanceof FunctionErrorException || e instanceof FunctionTimeoutException || e instanceof FunctionUnavailableException))
 				Logger.severe("fb.http.inbound", e);
 			if(!resp.isCommitted()) {
-				int errorCode = (e instanceof FunctionErrorException ? ((FunctionErrorException)e).getErrorCode() : 0);
+				int errorCode = 500;
+				if(e instanceof FunctionErrorException) errorCode = ((FunctionErrorException)e).getErrorCode();
+				else if(e instanceof FirebusHttpException) errorCode = ((FirebusHttpException)e).getErrorCode();
+				String msg = e.getMessage();
 				resp.reset();
-				resp.setStatus(errorCode > 0 ? errorCode : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				resp.setStatus(errorCode);
 		        PrintWriter writer = resp.getWriter();
 				String accept = req.getHeader("accept");
 				if(accept != null && accept.contains("application/json")) {
 					writer.println("{\r\n\t\"error\" : \"" + e.getMessage().replaceAll("\"", "'").replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n") + "\"\r\n}");
 				} else {
-					String[] parts = e.getMessage().split(":");	
-					writer.println("<body style=\"display:flex;height:90%;justify-content:center;align-items:center;font-family:Helvetica;\"><div style=\"display:flex;flex-direction:column;max-width:600px;border:1px solid #888;\"><div style=\"background:#aaa;color:white;padding:5px;display:flex;justify-content:center;\">Error</div><div style=\"padding:10px;color:#444\">" +  parts[parts.length - 1] + "</div></div></body>");
+					String[] parts = (msg != null ? msg.split(":") : null);
+					String lastPart = parts != null ? parts[parts.length - 1] : "No Error Message";
+					writer.println("<body style=\"display:flex;height:90%;justify-content:center;align-items:center;font-family:Helvetica;\"><div style=\"display:flex;flex-direction:column;max-width:600px;border:1px solid #888;\"><div style=\"background:#aaa;color:white;padding:5px;display:flex;justify-content:center;\">Error</div><div style=\"padding:10px;color:#444\">" +  lastPart + "</div></div></body>");
 				}
 			}
 		}
 	}	
 	
+	protected String getShortPath(HttpServletRequest req) {
+		String path = req.getRequestURI();
+		String shortPath = path.substring(req.getContextPath().length() + getHttpHandlerPath().length());
+		return shortPath;
+	}
 	
 	public abstract void inboundService(HttpServletRequest req, HttpServletResponse resp) throws Exception;
 

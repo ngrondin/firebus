@@ -18,10 +18,9 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
-import io.firebus.adapters.http.auth.AppleValidator;
-import io.firebus.adapters.http.auth.NoValidator;
-import io.firebus.adapters.http.auth.OAuth2CodeValidator;
-import io.firebus.adapters.http.auth.UserPassValidator;
+import io.firebus.adapters.http.idm.AppleIDM;
+import io.firebus.adapters.http.idm.NoValidator;
+import io.firebus.adapters.http.idm.OAuth2IDM;
 import io.firebus.adapters.http.inbound.FileStreamHandler;
 import io.firebus.adapters.http.inbound.GetHandler;
 import io.firebus.adapters.http.inbound.PostFormHandler;
@@ -84,7 +83,7 @@ public class HttpGateway implements ServiceProvider
 	        context.setAllowCasualMultipartParsing(true);
 	        if(config.containsKey("rootforward"))
 	        	masterHandler.setRootForward(config.getString("rootforward"));
-	        String publicHost = config.getString("publichost");
+	        //String publicHost = config.getString("publichost");
 	        
 	        RequestConfig requestConfig = RequestConfig.custom()
 					.setConnectionRequestTimeout(1000)
@@ -124,28 +123,26 @@ public class HttpGateway implements ServiceProvider
 	        commandHandler.setSecuritytHandlers(securityHandlerList);
 	        firebus.registerConsumer(name, commandHandler, 10);
 
-	        list = config.getList("authvalidation");
-	        List<AuthValidationHandler> authValidationHanders = new ArrayList<AuthValidationHandler>();
+	        list = config.getList("idms");
+	        List<IDMHandler> idmHandlers = new ArrayList<IDMHandler>();
 	        if(list != null)
 	        {
 		        for(int i = 0; i < list.size(); i++)
 		        {
-		        	DataMap authConfig = list.getObject(i);
-		            String method = authConfig.getString("method");
-		            String contentType = authConfig.getString("contenttype");
-		            String urlPattern = authConfig.getString("path");
-		            String security = authConfig.getString("security");
-		            AuthValidationHandler handler = getAuthValidationHandler(authConfig);
+		        	DataMap idmConfig = list.getObject(i);
+		            String method = idmConfig.getString("method");
+		            String contentType = idmConfig.getString("contenttype");
+		            String urlPattern = idmConfig.getString("path");
+		            String security = idmConfig.getString("security");
+		            IDMHandler handler = getIDMHandler(idmConfig);
 		            if(handler != null) {
 		            	if(security != null) {
 		            		SecurityHandler securityHandler = securityHandlerMap.get(security); 
 		            		handler.setSecurityHandler(securityHandler);
-		            		securityHandler.addAuthValidationHandler(handler);		            		
+		            		securityHandler.addIDMHandler(handler);	            		
 		            	}
-		            	if(publicHost != null)
-		            		handler.setPublicHost(publicHost);
 		            	masterHandler.addHttpHandler(urlPattern, method, contentType, handler);
-		            	authValidationHanders.add(handler);
+		            	idmHandlers.add(handler);
 		            }
 		        }
 	        }
@@ -302,20 +299,16 @@ public class HttpGateway implements ServiceProvider
 		
 	}
 	
-	private AuthValidationHandler getAuthValidationHandler(DataMap authConfig)
+	private IDMHandler getIDMHandler(DataMap authConfig)
 	{
 		String type = authConfig.getString("type").toLowerCase();
 		if(type != null && type.equals("oauth2code"))
 		{
-			return new OAuth2CodeValidator(this, firebus, authConfig);
+			return new OAuth2IDM(this, firebus, authConfig);
 		}
 		else if(type != null && type.equals("apple"))
 		{
-			return new AppleValidator(this, firebus, authConfig);
-		}
-		else if(type != null && type.equals("userpassform"))
-		{
-			return new UserPassValidator(this, firebus, authConfig);
+			return new AppleIDM(this, firebus, authConfig);
 		}
 		else if(type != null && type.equals("novalidation"))
 		{
@@ -339,6 +332,10 @@ public class HttpGateway implements ServiceProvider
 	
 	public String getServiceName() {
 		return name;
+	}
+	
+	public String getPublicHost() {
+		return this.config.getString("publichost");
 	}
 
 

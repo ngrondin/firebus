@@ -36,7 +36,7 @@ public abstract class InboundReqRespHandler  extends InboundHandler {
 				int status = Integer.parseInt(fbResp.metadata.get("httpcode"));
 				resp.setStatus(status);
 				if(status == 401 && this.securityHandler != null) {
-					this.securityHandler.enrichLogoutResponse(resp);
+					this.securityHandler.enrichLogoutResponse(req, resp);
 				}
 			}
 			processResponse(resp, fbResp);

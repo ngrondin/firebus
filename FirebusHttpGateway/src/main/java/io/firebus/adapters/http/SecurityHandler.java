@@ -15,27 +15,33 @@ import io.firebus.data.DataMap;
 public abstract class SecurityHandler {
 	protected HttpGateway httpGateway;
 	protected DataMap config;
-	protected List<AuthValidationHandler> authValidationHandlers;
+	protected List<IDMHandler> idmHandlers;
 	protected List<String> usersToLogout;
 	
-	public SecurityHandler(HttpGateway gw, DataMap c) 
-	{
+	public SecurityHandler(HttpGateway gw, DataMap c)  {
 		httpGateway = gw;
 		config = c;
-		authValidationHandlers = new ArrayList<AuthValidationHandler>();
+		idmHandlers = new ArrayList<IDMHandler>();
 		usersToLogout = new ArrayList<String>();
 	}
 	
-	public void addAuthValidationHandler(AuthValidationHandler avh)
-	{
-		authValidationHandlers.add(avh);
+	public void addIDMHandler(IDMHandler avh) {
+		idmHandlers.add(avh);
 	}
 	
-	protected void unauthenticated(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected IDMHandler getIDMHandler(String uri) {
+		for(IDMHandler idm: idmHandlers) {
+			if(uri.equals(idm.getUri()))
+				return idm;
+		}
+		return null;
+	}
+	
+	protected void sendUnauthenticatedResponse(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String accept = req.getHeader("accept");
 		String path = req.getRequestURI();
 		if(accept != null && (accept.contains("text/html") || accept.contains("*/*"))) {
-			if(authValidationHandlers.size() > 1) {
+			if(idmHandlers.size() > 1) {
 		        PrintWriter writer = resp.getWriter();
 		        writer.println("<html><head><title>Login</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><style>");
 		        writer.println("body{}");
@@ -47,20 +53,33 @@ public abstract class SecurityHandler {
 		        writer.println("img {padding-right:10px;}");
 		        writer.println("</style></head>");
 		        writer.println("<body><div class=\"main\"><div class=\"title\">Login with</div>");
-		        for(AuthValidationHandler avh: authValidationHandlers) {
+		        for(IDMHandler avh: idmHandlers) {
 			        writer.println("<div class=\"option\"><a href=\"" + avh.getLoginURL(path) + "\"><img src=\"" + avh.getIcon() + "\"><div>" + avh.getLabel() + "</div></a></div>");
 		        }
 		        writer.println("</div></body></html>");
-			} else if(authValidationHandlers.size() == 1) {
+			} else if(idmHandlers.size() == 1) {
 				resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-				resp.setHeader("Location", authValidationHandlers.get(0).getLoginURL(path));
+				resp.setHeader("Location", idmHandlers.get(0).getLoginURL(path));
 			} else {
 				resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			}			
 		} else {
 			resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		}
-
+	}
+	
+	protected void sendNeedToRefreshResponse(HttpServletRequest req, HttpServletResponse resp, String issuer) throws ServletException, IOException {
+		String accept = req.getHeader("accept");
+		IDMHandler idm = getIDMHandler(issuer);
+		if(accept != null && (accept.contains("text/html") || accept.contains("*/*"))) {
+			if(idm != null) {
+				resp.sendRedirect(idm.geRefereshURL(req.getRequestURI()));
+			} else {
+				resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			}			
+		} else {
+			resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		}
 	}
 	
 	public void logoutUser(String username) {
@@ -69,9 +88,13 @@ public abstract class SecurityHandler {
 	
 	public abstract boolean checkHttpRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException;
 	
+	public abstract String extractRefreshToken(HttpServletRequest req) throws ServletException, IOException;
+	
 	public abstract void enrichFirebusRequest(HttpServletRequest req, Payload payload) throws ServletException, IOException;
 	
-	public abstract void enrichAuthResponse(String username, HttpServletResponse resp) throws ServletException, IOException;
+	public abstract void enrichAuthResponse(HttpServletRequest req, HttpServletResponse resp, String accessToken, String refreshToken, long expiry, String state) throws ServletException, IOException;
 	
-	public abstract void enrichLogoutResponse(HttpServletResponse resp);
+	public abstract void enrichRefreshResponse(HttpServletRequest req, HttpServletResponse resp, String accessToken, String refreshToken, long expiry, String state) throws ServletException, IOException;
+	
+	public abstract void enrichLogoutResponse(HttpServletRequest req, HttpServletResponse resp);
 }

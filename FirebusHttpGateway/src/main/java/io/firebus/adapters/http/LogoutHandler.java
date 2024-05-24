@@ -25,7 +25,7 @@ public class LogoutHandler extends HttpHandler {
 	protected void httpService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		if(securityHandlers != null) {
 			for(SecurityHandler sh: securityHandlers) {
-				sh.enrichLogoutResponse(resp);
+				sh.enrichLogoutResponse(req, resp);
 			}
 		}
         PrintWriter writer = resp.getWriter();
