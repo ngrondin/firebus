@@ -89,8 +89,7 @@ public class JWTCookie extends SecurityHandler {
 			DecodedJWT jwt = jwtValidator.tryDecode(accessToken);
 			if(jwt != null) {
 				if(jwtValidator.tryValidate(jwt)) {
-					Logger.info("fb.http.sec.jwtcookie.agent", new DataMap("agent", req.getHeader("User-Agent")));
-					//specialCaseTORenew(req, resp, jwt);
+					specialCaseTORenew(req, resp, jwt);
 					return true;
 				}  else {
 					sendNeedToRefreshResponse(req, resp, jwt.getIssuer());
@@ -190,9 +189,10 @@ public class JWTCookie extends SecurityHandler {
 	
 	@Deprecated
 	public void specialCaseTORenew(HttpServletRequest req, HttpServletResponse resp, DecodedJWT jwt) throws ServletException, IOException {
-		long expiresAt = jwt.getExpiresAt().getTime();
-		long now = System.currentTimeMillis();
-		if(expiresAt > now/* && issuer.equals(jwtIssuer)*/) {
+		String agent = req.getHeader("User-Agent");
+		if(agent != null && agent.startsWith("Dart")) {
+			long expiresAt = jwt.getExpiresAt().getTime();
+			long now = System.currentTimeMillis();
 			if(expiresAt - timeout + refreshAfter < now) {
 				String username = jwt.getClaim("email").asString();
 				String newAccessToken = generateToken(username);
