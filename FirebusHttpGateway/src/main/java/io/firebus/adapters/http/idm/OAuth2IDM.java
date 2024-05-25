@@ -2,6 +2,7 @@ package io.firebus.adapters.http.idm;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -64,13 +65,13 @@ public class OAuth2IDM extends IDMHandler
 		params.add(new BasicNameValuePair("code", code));
 		params.add(new BasicNameValuePair("client_id", clientId));
 		params.add(new BasicNameValuePair("client_secret", clientSecret));
-		params.add(new BasicNameValuePair("redirect_uri", geCodeURL()));
+		params.add(new BasicNameValuePair("redirect_uri", getCodeURL()));
 		params.add(new BasicNameValuePair("grant_type", "authorization_code"));
 		DataMap respMap = callTokenUrl(params);
 		String accessToken = respMap.getString("access_token");
 		String refreshToken = respMap.getString("refresh_token");
-		long expiry = respMap.getNumber("expires_in").longValue();
-		_securityHandler.enrichAuthResponse(req, resp, accessToken, refreshToken, expiry, state);
+		long expiry = (new Date()).getTime() + (respMap.getNumber("expires_in").longValue() * 1000);
+		_securityHandler.enrichAuthResponse(req, resp, accessToken, expiry, refreshToken, basePath + "/refresh", state);
     }
     
     public void refreshService(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -81,14 +82,14 @@ public class OAuth2IDM extends IDMHandler
 		params.add(new BasicNameValuePair("refresh_token", refreshToken));
 		params.add(new BasicNameValuePair("client_id", clientId));
 		params.add(new BasicNameValuePair("client_secret", clientSecret));
-		params.add(new BasicNameValuePair("redirect_uri", geCodeURL()));
+		params.add(new BasicNameValuePair("redirect_uri", getCodeURL()));
 		params.add(new BasicNameValuePair("grant_type", "refresh_token"));
 		try {
 			DataMap respMap = callTokenUrl(params);
 			String accessToken = respMap.getString("access_token");
 			String newRefreshToken = respMap.getString("refresh_token");
-			long expiry = respMap.getNumber("expiry").longValue();
-			_securityHandler.enrichRefreshResponse(req, resp, accessToken, newRefreshToken, expiry, state); 	
+			long expiry = (new Date()).getTime() + (respMap.getNumber("expires_in").longValue() * 1000);
+			_securityHandler.enrichRefreshResponse(req, resp, accessToken, expiry, newRefreshToken, basePath + "/refresh", state); 	
 		} catch(Exception e) {
 			resp.sendRedirect("/logout");
 		}
@@ -98,17 +99,18 @@ public class OAuth2IDM extends IDMHandler
 	public String getLoginURL(String originalPath) {
 		String originalUrl = httpGateway.getPublicHost() + originalPath;
 		long nonce = (int)(Math.random() * 1000000);
-		String url = loginUrl + "?client_id=" + clientId + "&response_type=code&scope=" + scope + "&redirect_uri=" + geCodeURL() + "&state=" + originalUrl + "&nonce=" + nonce;
+		String url = loginUrl + "?client_id=" + clientId + "&response_type=code&scope=" + scope + "&redirect_uri=" + getCodeURL() + "&state=" + originalUrl + "&nonce=" + nonce;
 		return url;
 	}
 
-	public String geCodeURL() {
+	public String getCodeURL() {
 		return httpGateway.getPublicHost() + basePath + "/code";
 	}
 	
-	public String geRefereshURL(String originalPath) {
-		String originalUrl = httpGateway.getPublicHost() + originalPath;
-		return httpGateway.getPublicHost() + basePath + "/refresh?state=" + originalUrl;
+	public String getRefreshUrl(String originalPath) {
+		String url = httpGateway.getPublicHost() + basePath + "/refresh";
+		if(originalPath != null) url = url + "?state=" + originalPath;
+		return url;
 	}
 	
 	public String getJWTSecret() {

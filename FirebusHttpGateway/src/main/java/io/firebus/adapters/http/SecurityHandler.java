@@ -37,10 +37,15 @@ public abstract class SecurityHandler {
 		return null;
 	}
 	
+	protected boolean acceptsFirst(HttpServletRequest req, String mime) {
+		String acceptString = req.getHeader("accept");
+		String[] parts = acceptString.split(",");
+		return parts.length > 0 && parts[0].equalsIgnoreCase(mime) ? true : false;
+	}
+	
 	protected void sendUnauthenticatedResponse(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String accept = req.getHeader("accept");
 		String path = req.getRequestURI();
-		if(accept != null && (accept.contains("text/html") || accept.contains("*/*"))) {
+		if(acceptsFirst(req, "text/html")) {
 			if(idmHandlers.size() > 1) {
 		        PrintWriter writer = resp.getWriter();
 		        writer.println("<html><head><title>Login</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><style>");
@@ -69,11 +74,10 @@ public abstract class SecurityHandler {
 	}
 	
 	protected void sendNeedToRefreshResponse(HttpServletRequest req, HttpServletResponse resp, String issuer) throws ServletException, IOException {
-		String accept = req.getHeader("accept");
 		IDMHandler idm = getIDMHandler(issuer);
-		if(accept != null && (accept.contains("text/html") || accept.contains("*/*"))) {
+		if(acceptsFirst(req, "text/html")) {
 			if(idm != null) {
-				resp.sendRedirect(idm.geRefereshURL(req.getRequestURI()));
+				resp.sendRedirect(idm.getRefreshUrl(req.getRequestURI()));
 			} else {
 				resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			}			
@@ -92,9 +96,9 @@ public abstract class SecurityHandler {
 	
 	public abstract void enrichFirebusRequest(HttpServletRequest req, Payload payload) throws ServletException, IOException;
 	
-	public abstract void enrichAuthResponse(HttpServletRequest req, HttpServletResponse resp, String accessToken, String refreshToken, long expiry, String state) throws ServletException, IOException;
+	public abstract void enrichAuthResponse(HttpServletRequest req, HttpServletResponse resp, String accessToken, long expiry, String refreshToken, String refreshPath, String state) throws ServletException, IOException;
 	
-	public abstract void enrichRefreshResponse(HttpServletRequest req, HttpServletResponse resp, String accessToken, String refreshToken, long expiry, String state) throws ServletException, IOException;
+	public abstract void enrichRefreshResponse(HttpServletRequest req, HttpServletResponse resp, String accessToken, long expiry, String refreshToken, String refreshPath, String state) throws ServletException, IOException;
 	
 	public abstract void enrichLogoutResponse(HttpServletRequest req, HttpServletResponse resp);
 }

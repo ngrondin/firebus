@@ -26,11 +26,11 @@ public class NoValidator extends IDMHandler {
 		return url;
 	}
 
-	public String geCodeURL() {
+	public String getCodeURL() {
 		return "";
 	}
 	
-	public String geRefereshURL(String originalPath) {
+	public String getRefreshUrl(String originalPath) {
 		return "";
 	}
 	

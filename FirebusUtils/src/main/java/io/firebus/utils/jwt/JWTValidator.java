@@ -21,12 +21,25 @@ public class JWTValidator {
 		entries = new ArrayList<JWTValidatorEntry>();
 	}
 	
+	public void tryAddSharedSecret(String issuer, String secret) {
+		try {
+			addSharedSecret(issuer, secret);
+		} catch(Exception e) {}
+	}
+	
 	public void addSharedSecret(String issuer, String secret) throws JWTValidatorException {
 		entries.add(new JWTValidatorEntry(issuer, null, "HS256", secret));
 		entries.add(new JWTValidatorEntry(issuer, null, "HS384", secret));
 		entries.add(new JWTValidatorEntry(issuer, null, "HS384", secret));
 	}
 	
+	
+	public void tryAddJWK(String issuer, DataMap jwkMap) {
+		try {
+			addJWK(issuer, jwkMap);
+		} catch(Exception e) {}
+	}
+		
 	public void addJWK(String issuer, DataMap jwkMap) throws Exception {
 		DataList list = jwkMap.getList("keys");
 		for(int i = 0; i < list.size(); i++) {
@@ -41,6 +54,10 @@ public class JWTValidator {
 			    entries.add(new JWTValidatorEntry(issuer, kid, alg, pubKey));
 			}
 		}
+	}
+	
+	public void clearAll() {
+		entries.clear();
 	}
 	
 	public DecodedJWT tryDecode(String token) {

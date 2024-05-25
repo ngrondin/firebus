@@ -39,9 +39,9 @@ public abstract class IDMHandler extends InboundHandler
 	
 	public abstract String getLoginURL(String originalPath);
 	
-	public abstract String geCodeURL();
+	public abstract String getCodeURL();
 	
-	public abstract String geRefereshURL(String originalPath);
+	public abstract String getRefreshUrl(String originalPath);
 	
 
 }
