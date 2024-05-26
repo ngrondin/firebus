@@ -39,8 +39,8 @@ public abstract class SecurityHandler {
 	
 	protected boolean acceptsFirst(HttpServletRequest req, String mime) {
 		String acceptString = req.getHeader("accept");
-		String[] parts = acceptString.split(",");
-		return parts.length > 0 && parts[0].equalsIgnoreCase(mime) ? true : false;
+		String[] parts = acceptString != null ? acceptString.split(",") : null;
+		return parts != null && parts.length > 0 && parts[0].equalsIgnoreCase(mime) ? true : false;
 	}
 	
 	protected void sendUnauthenticatedResponse(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

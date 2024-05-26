@@ -196,8 +196,8 @@ public class JWTCookie extends SecurityHandler {
 			if(expiresAt - timeout + refreshAfter < now) {
 				String username = jwt.getClaim("email").asString();
 				String newAccessToken = generateToken(username);
-				Logger.info("fb.http.sec.jwtcooke.refresh", new DataMap("username", username, "expiredAt", expiresAt));
-				setCookies(resp, newAccessToken, null, null);
+				Logger.info("fb.http.sec.jwtcooke.refresh", new DataMap("username", username, "expiredAt", expiresAt, "newToken", newAccessToken));
+				resp.addHeader("set-cookie", "rbtoken=" + newAccessToken + "; Max-Age=" + (timeout / 1000) + ";");
 			}
 		}
 	}
@@ -252,7 +252,9 @@ public class JWTCookie extends SecurityHandler {
 	    		} finally {
 	    			response.close();
 	    		}
-			} catch(Exception e) { } 
+			} catch(Exception e) { 
+				Logger.severe("fb.http.sec.jwtcooke.generatetokeb", e);
+			} 
 		}
 		
 	    String token = tokenBuilder.sign(algorithm);
