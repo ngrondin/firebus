@@ -130,6 +130,11 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 				DataList list = get(request);
 				responseJSON.put("result", list);
 			}
+			else if(request.containsKey("count")) 
+			{
+				long count = count(request);
+				responseJSON.put("result", count);
+			}
 			else if(request.containsKey("key") || request.containsKey("multi"))
 			{
 				ClientSession session = null;
@@ -243,7 +248,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		DataList responseList = null;
 		int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
 		int pageSize = request.containsKey("pagesize") ? request.getNumber("pagesize").intValue() : 50;
-		MongoCursor<Document> it = getFindIterable(request).skip(page * pageSize).iterator();
+		MongoCursor<Document> it = getFindIterable(request).skip(page * pageSize).limit(pageSize).iterator();
 		responseList = retieveDocuments(it, pageSize, null);
 		it.close();
 		return responseList;
@@ -254,7 +259,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		int page = request.containsKey("page") ? request.getNumber("page").intValue() : 0;
 		int pageSize = request.containsKey("pagesize") ? request.getNumber("pagesize").intValue() : 50;
 		MongoCursor<Document> it = getAggregateIterable(request).iterator();
-		for(int i = 0; i < (page * pageSize) && it.hasNext(); i++) it.next();
+		for(int i = 0; i < (page * pageSize) && it.hasNext(); i++) it.next(); //Note: this is because the aggregatorIterable doesn't have the skip and limit functions
 		DataList responseList = retieveDocuments(it, pageSize, new AggregatePostProcessor(request.getList("tuple")));
 		it.close();
 		return responseList;
@@ -372,7 +377,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 	{
 		DataList responseList = new DataList();
 		if(it != null) {
-			while(it.hasNext() && responseList.size() < count) {
+			while(it.hasNext() && count > -1 && responseList.size() < count) {
 				DataEntity entity = convertToDataEntity(it.next());
 				if(entity instanceof DataMap) {
 					DataMap dataMap = (DataMap)entity;
@@ -492,6 +497,35 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 		} else {
 			throw new FunctionErrorException("Database as not been specificied in the configuration");
 		}
+	}
+	
+	private long count(DataMap request) throws FunctionErrorException, DataException
+	{
+		String objectName = request.getString("object");
+		if(database != null)
+		{
+			MongoCollection<Document> collection = database.getCollection(objectName);
+			if(collection != null)
+			{
+				Document filterDoc = null;
+				if(request.containsKey("count")) {
+					DataMap filter = request.getObject("count");
+					filterDoc = (Document)convertToDocument(filter);					
+				} else {
+					filterDoc = new Document();
+				}
+				long ret = collection.countDocuments(filterDoc);
+				return ret;
+			}
+			else
+			{
+				throw new FunctionErrorException("No collection exists by this name");
+			}
+		}
+		else
+		{
+			throw new FunctionErrorException("Database as not been specified in the configuration");
+		}	
 	}
 
 	public ServiceInformation getServiceInformation()
