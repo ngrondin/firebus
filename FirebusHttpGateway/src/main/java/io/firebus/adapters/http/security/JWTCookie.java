@@ -34,6 +34,7 @@ public class JWTCookie extends SecurityHandler {
 	protected String refreshTokenCookieName;
 	protected String fbMetadataName;
 	protected JWTValidator jwtValidator;
+	protected boolean secureCookies;
 	
 	@Deprecated	protected String jwtSecret;
 	@Deprecated	protected String jwtIssuer;
@@ -65,6 +66,7 @@ public class JWTCookie extends SecurityHandler {
 			refreshAfter = 21600000;
 		}
 		try{ jwtValidator.addSharedSecret("com.redbackwms", jwtSecret);} catch(Exception e) {}
+		secureCookies = this.httpGateway.getPublicHost().startsWith("https");
 	}
 	
 	public void addIDMHandler(IDMHandler avh) {
@@ -124,7 +126,7 @@ public class JWTCookie extends SecurityHandler {
 		} else if(acceptsFirst(req, "application/json")) {
 			sendJsonData(resp, accessToken, expiry, refreshToken, refreshPath, state);	
 		}		
-		Logger.info("fb.http.sec.jwtcooke.login", new DataMap());	
+		Logger.info("fb.http.sec.jwtcooke.refresh", new DataMap());	
 	}
 
 	public void enrichLogoutResponse(HttpServletRequest req, HttpServletResponse resp) {
@@ -160,7 +162,7 @@ public class JWTCookie extends SecurityHandler {
 	}
 	
 	protected void setCookie(HttpServletResponse resp, String name, String value, String path) {
-		String str = name + "=" + value + "; HttpOnly; Path=" + path + "; SameSite=Strict;";
+		String str = name + "=" + value + "; HttpOnly; Path=" + path + "; SameSite=Strict; Max-Age=15724800; Secure=" + secureCookies;
 		resp.addHeader("Set-Cookie", str);
 	}
 	
