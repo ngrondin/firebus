@@ -45,12 +45,13 @@ public class Connection extends Thread
 	protected Cipher encryptionCipher;
 	protected Cipher decryptionCipher;
 	protected long initTime;
-	protected long lastActivity;
 	protected long timeMark;
-	protected int sentCount;
-	protected int sentBytes;
-	protected int recvCount;
-	protected int recvBytes;
+	protected long sentCount;
+	protected long sentBytes;
+	protected long sentLast;
+	protected long recvCount;
+	protected long recvBytes;
+	protected long recvLast;
 	protected int load;
 	protected Thread sendThread;
 	
@@ -126,6 +127,13 @@ public class Connection extends Thread
 	public boolean isReady()
 	{
 		return state == STATE_ACTIVE;
+	}
+	
+	public boolean isHealthy()
+	{
+		if(state == STATE_FAILED || state == STATE_CLOSING || state == STATE_DEAD) return false;
+		if(queue.getDepth() > 2 && sentLast < System.currentTimeMillis() - 10000) return false;
+		return true;
 	}
 	
 	public void run()
@@ -291,7 +299,7 @@ public class Connection extends Thread
 								if(listener != null && msg != null)
 									listener.messageReceived(msg, this);
 								recvCount++;
-								lastActivity = System.currentTimeMillis();
+								recvLast = System.currentTimeMillis();
 							}
 							else
 							{
@@ -346,7 +354,7 @@ public class Connection extends Thread
 						os.write(bytes);
 						sentCount++;
 						sentBytes += bytes.length;
-						lastActivity = System.currentTimeMillis();
+						sentLast = System.currentTimeMillis();
 					} catch(Exception e1) {
 						Logger.severe("fb.connection.sending", new DataMap("id", getId()), e1);
 						close();
@@ -377,9 +385,6 @@ public class Connection extends Thread
 				os.close();
 			if(sendThread != null && sendThread.isAlive())
 				sendThread.interrupt();
-			/*synchronized(queue) {
-				queue.notify();
-			}*/
 		} 
 		catch (IOException e) 
 		{
@@ -399,15 +404,8 @@ public class Connection extends Thread
 		status.put("remoteNodeId", remoteNodeId);
 		status.put("remoteAddress", remoteAddress != null ? remoteAddress.toString() : null);
 		status.put("startedSince", (now - initTime));
-		status.put("lastActivity", (now - lastActivity));
-		DataMap sent = new DataMap();
-		sent.put("count", sentCount);
-		sent.put("bytes", sentBytes);
-		status.put("sent", sent);
-		DataMap recv = new DataMap();
-		recv.put("count", recvCount);
-		recv.put("bytes", recvBytes);
-		status.put("recv", recv);
+		status.put("sent", new DataMap("count", sentCount, "bytes", sentBytes, "last", now - sentLast));
+		status.put("recv", new DataMap("count", recvCount, "bytes", recvBytes, "last", now - recvLast));
 		status.put("state", state == STATE_NEW ? "new" : state == STATE_INITIALIZING ? "initializing" : state == STATE_INITIALIZED ? "initialized" : state == STATE_ACTIVE ? "active" : state == STATE_FAILED ? "failed" : state == STATE_CLOSING ? "closing" : state == STATE_DEAD ? "dead" : "unknown");
 		status.put("queue", queue.getStatus());
 		return status;

@@ -146,6 +146,13 @@ public class ConnectionManager extends Thread implements ConnectionListener
 						connectedNodeCount++;
 					}
 				}
+				
+				for(Connection connection: connections) {
+					if(!connection.isHealthy()) {
+						connection.close();
+						break; //Close one at a time, as when closed, the this.connections list will be updated
+					}
+				}
 
 				sleep(500);
 			} 
