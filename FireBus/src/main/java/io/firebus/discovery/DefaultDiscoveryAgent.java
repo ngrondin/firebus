@@ -63,7 +63,8 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 		}
 		catch(Exception e)
 		{
-			e.printStackTrace();
+			Logger.severe("fb.discovery.defaul", e);
+			//e.printStackTrace();
 		}
 
 		setName("fbDefaultDiscoveryAgent");
