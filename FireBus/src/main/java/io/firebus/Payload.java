@@ -172,14 +172,19 @@ public class Payload
 	
 	public String getString()
 	{
+		return getString(false);
+	}
+	
+	public String getString(boolean safe)
+	{
 		if(dataBytes != null)
 			return new String(dataBytes);
 		else if(dataString != null)
 			return dataString;
 		else if(dataMap != null)
-			return dataMap.toString();
+			return dataMap.toString(safe);
 		else if(dataList != null)
-			return dataList.toString();
+			return dataList.toString(safe);
 		else 
 			return null;
 	}

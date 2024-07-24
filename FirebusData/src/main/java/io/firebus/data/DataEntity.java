@@ -53,14 +53,18 @@ public abstract class DataEntity
 	
 	public String toString()
 	{
-		return toString(false);
+		return toString(false, false);
 	}
 	
-	public String toString(boolean flat)
+	public String toString(boolean flat) {
+		return toString(flat, false);
+	}
+	
+	public String toString(boolean flat, boolean safe)
 	{
 		StringBuilder sb = new StringBuilder();
 		String indentStr = flat == false ? "" : null;
-		writeToStringBuilder(sb, indentStr);
+		writeToStringBuilder(sb, indentStr, safe);
 		return sb.toString();
 	}
 	
@@ -70,7 +74,7 @@ public abstract class DataEntity
 		return toString(flat);
 	}
 	
-	protected abstract void writeToStringBuilder(StringBuilder sb, String indentStr);
+	protected abstract void writeToStringBuilder(StringBuilder sb, String indentStr, boolean safe);
 	
 	public abstract DataEntity getCopy();
 }

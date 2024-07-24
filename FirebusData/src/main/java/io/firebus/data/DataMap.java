@@ -440,7 +440,7 @@ public class DataMap extends DataEntity implements Map<String, Object>
 		return attributes.entrySet();
 	}
 
-	public void writeToStringBuilder(StringBuilder sb, String indentStr)
+	public void writeToStringBuilder(StringBuilder sb, String indentStr, boolean safe)
 	{
 		String newIndentStr = null;
 		sb.append('{');
@@ -458,7 +458,7 @@ public class DataMap extends DataEntity implements Map<String, Object>
 			sb.append(entry.getKey());
 			sb.append('"');
 			sb.append(':');
-			entry.getValue().writeToStringBuilder(sb, newIndentStr);
+			entry.getValue().writeToStringBuilder(sb, newIndentStr, safe);
 			if(it.hasNext())
 				sb.append(',');
 			if(indentStr != null)

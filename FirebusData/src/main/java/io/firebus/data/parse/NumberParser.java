@@ -3,6 +3,9 @@ package io.firebus.data.parse;
 public class NumberParser extends Parser {
 
 	public static Number parse(String str) {
+		if(str.equals("Infinity")) return Double.POSITIVE_INFINITY;
+		if(str.equals("-Infinity")) return Double.NEGATIVE_INFINITY;
+		if(str.equals("NaN")) return Double.NaN;
 		boolean negative = false;
 		long integer = 0;
 		double decimal = 0;

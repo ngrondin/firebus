@@ -285,7 +285,7 @@ public class DataList extends DataEntity
 	}
 	
 	
-	public void writeToStringBuilder(StringBuilder sb, String indentStr) {
+	public void writeToStringBuilder(StringBuilder sb, String indentStr, boolean safe) {
 		String newIndentStr = null;
 		sb.append('[');
 		if(indentStr != null) {
@@ -296,7 +296,7 @@ public class DataList extends DataEntity
 		{
 			if(indentStr != null)
 				sb.append(newIndentStr);
-			list.get(i).writeToStringBuilder(sb, newIndentStr);
+			list.get(i).writeToStringBuilder(sb, newIndentStr, safe);
 			if(i < list.size() - 1)
 				sb.append(',');
 			if(indentStr != null)			

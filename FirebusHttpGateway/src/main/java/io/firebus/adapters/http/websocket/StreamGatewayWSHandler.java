@@ -71,7 +71,7 @@ public class StreamGatewayWSHandler extends WebsocketConnectionHandler implement
 	}
 
 	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
-		String str = payload.getString();
+		String str = payload.getString(true);
 		if(canGZIP && str.length() > 100000) {
 			try {
 				ByteArrayOutputStream out = new ByteArrayOutputStream();

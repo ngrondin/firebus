@@ -314,7 +314,7 @@ public class DataLiteral extends DataEntity
 		}
 	}
 	
-	public void writeToStringBuilder(StringBuilder sb, String indentStr) {
+	public void writeToStringBuilder(StringBuilder sb, String indentStr, boolean safe) {
 		if(valueType == TYPE_NULL) {
 			sb.append("null");
 		} else if(valueType == TYPE_STRING) { 
@@ -329,6 +329,11 @@ public class DataLiteral extends DataEntity
 			sb.append("\"");
 			sb.append(getString());
 			sb.append("\"");
+		} else if(valueType == TYPE_NUMBER) {
+			if(safe && (numberValue.equals(Double.NaN) || numberValue.equals(Double.POSITIVE_INFINITY) || numberValue.equals(Double.NEGATIVE_INFINITY))) 
+				sb.append("null");
+			else 
+				sb.append(getString());
 		} else {
 			sb.append(getString());
 		}
