@@ -15,7 +15,8 @@ public class ToDateString extends DateFunction {
 	}
 
 	public SValue call(SValue... arguments) throws ScriptCallException {
-		return new SString(date.getZonedDateTime().toLocalDate().format(DateTimeFormatter.ofPattern("E MMM d YYYY")));
+		String formatStr = (arguments.length >= 1 && arguments[0] instanceof SString) ? arguments[0].toString() : "E MMM d YYYY";
+		return new SString(date.getZonedDateTime().toLocalDate().format(DateTimeFormatter.ofPattern(formatStr)));
 	}
 
 }
