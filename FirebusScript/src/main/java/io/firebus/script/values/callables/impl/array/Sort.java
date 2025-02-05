@@ -26,8 +26,8 @@ public class Sort extends ArrayFunction {
 				SValue itemb = out.get(j);
 				SValue comp = c.call(new SValue[] {itema, itemb});
 				if(comp instanceof SNumber) {
-					int compInt = ((SNumber)comp).getNumber().intValue();
-					if(compInt > 0) {
+					long compLong = ((SNumber)comp).getNumber().longValue();
+					if(compLong > 0) {
 						out.add(j, itema);
 						inserted = true;
 						break;
