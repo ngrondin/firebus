@@ -44,22 +44,6 @@ public class Logger {
 		log(Level.SEVERE, event, null, null);
 	}
 	
-	public static void userError(String event, Object data, Throwable t) {
-		log(Level.USERERROR, event, data, t);
-	}
-	
-	public static void userError(String event, Object data) {
-		log(Level.USERERROR, event, data, null);
-	}
-	
-	public static void userError(String event, Throwable t) {
-		log(Level.USERERROR, event, null, t);
-	}
-	
-	public static void userError(String event) {
-		log(Level.USERERROR, event, null, null);
-	}
-	
 	public static void warning(String event, Object data, Throwable t) {
 		log(Level.WARNING, event, data, t);
 	}
@@ -74,6 +58,38 @@ public class Logger {
 	
 	public static void warning(String event) {
 		log(Level.WARNING, event, null, null);
+	}
+	
+	public static void security(String event, Object data, Throwable t) {
+		log(Level.SECURITY, event, data, t);
+	}
+	
+	public static void security(String event, Object data) {
+		log(Level.SECURITY, event, data, null);
+	}
+	
+	public static void security(String event, Throwable t) {
+		log(Level.SECURITY, event, null, t);
+	}
+	
+	public static void security(String event) {
+		log(Level.SECURITY, event, null, null);
+	}
+	
+	public static void userError(String event, Object data, Throwable t) {
+		log(Level.USERERROR, event, data, t);
+	}
+	
+	public static void userError(String event, Object data) {
+		log(Level.USERERROR, event, data, null);
+	}
+	
+	public static void userError(String event, Throwable t) {
+		log(Level.USERERROR, event, null, t);
+	}
+	
+	public static void userError(String event) {
+		log(Level.USERERROR, event, null, null);
 	}
 	
 	public static void info(String event, Object data) {
@@ -113,6 +129,7 @@ public class Logger {
 		switch(lvl) {
 		case Level.SEVERE: return "SEVERE";
 		case Level.WARNING: return "WARNING";
+		case Level.SECURITY: return "SECURITY";
 		case Level.USERERROR: return "USERERROR";
 		case Level.INFO: return "INFO";
 		case Level.FINE: return "FINE";
@@ -126,6 +143,7 @@ public class Logger {
 		switch(s) {
 		case "SEVERE": return Level.SEVERE;
 		case "WARNING": return Level.WARNING;
+		case "SECURITY": return Level.SECURITY;
 		case "USERERROR": return Level.USERERROR;
 		case "INFO": return Level.INFO;
 		case "FINE": return Level.FINE;

@@ -36,36 +36,36 @@ public class JWTCookie extends SecurityHandler {
 	protected JWTValidator jwtValidator;
 	protected boolean secureCookies;
 	
-	@Deprecated	protected String jwtSecret;
+	/*@Deprecated	protected String jwtSecret;
 	@Deprecated	protected String jwtIssuer;
 	@Deprecated	protected String idmUrl;
 	@Deprecated	protected String idmClientId;
 	@Deprecated	protected String idmClientSecret;	
 	@Deprecated	protected long timeout;
-	@Deprecated	protected long refreshAfter;
+	@Deprecated	protected long refreshAfter;*/
 
 	public JWTCookie(HttpGateway gw, DataMap c) {
 		super(gw, c);
 		accessTokenCookieName = config.getString("accesstokencookie");
 		refreshTokenCookieName = config.getString("refreshtokencookie");
 		fbMetadataName = config.getString("fbmetaname");
-		jwtSecret = config.getString("jwtsecret");
+		/*jwtSecret = config.getString("jwtsecret");
 		jwtIssuer = config.getString("jwtissuer");
 		idmUrl = config.getString("idmurl");
 		idmClientId = config.getString("idmclientid");
-		idmClientSecret = config.getString("idmclientsecret");
+		idmClientSecret = config.getString("idmclientsecret");*/
 		jwtValidator = new JWTValidator();
-		if(config.containsKey("timeout")) {
+		/*if(config.containsKey("timeout")) {
 			timeout = config.getNumber("timeout").longValue();
 		} else {
 			timeout = 43200000;
-		}
-		if(config.containsKey("refreshafter")) {
+		}*/
+		/*if(config.containsKey("refreshafter")) {
 			refreshAfter = config.getNumber("refreshafter").longValue();
 		} else {
 			refreshAfter = 21600000;
-		}
-		try{ jwtValidator.addSharedSecret("com.redbackwms", jwtSecret);} catch(Exception e) {}
+		}*/
+		//try{ jwtValidator.addSharedSecret("com.redbackwms", jwtSecret);} catch(Exception e) {}
 		secureCookies = this.httpGateway.getPublicHost().startsWith("https");
 	}
 	
@@ -91,7 +91,7 @@ public class JWTCookie extends SecurityHandler {
 			DecodedJWT jwt = jwtValidator.tryDecode(accessToken);
 			if(jwt != null) {
 				if(jwtValidator.tryValidate(jwt)) {
-					specialCaseTORenew(req, resp, jwt);
+					//specialCaseTORenew(req, resp, jwt);
 					return true;
 				}  else {
 					sendNeedToRefreshResponse(req, resp, jwt.getIssuer());
@@ -189,7 +189,7 @@ public class JWTCookie extends SecurityHandler {
 		writer.println("}");	
 	}
 	
-	@Deprecated
+	/*@Deprecated
 	public void specialCaseTORenew(HttpServletRequest req, HttpServletResponse resp, DecodedJWT jwt) throws ServletException, IOException {
 		String agent = req.getHeader("User-Agent");
 		if(agent != null && agent.startsWith("Dart")) {
@@ -202,9 +202,9 @@ public class JWTCookie extends SecurityHandler {
 				resp.addHeader("set-cookie", "rbtoken=" + newAccessToken + "; Max-Age=" + (timeout / 1000) + ";");
 			}
 		}
-	}
+	}*/
 	
-	@Deprecated
+	/*@Deprecated
 	protected String generateToken(String username) 
 	{
 	    Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
@@ -261,5 +261,5 @@ public class JWTCookie extends SecurityHandler {
 		
 	    String token = tokenBuilder.sign(algorithm);
 	    return token;
-	}
+	}*/
 }
