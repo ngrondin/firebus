@@ -6,6 +6,7 @@ public class KnownAddressInformation {
 	protected Address address;
 	protected long lastTry;
 	protected long nextTry;
+	protected boolean onceConnected;
 	protected int failedCount;
 	protected boolean self;
 	
@@ -14,6 +15,7 @@ public class KnownAddressInformation {
 		lastTry = 0;
 		nextTry = 0;
 		failedCount = 0;
+		onceConnected = false;
 		self = false;
 	}
 	
@@ -26,8 +28,7 @@ public class KnownAddressInformation {
 	}
 	
 	public boolean isDueToTry() {
-		long now = System.currentTimeMillis();
-		return !self && now > nextTry;
+		return !self && System.currentTimeMillis() > nextTry;
 	}
 
 	public boolean isSelf() {
@@ -35,7 +36,7 @@ public class KnownAddressInformation {
 	}
 	
 	public boolean shouldRemove() {
-		return failedCount > 30;
+		return onceConnected && failedCount > 30 || !onceConnected && failedCount > 3;
 	}
 	
 	public void connectionFailed() {
@@ -52,6 +53,7 @@ public class KnownAddressInformation {
 	
 	public void connectionSucceeded() {
 		failedCount = 0;
+		onceConnected = true;
 	}
 	
 	public void setAsSelf() {

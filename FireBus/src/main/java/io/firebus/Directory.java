@@ -71,7 +71,7 @@ public class Directory
 		NodeInformation ni = getNodeById(nodeId);
 		if(ni == null)
 		{
-			Logger.info("fb.directory.nodediscovered", new DataMap("node",nodeId, "address", address));
+			Logger.info("fb.directory.nodediscovered", new DataMap("node",nodeId, "address", address != null ? address.toString() : null));
 			NodeInformation nodeByAddress = getNodeByAddress(address);
 			if(nodeByAddress != null)
 				deleteNode(nodeByAddress);

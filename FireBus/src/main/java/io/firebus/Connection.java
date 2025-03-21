@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -29,7 +30,10 @@ public class Connection extends Thread
 	public static int STATE_CLOSING = 5;
 	public static int STATE_DEAD = 6;
 	
+	public static AtomicInteger nextId = new AtomicInteger();
+	
 	protected int state;
+	protected long id;
 	protected Socket socket;
 	protected String networkName;
 	protected SecretKey secretKey;
@@ -53,11 +57,11 @@ public class Connection extends Thread
 	protected long recvBytes;
 	protected long recvLast;
 	protected int load;
+	protected Thread listenThread;
 	protected Thread sendThread;
 	
 	public Connection(Socket s, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
-		Logger.fine("fb.connection.init.from", new DataMap("remote", s.getRemoteSocketAddress()));
 		constructorSetup();
 		socket = s;
 		listener = cl;
@@ -70,7 +74,6 @@ public class Connection extends Thread
 	
 	public Connection(Address a, String net, SecretKey k, int nid, int p, ConnectionListener cl) 
 	{
-		Logger.fine("fb.connection.init.to", new DataMap("to", a));
 		constructorSetup();
 		remoteAddress = a;
 		listener = cl;
@@ -84,7 +87,7 @@ public class Connection extends Thread
 	private void constructorSetup() 
 	{
 		state = STATE_NEW;
-		setName("fbConn" + getId() + "Recv");
+		id = nextId.incrementAndGet();
 		queue = new Queue<Message>(100);
 		sentCount = 0;
 		sentBytes = 0;
@@ -95,6 +98,10 @@ public class Connection extends Thread
 		load = 0;
 	}
 
+	public long getId()
+	{
+		return id;
+	}
 	
 	public Address getRemoteAddress()
 	{
@@ -123,8 +130,12 @@ public class Connection extends Thread
 		sentCount = 0;
 		return load;
 	}
+	
+	public String getStateAsString() {
+		return state == STATE_NEW ? "new" : state == STATE_INITIALIZING ? "initializing" : state == STATE_INITIALIZED ? "initialized" : state == STATE_ACTIVE ? "active" : state == STATE_FAILED ? "failed" : state == STATE_CLOSING ? "closing" : state == STATE_DEAD ? "dead" : "unknown";
+	}
 
-	public boolean isReady()
+	public boolean isActive()
 	{
 		return state == STATE_ACTIVE;
 	}
@@ -132,35 +143,56 @@ public class Connection extends Thread
 	public boolean isHealthy()
 	{
 		if(state == STATE_FAILED || state == STATE_CLOSING || state == STATE_DEAD) return false;
-		if(queue.getDepth() > 2 && sentLast < System.currentTimeMillis() - 10000) return false;
+		long mark = System.currentTimeMillis() - 10000;
+		if(state == STATE_ACTIVE && queue.getDepth() > 2 && sentLast < mark) return false;
+		if((state == STATE_INITIALIZING || state == STATE_NEW) && initTime < mark) return false;
 		return true;
+	}
+	
+	public boolean isClosing()
+	{
+		return state == STATE_CLOSING;
+	}
+	
+	public boolean isDead() 
+	{
+		return state == STATE_DEAD;
 	}
 	
 	public void run()
 	{
-		initialise();
-		if(state == STATE_INITIALIZED)
-		{
-			state = STATE_ACTIVE;
-			listener.connectionCreated(this);
-			sendThread = new Thread(new Runnable() {
-				public void run() {
-					send();
-				}
-			});
-			sendThread.start();
-			listen();
+		try {
+			listenThread = Thread.currentThread();
+			listenThread.setName("fbConn" + id + "Recv");
+			initialise();
+			if(state == STATE_INITIALIZED)
+			{
+				state = STATE_ACTIVE;
+				listener.connectionCreated(this);
+				sendThread = new Thread(new Runnable() {
+					public void run() {
+						send();
+					}
+				});
+				sendThread.start();
+				listen();
+				closeSendThread();
+			}
+			else
+			{
+				listener.connectionFailed(this);
+			}
+			listener.connectionClosed(this);
+			closeStreams();
+		} catch(Exception e) {
+			Logger.severe("fb.connection.run", e);
 		}
-		else
-		{
-			listener.connectionFailed(this);
-		}
-		listener.connectionClosed(this);
 		state = STATE_DEAD;
 	}
 	
 	protected void initialise()
 	{
+		Logger.info("fb.connection.init", new DataMap("conn", id, "remote", socket != null && socket.getRemoteSocketAddress() != null ? socket.getRemoteSocketAddress().toString() : remoteAddress != null ? remoteAddress.toString() : null, "dir", socket != null ? "in" : "out"));
 		try
 		{
 			state = STATE_INITIALIZING;
@@ -175,6 +207,7 @@ public class Connection extends Thread
 				
 				os.write(networkName.length());
 				os.write(networkName.getBytes());
+				os.flush();
 				int netNameLen = is.read();
 				byte[] netNameBytes = new byte[netNameLen];
 				is.read(netNameBytes);
@@ -184,6 +217,7 @@ public class Connection extends Thread
 					encryptionCipher = Cipher.getInstance("AES/CFB8/NoPadding");
 					encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey);
 					os.write(encryptionCipher.getIV());
+					os.flush();
 					byte[] remoteIVBytes = new byte[16];
 					is.read(remoteIVBytes);
 					IvParameterSpec remoteIV = new IvParameterSpec(remoteIVBytes);
@@ -194,6 +228,7 @@ public class Connection extends Thread
 
 					byte[] checkBytes = {(byte)0xCA, (byte)0xFE, (byte)0xBA, (byte)0xBE};
 					os.write(checkBytes);
+					os.flush();
 					byte[] remoteCheckBytes = new byte[4];
 					is.read(remoteCheckBytes);
 					
@@ -201,6 +236,7 @@ public class Connection extends Thread
 						os.write(ByteBuffer.allocate(4).putInt(localNodeId).array());
 						os.write(socket.getLocalAddress().getAddress());
 						os.write(ByteBuffer.allocate(4).putInt(localPort).array());
+						os.flush();
 
 						byte[] ab = new byte[4];
 						is.read(ab);
@@ -218,32 +254,33 @@ public class Connection extends Thread
 							}
 						}
 						if(remoteNodeId != localNodeId) {
-							Logger.info("fb.connection.established", new DataMap("id", getId(), "node", remoteNodeId, "address", remoteAddress));
+							Logger.info("fb.connection.established", new DataMap("conn", id, "node", remoteNodeId, "address", remoteAddress != null ? remoteAddress.toString() : null));
 							state = STATE_INITIALIZED;						
 						} else {
-							Logger.info("fb.connection.withself", new DataMap("id", getId(), "address", remoteAddress));
+							Logger.warning("fb.connection.withself", new DataMap("conn", id, "address", remoteAddress != null ? remoteAddress.toString() : null));
 							state = STATE_FAILED;
 						}						
 					} else {
-						Logger.warning("fb.connection.badcipher", new DataMap("id", getId()));
+						Logger.warning("fb.connection.badcipher", new DataMap("conn", id));
 						state = STATE_FAILED;
 					}
 				}
 				else
 				{
-					Logger.info("fb.connection.badnetwork", new DataMap("id", getId()));
-					close();
+					Logger.warning("fb.connection.badnetwork", new DataMap("conn", id));
+					state = STATE_FAILED;
 				}
 			}
 			else
 			{
-				Logger.warning("fb.connection.socketnotconnected", new DataMap("id", getId()));
+				Logger.warning("fb.connection.socketnotconnected", new DataMap("conn", id));
+				state = STATE_FAILED;
 			}
 		}
 		catch(Exception e)
 		{
-			Logger.warning("fb.connection.errorconnecting", new DataMap("id", getId(), "remote", remoteAddress, "message", e.getMessage()));
-			close();
+			Logger.warning("fb.connection.errorconnecting", new DataMap("conn", id, "remote", remoteAddress != null ? remoteAddress.toString() : null, "socket", socket != null && socket.getRemoteSocketAddress() != null ? socket.getRemoteSocketAddress().toString() : null, "message", e.getMessage()));
+			state = STATE_FAILED;
 		}		
 	}
 	
@@ -303,25 +340,26 @@ public class Connection extends Thread
 							}
 							else
 							{
-								Logger.severe("fb.connection.badcrc", new DataMap("id", getId(), "node", remoteNodeId));
-								close();
+								Logger.severe("fb.connection.badcrc", new DataMap("conn", id, "node", remoteNodeId));
+								state = STATE_FAILED;
 							}
 							msgState = 0;
 						} else {
-							Logger.severe("fb.connection.badrecevingstate", new DataMap("id", getId(), "node", remoteNodeId));
-							close();
+							Logger.severe("fb.connection.badrecevingstate", new DataMap("conn", id, "node", remoteNodeId));
+							state = STATE_FAILED;
 						}
 					}
 				} else {
-					close();
+					Logger.warning("fb.connection.receiveddisconnect", new DataMap("conn", id));
+					state = STATE_FAILED;
 				}
 			} 
 			catch (Exception e) 
 			{
 				if(state == STATE_ACTIVE) 
 				{
-					Logger.severe("fb.connection.exception", new DataMap("id", getId()), e);
-					close();
+					Logger.warning("fb.connection.exception", new DataMap("conn", id, "message", e.getMessage()));
+					state = STATE_FAILED;
 				}
 			}
 		}		
@@ -329,39 +367,36 @@ public class Connection extends Thread
 	
 	protected void send() 
 	{
-		Thread.currentThread().setName("fbConn" + getId() + "Send");
+		Thread.currentThread().setName("fbConn" + id + "Send");
 		while(state == STATE_ACTIVE)
 		{
-			try {
-				Message msg = queue.popWait();
-				if(msg != null) {
-					try {
-						byte[] msgData = msg.serialise();
-						int crc = 0;
-						for(int i = 0; i < msgData.length; i++)
-							crc = (crc ^ msgData[i]) & 0x00FF;
-						int packetSize = msgData.length + 6;
-						packetSize += 16 - (packetSize % 16);
-						byte[] bytes = new byte[packetSize];
-						bytes[0] = 0x7E;
-						bytes[1] = (byte)(msgData.length & 0x000000FF);
-						bytes[2] = (byte)((msgData.length >> 8) & 0x000000FF);
-						bytes[3] = (byte)((msgData.length >> 16) & 0x000000FF);
-						bytes[4] = (byte)((msgData.length >> 24) & 0x000000FF);
-						for(int i = 0; i < msgData.length; i++) 
-							bytes[5 + i] = msgData[i];
-						bytes[msgData.length + 5] = (byte)crc;
-						os.write(bytes);
-						sentCount++;
-						sentBytes += bytes.length;
-						sentLast = System.currentTimeMillis();
-					} catch(Exception e1) {
-						Logger.severe("fb.connection.sending", new DataMap("id", getId()), e1);
-						close();
-					}
+			Message msg = queue.popWait();
+			if(msg != null) {
+				try {
+					byte[] msgData = msg.serialise();
+					int crc = 0;
+					for(int i = 0; i < msgData.length; i++)
+						crc = (crc ^ msgData[i]) & 0x00FF;
+					int packetSize = msgData.length + 6;
+					packetSize += 16 - (packetSize % 16);
+					byte[] bytes = new byte[packetSize];
+					bytes[0] = 0x7E;
+					bytes[1] = (byte)(msgData.length & 0x000000FF);
+					bytes[2] = (byte)((msgData.length >> 8) & 0x000000FF);
+					bytes[3] = (byte)((msgData.length >> 16) & 0x000000FF);
+					bytes[4] = (byte)((msgData.length >> 24) & 0x000000FF);
+					for(int i = 0; i < msgData.length; i++) 
+						bytes[5 + i] = msgData[i];
+					bytes[msgData.length + 5] = (byte)crc;
+					os.write(bytes);
+					os.flush();
+					sentCount++;
+					sentBytes += bytes.length;
+					sentLast = System.currentTimeMillis();
+				} catch(Exception e1) {
+					Logger.severe("fb.connection.sending", new DataMap("conn", id), e1);
+					state = STATE_FAILED;
 				}
-			} catch(Exception e) {
-				Logger.severe("fb.connection.sending", new DataMap("id", getId()), e);
 			}
 		}		
 	}
@@ -371,30 +406,42 @@ public class Connection extends Thread
 		queue.push(msg);
 	}
 	
-	public void close()
+	private void closeStreams() 
 	{
 		try 
 		{
-			Logger.info("fb.connection.closing", new DataMap("id", getId()));
-			state = STATE_CLOSING;
 			if(socket != null)
 				socket.close();
 			if(is != null)
 				is.close();
 			if(os != null)
 				os.close();
-			if(sendThread != null && sendThread.isAlive())
-				sendThread.interrupt();
 		} 
 		catch (IOException e) 
 		{
-			Logger.severe("fb.connection.closing", new DataMap("id", getId()), e);
+			Logger.severe("fb.connection.closestreams", new DataMap("conn", id), e);
+		}
+	}
+	
+	private void closeSendThread() 
+	{
+		if(sendThread != null && sendThread.isAlive())
+			sendThread.interrupt();
+	}
+	
+	public void close()
+	{
+		if(state != STATE_DEAD) {
+			Logger.info("fb.connection.closing", new DataMap("conn", id, "state", getStateAsString(), "listen", listenThread != null && listenThread.isAlive(), "send", sendThread != null && sendThread.isAlive()));
+			state = STATE_CLOSING;
+			closeStreams();
+			closeSendThread();
 		}
 	}
 	
 	public String toString()
 	{
-		return "Connection " + getId() + " to node " + remoteNodeId + " at " + remoteAddress;
+		return "Connection " + id + " to node " + remoteNodeId + " at " + remoteAddress;
 	}
 	
 	public DataMap getStatus()
@@ -406,9 +453,10 @@ public class Connection extends Thread
 		status.put("startedSince", (now - initTime));
 		status.put("sent", new DataMap("count", sentCount, "bytes", sentBytes, "last", now - sentLast));
 		status.put("recv", new DataMap("count", recvCount, "bytes", recvBytes, "last", now - recvLast));
-		status.put("state", state == STATE_NEW ? "new" : state == STATE_INITIALIZING ? "initializing" : state == STATE_INITIALIZED ? "initialized" : state == STATE_ACTIVE ? "active" : state == STATE_FAILED ? "failed" : state == STATE_CLOSING ? "closing" : state == STATE_DEAD ? "dead" : "unknown");
+		status.put("state", getStateAsString());
 		status.put("queue", queue.getStatus());
 		return status;
 	}
+
 	
 }
