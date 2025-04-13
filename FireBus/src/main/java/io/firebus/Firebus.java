@@ -128,22 +128,6 @@ public class Firebus
 			return nodeCore.getDirectory().getNodeById(nodeId);
 		return null;
 	}
-	
-	/*public FunctionInformation getFunctionInformation(String name)
-	{
-		FunctionInformation si = null;
-		NodeInformation ni = nodeCore.getDirectory().findFunction(name);
-		if(ni == null)
-		{
-			logger.fine("Broadcasting Service Information Request Message");
-			Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, name, null);
-			Message respMsg = nodeCore.getCorrelationManager().sendAndWait(findMsg, 2000);
-			if(respMsg != null)
-				si = nodeCore.getDirectory().getNodeById(respMsg.getOriginatorId()).getFunctionInformation(name);
-		}
-
-		return si;
-	}*/
 
 	public Payload requestService(String serviceName, Payload payload) throws FunctionErrorException, FunctionTimeoutException
 	{

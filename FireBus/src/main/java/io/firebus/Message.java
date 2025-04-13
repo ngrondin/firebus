@@ -188,6 +188,11 @@ public class Message
 		return type;
 	}
 	
+	public String getHeaderString() 
+	{
+		return getTypeString() + ":" + subject + "@" + destinationId;
+	}
+	
 	public String getTypeString()
 	{
 		String ret = null;

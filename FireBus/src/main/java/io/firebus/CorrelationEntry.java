@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.firebus.interfaces.CorrelationListener;
+import io.firebus.logging.Level;
 import io.firebus.logging.Logger;
 import io.firebus.threads.ThreadManager;
 import io.firebus.data.DataMap;
@@ -11,7 +12,9 @@ import io.firebus.data.DataMap;
 public class CorrelationEntry {
 	protected int id;
 	protected int sequence;
-	protected Message outboundMessage;
+	protected Message firstOutboundMessage;
+	protected Message lastReceivedInboundMessage;
+	protected Message lastPoppedInboundMessage;
 	protected Map<Integer, Message> inboundMessages;
 	protected NodeCore nodeCore;
 	protected CorrelationListener correlationListener;
@@ -50,6 +53,7 @@ public class CorrelationEntry {
 		Message next = inboundMessages.get(sequence);
 		if(next != null) {
 			inboundMessages.remove(sequence);
+			lastPoppedInboundMessage = next;
 			sequence++;
 		}
 		return next;
@@ -76,8 +80,9 @@ public class CorrelationEntry {
 
 	public synchronized void push(Message msg) {
 		int seq = msg.getCorrelationSequence();
-		Logger.finer("fb.correntry.received", new DataMap("id", id, "seq", seq));
+		if(Logger.isLevel(Level.FINER)) Logger.finer("fb.correntry.received", new DataMap("id", id, "seq", seq));
 		inboundMessages.put(seq, msg);
+		lastReceivedInboundMessage = msg;
 		expiry = System.currentTimeMillis() + timeout;
 		drainInboundQueue();
 		notifyAll();
@@ -92,7 +97,7 @@ public class CorrelationEntry {
 				final Message inboundMessage = next;
 				threadManager.enqueue(new Runnable() {
 					public void run() {
-						correlationListener.correlatedResponseReceived(outboundMessage, inboundMessage);
+						correlationListener.correlatedResponseReceived(firstOutboundMessage, inboundMessage);
 					}
 				}, listenerFunctionName, -1);
 			}
@@ -104,18 +109,16 @@ public class CorrelationEntry {
 		long now = System.currentTimeMillis();
 		if(expired == false && now > expiry) 
 		{
-			DataMap logMap = new DataMap("id", id, "nodeid", nodeCore.getNodeId(), "dur", (now - start), "exp", expiry, "start", start, "timeout", timeout, "listnerfunc", listenerFunctionName);
-			if(outboundMessage != null) {
-				logMap.put("outmsgtype", outboundMessage.getTypeString());
-				logMap.put("outsubject", outboundMessage.subject);
-				logMap.put("outdest", outboundMessage.getDestinationId());
-			}
+			DataMap logMap = new DataMap("id", id, "nodeid", nodeCore.getNodeId(), "dur", (now - start), "exp", expiry, "start", start, "timeout", timeout, "listnerfunc", listenerFunctionName, "sequence", sequence);
+			if(firstOutboundMessage != null) logMap.put("outmsg", firstOutboundMessage.getHeaderString());
+			if(lastReceivedInboundMessage != null) logMap.put("lastrecvmsg", lastReceivedInboundMessage.getHeaderString());
+			if(lastPoppedInboundMessage != null) logMap.put("lastpoppedmsg", lastPoppedInboundMessage.getHeaderString());
 			Logger.warning("fb.correntry.expired", logMap);
 			expired = true;
 			if(correlationListener != null) {
 				threadManager.enqueue(new Runnable() {
 					public void run() {
-						correlationListener.correlationTimedout(outboundMessage);
+						correlationListener.correlationTimedout(firstOutboundMessage);
 					}
 				}, listenerFunctionName, -1);
 			}

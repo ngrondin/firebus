@@ -124,6 +124,13 @@ public class Logger {
 		log(Level.FINEST, event, null, null);
 	}
 
+	public static int getLevel() {
+		return level;
+	}
+	
+	public static boolean isLevel(int lvl) {
+		return lvl <= level;
+	}
 	
 	public static String getLevelString(int lvl) {
 		switch(lvl) {

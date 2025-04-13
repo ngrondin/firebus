@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import io.firebus.data.DataMap;
+import io.firebus.logging.Level;
 import io.firebus.logging.Logger;
 
 public class ConnectionServer extends Thread
@@ -27,13 +28,13 @@ public class ConnectionServer extends Thread
 			{
 				try
 				{
-					Logger.fine("fb.connections.starting", new DataMap("port", port));
+					if(Logger.isLevel(Level.FINE)) Logger.fine("fb.connections.starting", new DataMap("port", port));
 					server = new ServerSocket(port);
 					successfulBind = true;
 				}
 				catch(Exception e)	
 				{	
-					Logger.fine("fb.connections.alreadyused", new DataMap("port", port));
+					if(Logger.isLevel(Level.FINE)) Logger.fine("fb.connections.alreadyused", new DataMap("port", port));
 					port++;
 				}			
 			}
@@ -41,7 +42,7 @@ public class ConnectionServer extends Thread
 		else
 		{
 			port = p;
-			Logger.fine("fb.connections.starting", new DataMap("port", port));
+			if(Logger.isLevel(Level.FINE)) Logger.fine("fb.connections.starting", new DataMap("port", port));
 			server = new ServerSocket(port);
 		}		
 		setName("fbConnServer");

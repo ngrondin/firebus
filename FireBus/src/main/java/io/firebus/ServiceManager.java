@@ -6,6 +6,7 @@ import java.util.List;
 
 import io.firebus.data.DataMap;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Level;
 import io.firebus.logging.Logger;
 
 public class ServiceManager extends ExecutionManager {
@@ -20,7 +21,7 @@ public class ServiceManager extends ExecutionManager {
 	
 	public void addService(String name, ServiceProvider s, int mc)
 	{
-		Logger.fine("fb.service.manager.add", new DataMap("service", name));
+		if(Logger.isLevel(Level.FINE)) Logger.fine("fb.service.manager.add", new DataMap("service", name));
 		FunctionEntry e = services.get(name);
 		if(e == null)
 		{
@@ -31,7 +32,7 @@ public class ServiceManager extends ExecutionManager {
 	
 	public void removeService(String name)
 	{
-		Logger.fine("fb.service.manager.remove", new DataMap("service", name));
+		if(Logger.isLevel(Level.FINE)) Logger.fine("fb.service.manager.remove", new DataMap("service", name));
 		if(services.containsKey(name))
 			services.remove(name);
 	}
@@ -68,11 +69,11 @@ public class ServiceManager extends ExecutionManager {
 				sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 0, Message.MSGTYPE_PROGRESS, msg.getSubject(), new Payload());
 				nodeCore.getServiceThreads().enqueue(new Runnable() {
 					public void run() {
-						Logger.fine("fb.service.manager.executing", new DataMap("service", name, "corr", msg.getCorrelation()));
+						if(Logger.isLevel(Level.FINE)) Logger.fine("fb.service.manager.executing", new DataMap("service", name, "corr", msg.getCorrelation()));
 						try
 						{
 							Payload returnPayload = ((ServiceProvider)fe.function).service(inPayload);
-							Logger.fine("fb.service.manager.executed", new DataMap("service", name, "corr", msg.getCorrelation()));
+							if(Logger.isLevel(Level.FINE)) Logger.fine("fb.service.manager.executed", new DataMap("service", name, "corr", msg.getCorrelation()));
 							if(msg.getType() == Message.MSGTYPE_REQUESTSERVICE) 
 								sendMessage(msg.getOriginatorId(), msg.getCorrelation(), 1, Message.MSGTYPE_SERVICERESPONSE, msg.getSubject(), returnPayload);
 						}

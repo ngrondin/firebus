@@ -6,6 +6,7 @@ import java.util.List;
 
 import io.firebus.data.DataMap;
 import io.firebus.interfaces.StreamProvider;
+import io.firebus.logging.Level;
 import io.firebus.logging.Logger;
 
 public class StreamManager extends ExecutionManager {
@@ -20,7 +21,7 @@ public class StreamManager extends ExecutionManager {
 	
 	public void addStream(String name, StreamProvider s, int mc)
 	{
-		Logger.fine("fb.stream.manager.add", new DataMap("stream", name));
+		if(Logger.isLevel(Level.FINE)) Logger.fine("fb.stream.manager.add", new DataMap("stream", name));
 		FunctionEntry e = streams.get(name);
 		if(e == null)
 		{
@@ -31,7 +32,7 @@ public class StreamManager extends ExecutionManager {
 	
 	public void removeStream(String name)
 	{
-		Logger.fine("fb.stream.manager.remove", new DataMap("stream", name));
+		if(Logger.isLevel(Level.FINE)) Logger.fine("fb.stream.manager.remove", new DataMap("stream", name));
 		if(streams.containsKey(name))
 			streams.remove(name);
 	}
@@ -66,7 +67,7 @@ public class StreamManager extends ExecutionManager {
 			{
 				nodeCore.getServiceThreads().enqueue(new Runnable() {
 					public void run() {
-						Logger.fine("fb.stream.manager.requesting", new DataMap("stream", name, "corr", msg.getCorrelation()));
+						if(Logger.isLevel(Level.FINE)) Logger.fine("fb.stream.manager.requesting", new DataMap("stream", name, "corr", msg.getCorrelation()));
 						StreamProvider streamProvider = (StreamProvider)fe.function;
 						long idleTimeout = streamProvider.getStreamIdleTimeout();
 						CorrelationEntry corrEntry = nodeCore.getCorrelationManager().createEntry(idleTimeout);
@@ -77,7 +78,7 @@ public class StreamManager extends ExecutionManager {
 						{
 							Payload acceptPayload = streamProvider.acceptStream(inPayload, streamEndpoint);
 							streamEndpoint.setAcceptPayload(acceptPayload);
-							Logger.fine("fb.stream.manager.accepted", new DataMap("stream", name, "corr", msg.getCorrelation()));
+							if(Logger.isLevel(Level.FINE)) Logger.fine("fb.stream.manager.accepted", new DataMap("stream", name, "corr", msg.getCorrelation()));
 							if(acceptPayload == null)
 								acceptPayload = new Payload();
 							acceptPayload.metadata.put("correlationid", String.valueOf(localCorrelationId));

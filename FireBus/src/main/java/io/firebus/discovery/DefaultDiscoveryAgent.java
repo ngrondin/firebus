@@ -13,6 +13,7 @@ import io.firebus.Address;
 import io.firebus.DiscoveryAgent;
 import io.firebus.NodeCore;
 import io.firebus.data.DataMap;
+import io.firebus.logging.Level;
 import io.firebus.logging.Logger;
 
 public class DefaultDiscoveryAgent extends DiscoveryAgent
@@ -52,7 +53,7 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 	            	try
 	            	{
 	            		socket.joinGroup(new InetSocketAddress(discoveryAddress, discoveryPort), xface);
-	            		Logger.fine("fb.discovery.default.interface", new DataMap("interface", xface.getName()));
+	            		if(Logger.isLevel(Level.FINE)) Logger.fine("fb.discovery.default.interface", new DataMap("interface", xface.getName()));
 	            	}
 	            	catch(Exception e)
 	            	{
@@ -102,7 +103,7 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 			    	String net = parts[5];
 			    	if(id != nodeId  &&  net.equals(networkName))
 			    	{
-						Logger.fine("fb.discovery.default.request", new DataMap("id", id, "network", net));
+			    		if(Logger.isLevel(Level.FINE)) Logger.fine("fb.discovery.default.request", new DataMap("id", id, "network", net));
 			    		sendAdvertisement(packet.getAddress());
 			    	}
 			    }
@@ -116,7 +117,7 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 			    	Address address = new Address(ad, port);
 			    	if(id != nodeId  &&  net.equals(networkName))
 			    	{
-						Logger.fine("fb.discovery.default.announcement", new DataMap("id", id, "network", net, "address", address));
+			    		if(Logger.isLevel(Level.FINE))Logger.fine("fb.discovery.default.announcement", new DataMap("id", id, "network", net, "address", address));
 						nodeCore.getDirectory().processDiscoveredNode(id,  address);
 			    	}
 			    }
@@ -145,7 +146,7 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 		            if(!xface.isLoopback()  &&  xface.isUp())
 		            {
 						multicastSend(message, xface);
-						Logger.fine("fb.discovery.default.sent", new DataMap("interface", xface.getName()));
+						if(Logger.isLevel(Level.FINE))Logger.fine("fb.discovery.default.sent", new DataMap("interface", xface.getName()));
 		            }
 		        }
 	        }
@@ -172,7 +173,7 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 			String message = "Firebus anouncement from " + nodeId + " " + networkName + " " + localAddress.getHostAddress()+ " " + connectionsPort;
 			multicastSend(message, iface);
 
-			Logger.fine("fb.discovery.default.sent", new DataMap("node", nodeId, "network", networkName, "address", localAddress.getHostAddress(), "port", connectionsPort, "interface",  iface.getName()));
+			if(Logger.isLevel(Level.FINE))Logger.fine("fb.discovery.default.sent", new DataMap("node", nodeId, "network", networkName, "address", localAddress.getHostAddress(), "port", connectionsPort, "interface",  iface.getName()));
 		}
         catch (IOException e) 
 		{

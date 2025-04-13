@@ -5,6 +5,7 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.information.FunctionInformation;
 import io.firebus.interfaces.StreamRequestor;
+import io.firebus.logging.Level;
 import io.firebus.logging.Logger;
 
 public class StreamRequest 
@@ -32,7 +33,7 @@ public class StreamRequest
 	
 	public StreamEndpoint initiate() throws FunctionErrorException, FunctionTimeoutException
 	{
-		Logger.fine("fb.stream.request.start", new DataMap("name", streamName));
+		if(Logger.isLevel(Level.FINE)) Logger.fine("fb.stream.request.start", new DataMap("name", streamName));
 		StreamEndpoint streamEndpoint = null;
 		FunctionInformation lastRequestedFunction = null;
 		FunctionFinder functionFinder = new FunctionFinder(nodeCore, streamName);
@@ -45,7 +46,7 @@ public class StreamRequest
 					try{ Thread.sleep(1000);} catch(Exception e) {}
 
 				lastRequestedFunction = functionInformation;
-				Logger.finer("fb.stream.request.send", new DataMap("node", functionInformation.getNodeId()));
+				if(Logger.isLevel(Level.FINER)) Logger.finer("fb.stream.request.send", new DataMap("node", functionInformation.getNodeId()));
 				Message reqMsg = new Message(functionInformation.getNodeId(), nodeCore.getNodeId(), Message.MSGTYPE_REQUESTSTREAM, streamName, requestPayload);
 				int correlation = nodeCore.getCorrelationManager().send(reqMsg, subTimeout);
 				Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
@@ -63,7 +64,7 @@ public class StreamRequest
 						}
 						else if(respMsg.getType() == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
 						{
-							Logger.finer("fb.stream.request.unavailable", new DataMap("stream", streamName, "node", functionInformation.getNodeId()));
+							if(Logger.isLevel(Level.FINER)) Logger.finer("fb.stream.request.unavailable", new DataMap("stream", streamName, "node", functionInformation.getNodeId()));
 							functionInformation.wasUnavailable();
 							break;
 						} 
@@ -83,7 +84,7 @@ public class StreamRequest
 						
 						if(System.currentTimeMillis() > expiry)
 						{
-							Logger.finer("fb.stream.request.timeout", new DataMap("stream", streamName, "node", functionInformation.getNodeId(), "corr", reqMsg.getCorrelation()));
+							if(Logger.isLevel(Level.FINER)) Logger.finer("fb.stream.request.timeout", new DataMap("stream", streamName, "node", functionInformation.getNodeId(), "corr", reqMsg.getCorrelation()));
 							functionInformation.timedOutWhileExecuting();
 							throw new FunctionTimeoutException("Stream request " + streamName + " has timed out while executing (corr: " + reqMsg.getCorrelation() + ")");
 						}
@@ -91,7 +92,7 @@ public class StreamRequest
 				}
 				else
 				{
-					Logger.finer("fb.stream.request.noresp", new DataMap("stream", streamName, "node", functionInformation.getNodeId(), "corr", reqMsg.getCorrelation()));
+					if(Logger.isLevel(Level.FINER)) Logger.finer("fb.stream.request.noresp", new DataMap("stream", streamName, "node", functionInformation.getNodeId(), "corr", reqMsg.getCorrelation()));
 					functionInformation.didNotRespond();
 				}
 			}			

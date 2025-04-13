@@ -9,6 +9,7 @@ import io.firebus.data.DataMap;
 import io.firebus.interfaces.BusFunction;
 import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
+import io.firebus.logging.Level;
 import io.firebus.logging.Logger;
 
 public class StandaloneContainer
@@ -30,7 +31,7 @@ public class StandaloneContainer
 			{
 				String address = knownAddresses.getObject(i).getString("address");
 				int port = Integer.parseInt(knownAddresses.getObject(i).getString("port"));
-				Logger.fine("fb.container.addingknownaddress", new DataMap("address", address, "port", port));
+				if(Logger.isLevel(Level.FINE)) Logger.fine("fb.container.addingknownaddress", new DataMap("address", address, "port", port));
 				firebus.addKnownNodeAddress(address, port);
 			}
 		}
@@ -52,7 +53,7 @@ public class StandaloneContainer
 						{
 							Class<?> c = Class.forName(className);
 							Constructor<?> cons = c.getConstructor(new Class[]{Firebus.class, DataMap.class});
-							Logger.fine("fb.container.addingservice", new DataMap("name", name));
+							if(Logger.isLevel(Level.FINE)) Logger.fine("fb.container.addingservice", new DataMap("name", name));
 							BusFunction service = (BusFunction)cons.newInstance(new Object[]{firebus, deploymentConfig});
 							if(service instanceof ServiceProvider)
 								firebus.registerServiceProvider(name, ((ServiceProvider)service), 10);

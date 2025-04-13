@@ -5,6 +5,7 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.exceptions.FunctionTimeoutException;
 import io.firebus.information.FunctionInformation;
 import io.firebus.interfaces.ServiceRequestor;
+import io.firebus.logging.Level;
 import io.firebus.logging.Logger;
 
 public class ServiceRequest
@@ -31,7 +32,7 @@ public class ServiceRequest
 	
 	public Payload execute() throws FunctionErrorException, FunctionTimeoutException
 	{
-		Logger.fine("fb.service.request.start", new DataMap("name", serviceName));
+		if(Logger.isLevel(Level.FINE)) Logger.fine("fb.service.request.start", new DataMap("name", serviceName));
 		boolean responseReceived = false;
 		Payload responsePayload = null;
 		FunctionFinder functionFinder = new FunctionFinder(nodeCore, serviceName);
@@ -41,7 +42,7 @@ public class ServiceRequest
 			functionInformation = functionFinder.findNext(); 
 			if(functionInformation != null)
 			{
-				Logger.finer("fb.service.request.send", new DataMap("node", functionInformation.getNodeId()));
+				if(Logger.isLevel(Level.FINER)) Logger.finer("fb.service.request.send", new DataMap("node", functionInformation.getNodeId()));
 				int msgType = requestTimeout >= 0 ? Message.MSGTYPE_REQUESTSERVICE : Message.MSGTYPE_REQUESTSERVICEANDFORGET;
 				Message reqMsg = new Message(functionInformation.getNodeId(), nodeCore.getNodeId(), msgType, serviceName, requestPayload);
 				int correlation = nodeCore.getCorrelationManager().send(reqMsg, subTimeout);

@@ -92,7 +92,7 @@ public class CorrelationManager extends Thread
 	public int send(Message outMsg, CorrelationListener cl, long timeout)
 	{
 		CorrelationEntry entry = createEntry(timeout);
-		entry.outboundMessage = outMsg;
+		entry.firstOutboundMessage = outMsg;
 		if(cl != null) {
 			ThreadManager tm = outMsg.getType() == Message.MSGTYPE_REQUESTSTREAM ? nodeCore.getStreamThreads() : nodeCore.getServiceThreads();
 			entry.setListener(cl, null, tm, timeout);
