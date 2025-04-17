@@ -12,7 +12,7 @@ import io.firebus.interfaces.StreamHandler;
 public class StreamSender implements StreamHandler {
 	
 	public interface CompletionListener {
-		public void completed();
+		public void completed(byte[] bytes);
 		public void error(String message);
 	}
 	
@@ -78,14 +78,14 @@ public class StreamSender implements StreamHandler {
 		streamEndpoint.send(chunk);
 	}
 	
-	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
+	public void receiveStreamData(Payload payload) {
 		try {
 			String ctl = payload.metadata.get("ctl");
 			if(ctl.equals("next")) {
 				bytesSent += chunkLength;
 				sendNextChunk();
 			} else if(ctl.equals("complete")) {
-				complete();
+				complete(payload.getBytes());
 			} else if(ctl.equals("resend")) {
 				sendChunk();
 			} else if(ctl.equals("fail")) {
@@ -96,12 +96,13 @@ public class StreamSender implements StreamHandler {
 		}
 	}
 	
-	public void streamClosed(StreamEndpoint streamEndpoint) {
-		if(completed == false) {
+	public void streamClosed() {
+		if(completed == false)
 			fail("Stream Sender Connection closed before completion");
-		} else {
-			complete();
-		}
+	}
+	
+	public void streamError(FunctionErrorException error) {
+		fail(error.getMessage());		
 	}
 	
 	protected void fail(String e) {
@@ -112,10 +113,9 @@ public class StreamSender implements StreamHandler {
 		close();
 	}
 	
-	protected void complete() {
-		streamEndpoint.setHandler(null);
+	protected void complete(byte[] bytes) {
 		if(listener != null) 
-			listener.completed();
+			listener.completed(bytes);
 		close();
 	}
 	
@@ -148,4 +148,6 @@ public class StreamSender implements StreamHandler {
 	public long getBytesSent() {
 		return bytesSent;
 	}
+
+
 }

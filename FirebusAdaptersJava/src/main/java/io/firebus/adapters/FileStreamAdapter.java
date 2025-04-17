@@ -30,13 +30,8 @@ public class FileStreamAdapter extends Adapter implements StreamProvider {
 			if(action.equals("get")) {
 				final FileInputStream fis = new FileInputStream(path + File.separator + fileName);
 				new StreamSender(fis, streamEndpoint, new StreamSender.CompletionListener() {
-					public void completed() {
-						try {
-							streamEndpoint.close();
-							fis.close();
-						} catch(Exception e) {
-							Logger.severe("fb.adapter.filestream.closeerror", "Error closing stream after file get", e);
-						}
+					public void completed(byte[] bytes) {
+
 					}
 
 					public void error(String message) {
@@ -47,13 +42,9 @@ public class FileStreamAdapter extends Adapter implements StreamProvider {
 			} else if(action.equals("put")) {
 				final FileOutputStream fos = new FileOutputStream(path + File.separator + fileName);
 				new StreamReceiver(fos, streamEndpoint, new StreamReceiver.CompletionListener() {
-					public void completed() {
-						try {
-							streamEndpoint.close();
-							fos.close();
-						} catch(Exception e) {
-							Logger.severe("fb.adapter.filestream.closeerror", e);
-						}						
+					public byte[] completed() {
+
+						return null;
 					}
 
 					public void error(String message) {

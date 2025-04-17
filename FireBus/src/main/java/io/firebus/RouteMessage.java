@@ -24,7 +24,7 @@ public class RouteMessage implements Runnable {
 		long end = System.currentTimeMillis();
 		long dur = end - start;
 		long totalDur = end - created;
-		if(dur > 3 || totalDur > 10) {
+		if(dur > 5 || totalDur > 10) {
 			Logger.warning("fb.thread.route.long", new DataMap("routing", totalDur, "total", totalDur));
 		}
 	}

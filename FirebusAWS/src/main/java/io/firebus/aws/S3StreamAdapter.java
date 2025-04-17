@@ -57,7 +57,7 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 				GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(filePath).build();
 				InputStream is = s3Client.getObject(getObjectRequest);
 				new StreamSender(is, streamEndpoint, new StreamSender.CompletionListener() {
-					public void completed() {
+					public void completed(byte[] bytes) {
 						cleanup();
 					}
 
@@ -81,13 +81,14 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 				final String mime = payload.metadata.get("mime");
 				final FileOutputStream fos = new FileOutputStream(file);
 				new StreamReceiver(fos, streamEndpoint, new StreamReceiver.CompletionListener() {
-					public void completed() {
+					public byte[] completed() {
 						Map<String, String> metadata = new HashMap<String, String>();
 						if(mime != null) 
 					        metadata.put("content-type", mime);
 						PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucketName).key(filePath).metadata(metadata).build();
 				        s3Client.putObject(objectRequest, RequestBody.fromFile(file));
-				        cleanup();
+				        //cleanup();
+				        return null;
 					}
 
 					public void error(String message) {

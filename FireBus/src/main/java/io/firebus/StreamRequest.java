@@ -72,7 +72,7 @@ public class StreamRequest
 						{
 							Payload acceptPayload = respMsg.getPayload();
 							int remoteCorrelation = Integer.parseInt(acceptPayload.metadata.get("correlationid"));
-							int idleTimeout = Integer.parseInt(acceptPayload.metadata.get("timeout"));
+							int idleTimeout = Integer.parseInt(acceptPayload.metadata.get("timeout")) + 2000; //This is to let the stream server expire first
 							streamEndpoint = new StreamEndpoint(nodeCore, streamName, correlation, remoteCorrelation, 0, functionInformation.getNodeId());
 							streamEndpoint.setAcceptPayload(acceptPayload);
 							streamEndpoint.setRequestPayload(requestPayload);

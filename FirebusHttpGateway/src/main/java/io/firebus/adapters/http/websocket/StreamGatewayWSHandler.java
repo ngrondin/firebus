@@ -70,7 +70,7 @@ public class StreamGatewayWSHandler extends WebsocketConnectionHandler implement
 		Logger.info("fb.http.ws.streamgw.closed", new DataMap("id", id, "life", (now - start), "lastin", lastIn > -1 ? (now - lastIn) : -1, "lastout", lastOut > -1 ? (now - lastOut) : -1));
 	}
 
-	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
+	public void receiveStreamData(Payload payload) {
 		String str = payload.getString(true);
 		if(canGZIP && str.length() > 100000) {
 			try {
@@ -88,8 +88,11 @@ public class StreamGatewayWSHandler extends WebsocketConnectionHandler implement
 		lastOut = System.currentTimeMillis();
 	}
 
-	public void streamClosed(StreamEndpoint streamEndpoint) {
+	public void streamError(FunctionErrorException error) {
+		
+	}
+	
+	public void streamClosed() {
 		destroy();
 	}
-
 }

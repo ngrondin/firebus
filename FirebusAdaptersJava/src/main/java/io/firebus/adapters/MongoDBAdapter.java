@@ -186,7 +186,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 			DataMap request = payload.getDataMap();
 			Logger.finer("fb.adapter.monfo.request", request);
 			int chunkSize = request.containsKey("chunksize") ? request.getNumber("chunksize").intValue() : 50;
-			int advance = request.containsKey("advance") ? request.getNumber("advance").intValue() : 0;
+			//int advance = request.containsKey("advance") ? request.getNumber("advance").intValue() : 0;
 			if(chunkSize <= 0) throw new FunctionErrorException("Stream chunk size cannot be 0");
 			long start = System.currentTimeMillis();
 			MongoCursor<Document> iterator = null;
@@ -202,7 +202,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 			final MongoCursor<Document> it = iterator;
 			final DataProcessor pp = postProcessor;
 			streamEndpoint.setHandler(new StreamHandler() {
-				public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
+				public void receiveStreamData(Payload payload) {
 					if(payload.getString().equals("next")) {
 						try {
 							sendToStream(streamEndpoint, it, chunkSize, pp);
@@ -215,18 +215,21 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 					}
 				}
 
-				public void streamClosed(StreamEndpoint streamEndpoint) {
+				public void streamClosed() {
 					it.close();
 					long duration = System.currentTimeMillis() - start;
 					Logger.fine("fb.adapter.mongo.stream.close", new DataMap("ms", duration));
 				}
+
+				public void streamError(FunctionErrorException error) { }
 			});
 			sendToStream(streamEndpoint, it, chunkSize, pp);
-			if(it.hasNext())
-				for(int i = 0; i < advance; i++)
-					sendToStream(streamEndpoint, it, chunkSize, pp);
+			//if(it.hasNext()) //Ignoring the advance functionality for now as it creates correlation not found warnings
+			//	for(int i = 0; i < advance; i++)
+			//		sendToStream(streamEndpoint, it, chunkSize, pp);
 			return null;			
 		} catch(Exception e) {
+			streamEndpoint.close();
 			Logger.severe("fb.adapter.mongo.stream", "Error accepting stream", e);
 			throw new FunctionErrorException("Error in db stream", e);	
 		}

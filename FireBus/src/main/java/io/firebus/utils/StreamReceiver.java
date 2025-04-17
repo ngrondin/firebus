@@ -10,13 +10,13 @@ import io.firebus.interfaces.StreamHandler;
 public class StreamReceiver implements StreamHandler {
 
 	public interface CompletionListener {
-		public void completed();
+		public byte[] completed() throws Exception;
 		public void error(String message);
 	}
 	
 	public interface ChunkListener {
 		public void chunk(byte[] bytes);
-		public void completed();
+		public byte[] completed() throws Exception;
 		public void error(String message);
 	}
 	
@@ -62,7 +62,7 @@ public class StreamReceiver implements StreamHandler {
 		streamEndpoint.setHandler(this);		
 	}
 	
-	public void receiveStreamData(Payload payload, StreamEndpoint streamEndpoint) {
+	public void receiveStreamData(Payload payload) {
 		try {
 			byte[] bytes = payload.getBytes();
 			String ctl = payload.metadata.get("ctl");
@@ -92,26 +92,32 @@ public class StreamReceiver implements StreamHandler {
 					fail("Missing sequence number");
 				}
 			} else if(ctl.equals("complete")) {
-				Payload resp = new Payload();
+				byte[] completionbytes = complete();
+				Payload resp = new Payload(completionbytes);
 				resp.metadata.put("ctl", "complete");
 				streamEndpoint.send(resp);
 				complete = true;
-				complete();
-
 			}
 		} catch(Exception e) {
 			fail(e.getMessage());
 		}		
 	}
 
-	public void streamClosed(StreamEndpoint streamEndpoint) {
+	public void streamClosed() {
 		if(complete == false)
-			fail("Stream Receiver connection closed before completion");		
+			fail("Stream Receiver connection closed before completion");	
+		else
+			close();
 	}
+	
+	public void streamError(FunctionErrorException error) {
+		fail(error.getMessage());
+	}
+
 	
 	protected void fail(String e) {
 		error = e + " (life: " + (System.currentTimeMillis() - start) + "ms received: " + bytesReceived + "b chunks: " + chunkSequence + ")";
-		streamEndpoint.setHandler(null);
+		streamEndpoint.error(new FunctionErrorException(e));
 		if(compListener != null)
 			compListener.error(error);
 		else if(chunkListener != null)
@@ -119,13 +125,12 @@ public class StreamReceiver implements StreamHandler {
 		close();
 	}
 	
-	protected void complete() {
-		streamEndpoint.setHandler(null);
+	protected byte[] complete() throws Exception {
 		if(compListener != null)
-			compListener.completed();
+			return compListener.completed();
 		else if(chunkListener != null)
-			chunkListener.completed();
-		close();
+			return chunkListener.completed();
+		return null;
 	}
 	
 	private void close() {
@@ -157,4 +162,5 @@ public class StreamReceiver implements StreamHandler {
 	public long getBytesReceived() {
 		return bytesReceived;
 	}
+
 }
