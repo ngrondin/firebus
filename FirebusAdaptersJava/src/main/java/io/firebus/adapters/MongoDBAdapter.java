@@ -155,7 +155,9 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 						success = true;
 						responseJSON.put("result", "ok");	
 					} catch(Exception e) {
-						if(session != null) session.abortTransaction();
+						if(session != null) {
+							try{session.abortTransaction();} catch(Exception e2) {}
+						}
 						if(e instanceof MongoCommandException && ((MongoCommandException) e).getCode() == 112 && tries < 3) {
 							Logger.warning("fb.adapter.mongo.multitx", e);
 							tries++;
