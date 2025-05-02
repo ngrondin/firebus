@@ -69,6 +69,10 @@ public class FirebusThread extends Thread
 			{
 				Logger.severe("fb.thread.run", e);
 			}
+			catch(OutOfMemoryError e) 
+			{
+				Logger.severe("fb.outofmemory", e);
+			}
 			finally 
 			{
 				totalExecutionCount++;
