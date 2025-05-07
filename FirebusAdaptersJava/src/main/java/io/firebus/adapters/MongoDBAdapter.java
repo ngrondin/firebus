@@ -43,6 +43,7 @@ import io.firebus.interfaces.Consumer;
 import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.StreamHandler;
 import io.firebus.interfaces.StreamProvider;
+import io.firebus.logging.Level;
 import io.firebus.logging.Logger;
 
 public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamProvider, Consumer
@@ -161,6 +162,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 						if(e instanceof MongoCommandException && ((MongoCommandException) e).getCode() == 112 && tries < 3) {
 							Logger.warning("fb.adapter.mongo.multitx", e);
 							tries++;
+							Thread.sleep(100);
 						} else {
 							throw new FunctionErrorException("Error in db multi transaction", e);
 						}
@@ -173,7 +175,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 			long duration = System.currentTimeMillis() - start;
 			if(duration > 2000) 
 				Logger.warning("fb.adapter.mongo.longtx", new DataMap("ms", duration, "req", request));
-			Logger.fine("fb.adapter.mongo.resp", new DataMap("ms", duration));
+			if(Logger.getLevel() >= Level.FINE)
+				Logger.fine("fb.adapter.mongo.resp", new DataMap("ms", duration));
 		}
 		catch(Exception e)
 		{
