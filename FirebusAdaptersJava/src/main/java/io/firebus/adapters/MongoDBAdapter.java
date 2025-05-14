@@ -10,6 +10,7 @@ import org.bson.Document;
 import org.bson.json.Converter;
 import org.bson.json.JsonWriterSettings;
 import org.bson.json.StrictJsonWriter;
+import org.bson.types.ObjectId;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
@@ -409,8 +410,10 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 			for(String key: ((Document)value).keySet())
 				map.put(key, convertToDataEntity(((Document)value).get(key)));
 			return map;			
-		} else if(value instanceof String){
+		} else if(value instanceof String) {
 			return new DataLiteral(StringDecoder.decodeQuotedString((String)value));
+		} else if(value instanceof ObjectId) {
+			return new DataLiteral(((ObjectId)value).toHexString());
 		} else {
 			return new DataLiteral(value);
 		}
