@@ -13,7 +13,7 @@ public class StreamSender implements StreamHandler {
 	
 	public interface CompletionListener {
 		public void completed(byte[] bytes);
-		public void error(String message);
+		public void error(Throwable error);
 	}
 	
 	protected InputStream inputStream;
@@ -102,15 +102,21 @@ public class StreamSender implements StreamHandler {
 	}
 	
 	public void streamError(FunctionErrorException error) {
-		fail(error.getMessage());		
+		processError(error);
+		close();		
 	}
 	
-	protected void fail(String e) {
-		error = e + " (life: " + (System.currentTimeMillis() - start) + "ms sent: " + bytesSent + "b chunks: " + chunkSequence + ")";
+	protected void fail(String message) {
+		//error = e + " (life: " + (System.currentTimeMillis() - start) + "ms sent: " + bytesSent + "b chunks: " + chunkSequence + ")";
 		streamEndpoint.setHandler(null);
-		if(listener != null) 
-			listener.error(error);	
+		FunctionErrorException error = new FunctionErrorException(message);
+		processError(error);
 		close();
+	}
+	
+	protected void processError(Exception e) {
+		if(listener != null) 
+			listener.error(e);	
 	}
 	
 	protected void complete(byte[] bytes) {

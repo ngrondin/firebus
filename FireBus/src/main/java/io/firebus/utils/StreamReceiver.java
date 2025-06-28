@@ -11,13 +11,13 @@ public class StreamReceiver implements StreamHandler {
 
 	public interface CompletionListener {
 		public byte[] completed() throws Exception;
-		public void error(String message);
+		public void error(Throwable error);
 	}
 	
 	public interface ChunkListener {
 		public void chunk(byte[] bytes);
 		public byte[] completed() throws Exception;
-		public void error(String message);
+		public void error(Throwable error);
 	}
 	
 	protected OutputStream outputStream;
@@ -111,18 +111,24 @@ public class StreamReceiver implements StreamHandler {
 	}
 	
 	public void streamError(FunctionErrorException error) {
-		fail(error.getMessage());
+		processError(error);
+		close();
 	}
-
 	
-	protected void fail(String e) {
-		error = e + " (life: " + (System.currentTimeMillis() - start) + "ms received: " + bytesReceived + "b chunks: " + chunkSequence + ")";
-		streamEndpoint.error(new FunctionErrorException(e));
+	
+	protected void fail(String message) {
+		//error = message + " (life: " + (System.currentTimeMillis() - start) + "ms received: " + bytesReceived + "b chunks: " + chunkSequence + ")";
+		FunctionErrorException error = new FunctionErrorException(message);
+		streamEndpoint.error(error);
+		processError(error);
+		close();
+	}
+	
+	protected void processError(Exception error) {
 		if(compListener != null)
 			compListener.error(error);
 		else if(chunkListener != null)
 			chunkListener.error(error);
-		close();
 	}
 	
 	protected byte[] complete() throws Exception {

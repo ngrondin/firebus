@@ -34,8 +34,8 @@ public class FileStreamAdapter extends Adapter implements StreamProvider {
 
 					}
 
-					public void error(String message) {
-						Logger.severe("fb.adapter.filestream.senderror", new DataMap("file", fileName, "msg", message));
+					public void error(Throwable error) {
+						Logger.severe("fb.adapter.filestream.senderror", new DataMap("file", fileName, "msg"), error);
 					}
 				});
 				return null;
@@ -43,12 +43,11 @@ public class FileStreamAdapter extends Adapter implements StreamProvider {
 				final FileOutputStream fos = new FileOutputStream(path + File.separator + fileName);
 				new StreamReceiver(fos, streamEndpoint, new StreamReceiver.CompletionListener() {
 					public byte[] completed() {
-
 						return null;
 					}
 
-					public void error(String message) {
-						Logger.severe("fb.adapter.filestream.puterror", new DataMap("file", fileName, "msg", message));
+					public void error(Throwable error) {
+						Logger.severe("fb.adapter.filestream.puterror", new DataMap("file", fileName), error);
 					}
 				});
 				return null;

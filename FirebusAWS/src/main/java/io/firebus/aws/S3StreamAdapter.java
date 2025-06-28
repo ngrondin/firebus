@@ -61,8 +61,8 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 						cleanup();
 					}
 
-					public void error(String message) {
-						Logger.severe("fb.adapter.aws.s3.errorsending", new DataMap("file", fileName, "msg", message));
+					public void error(Throwable error) {
+						Logger.severe("fb.adapter.aws.s3.errorsending", new DataMap("file", fileName), error);
 						cleanup();
 					}
 					
@@ -91,8 +91,8 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 				        return null;
 					}
 
-					public void error(String message) {
-						Logger.severe("fb.adapter.aws.s3.errorputting", new DataMap("file", fileName, "msg", message));
+					public void error(Throwable error) {
+						Logger.severe("fb.adapter.aws.s3.errorputting", new DataMap("file", fileName), error);
 						cleanup();
 					}
 					
