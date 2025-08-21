@@ -49,6 +49,12 @@ public class FileStreamHandler extends InboundHandler  {
 			payload.setData(request);
 			payload.metadata.put("mime", "application/json");
 			StreamEndpoint sep = firebus.requestStream(streamName, payload, 10000);
+			Payload acceptPayload = sep.getAcceptPayload();
+			if(acceptPayload != null && acceptPayload.getDataMap() != null) {
+				DataMap fileMetaData = acceptPayload.getDataMap();
+				resp.setContentType(fileMetaData.getString("mime"));
+				resp.setHeader("Content-Disposition", "attachment; filename=\"" + fileMetaData.getString("filename") + "\"");				
+			}
 			resp.setStatus(200);
 			OutputStream os = resp.getOutputStream();
 			StreamReceiver receiver = new StreamReceiver(os, sep);
