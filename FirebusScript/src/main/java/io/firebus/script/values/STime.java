@@ -6,6 +6,8 @@ import io.firebus.script.exceptions.ScriptCallException;
 import io.firebus.script.values.abs.SPredefinedObject;
 import io.firebus.script.values.abs.SValue;
 import io.firebus.script.values.callables.impl.time.AtDate;
+import io.firebus.script.values.callables.impl.time.GetHours;
+import io.firebus.script.values.callables.impl.time.GetMinutes;
 
 public class STime extends SPredefinedObject {
 	protected ZonedTime time;
@@ -42,6 +44,10 @@ public class STime extends SPredefinedObject {
 	public SValue getMember(String name) {
 		if(name.equals("atDate")) {
 			return new AtDate(this);
+		} else if(name.equals("getHours")) {
+			return new GetHours(this);
+		} else if(name.equals("getMinutes")) {
+			return new GetMinutes(this);
 		}
 		return SUndefined.get();
 	}

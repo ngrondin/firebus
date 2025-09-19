@@ -93,6 +93,18 @@ public class ZonedTime {
 		return zdt.withZoneSameInstant(zoneId).withHour(hours).withMinute(minutes).withSecond(seconds).withNano(nano);
 	}
 	
+	public int getHours() {
+		return hours;
+	}
+	
+	public int getMinutes() {
+		return minutes;
+	}
+	
+	public ZoneId getTimezone() {
+		return zoneId;
+	}
+	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("T");
