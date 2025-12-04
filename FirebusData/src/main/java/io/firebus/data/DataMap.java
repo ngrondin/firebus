@@ -215,34 +215,36 @@ public class DataMap extends DataEntity implements Map<String, Object>
 
 	public DataMap merge(DataMap other)
 	{
-		Iterator<String> it = other.keySet().iterator();
-		while(it.hasNext())
-		{
-			String key = it.next();
-			if(get(key) != null)
+		if(other != null) {
+			Iterator<String> it = other.keySet().iterator();
+			while(it.hasNext())
 			{
-				if(other.get(key) instanceof DataMap)
+				String key = it.next();
+				if(get(key) != null)
 				{
-					if(get(key) instanceof DataMap)
-						getObject(key).merge(other.getObject(key));
+					if(other.get(key) instanceof DataMap)
+					{
+						if(get(key) instanceof DataMap)
+							getObject(key).merge(other.getObject(key));
+						else
+							put(key, other.get(key));
+					}
+					else if(other.get(key) instanceof DataList)
+					{
+						if(get(key) instanceof DataList)
+							getList(key).merge(other.getList(key));
+						else
+							put(key, other.get(key));
+					}
 					else
+					{
 						put(key, other.get(key));
-				}
-				else if(other.get(key) instanceof DataList)
-				{
-					if(get(key) instanceof DataList)
-						getList(key).merge(other.getList(key));
-					else
-						put(key, other.get(key));
+					}				
 				}
 				else
 				{
 					put(key, other.get(key));
-				}				
-			}
-			else
-			{
-				put(key, other.get(key));
+				}
 			}
 		}
 		return this;
