@@ -103,8 +103,26 @@ public class DataFilter {
 						} else {
 							ret = false;
 						}
+					} else if(fValObj.containsKey("$gte")) {
+						DataEntity fSubVal = fValObj.get("$gte");
+						if(fSubVal instanceof DataLiteral && dVal != null) {
+							if(((DataLiteral)fSubVal).getNumber().doubleValue() >= ((DataLiteral)dVal).getNumber().doubleValue()) {
+								ret = false;
+							} 
+						} else {
+							ret = false;
+						}
 					} else if(fValObj.containsKey("$lt")) {
 						DataEntity fSubVal = fValObj.get("$lt");
+						if(fSubVal instanceof DataLiteral && dVal != null) {
+							if(((DataLiteral)fSubVal).getNumber().doubleValue() <= ((DataLiteral)dVal).getNumber().doubleValue()) {
+								ret = false;
+							} 
+						} else {
+							ret = false;
+						}
+					} else if(fValObj.containsKey("$lte")) {
+						DataEntity fSubVal = fValObj.get("$lte");
 						if(fSubVal instanceof DataLiteral && dVal != null) {
 							if(((DataLiteral)fSubVal).getNumber().doubleValue() <= ((DataLiteral)dVal).getNumber().doubleValue()) {
 								ret = false;
