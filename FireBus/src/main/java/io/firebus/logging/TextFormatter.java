@@ -8,7 +8,7 @@ import io.firebus.threads.FirebusThread;
 
 public class TextFormatter implements Formatter {
 
-	public String format(int lvl, String event, Object data, Throwable t) {
+	public String format(int lvl, String event, String msg, DataMap data, Throwable t) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(String.valueOf(System.currentTimeMillis()));
 		sb.append(" ");
@@ -26,14 +26,10 @@ public class TextFormatter implements Formatter {
 			sb.append(pad(Thread.currentThread().getName(), 45));			
 		}
 		sb.append(pad(event, 20));
-		
-		if(data != null) {
-			if(data instanceof String) {
-				sb.append((String)data);
-			} else if(data instanceof DataMap) {
-				sb.append(((DataMap)data).toString(true));				
-			}				
-		}	
+		if(msg != null)
+			sb.append(msg);
+		else if(data != null)
+			sb.append(((DataMap)data).toString(true));
 		if(t != null) {
 			sb.append("\r\n");
 			StringWriter sw = new StringWriter();

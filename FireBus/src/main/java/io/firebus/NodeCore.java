@@ -282,7 +282,7 @@ public class NodeCore
 	
 	protected void processNodeInformationRequest(Message reqMsg)
 	{
-		Logger.finer("fb.node.inforeq.resp", null);
+		Logger.finer("fb.node.inforeq.resp");
 		StringBuilder sb = new StringBuilder();
 		sb.append(connectionManager.getAddressStateString(nodeId));
 		sb.append(serviceManager.getFunctionStateString(nodeId));

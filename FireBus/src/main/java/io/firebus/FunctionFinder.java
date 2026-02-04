@@ -48,7 +48,7 @@ public class FunctionFinder {
 	
 	protected void findMore()
 	{
-		Logger.fine("fb.funcfinder.broadcasting", null);
+		Logger.fine("fb.funcfinder.broadcasting");
 		try{ Thread.sleep(waitBeforeBroadcast);} catch(Exception e) {}
 		Message findMsg = new Message(0, nodeCore.getNodeId(), Message.MSGTYPE_GETFUNCTIONINFORMATION, functionName, null);
 		nodeCore.getCorrelationManager().sendAndWait(findMsg, subTimeout);

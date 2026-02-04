@@ -8,7 +8,7 @@ import io.firebus.threads.FirebusThread;
 
 public class JSONFormatter implements Formatter {
 
-	public String format(int lvl, String event, Object data, Throwable t) {
+	public String format(int lvl, String event, String msg, DataMap data, Throwable t) {
 		DataMap entry = new DataMap();
 		entry.put("ts", System.currentTimeMillis());
 		entry.put("level", Logger.getLevelString(lvl));
@@ -35,14 +35,12 @@ public class JSONFormatter implements Formatter {
 			t.printStackTrace(pw);
 			entry.put("stack", sw.toString());
 		}
-		if(data != null) {
-			if(data instanceof String) {
-				entry.put("msg", data);
-			} else if(data instanceof DataMap) {
-				entry.put("data", data);				
-			}				
-		}		
+		if(msg != null)
+			entry.put("msg", msg);
+		if(data != null) 
+			entry.put("data",  data);
 		return entry.toString(true);
 	}
+
 
 }

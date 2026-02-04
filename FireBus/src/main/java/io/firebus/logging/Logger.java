@@ -1,5 +1,7 @@
 package io.firebus.logging;
 
+import io.firebus.data.DataMap;
+
 public class Logger {
 	protected static int level = 0;
 	
@@ -16,9 +18,9 @@ public class Logger {
 			formatter = new TextFormatter();
 	}
 	
-	public static void log(int lvl, String event, Object data, Throwable t) {
+	public static void log(int lvl, String event, String msg, DataMap data, Throwable t) {
 		if(lvl <= level) {
-			String line = formatter.format(lvl, event, data, t);
+			String line = formatter.format(lvl, event, msg, data, t);
 
 			if(lvl <= 1) {
 				System.err.println(line);
@@ -28,100 +30,156 @@ public class Logger {
 		}
 	}
 	
-	public static void severe(String event, Object data, Throwable t) {
-		log(Level.SEVERE, event, data, t);
+	public static void severe(String event, String msg, DataMap data, Throwable t) {
+		log(Level.SEVERE, event, msg, data, t);
 	}
 	
-	public static void severe(String event, Object data) {
-		log(Level.SEVERE, event, data, null);
+	public static void severe(String event, String msg, Throwable t) {
+		log(Level.SEVERE, event, msg, null, t);
+	}
+
+	public static void severe(String event, DataMap data, Throwable t) {
+		log(Level.SEVERE, event, null, data, t);
+	}
+	
+	public static void severe(String event, DataMap data) {
+		log(Level.SEVERE, event, null, data, null);
 	}
 	
 	public static void severe(String event, Throwable t) {
-		log(Level.SEVERE, event, null, t);
+		log(Level.SEVERE, event, null, null, t);
 	}
 	
 	public static void severe(String event) {
-		log(Level.SEVERE, event, null, null);
+		log(Level.SEVERE, event, null, null, null);
 	}
 	
-	public static void warning(String event, Object data, Throwable t) {
-		log(Level.WARNING, event, data, t);
+	public static void warning(String event, String msg, DataMap data, Throwable t) {
+		log(Level.WARNING, event, msg, data, t);
 	}
 	
-	public static void warning(String event, Object data) {
-		log(Level.WARNING, event, data, null);
+	public static void warning(String event, String msg, Throwable t) {
+		log(Level.WARNING, event, msg, null, t);
+	}
+
+	public static void warning(String event, DataMap data, Throwable t) {
+		log(Level.WARNING, event, null,  data, t);
+	}
+	
+	public static void warning(String event, String msg) {
+		log(Level.WARNING, event, msg, null, null);
+	}
+	
+	public static void warning(String event, DataMap data) {
+		log(Level.WARNING, event, null, data, null);
 	}
 	
 	public static void warning(String event, Throwable t) {
-		log(Level.WARNING, event, null, t);
+		log(Level.WARNING, event, null, null, t);
 	}
 	
 	public static void warning(String event) {
-		log(Level.WARNING, event, null, null);
+		log(Level.WARNING, event, null, null, null);
 	}
 	
-	public static void security(String event, Object data, Throwable t) {
-		log(Level.SECURITY, event, data, t);
+	public static void security(String event, String msg, DataMap data, Throwable t) {
+		log(Level.SECURITY, event, msg, data, t);
+	}
+
+	public static void security(String event, String msg, Throwable t) {
+		log(Level.SECURITY, event, msg, null, t);
 	}
 	
-	public static void security(String event, Object data) {
-		log(Level.SECURITY, event, data, null);
+	public static void security(String event, DataMap data, Throwable t) {
+		log(Level.SECURITY, event, null, data, t);
+	}
+	
+	public static void security(String event, DataMap data) {
+		log(Level.SECURITY, event, null, data, null);
 	}
 	
 	public static void security(String event, Throwable t) {
-		log(Level.SECURITY, event, null, t);
+		log(Level.SECURITY, event, null, null, t);
 	}
 	
 	public static void security(String event) {
-		log(Level.SECURITY, event, null, null);
+		log(Level.SECURITY, event, null, null, null);
 	}
 	
-	public static void userError(String event, Object data, Throwable t) {
-		log(Level.USERERROR, event, data, t);
+	public static void userError(String event, String msg, DataMap data, Throwable t) {
+		log(Level.USERERROR, event, msg, data, t);
 	}
 	
-	public static void userError(String event, Object data) {
-		log(Level.USERERROR, event, data, null);
+	public static void userError(String event, String msg, Throwable t) {
+		log(Level.USERERROR, event, msg, null, t);
 	}
 	
+	public static void userError(String event, DataMap data, Throwable t) {
+		log(Level.USERERROR, event, null, data, t);
+	}
+
+	public static void userError(String event, String msg, DataMap data) {
+		log(Level.USERERROR, event, msg, data, null);
+	}
+	
+	public static void userError(String event, DataMap data) {
+		log(Level.USERERROR, event, null, data, null);
+	}
+
+	public static void userError(String event, String msg) {
+		log(Level.USERERROR, event, msg, null, null);
+	}
+
 	public static void userError(String event, Throwable t) {
-		log(Level.USERERROR, event, null, t);
+		log(Level.USERERROR, event, null, null, t);
 	}
 	
 	public static void userError(String event) {
-		log(Level.USERERROR, event, null, null);
+		log(Level.USERERROR, event, null, null, null);
 	}
 	
-	public static void info(String event, Object data) {
-		log(Level.INFO, event, data,null);
+	public static void info(String event, String msg) {
+		log(Level.INFO, event, msg, null, null);
+	}
+	
+	public static void info(String event, DataMap data) {
+		log(Level.INFO, event, null, data, null);
 	}
 	
 	public static void info(String event) {
-		log(Level.INFO, event, null, null);
+		log(Level.INFO, event, null, null, null);
 	}
 
-	public static void fine(String event, Object data) {
-		log(Level.FINE, event, data,null);
+	public static void fine(String event, String msg) {
+		log(Level.FINE, event, msg, null, null);
+	}
+	
+	public static void fine(String event, DataMap data) {
+		log(Level.FINE, event, null, data, null);
 	}
 	
 	public static void fine(String event) {
-		log(Level.FINE, event, null, null);
+		log(Level.FINE, event, null, null, null);
 	}
 
-	public static void finer(String event, Object data) {
-		log(Level.FINER, event, data,null);
+	public static void finer(String event, String msg) {
+		log(Level.FINER, event, msg, null, null);
+	}
+	
+	public static void finer(String event, DataMap data) {
+		log(Level.FINER, event, null, data, null);
 	}
 	
 	public static void finer(String event) {
-		log(Level.FINER, event, null, null);
+		log(Level.FINER, event, null, null, null);
 	}
 
-	public static void finest(String event, Object data) {
-		log(Level.FINEST, event, data,null);
+	public static void finest(String event, DataMap data) {
+		log(Level.FINEST, event, null, data, null);
 	}
 	
 	public static void finest(String event) {
-		log(Level.FINEST, event, null, null);
+		log(Level.FINEST, event, null, null, null);
 	}
 
 	public static int getLevel() {

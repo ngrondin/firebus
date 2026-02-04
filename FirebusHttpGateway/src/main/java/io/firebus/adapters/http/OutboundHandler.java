@@ -36,7 +36,7 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
 		Payload fbResponse = null;
 		try 
 		{
-			Logger.finest("fb.http.outbound.req", payload.getDataObject());
+			Logger.finest("fb.http.outbound.req", payload.getDataMap());
 			HttpUriRequest httpRequest = processRequest(payload);
 			if(httpRequest != null)
 			{
@@ -47,7 +47,6 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
 	        		if(respStatus >= 200 && respStatus < 400)
 	        		{
 	        			fbResponse = processResponse(entity);
-	        			Logger.finest("fb.http.outbound", fbResponse);
 	        		}
 	        		else
 	        		{

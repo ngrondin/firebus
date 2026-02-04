@@ -203,6 +203,19 @@ public class Payload
 			return null;
 	}
 	
+	public DataMap getDataMapOrNull() 
+	{
+		try {
+			if(dataMap != null) 
+				return dataMap;
+			else if(dataBytes != null)
+				return new DataMap(new String(dataBytes));
+			else if(dataString != null)
+				return new DataMap(dataString);
+		} catch(Exception e) { }
+		return null;
+	}
+	
 	public DataList getDataList() throws DataException
 	{
 		if(dataList != null) 

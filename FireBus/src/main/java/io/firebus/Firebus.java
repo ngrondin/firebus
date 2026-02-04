@@ -121,7 +121,7 @@ public class Firebus
 	
 	public NodeInformation getNodeInformation(int nodeId)
 	{
-		Logger.fine("fb.node.sendininforeq", null);
+		Logger.fine("fb.node.sendininforeq");
 		Message queryMsg = new Message(nodeId, nodeCore.getNodeId(), Message.MSGTYPE_QUERYNODE, null, null);
 		Message respMsg = nodeCore.getCorrelationManager().sendAndWait(queryMsg, 2000);
 		if(respMsg != null)
