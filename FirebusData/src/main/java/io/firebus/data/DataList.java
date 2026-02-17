@@ -236,6 +236,15 @@ public class DataList extends DataEntity
 			ret.add(get(i).getCopy());
 		return ret;
 	}
+	
+	public int indexOf(Object o) 
+	{
+		DataEntity e = o instanceof DataEntity ? (DataEntity)o : new DataLiteral(o);
+		for(int i = 0; i < this.size(); i++) 
+			if(list.get(i).equals(e)) 
+				return i;
+		return -1;
+	}
 
 	public boolean isEmpty() {
 		return list.isEmpty();

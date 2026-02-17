@@ -1,6 +1,6 @@
 package io.firebus.script.values.abs;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import io.firebus.script.exceptions.ScriptValueException;
@@ -11,7 +11,7 @@ public abstract class SDynamicObject extends SObject {
 	protected Map<String, SValue> members;
 	
 	public SDynamicObject() {
-		members = new HashMap<String, SValue>();
+		members = new LinkedHashMap<String, SValue>();
 	}
 	
 	public boolean hasMember(String key) {

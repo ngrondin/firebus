@@ -5,14 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class DataMap extends DataEntity implements Map<String, Object>
 {
-	protected HashMap<String, DataEntity> attributes = new HashMap<String, DataEntity>();
+	protected Map<String, DataEntity> attributes = new LinkedHashMap<String, DataEntity>();
 	
 	public DataMap()
 	{
