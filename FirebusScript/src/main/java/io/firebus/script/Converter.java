@@ -12,6 +12,7 @@ import io.firebus.script.exceptions.ScriptException;
 import io.firebus.script.exceptions.ScriptValueException;
 import io.firebus.script.values.SArray;
 import io.firebus.script.values.SBoolean;
+import io.firebus.script.values.SBytes;
 import io.firebus.script.values.SDate;
 import io.firebus.script.values.SInternalCallable;
 import io.firebus.script.values.SInternalObject;
@@ -52,6 +53,8 @@ public class Converter {
 			return new SDate((Date)o);
 		} else if(o instanceof ZonedTime) {
 			return new STime((ZonedTime)o);
+		} else if(o instanceof byte[]) {
+			return new SBytes((byte[])o);
 		} else if(o instanceof Map) {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> m = (Map<String, Object>)o;
@@ -108,6 +111,8 @@ public class Converter {
 			return ((SDate)v).getDate();
 		} else if(v instanceof STime) {
 			return ((STime)v).getTime();
+		} else if(v instanceof SBytes) {
+			return ((SBytes)v).get();
 		} else if(v instanceof SArray) {
 			SArray a = (SArray)v;
 			DataList list = new DataList();
