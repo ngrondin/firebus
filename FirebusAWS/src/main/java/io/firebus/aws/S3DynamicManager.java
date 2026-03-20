@@ -18,6 +18,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
@@ -61,7 +62,7 @@ public class S3DynamicManager implements ServiceProvider {
 				String key = request.getString("key");
 				String filename = request.getString("newfilename");
 				if(filename == null)
-					filename = key.lastIndexOf("/") > -1 ? key.substring(key.lastIndexOf("/")) : key;
+					filename = key.lastIndexOf("/") > -1 ? key.substring(key.lastIndexOf("/") + 1) : key;
 				String fileService = request.getString("fileservice");
 				DataMap streamReq = new DataMap("action", "put", "filename", filename);
 				
@@ -92,6 +93,11 @@ public class S3DynamicManager implements ServiceProvider {
 				sender.sync();
 				is.close();
 				sep.close();
+			} else if(action.equals("delete")) {
+				String key = request.getString("key");
+				DeleteObjectRequest req = DeleteObjectRequest.builder().bucket(bucketName).key(key).build();
+				s3Client.deleteObject(req);
+				respMap.put("result", "ok");
 			}
 			return new Payload(respMap);
 		} catch(Exception e) {
