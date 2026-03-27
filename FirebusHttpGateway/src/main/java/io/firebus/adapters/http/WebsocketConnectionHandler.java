@@ -45,7 +45,7 @@ public abstract class WebsocketConnectionHandler extends Thread implements HttpU
 		requestPayload = new Payload();
     	if(handler.getSecurityHandler() != null)
     		handler.getSecurityHandler().enrichFirebusRequest(req, requestPayload);
-    	HttpHandler.enrichFirebusRequestDefault(req, requestPayload);
+    	handler.enrichFirebusRequestDefault(req, requestPayload);
 	}
 
 	

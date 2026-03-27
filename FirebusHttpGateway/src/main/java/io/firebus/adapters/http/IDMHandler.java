@@ -1,6 +1,8 @@
 package io.firebus.adapters.http;
 
 
+import javax.servlet.http.HttpServletRequest;
+
 import io.firebus.Firebus;
 import io.firebus.data.DataMap;
 
@@ -37,11 +39,18 @@ public abstract class IDMHandler extends InboundHandler
 		_securityHandler = sh;
 	}
 	
-	public abstract String getLoginURL(String originalPath);
+	public String getHostUrl(HttpServletRequest req) {
+		String url = req.getScheme() + "://" + req.getServerName();
+		if(req.getServerPort() != 80)
+			url = url + ":" + req.getServerPort();
+		return url;
+	}
 	
-	public abstract String getCodeURL();
+	public abstract String getLoginURL(HttpServletRequest req, String originalPath);
 	
-	public abstract String getRefreshUrl(String originalPath);
+	public abstract String getCodeURL(HttpServletRequest req);
+	
+	public abstract String getRefreshUrl(HttpServletRequest req, String originalPath);
 	
 
 }

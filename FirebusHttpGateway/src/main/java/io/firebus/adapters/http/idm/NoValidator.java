@@ -20,17 +20,17 @@ public class NoValidator extends IDMHandler {
 	}
 	
 
-	public String getLoginURL(String originalPath) {
-		String publicHost = this.httpGateway.getPublicHost();
+	public String getLoginURL(HttpServletRequest req, String originalPath) {
+		String publicHost = getHostUrl(req);
 		String url = loginUrl + "?redirect=" + publicHost + originalPath;
 		return url;
 	}
 
-	public String getCodeURL() {
+	public String getCodeURL(HttpServletRequest req) {
 		return "";
 	}
 	
-	public String getRefreshUrl(String originalPath) {
+	public String getRefreshUrl(HttpServletRequest req, String originalPath) {
 		return "";
 	}
 	

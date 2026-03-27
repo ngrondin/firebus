@@ -65,7 +65,7 @@ public class OAuth2IDM extends IDMHandler
 		params.add(new BasicNameValuePair("code", code));
 		params.add(new BasicNameValuePair("client_id", clientId));
 		params.add(new BasicNameValuePair("client_secret", clientSecret));
-		params.add(new BasicNameValuePair("redirect_uri", getCodeURL()));
+		params.add(new BasicNameValuePair("redirect_uri", getCodeURL(req)));
 		params.add(new BasicNameValuePair("grant_type", "authorization_code"));
 		DataMap respMap = callTokenUrl(params);
 		String accessToken = respMap.getString("access_token");
@@ -82,7 +82,7 @@ public class OAuth2IDM extends IDMHandler
 		params.add(new BasicNameValuePair("refresh_token", refreshToken));
 		params.add(new BasicNameValuePair("client_id", clientId));
 		params.add(new BasicNameValuePair("client_secret", clientSecret));
-		params.add(new BasicNameValuePair("redirect_uri", getCodeURL()));
+		params.add(new BasicNameValuePair("redirect_uri", getCodeURL(req)));
 		params.add(new BasicNameValuePair("grant_type", "refresh_token"));
 		try {
 			DataMap respMap = callTokenUrl(params);
@@ -96,19 +96,19 @@ public class OAuth2IDM extends IDMHandler
     }
     
 
-	public String getLoginURL(String originalPath) {
-		String originalUrl = httpGateway.getPublicHost() + originalPath;
+	public String getLoginURL(HttpServletRequest req, String originalPath) {
+		String originalUrl = getHostUrl(req) + originalPath;
 		long nonce = (int)(Math.random() * 1000000);
-		String url = loginUrl + "?client_id=" + clientId + "&response_type=code&scope=" + scope + "&redirect_uri=" + getCodeURL() + "&state=" + originalUrl + "&nonce=" + nonce;
+		String url = loginUrl + "?client_id=" + clientId + "&response_type=code&scope=" + scope + "&redirect_uri=" + getCodeURL(req) + "&state=" + originalUrl + "&nonce=" + nonce;
 		return url;
 	}
 
-	public String getCodeURL() {
-		return httpGateway.getPublicHost() + basePath + "/code";
+	public String getCodeURL(HttpServletRequest req) {
+		return getHostUrl(req) + basePath + "/code";
 	}
 	
-	public String getRefreshUrl(String originalPath) {
-		String url = httpGateway.getPublicHost() + basePath + "/refresh";
+	public String getRefreshUrl(HttpServletRequest req, String originalPath) {
+		String url = getHostUrl(req) + basePath + "/refresh";
 		if(originalPath != null) url = url + "?state=" + originalPath;
 		return url;
 	}

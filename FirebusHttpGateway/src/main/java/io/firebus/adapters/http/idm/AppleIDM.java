@@ -89,13 +89,13 @@ public class AppleIDM extends OAuth2IDM {
 		params.add(new BasicNameValuePair("code", code));
 		params.add(new BasicNameValuePair("client_id", clientId));
 		params.add(new BasicNameValuePair("client_secret", getClientSecret(clientId)));
-		params.add(new BasicNameValuePair("redirect_uri", getCodeURL()));
+		params.add(new BasicNameValuePair("redirect_uri", getCodeURL(req)));
 		params.add(new BasicNameValuePair("grant_type", "authorization_code"));    		
 		DataMap respMap = callTokenUrl(params);
 		String accessToken = respMap.getString("access_token");
 		String refreshToken = respMap.getString("refresh_token");
 		long expiry = (new Date()).getTime() + (respMap.getNumber("expires_in").longValue() * 1000);
-		_securityHandler.enrichAuthResponse(req, resp, accessToken, expiry, refreshToken, getRefreshUrl(null), state);
+		_securityHandler.enrichAuthResponse(req, resp, accessToken, expiry, refreshToken, getRefreshUrl(req, null), state);
     }
     
     public void refreshService(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -106,20 +106,20 @@ public class AppleIDM extends OAuth2IDM {
 		params.add(new BasicNameValuePair("refresh_token", refreshToken));
 		params.add(new BasicNameValuePair("client_id", clientId));
 		params.add(new BasicNameValuePair("client_secret", getClientSecret(clientId)));
-		params.add(new BasicNameValuePair("redirect_uri", getCodeURL()));
+		params.add(new BasicNameValuePair("redirect_uri", getCodeURL(req)));
 		params.add(new BasicNameValuePair("grant_type", "refresh_token"));
 		DataMap respMap = callTokenUrl(params);
 		String accessToken = respMap.getString("access_token");
 		String newRefreshToken = respMap.getString("refresh_token");
 		long expiry = (new Date()).getTime() + (respMap.getNumber("expires_in").longValue() * 1000);
-		_securityHandler.enrichRefreshResponse(req, resp, accessToken, expiry, newRefreshToken, getRefreshUrl(null), state); 	
+		_securityHandler.enrichRefreshResponse(req, resp, accessToken, expiry, newRefreshToken, getRefreshUrl(req, null), state); 	
     }
     
 
-	public String getLoginURL(String originalPath) {
-		String originalUrl = httpGateway.getPublicHost() + originalPath;
+	public String getLoginURL(HttpServletRequest req, String originalPath) {
+		String originalUrl = getHostUrl(req) + originalPath;
 		long nonce = (int)(Math.random() * 1000000);
-		String url = loginUrl + "?client_id=" + clientId + "&response_type=code&response_mode=form_post&scope=name%20email&redirect_uri=" + getCodeURL() + "&state=" + originalUrl + "&nonce=" + nonce;
+		String url = loginUrl + "?client_id=" + clientId + "&response_type=code&response_mode=form_post&scope=name%20email&redirect_uri=" + getCodeURL(req) + "&state=" + originalUrl + "&nonce=" + nonce;
 		return url;
 	}	
 

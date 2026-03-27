@@ -1,8 +1,10 @@
 package io.firebus.adapters.http;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -11,17 +13,25 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
 import io.firebus.Payload;
+import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
 
 public abstract class HttpHandler extends Handler 
 {
 	protected SecurityHandler securityHandler;
 	protected String path;
+	protected List<String> addToMeta;
 
 	public HttpHandler(HttpGateway gw, Firebus f, DataMap c) 
 	{
 		super(gw, f, c);
 		path = handlerConfig.getString("path");
+		addToMeta = new ArrayList<String>();
+		if(handlerConfig.containsKey("addtometa")) {
+			DataList list = handlerConfig.getList("addtometa");
+			for(int i = 0; i < list.size(); i++) 
+				addToMeta.add(list.getString(i).toLowerCase());
+		}
 	}
 	
 	public void setSecurityHandler(SecurityHandler sh)
@@ -63,13 +73,15 @@ public abstract class HttpHandler extends Handler
 		}		
 	}
 
-	public static void enrichFirebusRequestDefault(HttpServletRequest req, Payload payload) {
+	public void enrichFirebusRequestDefault(HttpServletRequest req, Payload payload) {
 		Map<String, String> params = getParams(req);
 		for(String name : params.keySet()) {
 			if(name.toLowerCase().startsWith("firebus-")) {
 				String shortName = name.toLowerCase().substring(8);
 				payload.metadata.put(shortName, params.get(name));
-			}			
+			} else if(addToMeta.contains(name.toLowerCase()))  {
+				payload.metadata.put(name, params.get(name));
+			}
 		}
 	}
 	

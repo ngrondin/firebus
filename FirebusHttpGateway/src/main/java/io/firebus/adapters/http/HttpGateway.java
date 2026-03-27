@@ -334,10 +334,11 @@ public class HttpGateway implements ServiceProvider
 		return name;
 	}
 	
+	/*
 	public String getPublicHost() {
 		return this.config.getString("publichost");
 	}
-
+	*/
 
 
 }

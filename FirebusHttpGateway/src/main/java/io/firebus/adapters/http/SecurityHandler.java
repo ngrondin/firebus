@@ -59,12 +59,12 @@ public abstract class SecurityHandler {
 		        writer.println("</style></head>");
 		        writer.println("<body><div class=\"main\"><div class=\"title\">Login with</div>");
 		        for(IDMHandler avh: idmHandlers) {
-			        writer.println("<div class=\"option\"><a href=\"" + avh.getLoginURL(path) + "\"><img src=\"" + avh.getIcon() + "\"><div>" + avh.getLabel() + "</div></a></div>");
+			        writer.println("<div class=\"option\"><a href=\"" + avh.getLoginURL(req, path) + "\"><img src=\"" + avh.getIcon() + "\"><div>" + avh.getLabel() + "</div></a></div>");
 		        }
 		        writer.println("</div></body></html>");
 			} else if(idmHandlers.size() == 1) {
 				resp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-				resp.setHeader("Location", idmHandlers.get(0).getLoginURL(path));
+				resp.setHeader("Location", idmHandlers.get(0).getLoginURL(req, path));
 			} else {
 				resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			}			
@@ -77,7 +77,7 @@ public abstract class SecurityHandler {
 		IDMHandler idm = getIDMHandler(issuer);
 		if(acceptsFirst(req, "text/html")) {
 			if(idm != null) {
-				resp.sendRedirect(idm.getRefreshUrl(req.getRequestURI()));
+				resp.sendRedirect(idm.getRefreshUrl(req, req.getRequestURI()));
 			} else {
 				resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			}			
