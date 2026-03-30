@@ -83,6 +83,8 @@ public abstract class HttpHandler extends Handler
 				payload.metadata.put(name, params.get(name));
 			}
 		}
+		if(addToMeta.contains("scheme"))
+			payload.metadata.put("scheme", req.getScheme());
 	}
 	
 	public static Map<String, String> getParams(HttpServletRequest req) {
