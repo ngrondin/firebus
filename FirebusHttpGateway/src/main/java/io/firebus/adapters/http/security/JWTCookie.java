@@ -18,13 +18,13 @@ import io.firebus.adapters.http.idm.OAuth2IDM;
 import io.firebus.data.DataMap;
 import io.firebus.logging.Logger;
 import io.firebus.utils.jwt.JWTValidator;
+import io.firebus.utils.jwt.JWTValidatorException;
 
 public class JWTCookie extends SecurityHandler {
 	protected String accessTokenCookieName;
 	protected String refreshTokenCookieName;
 	protected String fbMetadataName;
 	protected JWTValidator jwtValidator;
-	//protected boolean secureCookies;
 	
 	public JWTCookie(HttpGateway gw, DataMap c) {
 		super(gw, c);
@@ -32,7 +32,6 @@ public class JWTCookie extends SecurityHandler {
 		refreshTokenCookieName = config.getString("refreshtokencookie");
 		fbMetadataName = config.getString("fbmetaname");
 		jwtValidator = new JWTValidator();
-		//secureCookies = this.httpGateway.getPublicHost().startsWith("https");
 	}
 	
 	public void addIDMHandler(IDMHandler avh) {
@@ -56,17 +55,27 @@ public class JWTCookie extends SecurityHandler {
 		if(accessToken != null) {
 			DecodedJWT jwt = jwtValidator.tryDecode(accessToken);
 			if(jwt != null) {
-				if(jwtValidator.tryValidate(jwt)) {
+				try {
+					jwtValidator.validate(jwt);
 					return true;
-				}  else {
-					sendNeedToRefreshResponse(req, resp, jwt.getIssuer());
-					return false;						
+				} catch(JWTValidatorException e) {
+					Logger.security("fb.http.sec.jwtcooke.check", new DataMap("expired", e.expired, "badsig", e.badSignature, "badalg", e.badAlgorithm), e);
+					if(e.expired)
+						sendNeedToRefreshResponse(req, resp, jwt.getIssuer());
+					else 
+						sendUnauthenticatedResponse(req, resp);
+					return false;							
 				}
+			} else {
+				Logger.security("fb.http.sec.jwtcooke.check", "Token can't be decoded", null);
+				sendUnauthenticatedResponse(req, resp);
+				return false;				
 			}
+		} else {
+			Logger.security("fb.http.sec.jwtcooke.check", "No token provided", null);
+			sendUnauthenticatedResponse(req, resp);
+			return false;
 		}
-		sendUnauthenticatedResponse(req, resp);
-		return false;	
-
 	}
 
 	public String extractRefreshToken(HttpServletRequest req) throws ServletException, IOException {

@@ -3,8 +3,10 @@ package io.firebus.discovery;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
@@ -50,15 +52,22 @@ public class DefaultDiscoveryAgent extends DiscoveryAgent
 	            NetworkInterface xface = ifs.nextElement();
 	            if(!xface.isLoopback()  &&  xface.isUp())
 	            {
-	            	try
-	            	{
-	            		socket.joinGroup(new InetSocketAddress(discoveryAddress, discoveryPort), xface);
-	            		if(Logger.isLevel(Level.FINE)) Logger.fine("fb.discovery.default.interface", new DataMap("interface", xface.getName()));
-	            	}
-	            	catch(Exception e)
-	            	{
-	            		Logger.severe("fb.discovery.default.cannotjoin", new DataMap("interface", xface.getName()), e);
-	            	}
+	            	boolean isIPv4 = false;
+	                for (InterfaceAddress addr : xface.getInterfaceAddresses()) 
+	                    if (addr.getAddress() instanceof Inet4Address) isIPv4 = true;
+	                
+	                if(isIPv4) 
+	                {
+		            	try
+		            	{
+		            		socket.joinGroup(new InetSocketAddress(discoveryAddress, discoveryPort), xface);
+		            		if(Logger.isLevel(Level.FINE)) Logger.fine("fb.discovery.default.interface", new DataMap("interface", xface.getName()));
+		            	}
+		            	catch(Exception e)
+		            	{
+		            		Logger.severe("fb.discovery.default.cannotjoin", new DataMap("interface", xface.getName()), e);
+		            	}
+	                }
                 }
 	        }	
 		}

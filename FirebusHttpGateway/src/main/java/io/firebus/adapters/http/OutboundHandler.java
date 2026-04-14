@@ -53,7 +53,7 @@ public abstract class OutboundHandler extends Handler implements ServiceProvider
 	        			String responseStr = EntityUtils.toString(entity).replaceAll("\r", "").replaceAll("\n", "").replaceAll("\t", "");
 	        			String errorMsg = "Http error " + respStatus + " on request " + httpRequest.toString() + " with response " + responseStr + " ";
 	        			Logger.severe("fb.http.outbound.error", new DataMap("code", respStatus, "req", httpRequest.toString(), "resp", responseStr, "payload", payload.getDataObject()));
-	        			throw new FunctionErrorException(errorMsg);
+	        			throw new FunctionErrorException(errorMsg, respStatus);
 	        		}
 				} finally {
 					response.close();

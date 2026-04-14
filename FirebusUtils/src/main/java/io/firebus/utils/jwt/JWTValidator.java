@@ -114,8 +114,10 @@ public class JWTValidator {
 					}
 				}
 			}
+			throw new JWTValidatorException("No validator for token");
+		} else {
+			throw new JWTValidatorException("Null token");
 		}
-		throw new JWTValidatorException("No validator for token");
 	}
 	
 	
