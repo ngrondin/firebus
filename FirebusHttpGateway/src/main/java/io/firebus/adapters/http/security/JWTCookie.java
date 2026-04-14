@@ -59,7 +59,7 @@ public class JWTCookie extends SecurityHandler {
 					jwtValidator.validate(jwt);
 					return true;
 				} catch(JWTValidatorException e) {
-					Logger.security("fb.http.sec.jwtcooke.check", new DataMap("expired", e.expired, "badsig", e.badSignature, "badalg", e.badAlgorithm), e);
+					Logger.security("fb.http.sec.jwtcooke.check", new DataMap("expired", e.expired, "badsig", e.badSignature, "badalg", e.badAlgorithm));
 					if(e.expired)
 						sendNeedToRefreshResponse(req, resp, jwt.getIssuer());
 					else 
