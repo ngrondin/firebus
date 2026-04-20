@@ -3,6 +3,7 @@ package io.firebus.aws;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 public class S3StreamAdapter extends Adapter implements StreamProvider {
 	protected Region region;
@@ -48,7 +50,8 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 
 	public Payload acceptStream(Payload payload, final StreamEndpoint streamEndpoint) throws FunctionErrorException {
 		try {
-			DataMap request = new DataMap(payload.getString());
+			DataMap request = payload.getDataMapOrNull();
+			if(request == null) request = new DataMap();
 			String action = request.getString("action");
 			final String fileName = request.getString("filename");
 			final String filePath = (folder != null ? folder + "/" : "") + fileName;
@@ -111,10 +114,11 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 			} else {
 				throw new FunctionErrorException("No action provided");
 			}
-		} catch(Exception e) {
-			Logger.severe("fb.adapter.aws.s3.acceptstream", e);
-			throw new FunctionErrorException("Error accepting stream connection", e);
-		}
+		} catch(S3Exception e) {
+			throw new FunctionErrorException("Error calling S3 service", e, e.statusCode());
+		} catch(IOException e) {
+			throw new FunctionErrorException("Error streaming file", e);
+		} 
 	}
 
 	public int getStreamIdleTimeout() {
