@@ -1,14 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>io.firebus</groupId>
   <artifactId>firebus-kubernetes</artifactId>
 	<parent>
-        <groupId>io.firebus</groupId>
-        <artifactId>firebus-all</artifactId>
-        <version>${revision}</version>
-    </parent>	
-  
-  	<name>Firebus Kubernetes Components</name>
+    <groupId>io.firebus</groupId>
+    <artifactId>firebus-all</artifactId>
+    <version>2.0.0</version>
+  </parent>	
+  <name>Firebus Kubernetes Components</name>
 	<description>Firebus Kubernetes Components</description>
 	<url>https://github.com/ngrondin/firebus</url>
 
@@ -31,17 +29,12 @@
 			<email>ngrondin78@gmail.com</email>
 		</developer>
 	</developers>
-
-
-	<properties>
-		<tomcat.version>8.5.2</tomcat.version>
-	</properties>
 	
 	<dependencies>
 		<dependency>
 			<groupId>io.firebus</groupId>
 			<artifactId>firebus-core</artifactId>
-			<version>${revision}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>io.kubernetes</groupId>
