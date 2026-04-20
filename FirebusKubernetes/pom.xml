@@ -2,7 +2,11 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.firebus</groupId>
   <artifactId>firebus-kubernetes</artifactId>
-  <version>${io.firebus.version}</version>
+	<parent>
+        <groupId>io.firebus</groupId>
+        <artifactId>firebus-all</artifactId>
+        <version>${revision}</version>
+    </parent>	
   
   	<name>Firebus Kubernetes Components</name>
 	<description>Firebus Kubernetes Components</description>
@@ -31,14 +35,13 @@
 
 	<properties>
 		<tomcat.version>8.5.2</tomcat.version>
-		<io.firebus.version>1.3.4</io.firebus.version>
 	</properties>
 	
 	<dependencies>
 		<dependency>
 			<groupId>io.firebus</groupId>
 			<artifactId>firebus-core</artifactId>
-			<version>${io.firebus.version}</version>
+			<version>${revision}</version>
 		</dependency>
 		<dependency>
 		    <groupId>io.kubernetes</groupId>

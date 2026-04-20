@@ -4,7 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.firebus</groupId>
 	<artifactId>firebus-adapters</artifactId>
-	<version>${io.firebus.version}</version>
+    <parent>
+        <groupId>io.firebus</groupId>
+        <artifactId>firebus-all</artifactId>
+        <version>${revision}</version>
+    </parent>		
 
 	<name>Firebus Adapters</name>
 	<description>Commons firebus adapters</description>
@@ -30,15 +34,11 @@
 		</developer>
 	</developers>
 
-	<properties>
-		<io.firebus.version>2.0.0</io.firebus.version>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>io.firebus</groupId>
 			<artifactId>firebus-core</artifactId>
-			<version>${io.firebus.version}</version>
+			<version>${revision}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>

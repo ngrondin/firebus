@@ -4,9 +4,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.firebus</groupId>
 	<artifactId>firebus-script</artifactId>
-	<version>${io.firebus.version}</version>
 	<name>Firebus Script</name>
 	<description>Firebus ECMA Script Engine</description>
+	<parent>
+        <groupId>io.firebus</groupId>
+        <artifactId>firebus-all</artifactId>
+        <version>${revision}</version>
+    </parent>	
+    
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
@@ -28,7 +33,6 @@
 	</developers>
 
 	<properties>
-		<io.firebus.version>2.0.0</io.firebus.version>
     	<maven.compiler.source>11</maven.compiler.source>
    		<maven.compiler.target>11</maven.compiler.target>		
 	</properties>	
@@ -42,7 +46,7 @@
 		<dependency>
 			<groupId>io.firebus</groupId>
 			<artifactId>firebus-data</artifactId>
-			<version>${io.firebus.version}</version>
+			<version>${revision}</version>
 		</dependency>
 	</dependencies>	
 	

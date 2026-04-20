@@ -4,7 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.firebus</groupId>
 	<artifactId>firebus-http</artifactId>
-	<version>${io.firebus.version}</version>
+	<parent>
+        <groupId>io.firebus</groupId>
+        <artifactId>firebus-all</artifactId>
+        <version>${revision}</version>
+    </parent>	
 
 	<name>Firebus Http Gateway</name>
 	<description>Firebus http gateway adapter</description>
@@ -33,14 +37,13 @@
 
 	<properties>
 		<tomcat.version>8.5.2</tomcat.version>
-		<io.firebus.version>2.0.0</io.firebus.version>
 	</properties>
 	
 	<dependencies>
 		<dependency>
 			<groupId>io.firebus</groupId>
 			<artifactId>firebus-core</artifactId>
-			<version>${io.firebus.version}</version>
+			<version>${revision}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
@@ -70,7 +73,7 @@
 		<dependency>
 			<groupId>io.firebus</groupId>
 			<artifactId>firebus-utils</artifactId>
-			<version>${io.firebus.version}</version>
+			<version>${revision}</version>
 		</dependency>		
 	</dependencies>
 	<profiles>

@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.firebus</groupId>
+    <artifactId>firebus-all</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+    <name>Firebus All Components</name>
+
+    <modules>
+        <module>FireBus</module>
+        <module>FirebusAdaptersJava</module>
+        <module>FirebusAWS</module>
+        <module>FirebusAzure</module>
+        <module>FirebusData</module>
+        <module>FirebusDiscovery</module>
+        <module>FirebusHttpGateway</module>
+        <module>FirebusKubernetes</module>
+        <module>FirebusScript</module>
+        <module>FirebusUtils</module>        
+    </modules>
+     
+</project>
