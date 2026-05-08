@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.firebus.Firebus;
 import io.firebus.adapters.http.IDMHandler;
+import io.firebus.adapters.http.Utils;
 import io.firebus.adapters.http.HttpGateway;
 import io.firebus.data.DataMap;
 
@@ -21,7 +22,7 @@ public class NoValidator extends IDMHandler {
 	
 
 	public String getLoginURL(HttpServletRequest req, String originalPath) {
-		String publicHost = getHostUrl(req);
+		String publicHost = Utils.getHostUrl(req);
 		String url = loginUrl + "?redirect=" + publicHost + originalPath;
 		return url;
 	}

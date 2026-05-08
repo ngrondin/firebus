@@ -21,6 +21,7 @@ import io.firebus.Firebus;
 import io.firebus.adapters.http.FirebusHttpException;
 import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.IDMHandler;
+import io.firebus.adapters.http.Utils;
 import io.firebus.data.DataException;
 import io.firebus.data.DataMap;
 import io.firebus.logging.Logger;
@@ -99,14 +100,14 @@ public class OAuth2IDM extends IDMHandler
     }
     
 	public String getLoginURL(HttpServletRequest req, String originalPath) {
-		String originalUrl = getHostUrl(req) + originalPath;
+		String originalUrl = Utils.getHostUrl(req) + originalPath;
 		long nonce = (int)(Math.random() * 1000000);
 		String url = loginUrl + "?client_id=" + clientId + "&response_type=code&scope=" + scope + "&redirect_uri=" + getCodeURL(req) + "&state=" + originalUrl + "&nonce=" + nonce;
 		return url;
 	}
 
 	public String getCodeURL(HttpServletRequest req) {
-		return getHostUrl(req) + basePath + "/code";
+		return Utils.getHostUrl(req) + basePath + "/code";
 	}
 	
 	public String getRefreshPath(HttpServletRequest req, String originalPath) {

@@ -19,6 +19,7 @@ import com.auth0.jwt.interfaces.ECDSAKeyProvider;
 import io.firebus.Firebus;
 import io.firebus.adapters.http.FirebusHttpException;
 import io.firebus.adapters.http.HttpGateway;
+import io.firebus.adapters.http.Utils;
 import io.firebus.data.DataMap;
 import io.firebus.logging.Logger;
 
@@ -102,7 +103,7 @@ public class AppleIDM extends OAuth2IDM {
     
 
 	public String getLoginURL(HttpServletRequest req, String originalPath) {
-		String originalUrl = getHostUrl(req) + originalPath;
+		String originalUrl = Utils.getHostUrl(req) + originalPath;
 		long nonce = (int)(Math.random() * 1000000);
 		String url = loginUrl + "?client_id=" + clientId + "&response_type=code&response_mode=form_post&scope=name%20email&redirect_uri=" + getCodeURL(req) + "&state=" + originalUrl + "&nonce=" + nonce;
 		return url;

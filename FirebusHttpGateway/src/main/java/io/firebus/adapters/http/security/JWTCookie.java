@@ -162,8 +162,8 @@ public class JWTCookie extends SecurityHandler {
 	}
 	
 	protected void setCookie(HttpServletRequest req, HttpServletResponse resp, String name, String value, String path) {
-		boolean secureCookies = req.getScheme().equals("https");
-		String str = name + "=" + value + "; HttpOnly; Path=" + path + "; SameSite=Lax; Max-Age=15724800; Secure=" + secureCookies;
+		boolean isSecure = Utils.isSecure(req);
+		String str = name + "=" + value + "; HttpOnly; Path=" + path + "; SameSite=Lax; Max-Age=15724800; Secure=" + isSecure;
 		resp.addHeader("Set-Cookie", str);
 	}
 
