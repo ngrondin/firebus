@@ -2,6 +2,7 @@ package io.firebus.adapters.http.security;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -14,6 +15,7 @@ import io.firebus.Payload;
 import io.firebus.adapters.http.HttpGateway;
 import io.firebus.adapters.http.IDMHandler;
 import io.firebus.adapters.http.SecurityHandler;
+import io.firebus.adapters.http.Utils;
 import io.firebus.adapters.http.idm.OAuth2IDM;
 import io.firebus.data.DataMap;
 import io.firebus.logging.Logger;
@@ -87,21 +89,45 @@ public class JWTCookie extends SecurityHandler {
 		payload.metadata.put(fbMetadataName, token);
 	}
 
-	public void enrichAuthResponse(HttpServletRequest req, HttpServletResponse resp, String accessToken, long expiry, String refreshToken, String refreshPath, String state) throws ServletException, IOException {
+	public void sendAuthResponse(HttpServletRequest req, HttpServletResponse resp, String accessToken, long expiry, String refreshToken, String refreshPath, String state) throws ServletException, IOException {
 		setCookies(req, resp, accessToken, refreshToken, refreshPath);
-		sendRedirectScript(resp, accessToken, expiry, refreshToken, refreshPath, state);
+		resp.sendRedirect(state);
 		Logger.info("fb.http.sec.jwtcooke.login", new DataMap());
 	}
 
-	public void enrichRefreshResponse(HttpServletRequest req, HttpServletResponse resp, String accessToken, long expiry, String refreshToken, String refreshPath, String state) throws ServletException, IOException {
+	public void sendRefreshResponse(HttpServletRequest req, HttpServletResponse resp, String accessToken, long expiry, String refreshToken, String refreshPath, String state) throws ServletException, IOException {
 		setCookies(req, resp, accessToken, refreshToken, refreshPath);
-		if(acceptsFirst(req, "text/html")) {
-			sendRedirectScript(resp, accessToken, expiry, refreshToken, refreshPath, state);		
-		} else if(acceptsFirst(req, "application/json")) {
-			sendJsonData(resp, accessToken, expiry, refreshToken, refreshPath, state);	
+		if(Utils.acceptsFirst(req, "text/html")) {
+			resp.sendRedirect(state);
+		} else if(Utils.acceptsFirst(req, "application/json")) {
+			DataMap data = new DataMap("access_token", accessToken, "expires_at", expiry, "refresh_path", refreshPath);
+			PrintWriter writer = resp.getWriter();
+			writer.println(data.toString(true));				
 		}		
 		Logger.info("fb.http.sec.jwtcooke.refresh", new DataMap());	
 	}
+	
+	public DataMap getCheckData(HttpServletRequest req) throws ServletException, IOException {
+		DataMap data = null;
+		String token = getCookie(req, accessTokenCookieName);
+		if(token != null) {
+			data = new DataMap();
+			data.put("access_token", token);
+			DecodedJWT jwt = jwtValidator.tryDecode(token);
+			Date expires = jwt.getExpiresAt();
+			data.put("expires_at", expires.getTime());
+			for(IDMHandler idm: this.idmHandlers) { 
+				if(idm.getUri().equals(jwt.getIssuer()))
+					data.put("refresh_path", idm.getRefreshPath(req, null));
+			}
+		} 
+		return data;
+	}
+	
+	public void logout(HttpServletRequest req) throws ServletException, IOException {
+		
+	}
+	
 
 	public void enrichLogoutResponse(HttpServletRequest req, HttpServletResponse resp) {
 		Cookie cookie = new Cookie(accessTokenCookieName, "");
@@ -110,7 +136,7 @@ public class JWTCookie extends SecurityHandler {
 		resp.addCookie(cookie);	
 		for(IDMHandler idm: idmHandlers) {
 			Cookie refreshCookie = new Cookie(refreshTokenCookieName, "");
-			refreshCookie.setPath(idm.getRefreshUrl(req, null));
+			refreshCookie.setPath(idm.getRefreshPath(req, null));
 			refreshCookie.setMaxAge(0);
 			resp.addCookie(refreshCookie);			
 		}
@@ -140,29 +166,5 @@ public class JWTCookie extends SecurityHandler {
 		String str = name + "=" + value + "; HttpOnly; Path=" + path + "; SameSite=Lax; Max-Age=15724800; Secure=" + secureCookies;
 		resp.addHeader("Set-Cookie", str);
 	}
-	
-	protected void sendRedirectScript(HttpServletResponse resp, String accessToken, long expiry, String refreshToken, String refreshPath, String state) throws IOException {
-		resp.setContentType("text/html");
-		PrintWriter writer = resp.getWriter();
-		writer.println("<html><body><script>");
-		writer.println("localStorage.setItem('access_token', '" + accessToken + "')");
-		writer.println("localStorage.setItem('expires_at', '" + expiry + "')");
-		writer.println("localStorage.setItem('refresh_token', '" + refreshToken + "')");
-		writer.println("localStorage.setItem('refresh_path', '" + refreshPath + "')");
-		writer.println("window.location='" + state + "';");
-		writer.println("</script></body></html>");
-	}
-	
-	protected void sendJsonData(HttpServletResponse resp, String accessToken, long expiry, String refreshToken, String refreshPath, String state) throws IOException {
-		resp.setContentType("application/json");
-		PrintWriter writer = resp.getWriter();
-		writer.println("{");	
-		writer.println(" \"access_token\":\"" + accessToken + "\",");	
-		writer.println(" \"expires_at\":\"" + expiry + "\",");	
-		writer.println(" \"refresh_token\":\"" + refreshToken + "\",");	
-		writer.println(" \"refresh_path\":\"" + refreshPath + "\"");	
-		writer.println("}");	
-	}
-	
-	
+
 }

@@ -70,6 +70,7 @@ public class HttpGateway implements ServiceProvider
 	        tomcat.getConnector().setPort(port);
 	        tomcat.getConnector().setAttribute("compression", "on");
 	        tomcat.getConnector().setAttribute("compressableMimeType", "text/html,text/xml,text/plain,application/json,application/javascript");
+	        tomcat.getConnector().setAttribute("server", config.containsKey("servername") ? config.getString("servername") : "firebus-http");
 	        
 	        String contextPath = config.containsKey("path") ? config.getString("path") : "/";
 	        String docBase = new File(".").getAbsolutePath();
@@ -83,7 +84,6 @@ public class HttpGateway implements ServiceProvider
 	        context.setAllowCasualMultipartParsing(true);
 	        if(config.containsKey("rootforward"))
 	        	masterHandler.setRootForward(config.getString("rootforward"));
-	        //String publicHost = config.getString("publichost");
 	        
 	        RequestConfig requestConfig = RequestConfig.custom()
 					.setConnectionRequestTimeout(1000)
@@ -117,11 +117,11 @@ public class HttpGateway implements ServiceProvider
 	        
 	        LogoutHandler logoutHandler = new LogoutHandler(this, firebus, new DataMap());
 	        logoutHandler.setSecuritytHandlers(securityHandlerList);
-	        masterHandler.setLogouHander(logoutHandler);
+	        masterHandler.setLogoutHandler(logoutHandler);
 	        
-	        CommandHandler commandHandler = new CommandHandler(this, firebus, new DataMap());
-	        commandHandler.setSecuritytHandlers(securityHandlerList);
-	        firebus.registerConsumer(name, commandHandler, 10);
+	        CheckHandler checkHandler = new CheckHandler(this, firebus, new DataMap());
+	        checkHandler.setSecuritytHandlers(securityHandlerList);
+	        masterHandler.setCheckHandler(checkHandler);
 
 	        list = config.getList("idms");
 	        List<IDMHandler> idmHandlers = new ArrayList<IDMHandler>();

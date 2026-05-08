@@ -63,6 +63,18 @@ public abstract class InboundHandler extends HttpHandler
 		}
 	}	
 	
+	public String getHostUrl(HttpServletRequest req) {
+		String scheme = req.getScheme();
+		String xfp = req.getHeader("X-Forwarded-Proto");
+		String cffp = req.getHeader("cloudfront-forwarded-proto");
+		int port = req.getServerPort();
+		boolean ishttps = (scheme != null && scheme.equals("https")) || (xfp != null && xfp.equals("https")) || (cffp != null && cffp.equals("https")) || port == 443;
+		String url = (ishttps ? "https" : "http")  + "://" + req.getServerName();
+		if(port != 80 && port != 443)
+			url = url + ":" + req.getServerPort();
+		return url;
+	}
+	
 	protected String getShortPath(HttpServletRequest req) {
 		String path = req.getRequestURI();
 		String shortPath = path.substring(req.getContextPath().length() + getHttpHandlerPath().length());

@@ -6,16 +6,11 @@ import java.security.KeyFactory;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -85,34 +80,24 @@ public class AppleIDM extends OAuth2IDM {
 			}  			
 		}
     	if(code == null) throw new FirebusHttpException("Missing code in authorization code request", 400, null);
-		List<NameValuePair> params = new ArrayList<NameValuePair>(2);
-		params.add(new BasicNameValuePair("code", code));
-		params.add(new BasicNameValuePair("client_id", clientId));
-		params.add(new BasicNameValuePair("client_secret", getClientSecret(clientId)));
-		params.add(new BasicNameValuePair("redirect_uri", getCodeURL(req)));
-		params.add(new BasicNameValuePair("grant_type", "authorization_code"));    		
-		DataMap respMap = callTokenUrl(params);
+    	clientSecret = getClientSecret(clientId);
+    	DataMap respMap = callTokenUrl(getCodeURL(req), "authorization_code", code);
 		String accessToken = respMap.getString("access_token");
 		String refreshToken = respMap.getString("refresh_token");
 		long expiry = (new Date()).getTime() + (respMap.getNumber("expires_in").longValue() * 1000);
-		_securityHandler.enrichAuthResponse(req, resp, accessToken, expiry, refreshToken, getRefreshUrl(req, null), state);
+		_securityHandler.sendAuthResponse(req, resp, accessToken, expiry, refreshToken, getRefreshPath(req, null), state);
     }
     
     public void refreshService(HttpServletRequest req, HttpServletResponse resp) throws Exception {
     	String refreshToken = _securityHandler.extractRefreshToken(req);
     	if(refreshToken == null) throw new FirebusHttpException("Missing refresh token in refresh request", 400, null);
     	String state = req.getParameter("state");
-		List<NameValuePair> params = new ArrayList<NameValuePair>(2);
-		params.add(new BasicNameValuePair("refresh_token", refreshToken));
-		params.add(new BasicNameValuePair("client_id", clientId));
-		params.add(new BasicNameValuePair("client_secret", getClientSecret(clientId)));
-		params.add(new BasicNameValuePair("redirect_uri", getCodeURL(req)));
-		params.add(new BasicNameValuePair("grant_type", "refresh_token"));
-		DataMap respMap = callTokenUrl(params);
+    	clientSecret = getClientSecret(clientId);
+    	DataMap respMap = callTokenUrl(getCodeURL(req), "refresh_token", refreshToken);
 		String accessToken = respMap.getString("access_token");
 		String newRefreshToken = respMap.getString("refresh_token");
 		long expiry = (new Date()).getTime() + (respMap.getNumber("expires_in").longValue() * 1000);
-		_securityHandler.enrichRefreshResponse(req, resp, accessToken, expiry, newRefreshToken, getRefreshUrl(req, null), state); 	
+		_securityHandler.sendRefreshResponse(req, resp, accessToken, expiry, newRefreshToken, getRefreshPath(req, null), state); 	
     }
     
 

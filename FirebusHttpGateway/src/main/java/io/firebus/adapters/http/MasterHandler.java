@@ -22,6 +22,7 @@ public class MasterHandler extends HttpServlet
 	protected List<HttpHandlerEntry> handlerMap; 
 	protected HttpHandler defaultHandler;
 	protected HttpHandler logoutHandler;
+	protected HttpHandler checkHandler;
 	protected String rootForward;
 
 	public MasterHandler()
@@ -40,9 +41,14 @@ public class MasterHandler extends HttpServlet
 		defaultHandler = dh;
 	}
 	
-	public void setLogouHander(HttpHandler lh)
+	public void setLogoutHandler(HttpHandler lh)
 	{
 		logoutHandler = lh;
+	}
+	
+	public void setCheckHandler(HttpHandler lh)
+	{
+		checkHandler = lh;
 	}
 	
 	public void setRootForward(String path)
@@ -67,6 +73,10 @@ public class MasterHandler extends HttpServlet
 			if(path.equals("/logout")) 
 			{
 				best = logoutHandler;
+			}
+			else if(path.equals("/check"))
+			{
+				best = checkHandler;
 			}
 			else 
 			{

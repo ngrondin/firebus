@@ -25,14 +25,6 @@ public class NoValidator extends IDMHandler {
 		String url = loginUrl + "?redirect=" + publicHost + originalPath;
 		return url;
 	}
-
-	public String getCodeURL(HttpServletRequest req) {
-		return "";
-	}
-	
-	public String getRefreshUrl(HttpServletRequest req, String originalPath) {
-		return "";
-	}
 	
 	protected void httpService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		
@@ -40,6 +32,10 @@ public class NoValidator extends IDMHandler {
 
 	public void inboundService(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 		
+	}
+
+	public String getRefreshPath(HttpServletRequest req, String originalPath) {
+		return "";
 	}
 
 }
