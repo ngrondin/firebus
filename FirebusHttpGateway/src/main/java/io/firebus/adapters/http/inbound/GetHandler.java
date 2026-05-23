@@ -39,6 +39,13 @@ public class GetHandler extends InboundReqRespHandler
 
 	protected void processResponse(HttpServletResponse resp, Payload payload) throws Exception
 	{
+		String mime = payload.metadata.get("mime");
+		if(mime != null && mime.equals("text/html")) {
+			if(handlerConfig.containsKey("csp")) {
+				String csp = handlerConfig.getString("csp");
+				resp.addHeader("Content-Security-Policy", csp);
+			}			
+		}
 		OutputStream os = resp.getOutputStream();
 		os.write(payload.getBytes());
 		os.flush();

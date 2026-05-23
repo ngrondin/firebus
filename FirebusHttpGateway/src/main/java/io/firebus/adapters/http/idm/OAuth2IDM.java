@@ -86,7 +86,7 @@ public class OAuth2IDM extends IDMHandler
 	    			long expiry = (new Date()).getTime() + (respMap.getNumber("expires_in").longValue() * 1000);
 	    			_securityHandler.sendRefreshResponse(req, resp, accessToken, expiry, newRefreshToken, basePath + "/refresh", state); 	
 		    	} else if(action.equals("invalidate")) {
-		        	callInvalidateUrl(refreshToken);
+		        	callInvalidateUrl(getCodeURL(req), refreshToken);
 		    		_securityHandler.enrichLogoutResponse(req, resp);
 		    		resp.sendRedirect("/logout");
 		    	}
@@ -143,12 +143,12 @@ public class OAuth2IDM extends IDMHandler
 		return call(post);
     }	
 	
-	protected DataMap callInvalidateUrl(String refreshToken) throws Exception {
+	protected DataMap callInvalidateUrl(String redirect_uri, String refreshToken) throws Exception {
 		List<NameValuePair> params = new ArrayList<NameValuePair>(2);
 		params.add(new BasicNameValuePair("client_id", clientId));
 		params.add(new BasicNameValuePair("client_secret", clientSecret));
-		params.add(new BasicNameValuePair("redirect_uri", refreshToken));
-		params.add(new BasicNameValuePair("grant_type", "refresh_token"));
+		params.add(new BasicNameValuePair("redirect_uri", redirect_uri));
+		params.add(new BasicNameValuePair("refresh_token", refreshToken));
 		HttpPost post = new HttpPost(invalidateUrl);
 		post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 		return call(post);
