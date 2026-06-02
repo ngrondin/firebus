@@ -91,7 +91,7 @@ public class OAuth2IDM extends IDMHandler
 		    		resp.sendRedirect("/logout");
 		    	}
     		} catch(Exception e) {
-    			Logger.severe("fb.http.oauth2.refresh", e);
+    			Logger.warning("fb.http.oauth2.refresh", e.getMessage());
     			resp.sendRedirect("/logout");
     		}    		
     	} else {
@@ -143,7 +143,7 @@ public class OAuth2IDM extends IDMHandler
 		return call(post);
     }	
 	
-	protected DataMap callInvalidateUrl(String redirect_uri, String refreshToken) throws Exception {
+	protected void callInvalidateUrl(String redirect_uri, String refreshToken) throws Exception {
 		List<NameValuePair> params = new ArrayList<NameValuePair>(2);
 		params.add(new BasicNameValuePair("client_id", clientId));
 		params.add(new BasicNameValuePair("client_secret", clientSecret));
@@ -151,7 +151,7 @@ public class OAuth2IDM extends IDMHandler
 		params.add(new BasicNameValuePair("refresh_token", refreshToken));
 		HttpPost post = new HttpPost(invalidateUrl);
 		post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-		return call(post);
+		call(post); 
     }	
 	    
 	protected DataMap callKeysUrl() throws Exception {
