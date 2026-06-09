@@ -28,6 +28,7 @@ public class LogoutHandler extends HttpHandler {
 				sh.enrichLogoutResponse(req, resp);
 			}
 		}
+		resp.setHeader("content-security-policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; img-src 'self' data:;");
         PrintWriter writer = resp.getWriter();
         writer.println("<html><head><title>Login</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><style>");
         writer.println("body{}");
