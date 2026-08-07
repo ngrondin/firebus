@@ -16,13 +16,17 @@ public class ThreadManager extends Thread
 	protected int minThreadCount;
 	protected int priority;
 	protected String threadName;
+	protected long defaultTimeout;
+	protected long defaultLongExecWarningTime;
 	
-	public ThreadManager(NodeCore c, int mintc, int maxtc, int dp, String tn)
+	public ThreadManager(NodeCore c, int mintc, int maxtc, int dp, String tn, long dto, long dlewt)
 	{
 		nodeCore = c;
 		quit = false;
 		priority = dp;
 		threadName = tn;
+		defaultTimeout = dto;
+		defaultLongExecWarningTime = dlewt;
 		queue = new Queue<FirebusRunnable>(1024);
 		threads = new ArrayList<FirebusThread>();
 		setThreadCount(mintc, maxtc);
@@ -53,17 +57,21 @@ public class ThreadManager extends Thread
 	
 	public void enqueue(Runnable runnable, String serviceName, long serviceExecutionId)
 	{
-		enqueue(runnable, serviceName, serviceExecutionId, 70000);
+		enqueue(runnable, serviceName, serviceExecutionId, defaultTimeout, defaultLongExecWarningTime, null);
 	}
 	
-	public void enqueue(Runnable runnable, String serviceName, long serviceExecutionId, long timeout)
+	public void enqueue(Runnable runnable, String serviceName, long serviceExecutionId, long timeout, long warningtime, DataMap logData)
 	{
-		queue.push(new FirebusRunnable(runnable, serviceName, serviceExecutionId, timeout));
+		FirebusRunnable fbr = new FirebusRunnable(runnable, serviceName, serviceExecutionId, timeout, warningtime, logData); 
+		queue.push(fbr);
+		fbr.pushed = System.currentTimeMillis();
 	}
 	
 	public FirebusRunnable getNext()
 	{
-		return queue.popWait();
+		FirebusRunnable fbr = queue.popWait();
+		fbr.poped = System.currentTimeMillis();
+		return fbr;
 	}
 	
 	public void run() 

@@ -79,10 +79,10 @@ public class NodeCore
 			streamManager = new StreamManager(this);
 			consumerManager = new ConsumerManager(this);
 			correlationManager = new CorrelationManager(this);
-			messageThreads = new ThreadManager(this, 10, 20, 10, "Mesg");
-			serviceThreads = new ThreadManager(this, 10, 20, 5, "Service");
-			streamThreads = new ThreadManager(this, 10, 20, 2, "Stream");
-			adhocThreads = new ThreadManager(this, 2, 2, 1, "adhoc");
+			messageThreads = new ThreadManager(this, 10, 20, 10, "Mesg", 10000, 1000);
+			serviceThreads = new ThreadManager(this, 10, 20, 5, "Service", 70000, 10000);
+			streamThreads = new ThreadManager(this, 10, 20, 2, "Stream", 10000, 1000);
+			adhocThreads = new ThreadManager(this, 2, 2, 1, "adhoc", 70000, 10000);
 			historyQueue = new HistoryQueue(256);
 			discoveryAgents = new ArrayList<DiscoveryAgent>();
 			discoveryAgents.add(new DefaultDiscoveryAgent(this));

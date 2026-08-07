@@ -56,7 +56,13 @@ public class Queue<T>
 		{
 			if(canGrow) 
 			{
-				grow();
+				//grow();
+				Object[] newArray = new Object[items.length + increment];
+				for(int i = 0; i < items.length; i++)
+					newArray[i] = items[(tail + i) % items.length];
+				tail = 0;
+				head = items.length;
+				items = newArray;
 			}
 			else
 			{
@@ -81,7 +87,7 @@ public class Queue<T>
 		return consumers;
 	}
 	
-	protected void grow() 
+	/*protected void grow() 
 	{
 		if(canGrow) 
 		{
@@ -92,7 +98,7 @@ public class Queue<T>
 			head = items.length;
 			items = newArray;
 		}
-	}
+	}*/
 	
 	@SuppressWarnings("unchecked")
 	public synchronized T pop()

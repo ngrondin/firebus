@@ -13,10 +13,12 @@ public class FirebusThread extends Thread
 	protected boolean ready;
 	protected long threadStart;
 	protected long expiry;
+	protected long longExecWarningTime;
 	protected String functionName;
 	protected long functionExecutionId = -1;
 	protected String trackingId;
 	protected String user;
+	protected DataMap logData;
 	protected long lastStart;
 	protected long lastCompletion;
 	protected int totalExecutionCount;
@@ -33,6 +35,7 @@ public class FirebusThread extends Thread
 		quit = false;
 		ready = false;
 		expiry = -1;
+		longExecWarningTime = -1;
 		lastStart = -1;
 		lastCompletion = -1;
 		threadStart = System.currentTimeMillis();
@@ -56,12 +59,12 @@ public class FirebusThread extends Thread
 					long now = System.currentTimeMillis();
 					functionName = fbRunnable.functionName;
 					functionExecutionId = fbRunnable.functionExecutionId;
+					logData = fbRunnable.logData;
 					lastStart = now;
 					lastCompletion = -1;
 					expiry = fbRunnable.expiry;
-					long waitDur = now - fbRunnable.created;
-					if(waitDur > 100)
-						Logger.warning("fb.thread.run.longwait", new DataMap("ms", waitDur));
+					longExecWarningTime = fbRunnable.longExecWarningTime;
+					if((now - fbRunnable.created) > 100) logLongWaitWarning(fbRunnable);
 					fbRunnable.runnable.run();
 				}
 			} 
@@ -83,11 +86,16 @@ public class FirebusThread extends Thread
 					maxExecutionTime = dur;
 					maxExecutionTrackingId = trackingId;
 				}
+				if(longExecWarningTime > -1 && dur > longExecWarningTime) {
+					Logger.warning("fb.thread.run.longexec", new DataMap("ms", dur));
+				}
 				lastStart = -1;
+				longExecWarningTime = -1;
 				functionName = null;
 				functionExecutionId = -1;
 				trackingId = null;
 				user = null;
+				logData = null;
 			}
 		}
 	}
@@ -107,6 +115,10 @@ public class FirebusThread extends Thread
 	public long getFunctionExecutionId()
 	{
 		return functionExecutionId;
+	}
+	
+	public DataMap getFunctionLogData() {
+		return logData;
 	}
 	
 	public void setTrackingId(String id) 
@@ -161,5 +173,15 @@ public class FirebusThread extends Thread
 		max.put("trackingId", maxExecutionTrackingId);
 		status.put("max", max);
 		return status;
+	}
+	
+	private void logLongWaitWarning(FirebusRunnable fbr) 
+	{
+		long now = System.currentTimeMillis();
+		long waitDur = now - fbr.created;
+		int consumers = threadManager.queue.getConsumers();
+		int depth = threadManager.queue.getDepth();
+		Logger.warning("fb.thread.run.longwait", new DataMap("ms", waitDur, "consumers", consumers, "depth", depth, "created", fbr.created, "pushed", fbr.pushed, "poped", fbr.poped, "now", now));
+		
 	}
 }

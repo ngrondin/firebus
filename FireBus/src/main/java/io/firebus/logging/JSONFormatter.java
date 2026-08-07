@@ -22,6 +22,9 @@ public class JSONFormatter implements Formatter {
 			ctx.put("function", fbt.getFunctionName());
 			if(fbt.getFunctionExecutionId() > -1)
 				ctx.put("execid", fbt.getFunctionExecutionId());
+			DataMap ctxData = fbt.getFunctionLogData();
+			if(ctxData != null) 
+				ctx.put("data", ctxData);
 			String track = fbt.getTrackingId();
 			if(track != null) ctx.put("track", track);
 			String user = fbt.getUser();
