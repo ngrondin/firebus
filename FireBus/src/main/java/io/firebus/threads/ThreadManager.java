@@ -70,7 +70,8 @@ public class ThreadManager extends Thread
 	public FirebusRunnable getNext()
 	{
 		FirebusRunnable fbr = queue.popWait();
-		fbr.poped = System.currentTimeMillis();
+		if(fbr != null)
+			fbr.poped = System.currentTimeMillis();
 		return fbr;
 	}
 	
