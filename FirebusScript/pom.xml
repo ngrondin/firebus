@@ -6,17 +6,17 @@
 	<parent>
         <groupId>io.firebus</groupId>
         <artifactId>firebus-all</artifactId>
-        <version>2.0.0</version>
-    </parent>	
+        <version>2.0.1</version>
+    </parent>
 	<name>Firebus Script</name>
 	<description>Firebus ECMA Script Engine</description>
-    
+
     <properties>
 		<tomcat.version>8.5.2</tomcat.version>
     	<maven.compiler.source>11</maven.compiler.source>
-   		<maven.compiler.target>11</maven.compiler.target>		
+   		<maven.compiler.target>11</maven.compiler.target>
 	</properties>
-	
+
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
@@ -35,7 +35,7 @@
 			<name>Nicolas Grondin</name>
 			<email>ngrondin78@gmail.com</email>
 		</developer>
-	</developers>	
+	</developers>
 
 	<dependencies>
 		<dependency>
@@ -48,8 +48,8 @@
 			<artifactId>firebus-data</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-	</dependencies>	
-	
+	</dependencies>
+
 	<profiles>
 		<profile>
 			<id>local</id>
@@ -123,9 +123,9 @@
 								<goals>
 									<goal>jar</goal>
 								</goals>
-								<configuration> 
+								<configuration>
 									<doclint>none</doclint>
-									<source>8</source>						
+									<source>8</source>
 					            </configuration>
 							</execution>
 						</executions>
@@ -187,5 +187,5 @@
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/
 			</url>
 		</repository>
-	</distributionManagement>	
+	</distributionManagement>
 </project>

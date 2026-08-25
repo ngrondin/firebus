@@ -4,8 +4,8 @@
 	<parent>
     <groupId>io.firebus</groupId>
     <artifactId>firebus-all</artifactId>
-    <version>2.0.0</version>
-  </parent>	
+    <version>2.0.1</version>
+  </parent>
   <name>Firebus Kubernetes Components</name>
 	<description>Firebus Kubernetes Components</description>
 	<url>https://github.com/ngrondin/firebus</url>
@@ -29,7 +29,7 @@
 			<email>ngrondin78@gmail.com</email>
 		</developer>
 	</developers>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>io.firebus</groupId>
@@ -42,7 +42,7 @@
 		    <version>8.0.0</version>
 		</dependency>
 	</dependencies>
-	
+
 	<profiles>
 		<profile>
 			<id>local</id>
@@ -116,9 +116,9 @@
 								<goals>
 									<goal>jar</goal>
 								</goals>
-								<configuration> 
+								<configuration>
 									<doclint>none</doclint>
-									<source>8</source>						
+									<source>8</source>
 					            </configuration>
 							</execution>
 						</executions>

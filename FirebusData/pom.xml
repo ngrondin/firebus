@@ -6,13 +6,13 @@
     <parent>
         <groupId>io.firebus</groupId>
         <artifactId>firebus-all</artifactId>
-        <version>2.0.0</version>
-    </parent>	
+        <version>2.0.1</version>
+    </parent>
 
 	<name>Firebus Data</name>
 	<description>Firebus data objects</description>
 	<url>https://github.com/ngrondin/firebus</url>
-	
+
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
