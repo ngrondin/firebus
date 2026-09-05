@@ -59,8 +59,8 @@ public class FileStreamHandler extends InboundHandler  {
 			OutputStream os = resp.getOutputStream();
 			StreamReceiver receiver = new StreamReceiver(os, sep);
 			receiver.sync();
-			os.flush();
-			os.close();
+			//os.flush();
+			//os.close();
 			Logger.info("fb.http.filestream.get", new DataMap("req", request, "bytes", receiver.getBytesReceived()));
 			//sep.close(); // The sender will close the stream
 		} else if(action.equals("put")) {
@@ -115,13 +115,13 @@ public class FileStreamHandler extends InboundHandler  {
 				StreamSender sender = new StreamSender(is, sep);
 				sender.sync();
 				resp.setStatus(200);
-				is.close();
+				//is.close();
 				
 				OutputStream os = resp.getOutputStream();
 				new StreamReceiver(os, sep).sync();
-				os.flush();
-				os.close();
-				sep.close();
+				//os.flush();
+				//os.close();
+				//sep.close();
 				Logger.info("fb.http.filestream.put", new DataMap("req", request, "bytes", sender.getBytesSent()));
 			}
 		} else {

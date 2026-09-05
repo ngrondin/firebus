@@ -117,7 +117,6 @@ public class StreamReceiver implements StreamHandler {
 	
 	
 	protected void fail(String message) {
-		//error = message + " (life: " + (System.currentTimeMillis() - start) + "ms received: " + bytesReceived + "b chunks: " + chunkSequence + ")";
 		FunctionErrorException error = new FunctionErrorException(message);
 		streamEndpoint.error(error);
 		processError(error);
@@ -141,10 +140,9 @@ public class StreamReceiver implements StreamHandler {
 	
 	private void close() {
 		try {
-			if(compListener == null && chunkListener == null && !waiting) {
-				outputStream.close();
-				streamEndpoint.close();
-			}
+			outputStream.flush();
+			outputStream.close();
+			streamEndpoint.close();
 			synchronized(this) {
 				this.notify();
 			}

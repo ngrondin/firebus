@@ -45,7 +45,7 @@ public class StreamSender implements StreamHandler {
 	
 	protected void init() throws IOException {
 		chunkSequence = -1;
-		chunkBytes = new byte[262144];
+		chunkBytes = new byte[16384];
 		chunkLength = 0;
 		bytesSent = 0;
 		completed = false;
@@ -107,7 +107,6 @@ public class StreamSender implements StreamHandler {
 	}
 	
 	protected void fail(String message) {
-		//error = e + " (life: " + (System.currentTimeMillis() - start) + "ms sent: " + bytesSent + "b chunks: " + chunkSequence + ")";
 		streamEndpoint.setHandler(null);
 		FunctionErrorException error = new FunctionErrorException(message);
 		processError(error);
@@ -127,10 +126,8 @@ public class StreamSender implements StreamHandler {
 	
 	private void close() {
 		try {
-			if(listener == null && !waiting) {
-				inputStream.close();
-				streamEndpoint.close();
-			}
+			inputStream.close();
+			streamEndpoint.close();
 			synchronized(this) {
 				this.notify();
 			}

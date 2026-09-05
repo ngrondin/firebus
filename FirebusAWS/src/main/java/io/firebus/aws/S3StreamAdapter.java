@@ -1,8 +1,6 @@
 package io.firebus.aws;
 
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -16,7 +14,6 @@ import io.firebus.exceptions.FunctionErrorException;
 import io.firebus.information.StreamInformation;
 import io.firebus.interfaces.StreamProvider;
 import io.firebus.logging.Logger;
-import io.firebus.utils.StreamReceiver;
 import io.firebus.utils.StreamSender;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -47,7 +44,6 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 	            .build();
 	}
 
-
 	public Payload acceptStream(Payload payload, final StreamEndpoint streamEndpoint) throws FunctionErrorException {
 		try {
 			DataMap request = payload.getDataMapOrNull();
@@ -61,55 +57,27 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 				InputStream is = s3Client.getObject(getObjectRequest);
 				new StreamSender(is, streamEndpoint, new StreamSender.CompletionListener() {
 					public void completed(byte[] bytes) {
-						cleanup();
+
 					}
 
 					public void error(Throwable error) {
 						Logger.severe("fb.adapter.aws.s3.errorsending", new DataMap("file", fileName), error);
-						cleanup();
-					}
-					
-					public void cleanup() {
-						try {
-							streamEndpoint.close();
-							is.close();
-						} catch(Exception e) {
-							Logger.severe("fb.adapter.aws.s3.cleanup", new DataMap("file", fileName), e);
-						}
 					}
 				});
 				return null;
 			} else if(action.equals("put")) {
-				final File file = new File(fileName);
-				final String mime = payload.metadata.get("mime");
-				final FileOutputStream fos = new FileOutputStream(file);
-				new StreamReceiver(fos, streamEndpoint, new StreamReceiver.CompletionListener() {
-					public byte[] completed() {
-						Map<String, String> metadata = new HashMap<String, String>();
-						if(mime != null) 
-					        metadata.put("content-type", mime);
-						PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucketName).key(filePath).metadata(metadata).build();
-				        s3Client.putObject(objectRequest, RequestBody.fromFile(file));
-				        //cleanup();
-				        return null;
+				final InputStream is = new io.firebus.utils.InputStream(streamEndpoint);
+				final int size = is.available();
+				Map<String, String> metadata = new HashMap<String, String>();
+				if(payload.metadata.containsKey("mime")) 
+			        metadata.put("content-type", payload.metadata.get("mime"));
+				PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucketName).key(filePath).metadata(metadata).build();
+				new Thread(new Runnable() {
+					public void run() {
+				        s3Client.putObject(objectRequest, RequestBody.fromInputStream(is, size));
+				        streamEndpoint.close();
 					}
-
-					public void error(Throwable error) {
-						Logger.severe("fb.adapter.aws.s3.errorputting", new DataMap("file", fileName), error);
-						cleanup();
-					}
-					
-					public void cleanup() {
-						try {
-							streamEndpoint.close();
-							fos.close();
-					        file.delete();
-						} catch(Exception e) {
-							Logger.severe("fb.adapter.aws.s3.cleanup", new DataMap("file", fileName), e);
-						}	
-					}
-				});
-				
+				}).start();				
 				return null;
 			} else {
 				throw new FunctionErrorException("No action provided");
