@@ -68,6 +68,7 @@ public class InputStream extends java.io.InputStream implements StreamHandler {
 			if(readHead == bufferSize) throw new IOException("Did not receive the next chunk");
 		} 	
 		int val = (buffer[readHead] & 0xFF);
+		totalRead++;
 		readHead++;
 		if(readHead == bufferSize) {
 			sendNext();

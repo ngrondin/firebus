@@ -74,8 +74,11 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 				PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucketName).key(filePath).metadata(metadata).build();
 				new Thread(new Runnable() {
 					public void run() {
-				        s3Client.putObject(objectRequest, RequestBody.fromInputStream(is, size));
-				        streamEndpoint.close();
+						try {
+							s3Client.putObject(objectRequest, RequestBody.fromInputStream(is, size));
+						} catch(Exception e) {
+							Logger.severe("fb.adapter.aws.s3.put", new DataMap("file", fileName));
+						}				        
 					}
 				}).start();				
 				return null;

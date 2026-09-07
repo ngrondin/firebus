@@ -28,6 +28,7 @@ public class StreamSender implements StreamHandler {
 	protected long lastLoggedProgress;
 	protected String error;
 	protected boolean waiting;
+	protected byte[] completionBytes;
 	
 	public StreamSender(InputStream is, StreamEndpoint sep, CompletionListener l) throws IOException {
 		inputStream = is;
@@ -119,6 +120,7 @@ public class StreamSender implements StreamHandler {
 	}
 	
 	protected void complete(byte[] bytes) {
+		completionBytes = bytes;
 		if(listener != null) 
 			listener.completed(bytes);
 		close();
@@ -134,7 +136,7 @@ public class StreamSender implements StreamHandler {
 		} catch(Exception e) { }
 	}
 
-	public void sync() throws FunctionErrorException {
+	public byte[] sync() throws FunctionErrorException {
 		try {
 			waiting = true;
 			synchronized(this) {
@@ -146,6 +148,7 @@ public class StreamSender implements StreamHandler {
 		}
 		if(error != null)
 			throw new FunctionErrorException(error);
+		return completionBytes;
 	}
 	
 	public long getBytesSent() {
