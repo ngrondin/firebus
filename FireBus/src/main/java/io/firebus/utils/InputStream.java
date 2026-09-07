@@ -58,12 +58,7 @@ public class InputStream extends java.io.InputStream implements StreamHandler {
 			if(readHead == bufferSize) {
 				readHead = 0;
 				bufferSize = 0;
-				if(waiting == false) {
-					Payload resp = new Payload();
-					resp.metadata.put("ctl", "next");
-					streamEndpoint.send(resp);
-					waiting = true;
-				}
+				sendNext();
 				try {
 					while(waiting) {
 						wait(1000);
@@ -76,7 +71,21 @@ public class InputStream extends java.io.InputStream implements StreamHandler {
 			int val = (buffer[readHead] & 0xFF);
 			totalRead++;
 			readHead++;
+			if(readHead == bufferSize) { 
+				readHead = 0;
+				bufferSize = 0;
+				sendNext();				
+			}
 			return val;
+		}
+	}
+	
+	private void sendNext() {
+		if(waiting == false) {
+			Payload resp = new Payload();
+			resp.metadata.put("ctl", "next");
+			streamEndpoint.send(resp);
+			waiting = true;
 		}
 	}
 
