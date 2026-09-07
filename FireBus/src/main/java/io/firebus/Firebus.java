@@ -43,12 +43,6 @@ public class Firebus
 		nodeCore = nc;
 	}
 	
-	/*@Deprecated
-	public void setThreadCount(int tc)
-	{
-		nodeCore.getServiceThreads().setThreadCount(tc);
-	}*/
-	
 	public void setStreamThreadCount(int min, int max)
 	{
 		nodeCore.setStreamThreadCount(min, max);

@@ -94,7 +94,7 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 	}
 
 	public int getStreamIdleTimeout() {
-		return 5000;
+		return 15000;
 	}
 
 	public StreamInformation getStreamInformation() {
