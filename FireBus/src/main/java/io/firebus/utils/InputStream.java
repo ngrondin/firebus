@@ -26,12 +26,12 @@ public class InputStream extends java.io.InputStream implements StreamHandler {
 	
 	public InputStream(StreamEndpoint sep) {
 		streamEndpoint = sep;
-		buffer = new byte[16384];
+		buffer = new byte[32768];
 		readHead = 0;
 		bufferSize = 0;
 		chunkSequence = 0;
 		complete = false;
-		waiting = false;
+		waiting = true; //The initial chunk is sent by the sender first, so we're initially waiting
 		totalRead = 0;
 		totalSize = -1;
 		if(sep.getAcceptPayload() != null || sep.getRequestPayload() != null) {
