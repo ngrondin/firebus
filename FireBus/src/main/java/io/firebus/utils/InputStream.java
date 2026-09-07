@@ -40,10 +40,12 @@ public class InputStream extends java.io.InputStream implements StreamHandler {
 				if(payload == null) payload = sep.getRequestPayload();
 				if(payload != null) {
 					DataMap acceptMap = payload.getDataMap();
-					filename = acceptMap.getString("filename");
-					mime = acceptMap.getString("mime");
-					if(acceptMap.containsKey("size"))
-						totalSize = acceptMap.getNumber("size").intValue();	
+					if(acceptMap != null) {
+						filename = acceptMap.getString("filename");
+						mime = acceptMap.getString("mime");
+						if(acceptMap.containsKey("size"))
+							totalSize = acceptMap.getNumber("size").intValue();							
+					}
 				}
 			} catch (DataException e) { }			
 		}
@@ -51,85 +53,84 @@ public class InputStream extends java.io.InputStream implements StreamHandler {
 	}
 
 	public int read() throws IOException {
-		if(complete) return -1;
-		if(readHead == bufferSize) {
-			readHead = 0;
-			bufferSize = 0;
-			sendNext();
-			try {
-				synchronized(this) {
-					while(waiting) {
-						wait(10000);
-					}
-				}
-			} catch(Exception e) {}
-			if(error != null) throw new IOException(error);
+		synchronized(this) {
 			if(complete) return -1;
-			if(readHead == bufferSize) throw new IOException("Did not receive the next chunk");
-		} 	
-		int val = (buffer[readHead] & 0xFF);
-		totalRead++;
-		readHead++;
-		if(readHead == bufferSize) {
-			sendNext();
-		}
-		return val;
-	}
-	
-	private void sendNext() {
-		if(!waiting) {
-			Payload resp = new Payload();
-			resp.metadata.put("ctl", "next");
-			streamEndpoint.send(resp);
-			waiting = true;
+			if(readHead == bufferSize) {
+				readHead = 0;
+				bufferSize = 0;
+				if(waiting == false) {
+					Payload resp = new Payload();
+					resp.metadata.put("ctl", "next");
+					streamEndpoint.send(resp);
+					waiting = true;
+				}
+				try {
+					while(waiting) {
+						wait(1000);
+					}
+				} catch(Exception e) {}
+				if(error != null) throw new IOException(error);
+				if(complete) return -1;
+				if(readHead == bufferSize) throw new IOException("Did not receive the next chunk");
+			} 	
+			int val = (buffer[readHead] & 0xFF);
+			totalRead++;
+			readHead++;
+			return val;
 		}
 	}
 
 	public void receiveStreamData(Payload payload) {
-		waiting = false;
-		byte[] bytes = payload.getBytes();
-		String ctl = payload.metadata.get("ctl");
-		if(ctl.equals("chunk")) {
-			if(payload.metadata.containsKey("seq")) {
-				int seq = Integer.parseInt(payload.metadata.get("seq"));
-				if(seq == chunkSequence) {
-					for(int i = 0; i < bytes.length; i++)
-						buffer[bufferSize++] = bytes[i];						
-					chunkSequence++;
+		synchronized(this) {
+			byte[] bytes = payload.getBytes();
+			String ctl = payload.metadata.get("ctl");
+			if(ctl.equals("chunk")) {
+				if(payload.metadata.containsKey("seq")) {
+					int seq = Integer.parseInt(payload.metadata.get("seq"));
+					if(seq == chunkSequence) {
+						for(int i = 0; i < bytes.length; i++)
+							buffer[bufferSize++] = bytes[i];						
+						chunkSequence++;
+					} else {
+						error = "Chunk out of sequence";
+					}
 				} else {
-					error = "Chunk out of sequence";
+					error = "Missing sequence number";
 				}
+			} else if(ctl.equals("complete")) {
+				complete = true;
+				Payload resp = new Payload();
+				resp.metadata.put("ctl", "complete");
+				streamEndpoint.send(resp);
 			} else {
-				error = "Missing sequence number";
+				error = "Unknown control";
 			}
-		} else if(ctl.equals("complete")) {
-			complete = true;
-			Payload resp = new Payload();
-			resp.metadata.put("ctl", "complete");
-			streamEndpoint.send(resp);
+			notif();
 		}
-		notif();
 	}
 
 	public void streamClosed() {
-		waiting = false;
-		if(complete == false) {
-			error = "Stream Receiver connection closed before completion";
-			complete = true;
+		synchronized(this) {
+			if(complete == false) {
+				error = "Stream Receiver connection closed before completion";
+				complete = true;
+			}
+			notif();
 		}
-		notif();
 	}
 
 	public void streamError(FunctionErrorException funcError) {
-		waiting = false;
-		error = funcError.getMessage();
-		notify();
+		synchronized(this) {
+			error = funcError.getMessage();
+			notif();
+		}
 	}
 	
 	private void notif() {
 		try {
 			synchronized(this) {
-				notify();
+				waiting = false;
+				notifyAll();
 			}
 		} catch(Exception e) {}		
 	}

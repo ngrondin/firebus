@@ -56,7 +56,7 @@ public class FileInputStreamTest {
 		    while ((nRead = is.read(data, 0, data.length)) != -1) {
 		    	baos.write(data, 0, nRead);
 		    }
-		    is.close();
+		    //is.close();
 			byte[] recvbytes = baos.toByteArray();
 			int recvtHash = Arrays.hashCode(recvbytes);
 			if(recvtHash == fastHash) {
