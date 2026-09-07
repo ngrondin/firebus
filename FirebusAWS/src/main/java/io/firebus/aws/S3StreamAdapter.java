@@ -66,8 +66,9 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 				});
 				return null;
 			} else if(action.equals("put")) {
-				final InputStream is = new io.firebus.utils.InputStream(streamEndpoint);
+				final io.firebus.utils.InputStream is = new io.firebus.utils.InputStream(streamEndpoint);
 				final int size = is.available();
+				Logger.info("fb.adapter.aws.s3.put", new DataMap("file", fileName, "size", size, "available", is.available(), "read", is.getTotalRead()));
 				Map<String, String> metadata = new HashMap<String, String>();
 				if(payload.metadata.containsKey("mime")) 
 			        metadata.put("content-type", payload.metadata.get("mime"));
@@ -77,7 +78,7 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 						try {
 							s3Client.putObject(objectRequest, RequestBody.fromInputStream(is, size));
 						} catch(Exception e) {
-							Logger.severe("fb.adapter.aws.s3.put", new DataMap("file", fileName));
+							Logger.severe("fb.adapter.aws.s3.put", new DataMap("file", fileName, "size", size, "available", is.available(), "read", is.getTotalRead()), e);
 						}				        
 					}
 				}).start();				

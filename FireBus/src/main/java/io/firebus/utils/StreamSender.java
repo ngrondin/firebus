@@ -26,7 +26,7 @@ public class StreamSender implements StreamHandler {
 	protected boolean completed;
 	protected long start;
 	protected long lastLoggedProgress;
-	protected String error;
+	protected FunctionErrorException error;
 	protected boolean waiting;
 	protected byte[] completionBytes;
 	
@@ -109,12 +109,12 @@ public class StreamSender implements StreamHandler {
 	
 	protected void fail(String message) {
 		streamEndpoint.setHandler(null);
-		FunctionErrorException error = new FunctionErrorException(message);
-		processError(error);
+		processError(new FunctionErrorException(message));
 		close();
 	}
 	
-	protected void processError(Exception e) {
+	protected void processError(FunctionErrorException e) {
+		error = e;
 		if(listener != null) 
 			listener.error(e);	
 	}
@@ -147,7 +147,7 @@ public class StreamSender implements StreamHandler {
 			throw new FunctionErrorException("Error waiting for stream to complete", e);
 		}
 		if(error != null)
-			throw new FunctionErrorException(error);
+			throw error;
 		return completionBytes;
 	}
 	

@@ -150,6 +150,10 @@ public class InputStream extends java.io.InputStream implements StreamHandler {
 		return totalSize;
 	}
 	
+	public int getTotalRead() {
+		return totalRead;
+	}
+	
 	public String getFileName() {
 		return filename;
 	}

@@ -30,7 +30,7 @@ public class StreamReceiver implements StreamHandler {
 	protected boolean complete;
 	protected long lastLoggedProgress;
 	protected boolean waiting;
-	protected String error;
+	protected FunctionErrorException error;
 	
 	public StreamReceiver(OutputStream os, StreamEndpoint sep) {
 		outputStream = os;
@@ -115,15 +115,15 @@ public class StreamReceiver implements StreamHandler {
 		close();
 	}
 	
-	
 	protected void fail(String message) {
-		FunctionErrorException error = new FunctionErrorException(message);
-		streamEndpoint.error(error);
-		processError(error);
+		FunctionErrorException err = new FunctionErrorException(message);
+		streamEndpoint.error(err);
+		processError(err);
 		close();
 	}
 	
-	protected void processError(Exception error) {
+	protected void processError(FunctionErrorException err) {
+		error = err;
 		if(compListener != null)
 			compListener.error(error);
 		else if(chunkListener != null)
@@ -160,7 +160,7 @@ public class StreamReceiver implements StreamHandler {
 			throw new FunctionErrorException("Error waiting for stream to complete", e);
 		}
 		if(error != null)
-			throw new FunctionErrorException(error);
+			throw error;
 	}
 	
 	public long getBytesReceived() {
