@@ -32,82 +32,87 @@ public class ServiceRequest
 	
 	public Payload execute() throws FunctionErrorException, FunctionTimeoutException
 	{
-		if(Logger.isLevel(Level.FINE)) Logger.fine("fb.service.request.start", new DataMap("name", serviceName));
-		boolean responseReceived = false;
-		Payload responsePayload = null;
-		FunctionFinder functionFinder = new FunctionFinder(nodeCore, serviceName);
-		expiry = System.currentTimeMillis() + (requestTimeout > -1 ? requestTimeout : subTimeout);
-		while(responseReceived == false  &&  System.currentTimeMillis() < expiry)
-		{
-			functionInformation = functionFinder.findNext(); 
-			if(functionInformation != null)
+		try {
+			if(Logger.isLevel(Level.FINE)) Logger.fine("fb.service.request.start", new DataMap("name", serviceName));
+			boolean responseReceived = false;
+			Payload responsePayload = null;
+			FunctionFinder functionFinder = new FunctionFinder(nodeCore, serviceName);
+			expiry = System.currentTimeMillis() + (requestTimeout > -1 ? requestTimeout : subTimeout);
+			while(responseReceived == false  &&  System.currentTimeMillis() < expiry)
 			{
-				if(Logger.isLevel(Level.FINER)) Logger.finer("fb.service.request.send", new DataMap("node", functionInformation.getNodeId()));
-				int msgType = requestTimeout >= 0 ? Message.MSGTYPE_REQUESTSERVICE : Message.MSGTYPE_REQUESTSERVICEANDFORGET;
-				Message reqMsg = new Message(functionInformation.getNodeId(), nodeCore.getNodeId(), msgType, serviceName, requestPayload);
-				int correlation = nodeCore.getCorrelationManager().send(reqMsg, subTimeout);
-				Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
-				if(respMsg != null)
+				functionInformation = functionFinder.findNext(); 
+				if(functionInformation != null)
 				{
-					while(respMsg != null && System.currentTimeMillis() < expiry)
+					if(Logger.isLevel(Level.FINER)) Logger.finer("fb.service.request.send", new DataMap("node", functionInformation.getNodeId()));
+					int msgType = requestTimeout >= 0 ? Message.MSGTYPE_REQUESTSERVICE : Message.MSGTYPE_REQUESTSERVICEANDFORGET;
+					Message reqMsg = new Message(functionInformation.getNodeId(), nodeCore.getNodeId(), msgType, serviceName, requestPayload);
+					int correlation = nodeCore.getCorrelationManager().send(reqMsg, subTimeout);
+					Message respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, subTimeout);
+					if(respMsg != null)
 					{
-						if(respMsg.getType() == Message.MSGTYPE_SERVICEERROR)
+						while(respMsg != null && System.currentTimeMillis() < expiry)
 						{
-							errorMessage = respMsg.getPayload().getString();
-							String errorCodeStr = respMsg.getPayload().metadata.get("errorcode");
-							int errorCode = errorCodeStr != null ? Integer.parseInt(errorCodeStr) : 0;
-							functionInformation.returnedError();
-							nodeCore.getCorrelationManager().removeEntry(correlation);
-							throw new FunctionErrorException(errorMessage, errorCode);
-						}
-						else if(respMsg.getType() == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
-						{
-							Logger.finer("fb.service.request.unavailable", new DataMap("service", serviceName, "node", functionInformation.getNodeId()));
-							functionInformation.wasUnavailable();
-							break;
-						} 
-						else if(respMsg.getType() == Message.MSGTYPE_SERVICERESPONSE)
-						{
-							responseReceived = true;
-							responsePayload = respMsg.getPayload();
-							functionInformation.wasSuccesful();
-							break;
-						}
-						else if(respMsg.getType() == Message.MSGTYPE_PROGRESS)
-						{
-							if(msgType == Message.MSGTYPE_REQUESTSERVICEANDFORGET)
+							if(respMsg.getType() == Message.MSGTYPE_SERVICEERROR)
+							{
+								errorMessage = respMsg.getPayload().getString();
+								String errorCodeStr = respMsg.getPayload().metadata.get("errorcode");
+								int errorCode = errorCodeStr != null ? Integer.parseInt(errorCodeStr) : 0;
+								functionInformation.returnedError();
+								nodeCore.getCorrelationManager().removeEntry(correlation);
+								throw new FunctionErrorException(errorMessage, errorCode);
+							}
+							else if(respMsg.getType() == Message.MSGTYPE_FUNCTIONUNAVAILABLE)
+							{
+								Logger.finer("fb.service.request.unavailable", new DataMap("service", serviceName, "node", functionInformation.getNodeId()));
+								functionInformation.wasUnavailable();
+								break;
+							} 
+							else if(respMsg.getType() == Message.MSGTYPE_SERVICERESPONSE)
 							{
 								responseReceived = true;
+								responsePayload = respMsg.getPayload();
+								functionInformation.wasSuccesful();
 								break;
 							}
-							else 
+							else if(respMsg.getType() == Message.MSGTYPE_PROGRESS)
 							{
-								functionInformation.returnedProgress();
-								respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, requestTimeout);
+								if(msgType == Message.MSGTYPE_REQUESTSERVICEANDFORGET)
+								{
+									responseReceived = true;
+									break;
+								}
+								else 
+								{
+									functionInformation.returnedProgress();
+									respMsg = nodeCore.getCorrelationManager().waitForResponse(correlation, requestTimeout);
+								}
+							}
+							
+							if(System.currentTimeMillis() > expiry)
+							{
+								Logger.finer("fb.service.request.timeout", new DataMap("service", serviceName, "node", functionInformation.getNodeId(), "corr", reqMsg.getCorrelation()));
+								functionInformation.timedOutWhileExecuting();
+								throw new FunctionTimeoutException("Service request " + serviceName + " has timed out while executing (corr: " + reqMsg.getCorrelation() + ")");
 							}
 						}
-						
-						if(System.currentTimeMillis() > expiry)
-						{
-							Logger.finer("fb.service.request.timeout", new DataMap("service", serviceName, "node", functionInformation.getNodeId(), "corr", reqMsg.getCorrelation()));
-							functionInformation.timedOutWhileExecuting();
-							throw new FunctionTimeoutException("Service request " + serviceName + " has timed out while executing (corr: " + reqMsg.getCorrelation() + ")");
-						}
 					}
-				}
-				else
-				{
-					Logger.finer("fb.service.request.noresp", new DataMap("service", serviceName, "node", functionInformation.getNodeId(), "corr", reqMsg.getCorrelation()));
-					functionInformation.didNotRespond();
-				}
-				nodeCore.getCorrelationManager().removeEntry(correlation);
-			}			
+					else
+					{
+						Logger.finer("fb.service.request.noresp", new DataMap("service", serviceName, "node", functionInformation.getNodeId(), "corr", reqMsg.getCorrelation()));
+						functionInformation.didNotRespond();
+					}
+					nodeCore.getCorrelationManager().removeEntry(correlation);
+				}			
+			}
+			
+			if(responseReceived)
+				return responsePayload;
+			else
+				throw new FunctionTimeoutException("Service " + serviceName + " could not be called succesfully");
+		} catch(InterruptedException exception) {
+			throw new FunctionTimeoutException("Service request for " + serviceName + " was interrupted");
 		}
-		
-		if(responseReceived)
-			return responsePayload;
-		else
-			throw new FunctionTimeoutException("Service " + serviceName + " could not be called succesfully");
 	}
+
 	
 }

@@ -117,7 +117,12 @@ public class Firebus
 	{
 		Logger.fine("fb.node.sendininforeq");
 		Message queryMsg = new Message(nodeId, nodeCore.getNodeId(), Message.MSGTYPE_QUERYNODE, null, null);
-		Message respMsg = nodeCore.getCorrelationManager().sendAndWait(queryMsg, 2000);
+		Message respMsg = null;
+		try {
+			respMsg = nodeCore.getCorrelationManager().sendAndWait(queryMsg, 2000);
+		} catch (InterruptedException e) {
+			Logger.severe("fb.node.getnodeinfo", e);
+		}
 		if(respMsg != null)
 			return nodeCore.getDirectory().getNodeById(nodeId);
 		return null;

@@ -59,21 +59,14 @@ public class CorrelationEntry {
 		return next;
 	}
 	
-	public synchronized Message waitForNext(int to)
+	public synchronized Message waitForNext(int to) throws InterruptedException
 	{
 		Message message = null;
 		if(expired == false) {
 			timeout = to;
 			expiry = System.currentTimeMillis() + timeout;
-			try
-			{
-				while(expired == false  &&  (message = popNext()) == null)
-					wait();
-			}
-			catch(InterruptedException e)
-			{
-				Logger.warning("fb.correntry.interrupted", new DataMap("id", id));
-			}
+			while(expired == false  &&  (message = popNext()) == null)
+				wait();
 		}
 		return message;
 	}

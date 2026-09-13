@@ -14,6 +14,7 @@ import io.firebus.script.values.SArray;
 import io.firebus.script.values.SBoolean;
 import io.firebus.script.values.SBytes;
 import io.firebus.script.values.SDate;
+import io.firebus.script.values.SException;
 import io.firebus.script.values.SInternalCallable;
 import io.firebus.script.values.SInternalObject;
 import io.firebus.script.values.SNull;
@@ -55,6 +56,8 @@ public class Converter {
 			return new STime((ZonedTime)o);
 		} else if(o instanceof byte[]) {
 			return new SBytes((byte[])o);
+		} else if(o instanceof Exception) {
+			return new SException((Exception)o);
 		} else if(o instanceof Map) {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> m = (Map<String, Object>)o;
@@ -113,6 +116,8 @@ public class Converter {
 			return ((STime)v).getTime();
 		} else if(v instanceof SBytes) {
 			return ((SBytes)v).get();
+		} else if(v instanceof SException) {
+			return ((SException)v).getException();
 		} else if(v instanceof SArray) {
 			SArray a = (SArray)v;
 			DataList list = new DataList();

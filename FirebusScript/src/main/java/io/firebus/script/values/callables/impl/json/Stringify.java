@@ -1,5 +1,6 @@
 package io.firebus.script.values.callables.impl.json;
 
+import io.firebus.data.DataList;
 import io.firebus.data.DataMap;
 import io.firebus.script.Converter;
 import io.firebus.script.exceptions.ScriptCallException;
@@ -17,8 +18,14 @@ public class Stringify extends SCallable {
 			SValue v = arguments[0];
 			if(v instanceof SObject) {
 				try {
-					DataMap map = (DataMap)Converter.convertOut(arguments[0]);
-					return new SString(map.toString(0, true));
+					Object out = Converter.convertOut(arguments[0]);
+					if(out instanceof DataMap) {
+						return new SString(((DataMap)out).toString(0, true));
+					} else if(out instanceof DataList) {
+						return new SString(((DataList)out).toString(0, true));
+					} else {
+						return new SString(out.toString());
+					}
 				} catch(Exception e) {
 					throw new ScriptCallException("Error converting object to string", e);
 				}

@@ -65,7 +65,7 @@ public class CorrelationManager extends Thread
 	}
 
 
-	public Message waitForResponse(int correlationId, int timeout)
+	public Message waitForResponse(int correlationId, int timeout) throws InterruptedException
 	{
 		CorrelationEntry entry = getEntry(correlationId);
 		Message message = null;
@@ -76,7 +76,7 @@ public class CorrelationManager extends Thread
 		return message;
 	}
 	
-	public Message sendAndWait(Message outMsg, int timeout)
+	public Message sendAndWait(Message outMsg, int timeout) throws InterruptedException
 	{
 		int c = send(outMsg, null, timeout);
 		Message m = waitForResponse(c, timeout);
