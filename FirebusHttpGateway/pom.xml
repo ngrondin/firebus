@@ -34,7 +34,7 @@
 	</developers>
 
 	<properties>
-		<tomcat.version>8.5.2</tomcat.version>
+		<tomcat.version>9.0.118</tomcat.version>
 	</properties>
 
 	<dependencies>
