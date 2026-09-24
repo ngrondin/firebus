@@ -32,17 +32,24 @@ public class OutputStream extends java.io.OutputStream implements StreamHandler{
 	}
 	
 	protected void sendNextChunk() throws IOException {
-		chunkSequence++;
-		if(bufferSize > -1) {
+		if(bufferSize > 0) {
+			chunkSequence++;
 			sendChunk();
 		}
 	}
 	
 	protected void sendChunk() {
-		Payload chunk = new Payload(bufferSize == buffer.length ? buffer : Arrays.copyOf(buffer, bufferSize));
-		chunk.metadata.put("ctl", "chunk");
-		chunk.metadata.put("seq", "" + chunkSequence);
-		streamEndpoint.send(chunk);
+		byte[] bytes = bufferSize == buffer.length ? buffer : Arrays.copyOf(buffer, bufferSize);
+		send("chunk", chunkSequence, bytes);
+	}
+	
+	protected void send(String ctl, int seq, byte[] bytes) {
+		Payload payload = new Payload(bytes);
+		payload.metadata.put("ctl", ctl);
+		if(seq >= 0)
+			payload.metadata.put("seq", String.valueOf(seq));
+		waiting = true;
+		streamEndpoint.send(payload);
 	}
 	
 	public void receiveStreamData(Payload payload) {
@@ -50,9 +57,13 @@ public class OutputStream extends java.io.OutputStream implements StreamHandler{
 			String ctl = payload.metadata.get("ctl");
 			if(ctl.equals("next")) {
 				bufferSize = 0;
-				notif();
+				waiting = false;
+				notif("from next");
 			} else if(ctl.equals("complete")) {
 				completionBytes = payload.getBytes();
+				completed = true;
+				waiting = false;
+				notif("from complete");
 			} else if(ctl.equals("resend")) {
 				sendChunk();
 			} else if(ctl.equals("fail")) {
@@ -71,49 +82,55 @@ public class OutputStream extends java.io.OutputStream implements StreamHandler{
 	public void streamError(FunctionErrorException error) {
 		fail(error.getMessage());	
 	}
-
 	private void fail(String msg) {
 		error = msg;
-		notif();
+		notif("from fail");
 	}
 	
 	public void write(int val) throws IOException {
-		buffer[bufferSize++] = (byte)(0x00ff & val);
-		if(bufferSize == buffer.length)
+		waitForSending("initial waiting while writing");
+		if(bufferSize == buffer.length) {
 			flush();
+			waitForSending("after write flush");
+		}
+		buffer[bufferSize++] = (byte)(0x00ff & val);
+		if(bufferSize == buffer.length) {
+			flush();
+		}
 	}
 	
 	public void flush() throws IOException{
+		waitForSending("initial waiting while flushing");
 		sendNextChunk();
-		waitForSending();
 	}
 	
 	public void close() throws IOException {
 		flush();
+		waitForSending("after close flushing");
 		completed = true;
-		Payload chunk = new Payload(new byte[0]);
-		chunk.metadata.put("ctl", "complete");
-		streamEndpoint.send(chunk);
+		send("complete", -1, null);
+		waitForSending("after complete sent");
+		streamEndpoint.close();
 	}
 
 	public byte[] getCompletionBytes() {
 		return completionBytes;
 	}
 	
-	private void waitForSending() {
-		try {
-			synchronized(this) {
-				waiting = true;
-				while(waiting) 
-					wait(1000);
-			}
-		} catch(Exception e) {}
+	private void waitForSending(String msg) {
+		if(waiting) {
+			try {
+				synchronized(this) {
+					while(waiting) 
+						wait(1000);
+				}
+			} catch(Exception e) {}			
+		}
 	}
 	
-	private void notif() {
+	private void notif(String msg) {
 		try {
 			synchronized(this) {
-				waiting = false;
 				notifyAll();
 			}
 		} catch(Exception e) {}		

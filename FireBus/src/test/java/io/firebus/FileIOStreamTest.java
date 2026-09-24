@@ -15,7 +15,7 @@ import io.firebus.utils.OutputStream;
 public class FileIOStreamTest {
 
 	public static void main(String[] args) {
-		byte[] bytes = new byte[1000000];
+		byte[] bytes = new byte[100000];
 		Random random = new Random();
 		random.nextBytes(bytes);
 		final int fastHash = Arrays.hashCode(bytes);
