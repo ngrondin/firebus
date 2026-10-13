@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
@@ -57,6 +58,7 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 	protected int waitTimeout = 9000; 
 	protected String databaseName;
 	protected String connectionString;
+	protected Random rnd = new Random(System.currentTimeMillis());
 	
 	public interface DataProcessor {
 		public void run(DataMap item);
@@ -161,9 +163,10 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 							try{session.abortTransaction();} catch(Exception e2) {}
 						}
 						if(e instanceof MongoCommandException && ((MongoCommandException) e).getCode() == 112 && tries < 3) {
-							Logger.warning("fb.adapter.mongo.multitx", e);
+							Logger.warning("fb.adapter.mongo.multitx", e.getMessage());
+							int waitTime = (tries * 750) + 250 + rnd.nextInt(250);
 							tries++;
-							Thread.sleep(100);
+							Thread.sleep(waitTime);
 						} else {
 							throw new FunctionErrorException("Error in db multi transaction", e);
 						}
