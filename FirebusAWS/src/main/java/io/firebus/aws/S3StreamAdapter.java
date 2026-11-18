@@ -11,7 +11,9 @@ import io.firebus.StreamEndpoint;
 import io.firebus.adapters.Adapter;
 import io.firebus.data.DataMap;
 import io.firebus.exceptions.FunctionErrorException;
+import io.firebus.information.ServiceInformation;
 import io.firebus.information.StreamInformation;
+import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.StreamProvider;
 import io.firebus.logging.Logger;
 import io.firebus.utils.StreamSender;
@@ -20,11 +22,17 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
-public class S3StreamAdapter extends Adapter implements StreamProvider {
+/**
+ * Files in an S3 bucket folder.
+ * - stream "get" and "put": read or write one file
+ * - service "delete": remove one file, {"action":"delete", "filename":...}
+ */
+public class S3StreamAdapter extends Adapter implements StreamProvider, ServiceProvider {
 	protected Region region;
 	protected String bucketName;
 	protected String folder;
@@ -91,6 +99,24 @@ public class S3StreamAdapter extends Adapter implements StreamProvider {
 		} catch(IOException e) {
 			throw new FunctionErrorException("Error streaming file", e);
 		} 
+	}
+
+	public Payload service(Payload payload) throws FunctionErrorException {
+		DataMap request = payload.getDataMapOrNull();
+		if(request == null || !"delete".equals(request.getString("action")) || request.getString("filename") == null)
+			throw new FunctionErrorException("Only the delete action with a filename is supported");
+		String fileName = request.getString("filename");
+		String filePath = (folder != null ? folder + "/" : "") + fileName;
+		try {
+			s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(filePath).build());
+			return new Payload(new DataMap("result", "ok"));
+		} catch(S3Exception e) {
+			throw new FunctionErrorException("Error deleting file " + fileName, e, e.statusCode());
+		}
+	}
+
+	public ServiceInformation getServiceInformation() {
+		return null;
 	}
 
 	public int getStreamIdleTimeout() {

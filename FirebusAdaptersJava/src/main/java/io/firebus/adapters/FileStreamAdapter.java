@@ -7,14 +7,21 @@ import java.io.FileOutputStream;
 import io.firebus.Payload;
 import io.firebus.StreamEndpoint;
 import io.firebus.exceptions.FunctionErrorException;
+import io.firebus.information.ServiceInformation;
 import io.firebus.information.StreamInformation;
+import io.firebus.interfaces.ServiceProvider;
 import io.firebus.interfaces.StreamProvider;
 import io.firebus.logging.Logger;
 import io.firebus.data.DataMap;
 import io.firebus.utils.StreamReceiver;
 import io.firebus.utils.StreamSender;
 
-public class FileStreamAdapter extends Adapter implements StreamProvider {
+/**
+ * Files in a local folder.
+ * - stream "get" and "put": read or write one file
+ * - service "delete": remove one file, {"action":"delete", "filename":...}
+ */
+public class FileStreamAdapter extends Adapter implements StreamProvider, ServiceProvider {
 	protected String path;
 	
 	public FileStreamAdapter(DataMap c) {
@@ -57,6 +64,25 @@ public class FileStreamAdapter extends Adapter implements StreamProvider {
 		} catch(Exception e) {
 			throw new FunctionErrorException("Error accepting stream connection", e);
 		}
+	}
+
+	public Payload service(Payload payload) throws FunctionErrorException {
+		try {
+			DataMap request = new DataMap(payload.getString());
+			String fileName = request.getString("filename");
+			if(!"delete".equals(request.getString("action")) || fileName == null)
+				throw new FunctionErrorException("Only the delete action with a filename is supported");
+			new File(path + File.separator + fileName).delete();
+			return new Payload(new DataMap("result", "ok"));
+		} catch(FunctionErrorException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new FunctionErrorException("Error deleting file", e);
+		}
+	}
+
+	public ServiceInformation getServiceInformation() {
+		return null;
 	}
 
 	public int getStreamIdleTimeout() {
