@@ -107,12 +107,22 @@ public class S3StreamAdapter extends Adapter implements StreamProvider, ServiceP
 			throw new FunctionErrorException("Only the delete action with a filename is supported");
 		String fileName = request.getString("filename");
 		String filePath = (folder != null ? folder + "/" : "") + fileName;
+		boolean ignoreMissing = request.getBoolean("ignoremissing");
 		try {
 			s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(filePath).build());
 			return new Payload(new DataMap("result", "ok"));
 		} catch(S3Exception e) {
+			if(ignoreMissing && isMissingFile(e))
+				return new Payload(new DataMap("result", "missing"));
 			throw new FunctionErrorException("Error deleting file " + fileName, e, e.statusCode());
 		}
+	}
+
+	private boolean isMissingFile(S3Exception e) {
+		if(e.statusCode() == 404)
+			return true;
+		String code = e.awsErrorDetails().errorCode();
+		return "NoSuchKey".equals(code) || "NotFound".equals(code);
 	}
 
 	public ServiceInformation getServiceInformation() {

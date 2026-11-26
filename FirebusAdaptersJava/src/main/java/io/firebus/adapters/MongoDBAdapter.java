@@ -16,6 +16,7 @@ import org.bson.types.ObjectId;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCommandException;
+import com.mongodb.MongoWriteException;
 import com.mongodb.TransactionOptions;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.AggregateIterable;
@@ -167,6 +168,8 @@ public class MongoDBAdapter extends Adapter  implements ServiceProvider, StreamP
 							int waitTime = (tries * 750) + 250 + rnd.nextInt(250);
 							tries++;
 							Thread.sleep(waitTime);
+						} else if(e instanceof MongoWriteException && ((MongoWriteException) e).getCode() == 11000) {
+							throw new FunctionErrorException("Error in db multi transaction", e);
 						} else {
 							throw new FunctionErrorException("Error in db multi transaction", e);
 						}
